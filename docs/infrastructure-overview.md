@@ -278,10 +278,14 @@ in the new schema by splitting into two fields on `Order Items` (see schema tabl
   `Regrouped`.
 
 **How each `Item Status` value gets set:**
-- **`Delivered`**: replaces the old two-field heuristic (`Delivery Date` populated AND
-  `Location = LI`) with a single authoritative value. Still likely *driven by* `Delivery
-  Date` being populated (e.g. a calculated column or flow sets it automatically) rather than
-  requiring a second manual entry — mechanism not yet decided.
+- **`Delivered`**: replaces the old two-field heuristic with a single authoritative value,
+  but **keeps checking both original conditions** — corrected 2026-08-12, this is *not*
+  just "Delivery Date populated." **Decided: automatic, not manual** — a SharePoint
+  calculated column (or a small Power Automate flow, if the calculated-column language
+  can't express it) sets `Item Status = Delivered` whenever `Delivery Date` is populated
+  **AND** `Location = LI`. Two manual entries (the date + the location) still drive it, just
+  collapsed into one authoritative field instead of forcing every consumer to re-derive the
+  same two-condition check themselves.
 - **`Cancelled`**: manual, replaces the old `AN` `Location` value.
 - **`Regrouped`**: manual, replaces the old `GR` `Location` value. Per the note below, this
   status alone doesn't capture the *relationship* — what the unit turned into — so it likely
