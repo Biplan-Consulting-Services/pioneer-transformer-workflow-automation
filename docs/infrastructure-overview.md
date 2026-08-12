@@ -133,7 +133,9 @@ Drying Date, Tanking Date, Testing Date, Finishing Date, Delivery Date, Original
 Date, Tanking date change justification, Manual Estimated Delivery Date, Witness/Other,
 Temperature Rise, Impulse, Oil Analysis, **Protector Status** (confirmed 2026-08-12:
 per-unit, not per-order), **DB, SFRA, CSA** (confirmed 2026-08-12: per-unit test results,
-same list as the other tests — not a separate list).
+same list as the other tests — not a separate list), **Trimestrial Customer** (confirmed
+2026-08-12 by user: NOT a per-client attribute despite the name — varies per order item,
+since the same client can have different statuses across their orders/items).
 
 `Winder` and `Coil Winder` also both belong here, per-unit — confirmed 2026-08-12 they're
 genuinely two different things, not a duplicate: `Winder` is the *set of possible* winders a
@@ -160,11 +162,6 @@ Protector & Switchgear PO.
 - `Family` — confirmed 2026-08-12: model-level product-family/category classification code
   (e.g. custom vs. standard design), belongs on Models/Model Revisions.
 
-**→ Existing `Clients` list, as a new column (pending)**: Trimestrial Customer. ⚠ Best guess
-is a per-client attribute (does *this client* get quarterly reporting), but **deferred
-2026-08-12 — user needs to check with the sales team** before confirming it's truly
-client-level and not something that can vary order-to-order for the same client. Don't
-build/migrate this one until that comes back.
 
 ### Open questions on mechanics (separate from *which* column goes *where*)
 1. ~~Edit surface / sync direction~~ — **resolved 2026-08-12**: staff will edit `Order Items`
@@ -185,7 +182,6 @@ build/migrate this one until that comes back.
    per-column once the parallel-run surfaces which ones SharePoint genuinely can't handle.
 
 ## Next steps
-- [ ] `Trimestrial Customer` — waiting on sales team input (see above) before confirming.
 - [ ] Design the `Order Items` list schema for real (fields, types, merge key back to
       `Order`) and add the confirmed new columns to `Order`/`Models`/`Model Revisions`.
 - [ ] Add `Order Items` (and any newly-added columns on existing lists) to `ColumnMap.pq`'s
