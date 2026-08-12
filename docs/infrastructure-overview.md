@@ -257,6 +257,10 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Manual Estimated Delivery Date | Date |
 | Tanking date change justification | Multi-line text (Note) — sample value was a long `/`-delimited log of past change reasons. |
 
+*(One validation list found on the `List` sheet, `TableValidationTankingDateStatus`
+(Planned/Confirmed/Realised), doesn't correspond to any current `TableOrders` column —
+confirmed 2026-08-12 by user as dead/unused, not carried into this schema.)*
+
 ## Planned: completion, cancellation, and archiving logic
 
 Noted 2026-08-12 by user, not yet built — logged here so it isn't lost before the "complete
