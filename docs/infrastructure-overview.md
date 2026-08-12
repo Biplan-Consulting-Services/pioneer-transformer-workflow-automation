@@ -253,6 +253,36 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Manual Estimated Delivery Date | Date |
 | Tanking date change justification | Multi-line text (Note) — sample value was a long `/`-delimited log of past change reasons. |
 
+## Planned: completion, cancellation, and archiving logic
+
+Noted 2026-08-12 by user, not yet built — logged here so it isn't lost before the "complete
+task workflow" project formalizes it:
+
+- **Completion rule (order-item level):** an order item is considered done when `Delivery
+  Date` is populated **and** `Location = LI` (Livraison — already a valid code in
+  `TableValidationLocationCodes`, see above). Usable today without a new field — just a
+  filter/computed condition over the two existing values, ahead of a fuller completion-status
+  field the task-workflow project may add later.
+- **New `Location` codes for cancellation/regrouping:** `CA` (cancelled — so it's known *when*
+  an order was cancelled) and `GR` (grouped/regrouped — orders split or merged into different
+  groupings, e.g. `1/5` + `2/5` becoming `1/2` + `2/2`, or fused with another order entirely).
+  ⚠ `Location` already has an `AN` ("Annulée"/cancelled) code in the current validation list —
+  needs reconciling with the new `CA` before building: does `CA` replace `AN`, coexist with a
+  distinct meaning, or is `AN` actually dead/unused? Don't assume either way.
+- **`GR` is a relationship, not just a status** — recording "this unit was regrouped" as a
+  `Location` value can flag *that* it happened, but not *what it became* or *what it merged
+  with*. If that history needs to be queryable later (e.g. "what did order X's units turn
+  into"), it likely needs a reference/lookup field on `Order Items`, not just a code.
+- **Cancellation logic needed at both levels**: a whole `Order` can be cancelled, but so can
+  one unit within a multi-unit order while the rest proceed — so this probably needs
+  representing on both `Order` and `Order Items`, not just one.
+- **Archiving for Power BI historical analysis**: orders need an archiving mechanism that
+  keeps them usable for historical reporting once removed from the live working set. User is
+  considering switching the existing archive Power Query (`ArchivedOrders`/the "Archived
+  Orders workbook" in the current-state diagram above) to pull from SharePoint instead of
+  FRM10-12 — consistent with the rest of this migration's direction (SharePoint as the
+  source, Excel/Power BI as consumers).
+
 ## Next steps
 - [ ] Confirm the draft schema above (especially the ⚠-flagged type changes) with the user,
       then build the `Order Items` list in SharePoint and add the confirmed new columns to
@@ -263,6 +293,15 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
       with the existing Excel formulas; only remove the Excel versions once every one is
       confirmed to match. Any that SharePoint's formula language can't express become a
       Power Automate flow instead.
+- [ ] Reconcile `Location`'s existing `AN` code with the new `CA`/`GR` codes before adding
+      them (see completion/cancellation/archiving section above) — clarify with the user
+      whether `CA` replaces `AN` or they coexist with distinct meanings.
+- [ ] Design how `GR` (regrouped/split orders) records the *relationship* between the old and
+      new order-item identifiers, not just a status flag.
+- [ ] Design cancellation representation at both `Order` and `Order Items` level.
+- [ ] Design the archiving mechanism (SharePoint-sourced, Power BI-consumable) — decide
+      whether to repoint the existing `ArchivedOrders` Power Query at SharePoint instead of
+      FRM10-12.
 - [ ] Revisit FRM09's raw-column-letter fragility (see FRM09's `CLAUDE.md`) as a candidate
       for the same structured-reference treatment once `Order Items` exists.
 - [ ] **Future review point (user's call, 2026-08-12):** once `Order Items` and the other
