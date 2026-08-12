@@ -155,7 +155,9 @@ field in the new list, same as it is today, just off `TableOrders`.
 **→ Existing `Order` list, as new columns** (one value per Order Number, not per unit —
 sales/engineering-process fields, matching the workflow booleans `Order` already has like
 "Receive CRM Sales Order"): Engineering Required, LDs, Client Date Status, Sales Notes,
-Protector & Switchgear PO.
+Protector & Switchgear PO. Plus **`Order Status`** (Choice: Active/Cancelled — new,
+decided 2026-08-12, see [completion/cancellation/archiving
+logic](#planned-completion-cancellation-and-archiving-logic) below).
 
 **→ Existing `Models`/`Model Revisions`, as new columns**:
 - `Duplicate Order` — confirmed 2026-08-12 by user: genuinely model-level, it's "the last
@@ -297,10 +299,14 @@ in the new schema by splitting into two fields on `Order Items` (see schema tabl
   then point the old one(s) at them), not a single field edit.
 - **`Active`**: default, everything still in normal production flow.
 
+**Order-level cancellation — decided 2026-08-12**: a whole `Order` can be cancelled even
+before any of its units individually are (or after some already shipped), so it needs its
+own status, not just derived from its `Order Items`. New **`Order Status`** field on the
+`Order` list: Choice, `Active`/`Cancelled` — same pattern as `Item Status`, kept as a
+separate field rather than inferring cancellation from "are all units Cancelled" (that
+derivation can't represent cancelling an order before any units exist).
+
 **Still open:**
-- Cancellation logic needed at both levels: a whole `Order` can be cancelled, but so can one
-  unit within a multi-unit order while the rest proceed — so `Order` likely needs its own
-  equivalent status, not just `Order Items`.
 - **Archiving for Power BI historical analysis**: orders need an archiving mechanism that
   keeps them usable for historical reporting once removed from the live working set. User is
   considering switching the existing archive Power Query (`ArchivedOrders`/the "Archived
@@ -320,8 +326,6 @@ in the new schema by splitting into two fields on `Order Items` (see schema tabl
       Power Automate flow instead.
 - [ ] Build the `Item Status = Delivered` calculated column/flow (`Delivery Date` populated
       AND `Location = LI`) once `Order Items` exists to test against.
-- [ ] Design the equivalent cancellation representation on `Order` (not just `Order Items`) —
-      a whole order can be cancelled, not just one unit within it.
 - [ ] Design the archiving mechanism (SharePoint-sourced, Power BI-consumable) — decide
       whether to repoint the existing `ArchivedOrders` Power Query at SharePoint instead of
       FRM10-12.
