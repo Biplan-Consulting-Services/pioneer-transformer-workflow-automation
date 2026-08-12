@@ -263,12 +263,17 @@ task workflow" project formalizes it:
   `TableValidationLocationCodes`, see above). Usable today without a new field — just a
   filter/computed condition over the two existing values, ahead of a fuller completion-status
   field the task-workflow project may add later.
-- **New `Location` codes for cancellation/regrouping:** `CA` (cancelled — so it's known *when*
-  an order was cancelled) and `GR` (grouped/regrouped — orders split or merged into different
-  groupings, e.g. `1/5` + `2/5` becoming `1/2` + `2/2`, or fused with another order entirely).
-  ⚠ `Location` already has an `AN` ("Annulée"/cancelled) code in the current validation list —
-  needs reconciling with the new `CA` before building: does `CA` replace `AN`, coexist with a
-  distinct meaning, or is `AN` actually dead/unused? Don't assume either way.
+- **Cancellation uses the existing `Location` code — resolved 2026-08-12**: it's `AN`
+  ("Annulée"), already in `TableValidationLocationCodes` — not a new `CA` code as first
+  mentioned (user corrected this). So the cancellation part of this needs no new code, just
+  the logic/reporting built around `Location = AN`.
+- **`GR` (grouped/regrouped orders) still needs verifying** — orders split or merged into
+  different groupings (e.g. `1/5` + `2/5` becoming `1/2` + `2/2`, or fused with another order
+  entirely) were said to use a `GR` code, but it's NOT in the `TableValidationLocationCodes`
+  list pulled from the staging workbook (`IS, BO, ST, AS, FO, TA, TE, FI, LI, ENT, XT, RE,
+  AN`). Either the staging copy is stale and the live workbook's list already has `GR` added,
+  or it lives somewhere other than `Location` — confirm which before building anything around
+  it, don't assume it's a `Location` value just because `AN`/`LI` are.
 - **`GR` is a relationship, not just a status** — recording "this unit was regrouped" as a
   `Location` value can flag *that* it happened, but not *what it became* or *what it merged
   with*. If that history needs to be queryable later (e.g. "what did order X's units turn
@@ -293,11 +298,12 @@ task workflow" project formalizes it:
       with the existing Excel formulas; only remove the Excel versions once every one is
       confirmed to match. Any that SharePoint's formula language can't express become a
       Power Automate flow instead.
-- [ ] Reconcile `Location`'s existing `AN` code with the new `CA`/`GR` codes before adding
-      them (see completion/cancellation/archiving section above) — clarify with the user
-      whether `CA` replaces `AN` or they coexist with distinct meanings.
-- [ ] Design how `GR` (regrouped/split orders) records the *relationship* between the old and
-      new order-item identifiers, not just a status flag.
+- [ ] Verify where `GR` (regrouped/split orders) actually lives — not in the
+      `TableValidationLocationCodes` list pulled from the staging copy, so either that copy
+      is stale or `GR` isn't a `Location` value at all. Check the live workbook before
+      assuming it's a `Location` code just because `AN`/`LI` are.
+- [ ] Design how `GR` records the *relationship* between the old and new order-item
+      identifiers (e.g. what `1/5` + `2/5` actually turned into), not just a status flag.
 - [ ] Design cancellation representation at both `Order` and `Order Items` level.
 - [ ] Design the archiving mechanism (SharePoint-sourced, Power BI-consumable) — decide
       whether to repoint the existing `ArchivedOrders` Power Query at SharePoint instead of
