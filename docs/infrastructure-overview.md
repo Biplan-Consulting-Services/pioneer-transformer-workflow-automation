@@ -216,22 +216,23 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | DB | Yes/No (confirmed 2026-08-12) |
 | SFRA | Yes/No (confirmed 2026-08-12) |
 | CSA | Yes/No (confirmed 2026-08-12) |
-| Protector Status | Text (Choice candidate — sample data too sparse to enumerate values yet) |
+| Protector Status | Choice: Entrepôt SN, Reçu, à vérifier (real values found 2026-08-12, from `TableValidationProtectorStatus` on the workbook's `List` sheet) |
 
 **Production tracking:**
 
 | Field | Type | Notes |
 |---|---|---|
-| Location | Text | |
-| Status | Text | Sample value (`TE-Jui-16`) looks like a short code — worth checking whether this should be a Choice field with a fixed value list once the real set of statuses is known. |
-| Core Status | Text | Same Choice-candidate flag as Status (sample: `Reçu`). |
-| Production Line | Text | Same Choice-candidate flag (sample: `Zone B`). |
+| Location | Choice: Isolation (IS), Bobinage (BO), Stacking (ST), Assemblage (AS), Four (FO), Tanking (TA), Test (TE), Finition (FI), Livraison (LI), Entrepôt (ENT), Extérieur (XT), Réparation (RE) | Confirmed 2026-08-12 from `TableValidationLocationCodes`. **Purely the physical production stage now** — `AN` (Annulée/cancelled) is deliberately dropped from this list, moved to the new `Item Status` field below (2026-08-12 design decision: don't overload "where is it" with "what happened to it"). |
+| Item Status | Choice: Active, Delivered, Cancelled, Regrouped | **New field, added 2026-08-12.** Carries the lifecycle state that used to be smuggled into `Location` (`AN`) or inferred from `Location`+`Delivery Date` (the old completion heuristic). Defaults to `Active`; flips to `Delivered`/`Cancelled`/`Regrouped` as those events happen. See [completion/cancellation/archiving](#planned-completion-cancellation-and-archiving-logic) below for how each state gets set. |
+| Status | Text | Confirmed 2026-08-12: this is a **composite** value — a validated Prefix (Attente/AT, En cours/EC, Réparation/RE, Manque Pièces/BO, Terminé/TE, Bobine 1/B1, Bobine 2/B2, Bobine 3/B3, from `TableValidationStatusCode`) concatenated with a month-year suffix (sample: `TE-Jui-16`). Kept as plain Text for now rather than guessing how to split it — worth deciding later whether this becomes two fields (a Choice for the prefix + a separate date) or stays one text value. |
+| Core Status | Choice: Entrepôt SN, Reçu, Transport | Confirmed 2026-08-12 from `TableValidationCoreStatus`. |
+| Production Line | Choice: Power / Ligne 1, Distribution, Power, Zone B, Ligne 1 | Confirmed 2026-08-12 from `TableValidationProductionLine`. |
 | Time (days) | Number | |
-| Tank | Text | |
-| Frame | Text | Looks numeric in the sample (`0`) but likely an identifier, not a quantity — kept as Text to avoid losing leading zeros/non-numeric values on other rows. |
-| ISO Stack | Text | |
-| ISO Coil | Text | |
-| Lead Assembly | Text | |
+| Tank | Text ⚠ | Sample value `R` — no matching validation list found yet (there are `TableCuveCodes`/`TablePeintureCodes`/`TablePioneerCodes` status-code tables on the `List` sheet, but none has a plain `R` code), so the real value set is still unconfirmed. |
+| Frame | Choice: Plaspak, Reçu | **Corrected 2026-08-12** — earlier guessed this was a numeric identifier from the sample (`0`), but the real validation list (`Table20`/`Frame`) shows it's a status Choice field instead. |
+| ISO Stack | Text ⚠ | Same unconfirmed-value-set flag as `Tank` (sample: `R`). |
+| ISO Coil | Text ⚠ | Same unconfirmed-value-set flag as `Tank` (sample: `R`). |
+| Lead Assembly | Text ⚠ | Same unconfirmed-value-set flag as `Tank` (sample: `R`). |
 | Winder | Text | Must stay Text (not Number) — values mix plain IDs and ranges (`100-104`) in the sample. Per user, stays manually-filled, not derived. |
 | Coil Winder | Text | Same as `Winder` — kept Text even though the sample looked numeric, for consistency and to avoid a type mismatch if another row uses a non-numeric ID. Manually-filled. |
 | Trimestrial Customer | Text ⚠ | Blank in the sampled rows — type genuinely unconfirmed; provisional per-unit placement (see above), revisit together with the placement question. |
@@ -256,31 +257,39 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 ## Planned: completion, cancellation, and archiving logic
 
 Noted 2026-08-12 by user, not yet built — logged here so it isn't lost before the "complete
-task workflow" project formalizes it:
+task workflow" project formalizes it.
 
-- **Completion rule (order-item level):** an order item is considered done when `Delivery
-  Date` is populated **and** `Location = LI` (Livraison — already a valid code in
-  `TableValidationLocationCodes`, see above). Usable today without a new field — just a
-  filter/computed condition over the two existing values, ahead of a fuller completion-status
-  field the task-workflow project may add later.
-- **Cancellation uses the existing `Location` code — resolved 2026-08-12**: it's `AN`
-  ("Annulée"), already in `TableValidationLocationCodes` — not a new `CA` code as first
-  mentioned (user corrected this). So the cancellation part of this needs no new code, just
-  the logic/reporting built around `Location = AN`.
-- **`GR` (grouped/regrouped orders) still needs verifying** — orders split or merged into
-  different groupings (e.g. `1/5` + `2/5` becoming `1/2` + `2/2`, or fused with another order
-  entirely) were said to use a `GR` code, but it's NOT in the `TableValidationLocationCodes`
-  list pulled from the staging workbook (`IS, BO, ST, AS, FO, TA, TE, FI, LI, ENT, XT, RE,
-  AN`). Either the staging copy is stale and the live workbook's list already has `GR` added,
-  or it lives somewhere other than `Location` — confirm which before building anything around
-  it, don't assume it's a `Location` value just because `AN`/`LI` are.
-- **`GR` is a relationship, not just a status** — recording "this unit was regrouped" as a
-  `Location` value can flag *that* it happened, but not *what it became* or *what it merged
-  with*. If that history needs to be queryable later (e.g. "what did order X's units turn
-  into"), it likely needs a reference/lookup field on `Order Items`, not just a code.
-- **Cancellation logic needed at both levels**: a whole `Order` can be cancelled, but so can
-  one unit within a multi-unit order while the rest proceed — so this probably needs
-  representing on both `Order` and `Order Items`, not just one.
+**Design decision (2026-08-12): don't overload `Location` with lifecycle events.** The old
+Excel workflow packed cancellation (`AN`) and — historically — regrouping (`GR`, added ~1
+year ago, since untraceable even by the user: *"I am not sure where the GR went"*) into the
+same `Location` dropdown that otherwise describes physical production stages (Isolation,
+Bobinage, Tanking, ...). That mixing is exactly why `GR` became unrecoverable — a lifecycle
+event living inside a "where is it physically" field has no home of its own to audit. Fixed
+in the new schema by splitting into two fields on `Order Items` (see schema table above):
+- **`Location`** — physical production stage only (12 values, `AN` removed).
+- **`Item Status`** — the lifecycle state: `Active` (default), `Delivered`, `Cancelled`,
+  `Regrouped`.
+
+**How each `Item Status` value gets set:**
+- **`Delivered`**: replaces the old two-field heuristic (`Delivery Date` populated AND
+  `Location = LI`) with a single authoritative value. Still likely *driven by* `Delivery
+  Date` being populated (e.g. a calculated column or flow sets it automatically) rather than
+  requiring a second manual entry — mechanism not yet decided.
+- **`Cancelled`**: manual, replaces the old `AN` `Location` value.
+- **`Regrouped`**: manual, replaces the old `GR` `Location` value. Per the note below, this
+  status alone doesn't capture the *relationship* — what the unit turned into — so it likely
+  needs to pair with a reference field, not stand alone.
+- **`Active`**: default, everything still in normal production flow.
+
+**Still open:**
+- `Regrouped` is a relationship, not just a status — recording "this unit was regrouped"
+  flags *that* it happened but not *what it became* or *what it merged with*. If that
+  history needs to be queryable later (e.g. "what did order X's units turn into"), `Order
+  Items` likely needs a reference/lookup field pointing at the resulting item(s), not just
+  the status value.
+- Cancellation logic needed at both levels: a whole `Order` can be cancelled, but so can one
+  unit within a multi-unit order while the rest proceed — so `Order` likely needs its own
+  equivalent status, not just `Order Items`.
 - **Archiving for Power BI historical analysis**: orders need an archiving mechanism that
   keeps them usable for historical reporting once removed from the live working set. User is
   considering switching the existing archive Power Query (`ArchivedOrders`/the "Archived
@@ -298,13 +307,12 @@ task workflow" project formalizes it:
       with the existing Excel formulas; only remove the Excel versions once every one is
       confirmed to match. Any that SharePoint's formula language can't express become a
       Power Automate flow instead.
-- [ ] Verify where `GR` (regrouped/split orders) actually lives — not in the
-      `TableValidationLocationCodes` list pulled from the staging copy, so either that copy
-      is stale or `GR` isn't a `Location` value at all. Check the live workbook before
-      assuming it's a `Location` code just because `AN`/`LI` are.
-- [ ] Design how `GR` records the *relationship* between the old and new order-item
-      identifiers (e.g. what `1/5` + `2/5` actually turned into), not just a status flag.
-- [ ] Design cancellation representation at both `Order` and `Order Items` level.
+- [ ] Decide the mechanism that sets `Item Status = Delivered` (calculated from `Delivery
+      Date`, a flow, or still manual) once `Order Items` exists to test against.
+- [ ] Design the reference/lookup field that records what a `Regrouped` item actually turned
+      into — `Item Status = Regrouped` alone only flags that it happened, not the relationship.
+- [ ] Design the equivalent cancellation representation on `Order` (not just `Order Items`) —
+      a whole order can be cancelled, not just one unit within it.
 - [ ] Design the archiving mechanism (SharePoint-sourced, Power BI-consumable) — decide
       whether to repoint the existing `ArchivedOrders` Power Query at SharePoint instead of
       FRM10-12.
