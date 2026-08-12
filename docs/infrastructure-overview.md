@@ -133,9 +133,16 @@ Drying Date, Tanking Date, Testing Date, Finishing Date, Delivery Date, Original
 Date, Tanking date change justification, Manual Estimated Delivery Date, Witness/Other,
 Temperature Rise, Impulse, Oil Analysis, **Protector Status** (confirmed 2026-08-12:
 per-unit, not per-order), **DB, SFRA, CSA** (confirmed 2026-08-12: per-unit test results,
-same list as the other tests — not a separate list), **Trimestrial Customer** (confirmed
-2026-08-12 by user: NOT a per-client attribute despite the name — varies per order item,
-since the same client can have different statuses across their orders/items).
+same list as the other tests — not a separate list).
+
+**`Trimestrial Customer`** — also goes on `Order Items`, per-unit, but flagged 2026-08-12 as
+a deliberately provisional placement, not a confirmed fact about the data's real grain: it's
+NOT a per-client attribute despite the name (same client can show different statuses across
+their orders), but whether it truly needs to vary *within* a single multi-unit order (unit
+1 different from unit 2 of the same order) vs. just order-to-order is still unconfirmed.
+**User's call: start per-unit, revisit once there's enough real usage data to run a
+proper table/workflow-optimization analysis** — if that analysis shows it's actually
+order-level, descope it down to the `Order` list then rather than guessing now.
 
 `Winder` and `Coil Winder` also both belong here, per-unit — confirmed 2026-08-12 they're
 genuinely two different things, not a duplicate: `Winder` is the *set of possible* winders a
@@ -192,3 +199,9 @@ Protector & Switchgear PO.
       Power Automate flow instead.
 - [ ] Revisit FRM09's raw-column-letter fragility (see FRM09's `CLAUDE.md`) as a candidate
       for the same structured-reference treatment once `Order Items` exists.
+- [ ] **Future review point (user's call, 2026-08-12):** once `Order Items` and the other
+      new/changed lists have real usage history, run a proper data/workflow-optimization
+      analysis rather than deciding placement from guesses now. `Trimestrial Customer`
+      (currently per-unit, provisionally) is the first known candidate to revisit, but treat
+      this as a general standing check — any field placed on a hunch during this initial
+      migration is a candidate for descoping once actual usage patterns are visible.
