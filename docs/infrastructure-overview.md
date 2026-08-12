@@ -159,6 +159,18 @@ Protector & Switchgear PO. Plus **`Order Status`** (Choice: Active/Cancelled —
 decided 2026-08-12, see [completion/cancellation/archiving
 logic](#planned-completion-cancellation-and-archiving-logic) below).
 
+**`Order Entry Status` redesign — proposed 2026-08-12, NOT yet confirmed.** The existing
+`Order Entry Status` (In Progress/Done) only ever reflects whichever `Order Step` stage is
+current — it gets reused/reset every time `Order Step` advances, so it can't answer "when
+did Engineering Preliminary Review actually finish" once the order has moved on to
+Electrical Design. **Proposal**: replace it with one Date+Status pair per `Order Step`
+stage, same pattern as the production-sequence dates on Order Items above — e.g.
+`Engineering Preliminary Review Date` + `Engineering Preliminary Review Status`
+(Pending/In Progress/Completed). This is my extrapolation from the user's "mixup" comment,
+not something explicitly requested at this scope — **needs confirmation**: does this apply
+to all 14 `Order Step` values, only some, or is a full per-stage history overkill here
+compared to Order Items (where it directly maps to physical `Location` stages)?
+
 **→ Existing `Models`/`Model Revisions`, as new columns**:
 - `Duplicate Order` — confirmed 2026-08-12 by user: genuinely model-level, it's "the last
   order that was produced/designed of that model," i.e. a pointer to the most recent Order
@@ -245,17 +257,38 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 
 **Dates:**
 
+**Production-sequence dates — redesigned 2026-08-12.** The sample data only showed real
+dates, but the user confirmed these 8 fields can actually hold either a real date OR
+in-progress text today — something SharePoint's Date type can't represent. They line up
+exactly with the `Location` stages (Bobinage→Stacking→Assemblage→...→Test→Finition→
+Livraison), i.e. they're the *history* of when a unit passed through each stage that
+`Location` only shows the *current* one for. **Each one splits into a pair**: a `Status`
+Choice field (`Pending`, `In Progress`, `Completed` — blank means "not relevant yet," before
+the step is next in line) and a `Date` field that only gets filled in once `Status =
+Completed` (holds the actual completion date, otherwise blank).
+
+| Date field | Paired Status field |
+|---|---|
+| Coiling Date | Coiling Status |
+| Stacking Date | Stacking Status |
+| Assembly Date | Assembly Status |
+| Drying Date | Drying Status |
+| Tanking Date | Tanking Status |
+| Testing Date | Testing Status |
+| Finishing Date | Finishing Status |
+| Delivery Date | Delivery Status |
+
+Both fields per pair: `Date` = Date, `Status` = Choice (Pending/In Progress/Completed).
+`Item Status = Delivered` still triggers off `Delivery Date` populated (i.e. `Delivery
+Status = Completed`) AND `Location = LI` — unaffected by this split, just now sourced from
+`Delivery Status` instead of a bare presence check.
+
+**Other dates — stay plain Date fields, NOT split** (confirmed 2026-08-12: a different
+category — vendor/audit/override dates, not steps in the production sequence):
+
 | Field | Type |
 |---|---|
 | Tank Delivery Date | Date |
-| Coiling Date | Date |
-| Stacking Date | Date |
-| Assembly Date | Date |
-| Drying Date | Date |
-| Tanking Date | Date |
-| Testing Date | Date |
-| Finishing Date | Date |
-| Delivery Date | Date |
 | Original Tanking Date | Date |
 | Manual Estimated Delivery Date | Date |
 | Tanking date change justification | Multi-line text (Note) — sample value was a long `/`-delimited log of past change reasons. |
