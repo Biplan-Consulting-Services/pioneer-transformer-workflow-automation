@@ -166,8 +166,11 @@ Protector & Switchgear PO.
   **engineering modification tracker** (the existing `EngineeringChangeOrders`/`ModelChanges`
   SharePoint lists) — whatever the new list-based workflow needs from "was this a duplicate
   build" should be derived from that tracker going forward, not carried over as its own field.
-- `Family` — confirmed 2026-08-12: model-level product-family/category classification code
-  (e.g. custom vs. standard design), belongs on Models/Model Revisions.
+- `Family` — confirmed 2026-08-12: model-level, and **is** the same concept as the
+  `Production Complexity` validation list (`A`, `B1`, `B2`, `C`) — the field name stays
+  `Family` (client's preferred term) even though it's really a complexity rating; revisit
+  the name only if the client's preference changes later, don't rename unprompted. Choice
+  field, values: `A`, `B1`, `B2`, `C`.
 
 
 ### Open questions on mechanics (separate from *which* column goes *where*)
