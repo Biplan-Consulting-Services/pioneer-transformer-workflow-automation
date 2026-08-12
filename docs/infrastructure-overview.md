@@ -101,8 +101,8 @@ that one shows the *data/technical* system (lists, queries, workbooks); this one
 (`Pioneer Transformers Model.BACKUP.vsdx`) is kept alongside it before any edits, same
 recovery pattern as `workbook/FRM10-12.xlsx` in FRM10-12.
 
-**Pending edits (from `workflow-data/Diagram Edit.png` annotations + discussion
-2026-08-12), not yet applied to the live file:**
+**Applied 2026-08-12** (from `workflow-data/Diagram Edit.png` annotations + discussion —
+additive changes via Visio COM, then refined further by the user directly in Visio):
 
 1. **Add `Electrical Preliminary Review` + `Reference Design Available?`** in the
    Electrical Engineering lane, mirroring Mechanical's existing pair exactly. Purpose
@@ -112,16 +112,25 @@ recovery pattern as `workbook/FRM10-12.xlsx` in FRM10-12.
 2. **New `Confirm Planned Dates with Client` step, in the Inside Sales lane** (not a new
    lane — this is Inside Sales' responsibility) — triggered automatically once Planning
    Schedule finishes, for *every* order, not conditional on duplicate status.
-3. **Engineering always runs, for every order** — corrected 2026-08-12, the existing
-   diagram's `Y → Work Order 1` (skips engineering) / `N → Work Order 2` (full engineering)
-   branching off Mechanical's `Reference Design Available?` is wrong. Duplicate orders
-   still need *minimal* engineering (e.g. name plates), not zero — engineering scales by
-   duplicate status, it's never skipped.
+3. **Engineering always runs, for every order** — corrected 2026-08-12, the diagram's
+   original `Y → Work Order 1` (skips engineering) / `N → Work Order 2` (full engineering)
+   branching off Mechanical's `Reference Design Available?` was wrong and has been removed.
+   Duplicate orders still need *minimal* engineering (e.g. name plates), not zero —
+   engineering scales by duplicate status, it's never skipped. **User simplified this
+   further while applying it**: merged the now-redundant `Work Order 1`/`Work Order 2` split
+   into a single `Work Order` box, since every order needs one regardless of duplicate
+   status once engineering is never skipped.
 4. **Duplicate status's real effect: unlocks an early, parallel Purchasing/supplier-contact
    path** — not a full alternate route. Confirmed 2026-08-12: this early start requires
    **both** Electrical AND Mechanical to say `Reference Design Available? = Yes` (a
-   "partial duplicate" — only one side — does not unlock it).
-5. New **`Engineering Review Status`** field (schema-level, not a diagram shape) =
+   "partial duplicate" — only one side — does not unlock it). Implemented as a `Both
+   Reference Designs Available?` AND-gate feeding directly into `P.O. (Preliminary)`.
+5. **`Confirm Planned Dates with Client` gates the actual start of Engineering** — user
+   refinement beyond the original plan: rather than just notifying Sales in parallel,
+   `Electrical Design` doesn't begin until this confirmation happens. Tightens "engineering
+   always runs" into "engineering always runs, but only starts once the client has confirmed
+   the planned date."
+6. New **`Engineering Review Status`** field (schema-level, not a diagram shape) =
    `Full Duplicate` / `Partial Duplicate` / `New Design`, calculated from both departments'
    Yes/No answers. **Decided 2026-08-12**: start with this categorical status, not a
    numeric time estimate — a real time estimate needs a defined formula/lookup calibrated
@@ -130,29 +139,26 @@ recovery pattern as `workbook/FRM10-12.xlsx` in FRM10-12.
    check whether FRM10-12's existing `StandardJobTimes` concept is the right home for it
    rather than inventing a parallel mechanism.
 
-**Proposed logic (draft — confirm before I edit the live Visio file):**
+**Resulting logic** (see `docs/diagrams/design-eng-workflow-2026-08-12.png` for a rendered
+snapshot right after the additive Visio-COM pass, before the user's further manual cleanup):
 
 ```mermaid
 flowchart TB
     SOP["Shop Order Preliminary Review<br/>(Mechanical)"] --> RDAm{"Reference Design<br/>Available? (Mech)"}
-    EPR["Electrical Preliminary Review<br/>(Electrical) — NEW"] --> RDAe{"Reference Design<br/>Available? (Elec)"}
+    EPR["Electrical Preliminary Review<br/>(Electrical)"] --> RDAe{"Reference Design<br/>Available? (Elec)"}
 
-    RDAm -->|Y or N| WO["Work Order + Planning Schedule<br/>(converges regardless of duplicate status)"]
+    RDAm -->|Y or N| WO["Work Order<br/>(single, merged — converges<br/>regardless of duplicate status)"]
     RDAe -->|Y or N| WO
 
-    WO --> CPD["Confirm Planned Dates<br/>with Client (Inside Sales) — NEW"]
-    CPD --> ENG["Electrical Design + Mechanical Design<br/>(Engineering — ALWAYS runs,<br/>scaled by duplicate status)"]
+    WO --> PS["Planning Schedule"]
+    PS --> CPD["Confirm Planned Dates<br/>with Client (Inside Sales)"]
+    CPD -->|Y| ENG["Electrical Design + Mechanical Design<br/>(Engineering — starts only after<br/>confirmation, scaled by duplicate status)"]
     ENG --> PONormal["P.O. (Preliminary)<br/>(normal-path Purchasing)"]
 
-    RDAm -->|Y| BOTH{"Both Reference Designs<br/>Available? (AND gate) — NEW"}
+    RDAm -->|Y| BOTH{"Both Reference Designs<br/>Available? (AND gate)"}
     RDAe -->|Y| BOTH
-    BOTH -->|Y: Full Duplicate| EarlyPO["Early-start Purchasing/<br/>supplier contact — NEW<br/>(parallel, ahead of Engineering)"]
-    BOTH -.->|N: Partial Duplicate<br/>or New Design| WO
+    BOTH -->|Y: Early Start| PONormal
 ```
-
-Questions/risks if this doesn't match: does the early-start Purchasing path skip straight to
-`P.O. (Preliminary)`, or does it need its own distinct step (e.g. "Early Parts Order") that
-later merges back into the normal Purchasing chain? Not yet confirmed.
 
 **Goal (user-stated, 2026-08-12):** nothing should be manually typed into `FRM10-12.xlsx`
 anymore, and calculated/native-formula columns should also live somewhere else if possible.
