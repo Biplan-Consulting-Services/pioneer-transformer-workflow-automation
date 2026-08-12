@@ -42,21 +42,13 @@ order. Confirmed split:
   row per Order, created only once **all** of that order's per-unit `Planning Schedule`
   tasks are `Completed` — not as soon as the first one finishes.
 
-**This means Phase 1 needs a minimal slice of `Order Items` to exist** — not the full
-42-column production-tracking migration (still deferred, separate lower-urgency track, see
-`infrastructure-overview.md`), just enough to anchor per-unit tasks to something:
-
-| Field | Type | Notes |
-|---|---|---|
-| Title | Text | Unit identifier, e.g. `21865-1/5` — matches what `TableOrders.pq` already computes as its `Order` column |
-| Order Number | Lookup → `Order` list | |
-| Unit # | Number | e.g. `1` in `21865-1/5` |
-| Qty | Number | e.g. `5` in `21865-1/5` (denominator) |
-| SA Job | Yes/No | |
-
-Full identity-only schema, matching what was already designed in
-`infrastructure-overview.md`'s "Order Items list schema" — just built now, minimally, to
-unblock Phase 1, rather than waiting for the full production-tracking column migration.
+**This means Phase 1 needs `Order Items` to exist** as the per-unit anchor for `Work
+Order`/`Planning Schedule`. **Superseded 2026-08-12**: this used to say "just build a
+minimal identity-only slice, defer the rest" — the user has since elevated the *full*
+`Order Items` migration (all confirmed fields, not just identity) to immediate priority,
+independent of this plan, specifically to get staff off manually editing Excel as soon as
+possible. See `order-items-build-plan.md` for that build — once it's done, Phase 1 just
+consumes the resulting list, no separate minimal version needed here.
 
 ## Architecture decision: one shared `Workflow Tasks` list, not one list per department
 
@@ -192,9 +184,8 @@ SharePoint list view is enough to ship and start using.
 
 - [ ] Confirm the `Workflow Tasks` list name and the "one shared list vs. per-department"
       decision with the user (recommendation above, not yet confirmed).
-- [ ] Create a **minimal `Order Items` list** (identity-only schema above) — needed as the
-      per-unit anchor for `Work Order`/`Planning Schedule`, not the full 42-column
-      migration.
+- [ ] `Order Items` list exists — see `order-items-build-plan.md` (elevated priority, full
+      build, not just an identity slice; tracked there, not duplicated here).
 - [ ] Create `Workflow Tasks` list in SharePoint with the schema above (both `Order Number`
       and `Order Item` lookups).
 - [ ] Create department-filtered views (`My Electrical Tasks`, `My Scheduling Tasks`, etc.)

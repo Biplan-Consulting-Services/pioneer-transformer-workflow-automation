@@ -1,0 +1,72 @@
+# Order Items — Full Build Plan
+
+**Status:** ready to build. Written 2026-08-12. **Priority elevated above/parallel to
+`phase1-plan.md`** — user's explicit call: get staff off manually editing
+`FRM10-12.xlsx`'s `TableOrders` as soon as possible, not deferred as a later phase. This
+supersedes the earlier "just build a minimal identity-only Order Items list" scoping in
+`phase1-plan.md` — since the full list is being built now anyway, Phase 1's fan-out logic
+just consumes it once it exists, no separate minimal version needed.
+
+## Goal — what "done" looks like
+
+1. `Order Items` SharePoint list built with the **full** confirmed schema (not just
+   identity fields) — every field from `infrastructure-overview.md`'s "Order Items list
+   schema" section, which is the single source of truth for field names/types; this doc
+   doesn't duplicate that table, just sequences the build around it.
+2. Companion new columns added to `Order` (`Engineering Required`, `LDs`, `Client Date
+   Status`, `Sales Notes`, `Protector & Switchgear PO`, `Order Status`) and
+   `Models`/`Model Revisions` (`Duplicate Order`, `Family`) — not `Order Items` fields
+   themselves, but part of the same "stop manually editing Excel" migration, since they're
+   also currently manual `TableOrders` columns.
+3. **Existing live orders' current data backfilled** from `TableOrders` into new `Order
+   Items` rows — a one-time migration. Without this, staff can't actually stop touching
+   Excel for orders already in flight; they'd have nowhere to see/edit that data until it's
+   moved.
+4. `ColumnMap.pq` + `TableOrders.pq` extended (same pattern as `Model Revisions`) so
+   `TableOrders` becomes a **read-only mirror** of `Order Items` — Excel still shows the
+   data (for anyone still glancing at it, and for the native formula columns/Power BI that
+   depend on it), but staff no longer type into it.
+5. Staff actually switch to editing in the SharePoint list view (or a future Power App)
+   instead of Excel, and Excel stops being the edit surface for this data in practice.
+
+## Build sequence
+
+1. **Build the `Order Items` list schema in SharePoint** (empty, no data yet) — full field
+   list from `infrastructure-overview.md`.
+2. **Add the companion new columns** to `Order`/`Models`/`Model Revisions` (list above).
+3. **One-time backfill**: export current `TableOrders` data (per the confirmed
+   field-to-column mapping already worked out) into `Order Items` rows, one row per current
+   `Order` value (e.g. `21865-1/5`). Needs a script or Power Query one-shot — given the
+   scale (~1000 rows per the FRM10-12 migration's prior experience), don't do this by hand.
+4. **Extend `ColumnMap.pq`/`TableOrders.pq`** to pull `Order Items` back into Excel
+   read-only, same differential-update pattern used for `Model Revisions`.
+5. **Validate the round-trip** before cutting over — refresh `TableOrders`, confirm it
+   matches the backfilled `Order Items` data exactly, no data loss. Treat this like the
+   `Order`/`Models` migrations before it: verify with real data before trusting it, don't
+   assume from the M code alone.
+6. **Communicate the cutover to staff**: stop typing directly into `TableOrders`'s
+   [Location, Status, Tank, Frame, dates, ...] columns, use the SharePoint list instead.
+7. *(Optional hardening, not blocking)*: once `Order Items` is confirmed as the source of
+   truth, consider protecting/locking those columns in `TableOrders` so a stray manual edit
+   there goes nowhere silently rather than creating a conflicting value.
+
+## Two open items — don't block starting the build, but need answers before the schema is 100% final
+
+- `Trimestrial Customer`'s per-unit granularity is still provisional (see
+  `infrastructure-overview.md`) — build it per-unit as planned, revisit later per the
+  standing future-review-point note.
+- `Tank`/`ISO Stack`/`ISO Coil`/`Lead Assembly`'s real value set (`R` = "Received"?) is
+  still a working hypothesis pending the user's team check — build the fields as Text for
+  now; converting to Choice later (once confirmed) is a low-risk follow-up, not a blocker.
+
+## Relationship to `phase1-plan.md`
+
+Two independent, parallel tracks — proceeding on one doesn't block the other:
+- **This doc**: the production-tracking data layer (`Order Items` + the few companion
+  columns) that shop-floor/production staff currently hand-type into Excel.
+- **`phase1-plan.md`**: the front-of-process business workflow (Sales → Engineering →
+  Planning → Client confirmation) and its `Workflow Tasks` automation/notifications.
+
+Where they touch: `phase1-plan.md`'s fan-out logic (`Work Order`/`Planning Schedule` being
+per-unit) needs `Order Items` rows to exist — once this build is done, that dependency is
+fully satisfied (and then some), no separate minimal version needed on that side.
