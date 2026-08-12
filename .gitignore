@@ -1,0 +1,13 @@
+# Office lock/temp files
+~$*.xlsx
+~$*.xlsm
+~$*.xlsb
+~$*.docx
+~$*.pptx
+*.tmp
+.~lock*
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
