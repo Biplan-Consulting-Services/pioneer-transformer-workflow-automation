@@ -228,11 +228,11 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Core Status | Choice: Entrepôt SN, Reçu, Transport | Confirmed 2026-08-12 from `TableValidationCoreStatus`. |
 | Production Line | Choice: Power / Ligne 1, Distribution, Power, Zone B, Ligne 1 | Confirmed 2026-08-12 from `TableValidationProductionLine`. |
 | Time (days) | Number | |
-| Tank | Text ⚠ | Sample value `R` — no matching validation list found yet (there are `TableCuveCodes`/`TablePeintureCodes`/`TablePioneerCodes` status-code tables on the `List` sheet, but none has a plain `R` code), so the real value set is still unconfirmed. |
+| Tank | Text ⚠ | Sample value `R` — no matching validation list found. **Working hypothesis (2026-08-12, unconfirmed): `R` = "Received."** User needs to check with the team before this is locked in — don't build a Choice list off this guess yet. |
 | Frame | Choice: Plaspak, Reçu | **Corrected 2026-08-12** — earlier guessed this was a numeric identifier from the sample (`0`), but the real validation list (`Table20`/`Frame`) shows it's a status Choice field instead. |
-| ISO Stack | Text ⚠ | Same unconfirmed-value-set flag as `Tank` (sample: `R`). |
-| ISO Coil | Text ⚠ | Same unconfirmed-value-set flag as `Tank` (sample: `R`). |
-| Lead Assembly | Text ⚠ | Same unconfirmed-value-set flag as `Tank` (sample: `R`). |
+| ISO Stack | Text ⚠ | Same unconfirmed value/hypothesis as `Tank` (sample: `R`, guessed "Received," not yet confirmed). |
+| ISO Coil | Text ⚠ | Same unconfirmed value/hypothesis as `Tank` (sample: `R`, guessed "Received," not yet confirmed). |
+| Lead Assembly | Text ⚠ | Same unconfirmed value/hypothesis as `Tank` (sample: `R`, guessed "Received," not yet confirmed). |
 | Winder | Text | Must stay Text (not Number) — values mix plain IDs and ranges (`100-104`) in the sample. Per user, stays manually-filled, not derived. |
 | Coil Winder | Text | Same as `Winder` — kept Text even though the sample looked numeric, for consistency and to avoid a type mismatch if another row uses a non-numeric ID. Manually-filled. |
 | Trimestrial Customer | Text ⚠ | Blank in the sampled rows — type genuinely unconfirmed; provisional per-unit placement (see above), revisit together with the placement question. |
