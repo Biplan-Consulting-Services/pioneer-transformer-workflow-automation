@@ -1,8 +1,10 @@
 # Pioneer Transformer — Workflow & Data Infrastructure Overview
 
 **Status:** living document. Started 2026-08-12 to capture the current state of the
-Excel/SharePoint/Power Platform system before the next migration step (the **Order Items**
-list, see [Planned: Order Items](#planned-order-items-list)). Update it as pieces move.
+Excel/SharePoint/Power Platform system before the next migration step: **retiring every
+manually-typed and calculated column on `TableOrders`**, distributing each one to whichever
+list actually owns that data (see [Planned: retiring FRM10-12's remaining
+columns](#planned-retiring-frm10-12s-remaining-columns)). Update it as pieces move.
 
 ## Current state
 
@@ -89,53 +91,108 @@ flowchart TB
   anything that needs a fast, synchronous read probably shouldn't wait on a full workbook
   refresh.
 
-## Planned: Order Items list
+## Planned: retiring FRM10-12's remaining columns
 
-The next migration step is moving the **per-unit production layer** off `TableOrders`'s
-native/manual columns and into its own SharePoint list. Today, `TableOrders.pq` expands each
-`Order` row into one row per unit (via `Qty`), computing an identifier like `"21865-1/5"`
-(order 21865, unit 1 of 5) — that expansion currently happens only inside Power Query, and
-the production-tracking fields for each unit are typed directly into the live Excel file by
-staff.
+**Goal (user-stated, 2026-08-12):** nothing should be manually typed into `FRM10-12.xlsx`
+anymore, and calculated/native-formula columns should also live somewhere else if possible.
+Every column that isn't already SharePoint-backed needs a home — but not all in one new
+list. Each one goes wherever its data actually *belongs* conceptually (a specific unit, an
+order, a model, a client), which may be the new **Order Items** list, an existing list
+gaining a new column, or — for calculated columns — no stored-data home at all, just
+recomputed wherever it's needed.
 
-**Proposed shape (draft, not yet built or confirmed against live data):**
+**Full column audit**, pulled directly from the staging copy's `TableOrders` table
+(`xl/tables/table1.xml` + a sample data row in `xl/worksheets/sheet1.xml`) — 83 columns total,
+confirmed live-adjacent data, not reconstructed from memory:
 
-| Field | Source today | Notes |
-|---|---|---|
-| Order Item (e.g. `21865-1/5`) | Computed in `TableOrders.pq` | Would become the list's key/Title |
-| Order Number | `Order` list (via merge) | Lookup to `Order` |
-| Location | Manually typed in `TableOrders` | |
-| Status | Manually typed in `TableOrders` | |
-| Tank | Manually typed in `TableOrders` | |
-| Frame | Manually typed in `TableOrders` | |
-| Core Status | Manually typed in `TableOrders` | |
-| Coil Winder | Manually typed in `TableOrders` | |
-| Tanking Date | Manually typed in `TableOrders` | |
-| Delivery Date | Manually typed in `TableOrders` | |
-| BO (backorder flag) | Merged from `BackOrders` linked workbook | Could stay a lookup or become native |
-| Archived | Native formula column | Decide: keep as native calc, or list-side status |
+### Already SharePoint-backed (34 columns, no action needed)
+- **Via `Order` list** (14): `Order` (computed unit ID, e.g. `21408-1/1`), Client, PO, Order
+  Date, Lead Time (from `ClientLeadTimes`), Ing. Due Date (computed), Qty, PO Item # (merge
+  key), Province/State, WET-WETP, Indexing, Initial Promised Date, BO (from `BackOrders`
+  linked workbook), Price Value.
+- **Via `Models`/`Model Revisions`** (20): KVA and KV, Primary Voltage, Secondary Voltage,
+  Phases, JS #, Description, Type, Info+, Protector & Switchgear Item #, Technical Notes,
+  Core, Oil Type, **Oil Amount**, Configuration, Section Qty, Cable, Form, Copper (LV), Wire
+  (HV), Overcoil.
 
-**Open questions to resolve before building this in SharePoint (not yet decided):**
-1. Confirm the exact current column list/types directly against the live `FRM10-12.xlsx`
-   `TableOrders` table (this draft is reconstructed from `TableOrders.pq` and prior session
-   notes, not a fresh export).
-2. One-to-many `Order` → `Order Items`, or does every field on this list also need its own
-   merge key back to `Order`/`Models`/`Model Revisions` for the tech-spec fields the unit
-   was built to?
-3. Same differential-update pattern FRM10-12 uses for `Order`/`Models` (SharePoint is
-   authoritative for new rows, existing live values win over a stale SharePoint pull) — or
-   does the production-tracking data flow the other direction (Excel/Power Apps write to
-   SharePoint, not just read)?
-4. Where does this get *edited* day to day — directly in a SharePoint list view, through a
-   Power App, or still in Excel with Power Query just mirroring it? This determines whether
-   `ColumnMap.pq`'s existing pattern (SharePoint → Excel one-way) is even the right shape
-   here, versus something bidirectional.
+### Native Excel calculated columns (7) — not data, don't need a "home" so much as a new place to *compute*
+`Price`, `Estimated Delivery Date`, `Price CAD`, `Price USD`, `Navigation Order`,
+`Navigation Model`, `Archived`. These are formulas over other columns, not source data — the
+question per column is where the computation should live once the inputs are elsewhere
+(a SharePoint calculated column, a Power Automate flow, a Power BI measure, or a Power Apps
+formula), not "which list stores this value." `Navigation Order`/`Navigation Model` in
+particular may not need to exist at all if the eventual UI is a SharePoint list view with
+its own native navigation instead of a hyperlink column.
+
+### Remaining 42 manually-typed columns — proposed destination (⚠ = needs your confirmation, not a domain call I can make from the data alone)
+
+**→ New `Order Items` list** (varies per physical unit, confident these are unit-level):
+Location, Status, Core Status, Production Line, Time (days), Tank, Tank Delivery Date,
+Frame, ISO Stack, ISO Coil, Lead Assembly, Coiling Date, Stacking Date, Assembly Date,
+Drying Date, Tanking Date, Testing Date, Finishing Date, Delivery Date, Original Tanking
+Date, Tanking date change justification, Manual Estimated Delivery Date, Witness/Other,
+Temperature Rise, Impulse, Oil Analysis, **Protector Status** (confirmed 2026-08-12:
+per-unit, not per-order), **DB, SFRA, CSA** (confirmed 2026-08-12: per-unit test results,
+same list as the other tests — not a separate list).
+
+`Winder` and `Coil Winder` also both belong here, per-unit — confirmed 2026-08-12 they're
+genuinely two different things, not a duplicate: `Winder` is the *set of possible* winders a
+given unit could be produced on (an eligibility/capacity constraint), and `Coil Winder` is
+the *specific* winder actually chosen for that unit. **Both should stay manually-filled
+fields on Order Items, not computed/automated** — user feedback from staff is that they
+prefer entering this by hand rather than having it derived, so keep it a plain editable
+field in the new list, same as it is today, just off `TableOrders`.
+
+**→ Existing `Order` list, as new columns** (one value per Order Number, not per unit —
+sales/engineering-process fields, matching the workflow booleans `Order` already has like
+"Receive CRM Sales Order"): Engineering Required, LDs, Client Date Status, Sales Notes,
+Protector & Switchgear PO.
+
+**→ Existing `Models`/`Model Revisions`, as new columns**:
+- `Duplicate Order` — confirmed 2026-08-12 by user: genuinely model-level, it's "the last
+  order that was produced/designed of that model," i.e. a pointer to the most recent Order
+  Number built against this model, not an order-administrative field.
+- `Duplicate` itself (the old Y/N "this design needs minimal new engineering" flag) is **not
+  migrated as-is** — confirmed 2026-08-12: it's an old classification being superseded by the
+  **engineering modification tracker** (the existing `EngineeringChangeOrders`/`ModelChanges`
+  SharePoint lists) — whatever the new list-based workflow needs from "was this a duplicate
+  build" should be derived from that tracker going forward, not carried over as its own field.
+- `Family` — confirmed 2026-08-12: model-level product-family/category classification code
+  (e.g. custom vs. standard design), belongs on Models/Model Revisions.
+
+**→ Existing `Clients` list, as a new column (pending)**: Trimestrial Customer. ⚠ Best guess
+is a per-client attribute (does *this client* get quarterly reporting), but **deferred
+2026-08-12 — user needs to check with the sales team** before confirming it's truly
+client-level and not something that can vary order-to-order for the same client. Don't
+build/migrate this one until that comes back.
+
+### Open questions on mechanics (separate from *which* column goes *where*)
+1. ~~Edit surface / sync direction~~ — **resolved 2026-08-12**: staff will edit `Order Items`
+   rows directly in a SharePoint list view, same as `Order`/`Models` today. SharePoint is the
+   source of truth for this data; Power Query stays one-way (SharePoint → Excel), same
+   differential-update pattern `ColumnMap.pq`/`TableOrders.pq` already use — **no
+   bidirectional write-back mechanism needed**, this fits the existing pattern exactly.
+2. Calculated columns (`Price`, `Estimated Delivery Date`, `Price CAD/USD`,
+   `Archived`) — **decided 2026-08-12: parallel-run, then cut over.** Keep these as native
+   Excel formulas on `TableOrders` for now (still reading from what are now SharePoint-backed
+   lookup columns). In parallel, try building the same logic as SharePoint calculated
+   columns (on `Order`/`Order Items`, once their inputs live there). Only remove the Excel
+   formulas once SharePoint's version is confirmed to reproduce every one of them correctly —
+   don't cut over on a single field passing, validate the whole set first. If SharePoint's
+   formula language can't express one (e.g. the currency-conversion `XLOOKUP` against
+   `Table_USD_CAD_Conversion_Rate` behind Price CAD/USD, or multi-step `IF` chains like
+   `Estimated Delivery Date`), that one likely needs a Power Automate flow instead — decide
+   per-column once the parallel-run surfaces which ones SharePoint genuinely can't handle.
 
 ## Next steps
-- [ ] Pull a fresh column export from live `FRM10-12.xlsx` `TableOrders` to replace the draft
-      schema above with confirmed field names/types.
-- [ ] Decide the open questions above with the user before creating the list in SharePoint.
-- [ ] Once confirmed, add `Order Items` to `ColumnMap.pq`'s entity list and extend
-      `TableOrders.pq` the same way `Model Revisions` was added.
+- [ ] `Trimestrial Customer` — waiting on sales team input (see above) before confirming.
+- [ ] Design the `Order Items` list schema for real (fields, types, merge key back to
+      `Order`) and add the confirmed new columns to `Order`/`Models`/`Model Revisions`.
+- [ ] Add `Order Items` (and any newly-added columns on existing lists) to `ColumnMap.pq`'s
+      entity list, extending `TableOrders.pq` the same way `Model Revisions` was added.
+- [ ] Build SharePoint calculated-column equivalents of the 7 native formulas in parallel
+      with the existing Excel formulas; only remove the Excel versions once every one is
+      confirmed to match. Any that SharePoint's formula language can't express become a
+      Power Automate flow instead.
 - [ ] Revisit FRM09's raw-column-letter fragility (see FRM09's `CLAUDE.md`) as a candidate
-      for the same structured-reference treatment once this list exists.
+      for the same structured-reference treatment once `Order Items` exists.
