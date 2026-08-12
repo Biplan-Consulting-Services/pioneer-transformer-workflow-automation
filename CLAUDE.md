@@ -22,7 +22,10 @@ step, and it needs the same kind of careful, staged design FRM10-12's list migra
 had — hence a dedicated place to plan it before touching production.
 
 ## Folder layout
-- `docs/` — the description document (`infrastructure-overview.md`) and planning notes.
+- `docs/roadmap.md` — **start here**: ties the other docs together into one picture of
+  what's planned and in what order.
+- `docs/` — the description document (`infrastructure-overview.md`), the build plans
+  (`order-items-build-plan.md`, `phase1-plan.md`), and other planning notes.
 - `docs/diagrams/` — exported diagram images/source files (the Mermaid diagrams embedded in
   `infrastructure-overview.md` are the primary/current copy; export here if a tool needs a
   static image).
