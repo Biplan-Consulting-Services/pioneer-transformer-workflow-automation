@@ -131,9 +131,9 @@ Location, Status, Core Status, Production Line, Time (days), Tank, Tank Delivery
 Frame, ISO Stack, ISO Coil, Lead Assembly, Coiling Date, Stacking Date, Assembly Date,
 Drying Date, Tanking Date, Testing Date, Finishing Date, Delivery Date, Original Tanking
 Date, Tanking date change justification, Manual Estimated Delivery Date, Witness/Other,
-Temperature Rise, Impulse, Oil Analysis, **Protector Status** (confirmed 2026-08-12:
-per-unit, not per-order), **DB, SFRA, CSA** (confirmed 2026-08-12: per-unit test results,
-same list as the other tests — not a separate list).
+Temperature Rise, Impulse, Partial D, Oil Analysis, **Protector Status** (confirmed
+2026-08-12: per-unit, not per-order), **DB, SFRA, CSA** (confirmed 2026-08-12: per-unit test
+results, same list as the other tests — not a separate list).
 
 **`Trimestrial Customer`** — also goes on `Order Items`, per-unit, but flagged 2026-08-12 as
 a deliberately provisional placement, not a confirmed fact about the data's real grain: it's
@@ -188,9 +188,75 @@ Protector & Switchgear PO.
    `Estimated Delivery Date`), that one likely needs a Power Automate flow instead — decide
    per-column once the parallel-run surfaces which ones SharePoint genuinely can't handle.
 
+## Order Items list schema (draft v1)
+
+Types below are inferred from the sample row pulled during the column audit (a single row
+isn't enough to be certain, especially for anything currently blank) — flagged with ⚠ where
+the type is a real guess, not just a formality. Not yet built in SharePoint.
+
+**Identity / merge key:**
+
+| Field | Type | Notes |
+|---|---|---|
+| Title | Text | Set to the unit identifier, e.g. `21408-1/1` — same value `TableOrders.pq` already computes as its `Order` column, so this doubles as the natural join key for the eventual Power Query merge (same pattern `ArchivedOrders`/`BackOrders` already use, keyed on `Order`). |
+| Order Number | Lookup → `Order` list | The merge key back to the order header, e.g. `21408`. |
+| Unit # | Number | The numerator in the unit identifier (`1` in `21408-1/1`) — stored explicitly rather than parsed out of Title every time it's needed. |
+| Qty | Number | The denominator (`1` in `21408-1/1`) — for convenience/sanity-checking only; `Order` list's `Qty` stays authoritative. |
+| SA Job | Yes/No | Matches `TableOrders.pq`'s existing computed `SA Job` boolean. |
+
+**Test/QA results** (⚠ currently stored as a text marker — `'x'` for done/pass, blank otherwise; proposing Yes/No instead, which is a real type change worth confirming, not just a formality):
+
+| Field | Type |
+|---|---|
+| Witness/Other | Text |
+| Temperature Rise | Yes/No ⚠ |
+| Impulse | Yes/No ⚠ |
+| Partial D | Yes/No ⚠ |
+| Oil Analysis | Yes/No ⚠ |
+| DB | Yes/No ⚠ |
+| SFRA | Yes/No ⚠ |
+| CSA | Yes/No ⚠ |
+| Protector Status | Text (Choice candidate — sample data too sparse to enumerate values yet) |
+
+**Production tracking:**
+
+| Field | Type | Notes |
+|---|---|---|
+| Location | Text | |
+| Status | Text | Sample value (`TE-Jui-16`) looks like a short code — worth checking whether this should be a Choice field with a fixed value list once the real set of statuses is known. |
+| Core Status | Text | Same Choice-candidate flag as Status (sample: `Reçu`). |
+| Production Line | Text | Same Choice-candidate flag (sample: `Zone B`). |
+| Time (days) | Number | |
+| Tank | Text | |
+| Frame | Text | Looks numeric in the sample (`0`) but likely an identifier, not a quantity — kept as Text to avoid losing leading zeros/non-numeric values on other rows. |
+| ISO Stack | Text | |
+| ISO Coil | Text | |
+| Lead Assembly | Text | |
+| Winder | Text | Must stay Text (not Number) — values mix plain IDs and ranges (`100-104`) in the sample. Per user, stays manually-filled, not derived. |
+| Coil Winder | Text | Same as `Winder` — kept Text even though the sample looked numeric, for consistency and to avoid a type mismatch if another row uses a non-numeric ID. Manually-filled. |
+| Trimestrial Customer | Text ⚠ | Blank in the sampled rows — type genuinely unconfirmed; provisional per-unit placement (see above), revisit together with the placement question. |
+
+**Dates:**
+
+| Field | Type |
+|---|---|
+| Tank Delivery Date | Date |
+| Coiling Date | Date |
+| Stacking Date | Date |
+| Assembly Date | Date |
+| Drying Date | Date |
+| Tanking Date | Date |
+| Testing Date | Date |
+| Finishing Date | Date |
+| Delivery Date | Date |
+| Original Tanking Date | Date |
+| Manual Estimated Delivery Date | Date |
+| Tanking date change justification | Multi-line text (Note) — sample value was a long `/`-delimited log of past change reasons. |
+
 ## Next steps
-- [ ] Design the `Order Items` list schema for real (fields, types, merge key back to
-      `Order`) and add the confirmed new columns to `Order`/`Models`/`Model Revisions`.
+- [ ] Confirm the draft schema above (especially the ⚠-flagged type changes) with the user,
+      then build the `Order Items` list in SharePoint and add the confirmed new columns to
+      `Order`/`Models`/`Model Revisions`.
 - [ ] Add `Order Items` (and any newly-added columns on existing lists) to `ColumnMap.pq`'s
       entity list, extending `TableOrders.pq` the same way `Model Revisions` was added.
 - [ ] Build SharePoint calculated-column equivalents of the 7 native formulas in parallel
