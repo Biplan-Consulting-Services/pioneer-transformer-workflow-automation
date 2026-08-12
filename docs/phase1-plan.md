@@ -1,0 +1,221 @@
+# Phase 1 Plan: Order Creation → Planning → Client Date Confirmation
+
+**Status:** ready to build. Written 2026-08-12 so work can start directly next session
+without re-deriving this. Update the checkboxes as pieces land; update the plan itself if
+reality diverges from it.
+
+## Why this slice, first
+
+This is the front end of the business-process workflow documented in
+`infrastructure-overview.md` (`## Business process workflow diagram`) —
+`Customer PO → PO Docs Complete? → Order Entry → Electrical Preliminary Review + Shop Order
+Preliminary Review (parallel) → Both Reference Designs Available? → Work Order → Planning
+Schedule → Confirm Planned Dates with Client`. User's call, 2026-08-12: this is the biggest
+current pain (no visibility/notification into whose turn it is to act, order-to-order) and
+it's small enough to ship and start using immediately.
+
+**Explicitly out of scope for Phase 1** (Phase 2+): `Electrical Design`/`Mechanical Design`
+execution, `Customer Drawings`, the `P.O.` chain, `Production`, the full `Order Items`
+column migration (the 42 manually-typed production-tracking fields), the calculated-column
+parallel-run. Don't scope-creep into these — Phase 1 ends at `Confirm Planned Dates with
+Client`.
+
+## Order-level vs. unit-level: where the fan-out happens
+
+**Corrected 2026-08-12** (an earlier draft of this plan wrongly assumed the whole chain was
+order-level — it isn't): not every item in a multi-unit order shares the same delivery
+date, so planning and client-date-confirmation genuinely happen **per unit**, not once per
+order. Confirmed split:
+
+- **Order-level** (one `Workflow Tasks` row per Order): `Order Entry`, `Electrical
+  Preliminary Review`, `Shop Order Preliminary Review`. Engineering's duplicate-check is a
+  property of the *order/model*, not a specific unit.
+- **Fan-out point: `Work Order`.** This is where one Order becomes N per-unit records
+  (N = `Order`'s `Qty`) — confirmed per-unit, one step earlier than Planning Schedule.
+- **Unit-level**: `Work Order`, `Planning Schedule` — one `Workflow Tasks` row per **Order
+  Item**, not per Order, since units in the same order can end up with different planned
+  dates.
+- **Back to order-level: `Confirm Planned Dates with Client`.** Corrected again
+  2026-08-12 — even though the planning underneath it is per-unit, Sales treats the actual
+  client confirmation as **one conversation covering every unit in the order**, not a
+  separate confirmation per unit. So this step **converges back** to one `Workflow Tasks`
+  row per Order, created only once **all** of that order's per-unit `Planning Schedule`
+  tasks are `Completed` — not as soon as the first one finishes.
+
+**This means Phase 1 needs a minimal slice of `Order Items` to exist** — not the full
+42-column production-tracking migration (still deferred, separate lower-urgency track, see
+`infrastructure-overview.md`), just enough to anchor per-unit tasks to something:
+
+| Field | Type | Notes |
+|---|---|---|
+| Title | Text | Unit identifier, e.g. `21865-1/5` — matches what `TableOrders.pq` already computes as its `Order` column |
+| Order Number | Lookup → `Order` list | |
+| Unit # | Number | e.g. `1` in `21865-1/5` |
+| Qty | Number | e.g. `5` in `21865-1/5` (denominator) |
+| SA Job | Yes/No | |
+
+Full identity-only schema, matching what was already designed in
+`infrastructure-overview.md`'s "Order Items list schema" — just built now, minimally, to
+unblock Phase 1, rather than waiting for the full production-tracking column migration.
+
+## Architecture decision: one shared `Workflow Tasks` list, not one list per department
+
+User's original idea was a separate SharePoint list per department, each holding that
+department's tasks/progress. **Recommended instead**: a single `Workflow Tasks` list
+(exact name TBD, see below) covering every department, with **department-filtered views**
+so each team still only sees their own queue day to day — looks the same to users, but:
+
+- **One Power Automate flow to build and maintain**, not one per department list. Adding a
+  6th department later means adding a filter value, not a whole new list + a whole new flow.
+- **One place to look for "where is this order right now"** across every department,
+  instead of a person having to check 4-5 different lists to find which one currently holds
+  the order.
+- **One source for a future Power BI dashboard** on order/task progress, instead of
+  stitching multiple lists together.
+- Department-specific "niceness" (a clean, only-my-stuff view) comes from a **filtered
+  view** (`Assigned Department = [X] AND Status ≠ Completed`), which SharePoint/Microsoft
+  Lists supports natively — no loss of the clean-per-department feel the original idea was
+  going for.
+
+This is a recommendation, not yet confirmed with the user — flag it explicitly when
+resuming if they'd rather keep separate lists after all; the flow design below still mostly
+works either way, just multiplied per list instead of centralized.
+
+## New list: `Workflow Tasks` (name not yet confirmed)
+
+One row per **task instance** — a specific step, for a specific order, assigned to a
+specific department/person, with its own status and dates. This is intentionally generic
+(not "Electrical Tasks" with electrical-specific columns) so the same list/flow handles
+every department and every step, for this phase and future ones.
+
+| Field | Type | Notes |
+|---|---|---|
+| Title | Text | e.g. `21865 — Order Entry` or `21865-1/5 — Planning Schedule` (readability in views) |
+| Order Number | Lookup → `Order` list | Always populated — even unit-level tasks need this for grouping/rollup (e.g. "are all this order's Planning Schedule tasks done"). |
+| Order Item | Lookup → `Order Items` list (optional) | **Only populated for unit-level steps** (`Work Order`, `Planning Schedule`). Blank for order-level steps (`Order Entry`, both Preliminary Reviews, `Confirm Planned Dates with Client`). |
+| Step Name | Choice | Phase 1 values: `PO Clarification`, `Order Entry`, `Electrical Preliminary Review`, `Shop Order Preliminary Review`, `Work Order`, `Planning Schedule`, `Confirm Planned Dates with Client`. Add more Choice values as later phases are scoped — don't need a schema change, just a new Choice option. |
+| Assigned Department | Choice | `Quotation`, `Inside Sales`, `Electrical Engineering`, `Mechanical Engineering`, `Scheduling` — matches the swimlane a step lives in on the workflow diagram |
+| Assigned To | Person (optional) | Specific person, if the department wants named assignment rather than a department queue. Can stay blank and rely on department-level notification alone, at least at first. |
+| Status | Choice | `Not Started`, `In Progress`, `Completed`, `Blocked` |
+| Reference Design Available | Choice: Yes/No (blank until answered) | Only meaningful on `Electrical Preliminary Review` and `Shop Order Preliminary Review` rows — this is the actual duplicate-check answer feeding the AND-gate logic below. Blank/not applicable on other Step Name values. |
+| Started Date | Date | Set when Status first becomes `In Progress` |
+| Completed Date | Date | Set when Status becomes `Completed` — this is what unlocks the next task(s) |
+| Notes | Multi-line text | Free-form |
+
+**Why one list still works with mixed order-level/unit-level rows**: `Order Number` is
+always populated (so "give me every task for order X, regardless of level" always works),
+`Order Item` is populated only when relevant. The flow logic below is what actually decides
+whether a given `Step Name` creates one row per Order or one row per Order Item.
+
+## Changes to the existing `Order` list
+
+- **`Engineering Review Status`** (Choice: `Full Duplicate` / `Partial Duplicate` / `New
+  Design`, calculated) — reads both `Reference Design Available` answers off the two
+  `Workflow Tasks` rows for that order (Electrical + Mechanical) once both are `Completed`.
+  Confirmed 2026-08-12 as categorical, not a numeric time estimate (see
+  `infrastructure-overview.md` for why).
+- **Do NOT build the earlier-proposed per-`Order Step`-stage Date+Status field pairs**
+  (14 pairs, floated 2026-08-12 in `infrastructure-overview.md` as unconfirmed) — the
+  `Workflow Tasks` list now covers that need directly (one task row per stage, with its own
+  Started/Completed dates), which is cleaner than duplicating that history onto `Order`
+  itself. Treat that earlier proposal as **superseded** by this plan, not a separate
+  parallel thing to still build.
+- `Order Status` (Active/Cancelled, already decided in `infrastructure-overview.md`) is
+  unrelated to this phase and can happen independently, in either order.
+
+## Power Automate flows
+
+**Recommendation: one flow with branching logic (a `Switch` on `Step Name`), not one flow
+per transition.** A flow per Order→next-step transition (7+ flows for this phase alone)
+gets unmaintainable fast once later phases add more steps. One flow, triggered on
+`Workflow Tasks` item modified, is easier to reason about and extend.
+
+**Flow: "Workflow Tasks — advance on completion"**
+- **Trigger**: `Workflow Tasks` item modified, where `Status` changed to `Completed`.
+- **Logic** (`Switch` on `Step Name` of the just-completed task):
+  - `Order Entry` completed (order-level) → create 2 new **order-level** tasks:
+    `Electrical Preliminary Review` (Electrical Engineering) + `Shop Order Preliminary
+    Review` (Mechanical Engineering), both for the same Order. Notify both.
+  - `Electrical Preliminary Review` OR `Shop Order Preliminary Review` completed
+    (order-level) → **Get items** from `Workflow Tasks` filtered to the same Order + the
+    *other* review step. If that sibling task is also `Completed`:
+    - If **both** `Reference Design Available` answers = `Yes` → this is when
+      `Engineering Review Status = Full Duplicate` becomes derivable, and (per the
+      workflow diagram) the early-start Purchasing path unlocks. For Phase 1's scope,
+      logging/notifying this is enough — the actual early-Purchasing task creation is
+      Phase 2 territory (Purchasing isn't in this phase).
+    - Either way (both siblings done, regardless of Yes/No): **fan out** — if this order's
+      `Order Items` rows don't exist yet, create them now (N rows, N = `Order`'s `Qty`,
+      same unit-identifier scheme as `TableOrders.pq`'s `Order` column, e.g. `21865-1/5`).
+      Then create one **unit-level** `Work Order` task (Scheduling) per `Order Item`, not
+      one for the whole order. If the sibling review isn't done yet, do nothing — wait for
+      it to trigger this same logic when *it* completes.
+  - `Work Order` completed (unit-level) → create `Planning Schedule` (Scheduling),
+    **unit-level** — same `Order Item` as the `Work Order` task that just completed.
+  - `Planning Schedule` completed (unit-level) → **converge back to order-level**: `Get
+    items` from `Workflow Tasks` filtered to this Order + `Step Name = Planning Schedule`.
+    If **all** of them are now `Completed` (not just this one — Sales needs every unit's
+    date before talking to the client), create ONE **order-level** `Confirm Planned Dates
+    with Client` task (Inside Sales). If any sibling `Planning Schedule` task for this
+    order is still open, do nothing yet.
+  - `Confirm Planned Dates with Client` completed (order-level) → **end of Phase 1's
+    automated chain.** (Phase 2 picks up here with Engineering execution.)
+- A separate, simpler **trigger flow** creates the *first* task (`Order Entry`,
+  order-level, Inside Sales) whenever a new `Order` item is created — this is what kicks
+  off the whole chain per order.
+
+## Notifications
+
+Every task-creation branch above should also **notify the newly-responsible
+person/department** so they can start immediately — this is the actual pain point being
+fixed. Use both:
+- **Email** (Outlook `Send an email (V2)` action) — subject includes Order Number + Step
+  Name, body links directly to the `Workflow Tasks` item (or a filtered view).
+- **Teams message** (Teams `Post message in a chat or channel` action, or `Post adaptive
+  card and wait for a response` if an interactive "Mark as started" button is wanted later)
+  — same content, posted to the relevant department's channel or the assigned person's
+  chat.
+
+Both Outlook and Teams are standard (non-premium) Power Automate connectors under most
+Microsoft 365 plans — shouldn't need extra licensing, but wasn't independently confirmed
+for Pioneer's specific tenant.
+
+## Nice-to-have, not blocking Phase 1
+
+A Microsoft Planner board or a small Power App front-end over the `Workflow Tasks` list
+would look nicer than a raw SharePoint list view for day-to-day use — but that's a
+presentation layer over the same data model above, addable later without reshaping the
+list or the flow. Don't build it as part of getting Phase 1 functional; a filtered
+SharePoint list view is enough to ship and start using.
+
+## Build order (checklist)
+
+- [ ] Confirm the `Workflow Tasks` list name and the "one shared list vs. per-department"
+      decision with the user (recommendation above, not yet confirmed).
+- [ ] Create a **minimal `Order Items` list** (identity-only schema above) — needed as the
+      per-unit anchor for `Work Order`/`Planning Schedule`, not the full 42-column
+      migration.
+- [ ] Create `Workflow Tasks` list in SharePoint with the schema above (both `Order Number`
+      and `Order Item` lookups).
+- [ ] Create department-filtered views (`My Electrical Tasks`, `My Scheduling Tasks`, etc.)
+- [ ] Add `Engineering Review Status` to the `Order` list.
+- [ ] Build the "new Order → create Order Entry task" trigger flow.
+- [ ] Build the main "Workflow Tasks — advance on completion" flow (the Switch-based one
+      above), including the AND-gate sibling-check logic, the fan-out at `Work Order`
+      (create `Order Items` rows + one `Work Order` task per unit), and the converge-back
+      "all Planning Schedule tasks done" check before creating `Confirm Planned Dates with
+      Client`.
+- [ ] Wire in email + Teams notifications on every task-creation branch.
+- [ ] Test end-to-end with one real or dummy multi-unit order (`Qty` > 1) through the whole
+      Phase 1 chain before rolling out to the team — the fan-out/converge logic is the part
+      most likely to have an off-by-one or timing bug, worth deliberately testing with more
+      than one unit, not just a `Qty = 1` order.
+- [ ] Roll out to the team; get feedback before scoping Phase 2 (Engineering execution
+      onward).
+
+## Open decisions (not blocking, but need an answer eventually)
+
+- Named-person `Assigned To` vs. department-queue-only notification, at least at first?
+- Teams: channel post vs. DM to the assigned person?
+- Interactive adaptive card (e.g. a "Start" button that flips Status to `In Progress`
+  right from Teams) vs. plain notification-only message, for a later iteration?
