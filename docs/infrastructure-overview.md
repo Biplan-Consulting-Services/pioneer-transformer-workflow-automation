@@ -209,13 +209,13 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Field | Type |
 |---|---|
 | Witness/Other | Text |
-| Temperature Rise | Yes/No ⚠ |
-| Impulse | Yes/No ⚠ |
-| Partial D | Yes/No ⚠ |
-| Oil Analysis | Yes/No ⚠ |
-| DB | Yes/No ⚠ |
-| SFRA | Yes/No ⚠ |
-| CSA | Yes/No ⚠ |
+| Temperature Rise | Yes/No (confirmed 2026-08-12) |
+| Impulse | Yes/No (confirmed 2026-08-12) |
+| Partial D | Yes/No (confirmed 2026-08-12) |
+| Oil Analysis | Yes/No (confirmed 2026-08-12) |
+| DB | Yes/No (confirmed 2026-08-12) |
+| SFRA | Yes/No (confirmed 2026-08-12) |
+| CSA | Yes/No (confirmed 2026-08-12) |
 | Protector Status | Text (Choice candidate — sample data too sparse to enumerate values yet) |
 
 **Production tracking:**
