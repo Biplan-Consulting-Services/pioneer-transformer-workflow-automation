@@ -91,7 +91,68 @@ flowchart TB
   anything that needs a fast, synchronous read probably shouldn't wait on a full workbook
   refresh.
 
-## Planned: retiring FRM10-12's remaining columns
+## Business process workflow diagram
+
+`workflow-data/Pioneer Transformers Model.vsdx` (Visio) — the "DESIGN ENG" page holds the
+main swimlane flowchart: **Sales & Quotation → Engineering (Electrical/Mechanical) →
+Purchasing & Scheduling → Production**. This complements the architecture diagram above —
+that one shows the *data/technical* system (lists, queries, workbooks); this one shows the
+*human business process* (who does what, in what order, with which tool). A backup copy
+(`Pioneer Transformers Model.BACKUP.vsdx`) is kept alongside it before any edits, same
+recovery pattern as `workbook/FRM10-12.xlsx` in FRM10-12.
+
+**Pending edits (from `workflow-data/Diagram Edit.png` annotations + discussion
+2026-08-12), not yet applied to the live file:**
+
+1. **Add `Electrical Preliminary Review` + `Reference Design Available?`** in the
+   Electrical Engineering lane, mirroring Mechanical's existing pair exactly. Purpose
+   (confirmed by user): both Electrical and Mechanical need to independently assess whether
+   an order is a repeat/duplicate build, to help Planning estimate the engineering work and
+   set a realistic due date.
+2. **New `Confirm Planned Dates with Client` step, in the Inside Sales lane** (not a new
+   lane — this is Inside Sales' responsibility) — triggered automatically once Planning
+   Schedule finishes, for *every* order, not conditional on duplicate status.
+3. **Engineering always runs, for every order** — corrected 2026-08-12, the existing
+   diagram's `Y → Work Order 1` (skips engineering) / `N → Work Order 2` (full engineering)
+   branching off Mechanical's `Reference Design Available?` is wrong. Duplicate orders
+   still need *minimal* engineering (e.g. name plates), not zero — engineering scales by
+   duplicate status, it's never skipped.
+4. **Duplicate status's real effect: unlocks an early, parallel Purchasing/supplier-contact
+   path** — not a full alternate route. Confirmed 2026-08-12: this early start requires
+   **both** Electrical AND Mechanical to say `Reference Design Available? = Yes` (a
+   "partial duplicate" — only one side — does not unlock it).
+5. New **`Engineering Review Status`** field (schema-level, not a diagram shape) =
+   `Full Duplicate` / `Partial Duplicate` / `New Design`, calculated from both departments'
+   Yes/No answers. **Decided 2026-08-12**: start with this categorical status, not a
+   numeric time estimate — a real time estimate needs a defined formula/lookup calibrated
+   against real data that doesn't exist yet (same "start simple, revisit once there's usage
+   data" pattern as `Trimestrial Customer` earlier). If a numeric estimate is wanted later,
+   check whether FRM10-12's existing `StandardJobTimes` concept is the right home for it
+   rather than inventing a parallel mechanism.
+
+**Proposed logic (draft — confirm before I edit the live Visio file):**
+
+```mermaid
+flowchart TB
+    SOP["Shop Order Preliminary Review<br/>(Mechanical)"] --> RDAm{"Reference Design<br/>Available? (Mech)"}
+    EPR["Electrical Preliminary Review<br/>(Electrical) — NEW"] --> RDAe{"Reference Design<br/>Available? (Elec)"}
+
+    RDAm -->|Y or N| WO["Work Order + Planning Schedule<br/>(converges regardless of duplicate status)"]
+    RDAe -->|Y or N| WO
+
+    WO --> CPD["Confirm Planned Dates<br/>with Client (Inside Sales) — NEW"]
+    CPD --> ENG["Electrical Design + Mechanical Design<br/>(Engineering — ALWAYS runs,<br/>scaled by duplicate status)"]
+    ENG --> PONormal["P.O. (Preliminary)<br/>(normal-path Purchasing)"]
+
+    RDAm -->|Y| BOTH{"Both Reference Designs<br/>Available? (AND gate) — NEW"}
+    RDAe -->|Y| BOTH
+    BOTH -->|Y: Full Duplicate| EarlyPO["Early-start Purchasing/<br/>supplier contact — NEW<br/>(parallel, ahead of Engineering)"]
+    BOTH -.->|N: Partial Duplicate<br/>or New Design| WO
+```
+
+Questions/risks if this doesn't match: does the early-start Purchasing path skip straight to
+`P.O. (Preliminary)`, or does it need its own distinct step (e.g. "Early Parts Order") that
+later merges back into the normal Purchasing chain? Not yet confirmed.
 
 **Goal (user-stated, 2026-08-12):** nothing should be manually typed into `FRM10-12.xlsx`
 anymore, and calculated/native-formula columns should also live somewhere else if possible.
