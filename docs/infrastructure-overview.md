@@ -227,6 +227,7 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 |---|---|---|
 | Location | Choice: Isolation (IS), Bobinage (BO), Stacking (ST), Assemblage (AS), Four (FO), Tanking (TA), Test (TE), Finition (FI), Livraison (LI), Entrepôt (ENT), Extérieur (XT), Réparation (RE) | Confirmed 2026-08-12 from `TableValidationLocationCodes`. **Purely the physical production stage now** — `AN` (Annulée/cancelled) is deliberately dropped from this list, moved to the new `Item Status` field below (2026-08-12 design decision: don't overload "where is it" with "what happened to it"). |
 | Item Status | Choice: Active, Delivered, Cancelled, Regrouped | **New field, added 2026-08-12.** Carries the lifecycle state that used to be smuggled into `Location` (`AN`) or inferred from `Location`+`Delivery Date` (the old completion heuristic). Defaults to `Active`; flips to `Delivered`/`Cancelled`/`Regrouped` as those events happen. See [completion/cancellation/archiving](#planned-completion-cancellation-and-archiving-logic) below for how each state gets set. |
+| Regrouped Into | Lookup → `Order Items` (multi-value), self-referencing | **New field, added 2026-08-12.** Only populated when `Item Status = Regrouped` — points at the resulting item(s) in this same list, so "what did order X's units turn into" stays queryable instead of living in a free-text note. |
 | Status | Text | Confirmed 2026-08-12: this is a **composite** value — a validated Prefix (Attente/AT, En cours/EC, Réparation/RE, Manque Pièces/BO, Terminé/TE, Bobine 1/B1, Bobine 2/B2, Bobine 3/B3, from `TableValidationStatusCode`) concatenated with a month-year suffix (sample: `TE-Jui-16`). Kept as plain Text for now rather than guessing how to split it — worth deciding later whether this becomes two fields (a Choice for the prefix + a separate date) or stays one text value. |
 | Core Status | Choice: Entrepôt SN, Reçu, Transport | Confirmed 2026-08-12 from `TableValidationCoreStatus`. |
 | Production Line | Choice: Power / Ligne 1, Distribution, Power, Zone B, Ligne 1 | Confirmed 2026-08-12 from `TableValidationProductionLine`. |
@@ -287,17 +288,16 @@ in the new schema by splitting into two fields on `Order Items` (see schema tabl
   collapsed into one authoritative field instead of forcing every consumer to re-derive the
   same two-condition check themselves.
 - **`Cancelled`**: manual, replaces the old `AN` `Location` value.
-- **`Regrouped`**: manual, replaces the old `GR` `Location` value. Per the note below, this
-  status alone doesn't capture the *relationship* — what the unit turned into — so it likely
-  needs to pair with a reference field, not stand alone.
+- **`Regrouped`**: manual, replaces the old `GR` `Location` value. Paired with a new
+  **`Regrouped Into`** field — **decided 2026-08-12**: a (multi-value) Lookup column on
+  `Order Items` pointing at the resulting row(s) in the same list, not free text. Queryable
+  ("what did order X's units turn into") since it's a real reference, not a string — the
+  tradeoff is the new item(s) need to already exist in `Order Items` before you can fill
+  this in on the old one, so regrouping becomes a two-step action (create the new item(s),
+  then point the old one(s) at them), not a single field edit.
 - **`Active`**: default, everything still in normal production flow.
 
 **Still open:**
-- `Regrouped` is a relationship, not just a status — recording "this unit was regrouped"
-  flags *that* it happened but not *what it became* or *what it merged with*. If that
-  history needs to be queryable later (e.g. "what did order X's units turn into"), `Order
-  Items` likely needs a reference/lookup field pointing at the resulting item(s), not just
-  the status value.
 - Cancellation logic needed at both levels: a whole `Order` can be cancelled, but so can one
   unit within a multi-unit order while the rest proceed — so `Order` likely needs its own
   equivalent status, not just `Order Items`.
@@ -318,10 +318,8 @@ in the new schema by splitting into two fields on `Order Items` (see schema tabl
       with the existing Excel formulas; only remove the Excel versions once every one is
       confirmed to match. Any that SharePoint's formula language can't express become a
       Power Automate flow instead.
-- [ ] Decide the mechanism that sets `Item Status = Delivered` (calculated from `Delivery
-      Date`, a flow, or still manual) once `Order Items` exists to test against.
-- [ ] Design the reference/lookup field that records what a `Regrouped` item actually turned
-      into — `Item Status = Regrouped` alone only flags that it happened, not the relationship.
+- [ ] Build the `Item Status = Delivered` calculated column/flow (`Delivery Date` populated
+      AND `Location = LI`) once `Order Items` exists to test against.
 - [ ] Design the equivalent cancellation representation on `Order` (not just `Order Items`) —
       a whole order can be cancelled, not just one unit within it.
 - [ ] Design the archiving mechanism (SharePoint-sourced, Power BI-consumable) — decide
