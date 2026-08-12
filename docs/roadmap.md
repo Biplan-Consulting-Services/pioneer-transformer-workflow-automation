@@ -3,7 +3,7 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
-## Two independent workstreams, both ready to build now
+## Three workstreams, mostly independent, all ready to build now
 
 ### 1. Order Items migration — **priority** (get staff off editing Excel)
 → `docs/order-items-build-plan.md`
@@ -47,6 +47,25 @@ forward (see the fan-out logic in `phase1-plan.md`), on top of whatever workstre
 one-time backfill already populated for existing orders. No conflict between the two — just
 don't build a redundant "minimal" version of `Order Items` for Phase 1, use the real one.
 
+### 3. Archiving
+→ `docs/archiving-plan.md`
+
+Without this, `Order`/`Order Items` grow forever and SharePoint's practical
+performance/usability degrades — user's concern, 2026-08-12: the lists getting
+"exhaustive." Also serves the earlier-noted Power BI historical-analysis need. Recommended
+mechanism: a Power Automate flow **moves** delivered/cancelled rows into separate
+`Archived Orders`/`Archived Order Items` lists (not just a flag-and-filter-in-place), same
+trigger logic the old Excel `ArchivedOrders` mechanism used (`Location = LI` + delivered,
+or `Location = AN`/cancelled), now expressed through the already-designed `Item
+Status`/`Order Status` fields.
+
+**Sequencing**: doesn't block the other two workstreams starting, and they don't block
+this — but build it soon after `Order Items` goes live, before the list actually gets big
+enough to matter, not deferred indefinitely.
+
+**Depends on**: `Item Status`/`Order Status` existing (workstream 1) as the trigger
+conditions — no new fields needed beyond what's already designed.
+
 ## Reference (not a build plan — background/audit)
 → `docs/infrastructure-overview.md`
 
@@ -63,8 +82,6 @@ read the build-plan docs for *what to actually do*.
 - The 7 native-formula calculated columns (`Price`, `Estimated Delivery Date`, `Price
   CAD/USD`, `Navigation Order/Model`, `Archived`) — parallel-run plan decided
   (`infrastructure-overview.md`), not yet built.
-- Archiving mechanism redesign (repoint `ArchivedOrders` at SharePoint for Power BI
-  historical analysis) — noted, not designed in detail yet.
 - FRM09's raw-column-letter external-reference fragility — actually already resolved per
   FRM09's own `CLAUDE.md` (2026-08-12), unrelated to this repo's remaining work.
 - **Standing future review point**: once `Order Items`/`Workflow Tasks` have real usage
