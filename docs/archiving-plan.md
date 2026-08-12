@@ -37,13 +37,35 @@ Two ways to do this in SharePoint:
 "exhaustive," not just messy filtered views — only physically moving rows out keeps the
 live list bounded long-term.
 
+## Mechanism — corrected 2026-08-12: scheduled + verify-before-delete, not event-triggered
+
+**User's correction, mirroring a pattern already trusted today**: Pioneer already has an
+archive-refresh system (in the current Excel setup) that works by *checking whether the
+data is already correctly present in the archive, and only then removing it from the live
+side* — not deleting reactively the instant a status changes. The SharePoint version should
+follow the same pattern, not a naive "on status change → copy → delete" flow:
+
+- **Scheduled flow** (e.g. nightly), not triggered on `Item Status`/`Order Status` change.
+  On each run: find every live `Order Items`/`Order` row currently meeting the archive
+  criteria (below).
+- For each one: **copy/sync it into the Archive list first**, then **verify the Archive
+  row's data actually matches** the live row. **Only delete the live row once that match is
+  confirmed.** Never delete-then-check, or delete based on the trigger alone.
+- **No flow writes to Excel, at all** — explicit user requirement, writing to Excel from a
+  flow "causes too many problems" (matches the existing `office-scripts` fragility already
+  documented for `TableOrders` in `infrastructure-overview.md`/[[pioneer-transformer-frm10-12]]).
+  This flow only ever touches SharePoint lists directly (live ↔ archive). Excel's read-only
+  mirror of `Order Items` (via `ColumnMap.pq`/`TableOrders.pq`) reflects the archiving
+  automatically on its own next refresh — rows disappear from `TableOrders` the same way
+  they do today when `ArchivedOrders` filters them out, no separate write path needed.
+
 ## Trigger criteria — reuses fields already designed, no new fields needed
 
-- **`Order Items` row** archives when `Item Status = Delivered` or `Item Status =
+- **`Order Items` row** qualifies when `Item Status = Delivered` or `Item Status =
   Cancelled` — direct equivalent of the old `Location = LI` + `Delivery Date` / `Location =
   AN` logic, now expressed through the single `Item Status` field already designed in
   `infrastructure-overview.md`.
-- **`Order` row** archives when `Order Status = Cancelled`, OR once **every** one of that
+- **`Order` row** qualifies when `Order Status = Cancelled`, OR once **every** one of that
   order's `Order Items` rows has itself been archived (the whole order is fully delivered).
 
 ## Build steps
@@ -51,12 +73,12 @@ live list bounded long-term.
 1. Create `Archived Orders` and `Archived Order Items` lists — same schema as the live
    `Order`/`Order Items` lists (SharePoint can save a list as a template to copy the
    schema, rather than rebuilding column-by-column by hand).
-2. Power Automate flow: on `Order Items` `Item Status` changing to `Delivered` or
-   `Cancelled` → copy the row into `Archived Order Items`, then delete it from the live
-   list.
-3. Same or a second flow: once an `Order`'s live `Order Items` count reaches zero (its
-   last remaining unit just got archived), or `Order Status` becomes `Cancelled` → copy the
-   `Order` row into `Archived Orders`, delete from the live list.
+2. Scheduled Power Automate flow (nightly): find live `Order Items` rows qualifying per the
+   criteria above → for each, create/update the matching row in `Archived Order Items` →
+   verify the copy matches → only then delete the live row.
+3. Same or a second scheduled flow: once an `Order`'s live `Order Items` count reaches zero,
+   or `Order Status = Cancelled` → same copy → verify → delete pattern into `Archived
+   Orders`.
 4. Repoint Power BI (and whatever in FRM10-12 still reads the old `ArchivedOrders` linked
    workbook) at the new `Archived Orders`/`Archived Order Items` SharePoint lists instead —
    this was already flagged as a "considering" item in `infrastructure-overview.md`; this
@@ -64,15 +86,13 @@ live list bounded long-term.
 
 ## Open questions — need answers before building, not blocking the plan existing
 
-- **Immediate archive vs. a grace period** (e.g. archive only 30 days after delivery) in
-  case a near-term correction is still needed on a just-delivered unit? Moving immediately
-  is simpler; a grace period is safer against needing to "un-archive" something.
 - **Should the Archived lists be read-only** for most staff, to prevent accidental edits to
   closed historical records? (Probably yes, but confirm.)
 - **Does anyone need to search archived records regularly** (e.g. warranty claims
-  referencing an old delivered unit)? If so, that pushes toward either a longer grace
-  period, or making sure the Archived lists are easy to search/report against directly
-  rather than treated as write-only cold storage.
+  referencing an old delivered unit)? If so, make sure the Archived lists are easy to
+  search/report against directly rather than treated as write-only cold storage.
+- **How often should the scheduled flow run** — nightly assumed above, confirm that's the
+  right cadence (vs. weekly, or more frequent).
 
 ## Relationship to the other workstreams
 

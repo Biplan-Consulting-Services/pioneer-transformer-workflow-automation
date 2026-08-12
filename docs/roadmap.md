@@ -53,11 +53,13 @@ don't build a redundant "minimal" version of `Order Items` for Phase 1, use the 
 Without this, `Order`/`Order Items` grow forever and SharePoint's practical
 performance/usability degrades — user's concern, 2026-08-12: the lists getting
 "exhaustive." Also serves the earlier-noted Power BI historical-analysis need. Recommended
-mechanism: a Power Automate flow **moves** delivered/cancelled rows into separate
-`Archived Orders`/`Archived Order Items` lists (not just a flag-and-filter-in-place), same
-trigger logic the old Excel `ArchivedOrders` mechanism used (`Location = LI` + delivered,
-or `Location = AN`/cancelled), now expressed through the already-designed `Item
-Status`/`Order Status` fields.
+mechanism: a **scheduled** Power Automate flow (not event-triggered) that copies
+delivered/cancelled rows into separate `Archived Orders`/`Archived Order Items` lists,
+**verifies the copy matches before deleting** the live row — mirroring an archive-refresh
+pattern Pioneer already trusts today — and **never writes to Excel**. Trigger logic reuses
+the already-designed `Item Status`/`Order Status` fields (same criteria the old Excel
+`ArchivedOrders` mechanism used: `Location = LI` + delivered, or `Location =
+AN`/cancelled).
 
 **Sequencing**: doesn't block the other two workstreams starting, and they don't block
 this — but build it soon after `Order Items` goes live, before the list actually gets big
