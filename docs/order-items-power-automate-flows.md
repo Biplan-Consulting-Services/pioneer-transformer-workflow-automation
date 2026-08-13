@@ -108,7 +108,7 @@ flipped by any check above, one final `Update item` gated on that flag. Checking
 is currently blank" (not just "Status = X") is what makes each stamp fire exactly once —
 once set, that field is no longer blank, so re-editing the item later never re-stamps it.
 
-**Timezone decision needed before building**: Power Automate's `utcNow()` returns UTC, not
-Eastern time. Decide whether the stamped timestamps should show Eastern (matching working
-hours — use `convertFromUtc(utcNow(), 'Eastern Standard Time')` instead) or UTC is fine as
-stored, with conversion happening only in reports/views that display it.
+**Timezone — decided 2026-08-13: Eastern.** Pioneer's shop floor runs on Eastern time, so
+every stamp expression uses `convertFromUtc(utcNow(), 'Eastern Standard Time')`, not bare
+`utcNow()` (which would store UTC and misrepresent shift times). Apply this consistently to
+all 16 stamp expressions (`Start Date` and `End Date`, all 8 stages).
