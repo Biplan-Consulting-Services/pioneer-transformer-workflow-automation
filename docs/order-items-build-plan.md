@@ -53,6 +53,7 @@ just consumes it once it exists, no separate minimal version needed.
    (`Order Items`'s `Order Number`/`Regrouped Into`, `Model Revisions`'s `Duplicate
    Order`). Worth building **before or alongside step 3's backfill**, not after — the
    backfill will otherwise recreate the same manual-sync burden for every row it creates.
+   **Build-ready spec**: `docs/order-items-power-automate-flows.md`.
 2c. **Build the production-sequence auto-stamp Power Automate flow, added 2026-08-13**:
    when any of the 8 `{Stage} Status` fields (Coiling/Stacking/Assembly/Drying/Tanking/
    Testing/Finishing/Delivery Status) is set to `Completed`, automatically stamp the

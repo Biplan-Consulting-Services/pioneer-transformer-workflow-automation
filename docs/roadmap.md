@@ -14,14 +14,17 @@ results, ...) into a real `Order Items` SharePoint list, plus a few companion co
 not a minimal slice — the goal is getting staff off manually editing Excel as soon as
 possible, and a half-built list doesn't achieve that for in-flight orders.
 
-Build sequence: schema → companion columns → one-time backfill of existing live orders'
-current data → extend `ColumnMap.pq`/`TableOrders.pq` so Excel becomes a read-only mirror →
-staff cutover.
+Build sequence: schema → companion columns → TextField/date-stamp automation → re-runnable
+Excel→SharePoint transfer flow → extend `ColumnMap.pq`/`TableOrders.pq` so Excel becomes a
+read-only mirror → staff cutover.
 
 **PnP PowerShell scripting is blocked** (`ermcopower` tenant hasn't consented the PnP
 Management Shell app, and the same wall applies to any PowerShell-based automation, not just
-PnP) — schema build is proceeding manually via `docs/order-items-manual-build-checklist.md`
-instead, same as how `Order`/`Models`/`Model Revisions` were originally built.
+PnP) — schema was built manually via `docs/order-items-manual-build-checklist.md` instead
+(**done, 2026-08-13**), same as how `Order`/`Models`/`Model Revisions` were originally
+built. Power Automate is NOT affected by that block (first-party connector) — the
+remaining flows (TextField sync, production-date auto-stamp, the transfer flow) are being
+built via `docs/order-items-power-automate-flows.md`.
 
 **Pending, don't block starting**: `Trimestrial Customer`'s exact per-unit grain. (The
 `Tank`/`ISO Stack`/`ISO Coil`/`Lead Assembly` `R` = "Received" question is now confirmed,
