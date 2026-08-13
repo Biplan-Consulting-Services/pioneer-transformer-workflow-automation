@@ -15,7 +15,9 @@ just consumes it once it exists, no separate minimal version needed.
    doesn't duplicate that table, just sequences the build around it.
 2. Companion new columns added to `Order` (`Engineering Required`, `LDs`, `Client Date
    Status`, `Sales Notes`, `Protector & Switchgear PO`, `Order Status`) and
-   `Models`/`Model Revisions` (`Duplicate Order`, `Family`) — not `Order Items` fields
+   `Model Revisions` (`Duplicate Order`, `Family` — decided 2026-08-12 to go on Model
+   Revisions specifically, not Models, since both can change revision-to-revision) — not
+   `Order Items` fields
    themselves, but part of the same "stop manually editing Excel" migration, since they're
    also currently manual `TableOrders` columns.
 3. **Existing live orders' current data backfilled** from `TableOrders` into new `Order
@@ -32,8 +34,10 @@ just consumes it once it exists, no separate minimal version needed.
 ## Build sequence
 
 1. **Build the `Order Items` list schema in SharePoint** (empty, no data yet) — full field
-   list from `infrastructure-overview.md`.
-2. **Add the companion new columns** to `Order`/`Models`/`Model Revisions` (list above).
+   list from `infrastructure-overview.md`, sequenced as a click-through checklist in
+   `docs/order-items-manual-build-checklist.md`.
+2. **Add the companion new columns** to `Order`/`Model Revisions` (list above; also covered
+   by the same manual checklist).
 3. **One-time backfill**: export current `TableOrders` data (per the confirmed
    field-to-column mapping already worked out) into `Order Items` rows, one row per current
    `Order` value (e.g. `21865-1/5`). Needs a script or Power Query one-shot — given the
@@ -50,14 +54,27 @@ just consumes it once it exists, no separate minimal version needed.
    truth, consider protecting/locking those columns in `TableOrders` so a stray manual edit
    there goes nowhere silently rather than creating a conflicting value.
 
-## Two open items — don't block starting the build, but need answers before the schema is 100% final
+## One open item — doesn't block starting the build
 
 - `Trimestrial Customer`'s per-unit granularity is still provisional (see
   `infrastructure-overview.md`) — build it per-unit as planned, revisit later per the
   standing future-review-point note.
-- `Tank`/`ISO Stack`/`ISO Coil`/`Lead Assembly`'s real value set (`R` = "Received"?) is
-  still a working hypothesis pending the user's team check — build the fields as Text for
-  now; converting to Choice later (once confirmed) is a low-risk follow-up, not a blocker.
+
+(`Tank`/`ISO Stack`/`ISO Coil`/`Lead Assembly`'s `R` = "Received" hypothesis is now
+**confirmed** — 2026-08-12 — and stays Text/manually-filled by design, not converted to
+Choice. No longer an open item.)
+
+## PnP PowerShell route blocked — building manually instead
+
+The original plan for step 1 below was a PnP PowerShell script. That's blocked: the
+`ermcopower` tenant hasn't granted admin consent for the PnP Management Shell Azure AD app,
+and this user doesn't hold a role that can grant it — and since any PowerShell automation
+route hits the same tenant-consent wall, not just PnP specifically, there's no scripting
+workaround available right now. **`docs/order-items-manual-build-checklist.md`** has the
+full field-by-field list to build by hand in the SharePoint UI instead — same way
+`Order`/`Models`/`Model Revisions` were originally built. If IT ever grants that consent,
+scripting becomes an option again for later steps (backfill, companion columns) — this
+doesn't block anything permanently, just this session's build.
 
 ## Relationship to `phase1-plan.md`
 

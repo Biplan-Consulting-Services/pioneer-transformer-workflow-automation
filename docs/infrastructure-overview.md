@@ -238,16 +238,21 @@ not something explicitly requested at this scope — **needs confirmation**: doe
 to all 14 `Order Step` values, only some, or is a full per-stage history overkill here
 compared to Order Items (where it directly maps to physical `Location` stages)?
 
-**→ Existing `Models`/`Model Revisions`, as new columns**:
-- `Duplicate Order` — confirmed 2026-08-12 by user: genuinely model-level, it's "the last
+**→ Existing `Model Revisions`, as new columns** (decided 2026-08-12: `Model Revisions`
+specifically, not `Models` — both fields below can change revision-to-revision, not just
+model-to-model):
+- `Duplicate Order` — confirmed 2026-08-12 by user: it's "the last
   order that was produced/designed of that model," i.e. a pointer to the most recent Order
-  Number built against this model, not an order-administrative field.
+  Number built against this model/revision, not an order-administrative field. Implemented
+  as a native Lookup → `Order` (`Order Number` field) — confirmed 2026-08-12 that despite no
+  custom Lookup fields showing up in the flattened CSV schema exports, native Lookups ARE
+  used elsewhere in this system already; the CSV export process just flattens them to text.
 - `Duplicate` itself (the old Y/N "this design needs minimal new engineering" flag) is **not
   migrated as-is** — confirmed 2026-08-12: it's an old classification being superseded by the
   **engineering modification tracker** (the existing `EngineeringChangeOrders`/`ModelChanges`
   SharePoint lists) — whatever the new list-based workflow needs from "was this a duplicate
   build" should be derived from that tracker going forward, not carried over as its own field.
-- `Family` — confirmed 2026-08-12: model-level, and **is** the same concept as the
+- `Family` — confirmed 2026-08-12: model revision-level (see placement decision above), and **is** the same concept as the
   `Production Complexity` validation list (`A`, `B1`, `B2`, `C`) — the field name stays
   `Family` (client's preferred term) even though it's really a complexity rating; revisit
   the name only if the client's preference changes later, don't rename unprompted. Choice
@@ -283,7 +288,7 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Field | Type | Notes |
 |---|---|---|
 | Title | Text | Set to the unit identifier, e.g. `21408-1/1` — same value `TableOrders.pq` already computes as its `Order` column, so this doubles as the natural join key for the eventual Power Query merge (same pattern `ArchivedOrders`/`BackOrders` already use, keyed on `Order`). |
-| Order Number | Lookup → `Order` list | The merge key back to the order header, e.g. `21408`. |
+| Order Number | Lookup → `Order` list | The merge key back to the order header, e.g. `21408`. Confirmed 2026-08-12: a native SharePoint Lookup column (`ShowField` = `Order`'s own `Order Number` text field, not `Title` — `Order`'s `Title` field holds something else). |
 | Unit # | Number | The numerator in the unit identifier (`1` in `21408-1/1`) — stored explicitly rather than parsed out of Title every time it's needed. |
 | Qty | Number | The denominator (`1` in `21408-1/1`) — for convenience/sanity-checking only; `Order` list's `Qty` stays authoritative. |
 | SA Job | Yes/No | Matches `TableOrders.pq`'s existing computed `SA Job` boolean. |
@@ -306,18 +311,18 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 
 | Field | Type | Notes |
 |---|---|---|
-| Location | Choice: Isolation (IS), Bobinage (BO), Stacking (ST), Assemblage (AS), Four (FO), Tanking (TA), Test (TE), Finition (FI), Livraison (LI), Entrepôt (ENT), Extérieur (XT), Réparation (RE) | Confirmed 2026-08-12 from `TableValidationLocationCodes`. **Purely the physical production stage now** — `AN` (Annulée/cancelled) is deliberately dropped from this list, moved to the new `Item Status` field below (2026-08-12 design decision: don't overload "where is it" with "what happened to it"). |
+| Location | Choice: Isolation, Bobinage, Stacking, Assemblage, Four, Tanking, Test, Finition, Livraison, Entrepôt, Extérieur, Réparation | Confirmed 2026-08-12 from `TableValidationLocationCodes`. **Purely the physical production stage now** — `AN` (Annulée/cancelled) is deliberately dropped from this list, moved to the new `Item Status` field below (2026-08-12 design decision: don't overload "where is it" with "what happened to it"). **Stored value decided 2026-08-12: full descriptive names, not the short codes** (`IS`/`BO`/etc.) — readability for staff in the list view won out over matching the old raw codes; the Delivered-trigger logic below is written against the full name accordingly. |
 | Item Status | Choice: Active, Delivered, Cancelled, Regrouped | **New field, added 2026-08-12.** Carries the lifecycle state that used to be smuggled into `Location` (`AN`) or inferred from `Location`+`Delivery Date` (the old completion heuristic). Defaults to `Active`; flips to `Delivered`/`Cancelled`/`Regrouped` as those events happen. See [completion/cancellation/archiving](#planned-completion-cancellation-and-archiving-logic) below for how each state gets set. |
 | Regrouped Into | Lookup → `Order Items` (multi-value), self-referencing | **New field, added 2026-08-12.** Only populated when `Item Status = Regrouped` — points at the resulting item(s) in this same list, so "what did order X's units turn into" stays queryable instead of living in a free-text note. |
 | Status | Text | Confirmed 2026-08-12: this is a **composite** value — a validated Prefix (Attente/AT, En cours/EC, Réparation/RE, Manque Pièces/BO, Terminé/TE, Bobine 1/B1, Bobine 2/B2, Bobine 3/B3, from `TableValidationStatusCode`) concatenated with a month-year suffix (sample: `TE-Jui-16`). Kept as plain Text for now rather than guessing how to split it — worth deciding later whether this becomes two fields (a Choice for the prefix + a separate date) or stays one text value. |
 | Core Status | Choice: Entrepôt SN, Reçu, Transport | Confirmed 2026-08-12 from `TableValidationCoreStatus`. |
 | Production Line | Choice: Power / Ligne 1, Distribution, Power, Zone B, Ligne 1 | Confirmed 2026-08-12 from `TableValidationProductionLine`. |
 | Time (days) | Number | |
-| Tank | Text ⚠ | Sample value `R` — no matching validation list found. **Working hypothesis (2026-08-12, unconfirmed): `R` = "Received."** User needs to check with the team before this is locked in — don't build a Choice list off this guess yet. |
+| Tank | Text | **Confirmed 2026-08-12: `R` = "Received."** Stays Text, not Choice — user confirmed this is deliberately a manually-filled field, not a fixed value list. |
 | Frame | Choice: Plaspak, Reçu | **Corrected 2026-08-12** — earlier guessed this was a numeric identifier from the sample (`0`), but the real validation list (`Table20`/`Frame`) shows it's a status Choice field instead. |
-| ISO Stack | Text ⚠ | Same unconfirmed value/hypothesis as `Tank` (sample: `R`, guessed "Received," not yet confirmed). |
-| ISO Coil | Text ⚠ | Same unconfirmed value/hypothesis as `Tank` (sample: `R`, guessed "Received," not yet confirmed). |
-| Lead Assembly | Text ⚠ | Same unconfirmed value/hypothesis as `Tank` (sample: `R`, guessed "Received," not yet confirmed). |
+| ISO Stack | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
+| ISO Coil | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
+| Lead Assembly | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
 | Winder | Text | Must stay Text (not Number) — values mix plain IDs and ranges (`100-104`) in the sample. Per user, stays manually-filled, not derived. |
 | Coil Winder | Text | Same as `Winder` — kept Text even though the sample looked numeric, for consistency and to avoid a type mismatch if another row uses a non-numeric ID. Manually-filled. |
 | Trimestrial Customer | Text ⚠ | Blank in the sampled rows — type genuinely unconfirmed; provisional per-unit placement (see above), revisit together with the placement question. |
@@ -347,8 +352,8 @@ Completed` (holds the actual completion date, otherwise blank).
 
 Both fields per pair: `Date` = Date, `Status` = Choice (Pending/In Progress/Completed).
 `Item Status = Delivered` still triggers off `Delivery Date` populated (i.e. `Delivery
-Status = Completed`) AND `Location = LI` — unaffected by this split, just now sourced from
-`Delivery Status` instead of a bare presence check.
+Status = Completed`) AND `Location = Livraison` — unaffected by this split, just now sourced
+from `Delivery Status` instead of a bare presence check.
 
 **Other dates — stay plain Date fields, NOT split** (confirmed 2026-08-12: a different
 category — vendor/audit/override dates, not steps in the production sequence):
@@ -386,9 +391,10 @@ in the new schema by splitting into two fields on `Order Items` (see schema tabl
   just "Delivery Date populated." **Decided: automatic, not manual** — a SharePoint
   calculated column (or a small Power Automate flow, if the calculated-column language
   can't express it) sets `Item Status = Delivered` whenever `Delivery Date` is populated
-  **AND** `Location = LI`. Two manual entries (the date + the location) still drive it, just
-  collapsed into one authoritative field instead of forcing every consumer to re-derive the
-  same two-condition check themselves.
+  **AND** `Location = Livraison` (updated 2026-08-12 to the full name, not the old `LI` code
+  — see the Location field note above). Two manual entries (the date + the location) still
+  drive it, just collapsed into one authoritative field instead of forcing every consumer to
+  re-derive the same two-condition check themselves.
 - **`Cancelled`**: manual, replaces the old `AN` `Location` value.
 - **`Regrouped`**: manual, replaces the old `GR` `Location` value. Paired with a new
   **`Regrouped Into`** field — **decided 2026-08-12**: a (multi-value) Lookup column on
@@ -398,6 +404,10 @@ in the new schema by splitting into two fields on `Order Items` (see schema tabl
   this in on the old one, so regrouping becomes a two-step action (create the new item(s),
   then point the old one(s) at them), not a single field edit.
 - **`Active`**: default, everything still in normal production flow.
+
+**Cancellation/completion logic reuses `Location = Livraison`**, not the old `AN`/`LI` short
+codes — see the updated `Location` field note above (2026-08-12: stored as full descriptive
+names in the actual list, decided while writing the manual build checklist).
 
 **Order-level cancellation — decided 2026-08-12**: a whole `Order` can be cancelled even
 before any of its units individually are (or after some already shipped), so it needs its

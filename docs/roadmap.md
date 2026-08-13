@@ -18,9 +18,14 @@ Build sequence: schema → companion columns → one-time backfill of existing l
 current data → extend `ColumnMap.pq`/`TableOrders.pq` so Excel becomes a read-only mirror →
 staff cutover.
 
-**Pending, don't block starting**: `Trimestrial Customer`'s exact per-unit grain, and
-whether `Tank`/`ISO Stack`/`ISO Coil`/`Lead Assembly`'s `R` value really means "Received"
-(user's team check).
+**PnP PowerShell scripting is blocked** (`ermcopower` tenant hasn't consented the PnP
+Management Shell app, and the same wall applies to any PowerShell-based automation, not just
+PnP) — schema build is proceeding manually via `docs/order-items-manual-build-checklist.md`
+instead, same as how `Order`/`Models`/`Model Revisions` were originally built.
+
+**Pending, don't block starting**: `Trimestrial Customer`'s exact per-unit grain. (The
+`Tank`/`ISO Stack`/`ISO Coil`/`Lead Assembly` `R` = "Received" question is now confirmed,
+no longer open.)
 
 ### 2. Business process workflow automation ("Phase 1")
 → `docs/phase1-plan.md`
