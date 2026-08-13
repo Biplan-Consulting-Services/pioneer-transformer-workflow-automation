@@ -22,10 +22,11 @@ just consumes it once it exists, no separate minimal version needed.
    too, but **moved to `Order Items` instead, 2026-08-13** — user's call: it's per-unit
    purchasing, not per-order, pairing with `Protector Status` which is per-unit for the
    same reason.)
-3. **Existing live orders' current data backfilled** from `TableOrders` into new `Order
-   Items` rows — a one-time migration. Without this, staff can't actually stop touching
-   Excel for orders already in flight; they'd have nowhere to see/edit that data until it's
-   moved.
+3. **Existing live orders' current data transferred** from `TableOrders` into new `Order
+   Items` rows (and the new `Order`/`Model Revisions` columns) — via a re-runnable Power
+   Automate flow, run an initial time now and again right before go-live (not a one-shot
+   script — see step 3 below). Without this, staff can't actually stop touching Excel for
+   orders already in flight; they'd have nowhere to see/edit that data until it's moved.
 4. `ColumnMap.pq` + `TableOrders.pq` extended (same pattern as `Model Revisions`) so
    `TableOrders` becomes a **read-only mirror** of `Order Items` — Excel still shows the
    data (for anyone still glancing at it, and for the native formula columns/Power BI that
@@ -62,23 +63,40 @@ just consumes it once it exists, no separate minimal version needed.
    analytics (e.g. actual duration between stages, not just which day). Update
    `order-items-manual-build-checklist.md`'s Production-sequence dates section to say
    Date+Time once that change is made there too, so the two docs don't drift.
-3. **One-time backfill**: export current `TableOrders` data (per the confirmed
-   field-to-column mapping already worked out) into `Order Items` rows, one row per current
-   `Order` value (e.g. `21865-1/5`). Needs a script or Power Query one-shot — given the
-   scale (~1000 rows per the FRM10-12 migration's prior experience), don't do this by hand.
-   **This step does the raw-value conversions**, not the schema build — e.g. `LDs`'
-   `Y`/`N` text becomes real Yes/No, `Location`'s old short codes (`LI`, `IS`, ...) map to
-   the new full-name Choice values, the old `'x'`/blank test markers become Yes/No. The
-   schema decisions in `order-items-manual-build-checklist.md` don't have to be perfect
-   before this step — field types/choice lists built in step 1 can still be adjusted (add a
-   missed choice value, fix a type) any time before this backfill actually moves data, since
-   nothing's been imported yet to conflict with a change.
+3. **Re-runnable transfer flow, not a one-shot script — changed 2026-08-13.** User's call:
+   build this as a **Power Automate flow** (Excel connector reading `TableOrders` → 
+   SharePoint connector upserting into `Order Items`/the `Order`/`Model Revisions`
+   companion columns), triggered manually/on-demand, rather than a throwaway script run
+   once. This lets the transfer happen **twice**: once now (an initial transfer, so there's
+   real data in SharePoint to develop/test the rest of this system against), and once again
+   right before go-live (to catch up on whatever staff kept editing in Excel during the
+   rest of development — since Excel stays the live edit surface until cutover actually
+   happens). Re-running must be an **upsert** (match on `Order`/`Title`, update if the row
+   already exists, create if not) so running it twice doesn't create duplicates.
+   - **Scope: only the columns that moved** — the ~40 `Order Items` fields plus the
+     handful of new `Order`/`Model Revisions` companion columns. Don't touch fields
+     already sourced from SharePoint the other way (`Client`, `Order Date`, etc.) — this
+     flow only ever reads those columns from Excel, never writes them there.
+   - **Direction note**: this is Excel → SharePoint, the *opposite* of the permanent
+     architecture (SharePoint → Excel, read-only mirror, decided throughout this doc and
+     `infrastructure-overview.md`). That's fine — it's explicitly a transitional tool for
+     getting real data into SharePoint before cutover, not a standing bidirectional sync.
+     Once go-live happens (step 6), this flow's job is done and step 4's SharePoint → Excel
+     direction becomes the only one that matters going forward.
+   - **This step does the raw-value conversions**, not the schema build — e.g. `LDs`'
+     `Y`/`N` text becomes real Yes/No, `Location`'s old short codes (`LI`, `IS`, ...) map to
+     the new full-name Choice values, the old `'x'`/blank test markers become Yes/No. The
+     schema decisions in `order-items-manual-build-checklist.md` don't have to be perfect
+     before this step — field types/choice lists built in step 1 can still be adjusted (add
+     a missed choice value, fix a type) any time before a transfer run actually moves data.
 4. **Extend `ColumnMap.pq`/`TableOrders.pq`** to pull `Order Items` back into Excel
    read-only, same differential-update pattern used for `Model Revisions`.
 5. **Validate the round-trip** before cutting over — refresh `TableOrders`, confirm it
-   matches the backfilled `Order Items` data exactly, no data loss. Treat this like the
-   `Order`/`Models` migrations before it: verify with real data before trusting it, don't
-   assume from the M code alone.
+   matches the `Order Items` data exactly, no data loss. Do this against the **final**
+   pre-go-live transfer run (step 3's second run), not the initial one — the initial
+   transfer is for developing/testing against, not the data staff will actually see at
+   cutover. Treat this like the `Order`/`Models` migrations before it: verify with real
+   data before trusting it, don't assume from the M code alone.
 6. **Communicate the cutover to staff**: stop typing directly into `TableOrders`'s
    [Location, Status, Tank, Frame, dates, ...] columns, use the SharePoint list instead.
 7. *(Optional hardening, not blocking)*: once `Order Items` is confirmed as the source of
