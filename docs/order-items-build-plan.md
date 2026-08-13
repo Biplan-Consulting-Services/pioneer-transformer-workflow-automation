@@ -42,6 +42,13 @@ just consumes it once it exists, no separate minimal version needed.
    field-to-column mapping already worked out) into `Order Items` rows, one row per current
    `Order` value (e.g. `21865-1/5`). Needs a script or Power Query one-shot — given the
    scale (~1000 rows per the FRM10-12 migration's prior experience), don't do this by hand.
+   **This step does the raw-value conversions**, not the schema build — e.g. `LDs`'
+   `Y`/`N` text becomes real Yes/No, `Location`'s old short codes (`LI`, `IS`, ...) map to
+   the new full-name Choice values, the old `'x'`/blank test markers become Yes/No. The
+   schema decisions in `order-items-manual-build-checklist.md` don't have to be perfect
+   before this step — field types/choice lists built in step 1 can still be adjusted (add a
+   missed choice value, fix a type) any time before this backfill actually moves data, since
+   nothing's been imported yet to conflict with a change.
 4. **Extend `ColumnMap.pq`/`TableOrders.pq`** to pull `Order Items` back into Excel
    read-only, same differential-update pattern used for `Model Revisions`.
 5. **Validate the round-trip** before cutting over — refresh `TableOrders`, confirm it
