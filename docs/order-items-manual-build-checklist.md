@@ -39,7 +39,7 @@ Create a new custom list named **Order Items**, no template, blank.
 
 | # | Field name | Type | Details |
 |---|---|---|---|
-| 1 | Title | (default, already exists) | Rename nothing — just note for later: at backfill time, set to the unit ID, e.g. `21408-1/1`. Nothing to configure now. |
+| 1 | Title (now displayed as **`Unit ID`**) | (default, already exists) | Confirmed live 2026-08-13 — user renamed the display name from `Title` to `Unit ID` (clearer). Underlying field is still the built-in Title field, but reference it as `Unit ID` in Power Query/Power Automate going forward, since SharePoint.Tables reads by display name. At backfill/transfer time, set to the unit ID, e.g. `21408-1/1`. |
 | 2 | Order Number | **Lookup** | Get information from: **Order**. In this column: **Order Number** (confirmed — Order's own "Order Number" text field, not `Title`; `Order` list's `Title` field holds something else, not the order number). |
 | 2b | Order_Number_TextField | Single line of text | Companion text field for the `Order Number` Lookup, per user's standing convention (2026-08-13): every Lookup gets a sibling `{Field}_TextField` holding a plain-text copy of the looked-up value, for search/filtering. **Manually kept in sync for now — confirmed a real pain point, not hypothetical.** Auto-sync via Power Automate is now a tracked build step, not just a comment — see `order-items-build-plan.md`'s step 2b. |
 | 3 | Unit # | Number | No decimals. For an SA (auxiliary) row, **copy the parent unit's value** — confirmed 2026-08-13, not left blank. |
@@ -99,7 +99,13 @@ by a Power Automate flow (see `order-items-build-plan.md` step 2c), not typed by
 | 38 | Tanking Date | 39 | Tanking Status |
 | 40 | Testing Date | 41 | Testing Status |
 | 42 | Finishing Date | 43 | Finishing Status |
-| 44 | Delivery Date | 45 | Delivery Status |
+| 44 | Delivery Date ⚠ | 45 | Delivery Status |
+
+⚠ **Pending fix, found 2026-08-13 via the live schema export**: this field is actually
+named **`Delivery Data`** in the live list (a typo — every other pair correctly says
+"Date"). User has noted this to fix but it isn't renamed yet as of this writing — check
+the live list before building anything (Power Automate flow, `ColumnMap.pq`) that
+references it by exact name, since `Delivery Data` ≠ `Delivery Date`.
 
 ### Other dates (plain, not split into Date+Status pairs)
 

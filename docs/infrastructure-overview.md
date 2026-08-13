@@ -297,7 +297,7 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 
 | Field | Type | Notes |
 |---|---|---|
-| Title | Text | Set to the unit identifier, e.g. `21408-1/1` — same value `TableOrders.pq` already computes as its `Order` column, so this doubles as the natural join key for the eventual Power Query merge (same pattern `ArchivedOrders`/`BackOrders` already use, keyed on `Order`). |
+| Title (displayed as **`Unit ID`**) | Text | **Confirmed live 2026-08-13**: user renamed the display name from `Title` to `Unit ID` for clarity — reference it as `Unit ID` in Power Query/Power Automate going forward (SharePoint.Tables reads by display name, not the underlying internal name). Set to the unit identifier, e.g. `21408-1/1` — same value `TableOrders.pq` already computes as its `Order` column, so this doubles as the natural join key for the eventual Power Query merge (same pattern `ArchivedOrders`/`BackOrders` already use, keyed on `Order`). |
 | Order Number | Lookup → `Order` list | The merge key back to the order header, e.g. `21408`. Confirmed 2026-08-12: a native SharePoint Lookup column (`ShowField` = `Order`'s own `Order Number` text field, not `Title` — `Order`'s `Title` field holds something else). |
 | Unit # | Number | The numerator in the unit identifier (`1` in `21408-1/1`) — stored explicitly rather than parsed out of Title every time it's needed. |
 | Qty | Number | The denominator (`1` in `21408-1/1`) — for convenience/sanity-checking only; `Order` list's `Qty` stays authoritative. |
@@ -359,9 +359,17 @@ Completed` (holds the actual completion date, otherwise blank).
 | Tanking Date | Tanking Status |
 | Testing Date | Testing Status |
 | Finishing Date | Finishing Status |
-| Delivery Date | Delivery Status |
+| Delivery Date ⚠ | Delivery Status |
 
-Both fields per pair: `Date` = Date, `Status` = Choice (Pending/In Progress/Completed).
+⚠ **Pending fix, found 2026-08-13 via the live schema export**: this field is actually
+named **`Delivery Data`** in the live list right now (a typo — every other pair correctly
+says "Date"). User has noted it to fix but it isn't renamed yet as of this writing — check
+the live list before building anything that references it by exact name.
+
+Also confirmed live 2026-08-13: all 8 `{Stage} Date` fields are **Date and Time** (changed
+from Date-only) — useful later for finer-grained production-time analytics.
+
+Both fields per pair: `Date` = Date(+Time), `Status` = Choice (Pending/In Progress/Completed).
 `Item Status = Delivered` still triggers off `Delivery Date` populated (i.e. `Delivery
 Status = Completed`) AND `Location = Livraison` — unaffected by this split, just now sourced
 from `Delivery Status` instead of a bare presence check.
