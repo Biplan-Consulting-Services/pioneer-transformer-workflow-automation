@@ -78,3 +78,36 @@ separate update actions.
    land correctly, and no loop. Also worth one test changing more than one field at once,
    to confirm the consolidated update still fires exactly once and gets all of them right.
 3. `Regrouped Into` — deferred, see note above. Test whenever it's picked up.
+
+## Step 2c — Production-sequence auto-stamp
+
+**⚠ Blocked on a schema addition, 2026-08-13**: each of the 8 stages needs a new
+`{Stage} Started` column (Date and Time) before this flow can be built — see
+`order-items-manual-build-checklist.md`'s Production-sequence dates section. Expanded from
+"stamp finish time only" to "stamp start *and* finish" for real time-spent tracking, not
+just completion dates — see `order-items-build-plan.md` step 2c for why.
+
+**Why two stamps per stage, not one**: `{Stage} Status` already distinguishes `Pending`
+(not started) from `In Progress` (actively being worked) from `Completed`. Capturing the
+`Pending → In Progress` transition as `{Stage} Started` gives an accurate start time,
+unaffected by any idle/waiting time before work actually began — inferring a start time
+from the *previous* stage's finish time instead would wrongly count that idle time as work
+time.
+
+**Flow — `Order Items`, "When an item is created or modified"**, once the schema exists:
+for each of the 8 stages, two independent stamp checks:
+- `{Stage} Status = In Progress` **AND** `{Stage} Started` is blank → that stage needs its
+  start stamped now.
+- `{Stage} Status = Completed` **AND** `{Stage} Date` is blank → that stage needs its
+  finish stamped now.
+
+Same consolidated-update shape as the TextField flows: one variable per field that needs
+stamping (up to 16, though usually far fewer will fire in any single run), one boolean flag
+flipped by any check above, one final `Update item` gated on that flag. Checking "the field
+is currently blank" (not just "Status = X") is what makes each stamp fire exactly once —
+once set, that field is no longer blank, so re-editing the item later never re-stamps it.
+
+**Timezone decision needed before building**: Power Automate's `utcNow()` returns UTC, not
+Eastern time. Decide whether the stamped timestamps should show Eastern (matching working
+hours — use `convertFromUtc(utcNow(), 'Eastern Standard Time')` instead) or UTC is fine as
+stored, with conversion happening only in reports/views that display it.

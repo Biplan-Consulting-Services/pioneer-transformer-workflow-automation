@@ -82,24 +82,39 @@ Create a new custom list named **Order Items**, no template, blank.
 | 28 | Coil Winder | Single line of text | Same as Winder — Text even though samples look numeric. Manually-filled. |
 | 29 | Trimestrial Customer | Single line of text | ⚠ Stays Text, not Choice — a full-history data check (2026-08-13) found `N` (never `Y`) and 2 real date-like values in `TableOrders`, plus a formula-glitch reveal that the real French label is `Pénalité Trimestrielle` ("Trimestrial Penalty"), suggesting this may track a penalty date, not a yes/no attribute. **Pending clarification from business users once they're back from holidays** — don't build a Choice/Yes-No list until then. Per-unit placement is also still separately provisional — see `infrastructure-overview.md`. |
 
-### Production-sequence dates (8 pairs)
+### Production-sequence dates (8 triples — expanded 2026-08-13)
 
-Each stage gets a `{Stage} Date` (**Date and Time** — changed from Date-only, 2026-08-13:
-useful later for finer-grained production-time analytics, e.g. actual duration between
-stages) + `{Stage} Status` (Choice: `Pending`, `In Progress`, `Completed`; leave blank =
-not relevant yet). Date field only gets filled once its Status = Completed — auto-stamped
-by a Power Automate flow (see `order-items-build-plan.md` step 2c), not typed by hand.
+**Expanded from Date+Status pairs to Date+Status+Started triples**: user wants real
+time-spent tracking per stage (not just when it finished), and since `Status` already
+distinguishes `Pending` (not started) from `In Progress` (actively being worked), a
+`{Stage} Started` stamp captured at that specific transition gives an accurate start time
+— unaffected by any idle/waiting time before work actually began (the alternative,
+inferring start from the previous stage's finish time, would wrongly count that idle time
+as work time). Each stage now needs:
+- `{Stage} Date` (**Date and Time**) — stamped when `Status` becomes `Completed` (existing).
+- `{Stage} Status` (Choice: `Pending`, `In Progress`, `Completed`; blank = not relevant yet)
+  (existing).
+- `{Stage} Started` (**Date and Time**, NEW) — stamped when `Status` first becomes
+  `In Progress`.
 
-| # | Date field | # | Status field |
-|---|---|---|---|
-| 30 | Coiling Date | 31 | Coiling Status |
-| 32 | Stacking Date | 33 | Stacking Status |
-| 34 | Assembly Date | 35 | Assembly Status |
-| 36 | Drying Date | 37 | Drying Status |
-| 38 | Tanking Date | 39 | Tanking Status |
-| 40 | Testing Date | 41 | Testing Status |
-| 42 | Finishing Date | 43 | Finishing Status |
-| 44 | Delivery Date | 45 | Delivery Status |
+Both date fields are auto-stamped by a Power Automate flow (see `order-items-build-plan.md`
+step 2c), not typed by hand — each only fills in once, guarded by the field itself being
+blank, so re-editing the item later doesn't re-stamp it.
+
+| # | Started field (NEW) | # | Date field | # | Status field |
+|---|---|---|---|---|---|
+| — | Coiling Started | 30 | Coiling Date | 31 | Coiling Status |
+| — | Stacking Started | 32 | Stacking Date | 33 | Stacking Status |
+| — | Assembly Started | 34 | Assembly Date | 35 | Assembly Status |
+| — | Drying Started | 36 | Drying Date | 37 | Drying Status |
+| — | Tanking Started | 38 | Tanking Date | 39 | Tanking Status |
+| — | Testing Started | 40 | Testing Date | 41 | Testing Status |
+| — | Finishing Started | 42 | Finishing Date | 43 | Finishing Status |
+| — | Delivery Started | 44 | Delivery Date | 45 | Delivery Status |
+
+**To-do**: the 8 `{Stage} Started` columns still need to be added in SharePoint (schema
+step, manual, same PnP-blocked situation as the rest of this migration) before the
+auto-stamp flow can be built against them.
 
 **Fixed 2026-08-13**: the `Delivery Data` typo is resolved — deleted and recreated as
 `Delivery Date` (safe, zero data-loss since the list was still empty), also picking up a

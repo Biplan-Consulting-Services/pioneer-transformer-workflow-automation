@@ -64,6 +64,13 @@ just consumes it once it exists, no separate minimal version needed.
    analytics (e.g. actual duration between stages, not just which day). Update
    `order-items-manual-build-checklist.md`'s Production-sequence dates section to say
    Date+Time once that change is made there too, so the two docs don't drift.
+   **Expanded further, 2026-08-13**: for real time-*spent* tracking (not just completion
+   timestamps), each stage also needs a `{Stage} Started` field (Date and Time, NEW —
+   still to be added in SharePoint), stamped when `Status` first becomes `In Progress`.
+   This is more accurate than inferring a start time from the previous stage's finish
+   time, which would wrongly count any idle/waiting time between stages as work time. The
+   flow now stamps two things per stage, not one — see
+   `order-items-power-automate-flows.md`'s step 2c for the updated spec.
 3. **Re-runnable transfer flow, not a one-shot script — changed 2026-08-13.** User's call:
    build this as a **Power Automate flow** (Excel connector reading `TableOrders` → 
    SharePoint connector upserting into `Order Items`/the `Order`/`Model Revisions`
