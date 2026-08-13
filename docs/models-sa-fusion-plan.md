@@ -115,15 +115,92 @@ the SA row's own code (`426870`, `4276699`) as their `Model_Code` — mostly emp
 placeholders were genuinely needed or should be cleaned up/merged — don't wait to be
 reminded.
 
-**Not yet resolved — needs your input when you're ready for it**: how each `Models SA`
-row's flat spec fields (`kVA and kV`, `Description`, `Model Type`, `Oil Type`, `Core Type`,
-`Phases`, etc.) map onto the fused shape's `Models`-vs-`Model Revisions` split. This isn't
-a rename exercise — `Model Revisions` already split what used to be one `kVA and kV` value
-into separate `kVA`/`Primary Voltage`/`Secondary Voltage` fields (the same split that broke
-FRM09's external references, see that repo's `CLAUDE.md`), and the sampled `Models SA` `kVA
-and kV` values (e.g. `24.94`, `12.5`, `300`, `1,000`) don't obviously separate into those
-three on their own — that needs your read on what those numbers actually represent for an
-SA design, not a guess from the raw values.
+**`kVA and kV` → `kVA` mapping, confirmed 2026-08-13**: `Model Revisions`' `Primary
+Voltage`/`Secondary Voltage` fields aren't in use anywhere yet (system-wide, not just for
+SA rows) — so every `Models SA` row's `kVA and kV` value goes straight into `Model
+Revisions`' `kVA` field for now, `Primary Voltage`/`Secondary Voltage` left blank like
+everywhere else currently. Revisit if/when those two fields ever go into real use.
+
+## Migration checklist — ready to execute, confirmed 2026-08-13
+
+**`Models`-level spec-field duplicates are legacy — confirmed by the user, who built the
+original split.** `Models` still carries its own copies of `kVA and kV`, `Model Type`,
+`Description`, `Oil Type`, `Oil Amount`, `Core Type`, `Phases`, `Cable`, `Form`, `Copper
+(LV)`, `Wire (HV)`, `Overcoil` alongside `Model Revisions` having the same shape (`kVA`,
+`Model Type`, `Model Description`, etc.) — these `Models`-level copies are legacy, **leave
+them blank on new rows**. The real spec data goes on `Model Revisions` only, which is what
+actually needs populating so the new SA-origin `Models` row has something real to link to
+via `Latest Model Revision`.
+
+**`Info+`/`Protector & Switchgear Item #`/`SFRA`/`Configuration`/`Section Qty`** exist on
+`Models SA`/`Models` but have no `Model Revisions` equivalent — checked all 15 live
+`Models SA` rows directly: every one is blank on every one of these fields, so there's
+nothing to carry forward. Not a design gap, just nothing to migrate.
+
+### Step 1 — schema additions on `Models` (manual, PnP still blocked)
+
+| Field name | Type | Details |
+|---|---|---|
+| SA Model | Yes/No, default No | See "Disambiguation design" above. |
+| Parent Model | **Lookup**, self-referencing → `Models` | Get information from: **Models** itself. In this column: **Model_ID** (or `Model_Code`, whichever `Order`/`Model Revisions`' existing Lookups use for `Models` — match that convention). Only populate for rows where `SA Model = Yes`. |
+| Parent_Model_TextField | Single line of text | Companion text field, per the standing Lookup convention. |
+
+### Step 2 — two new placeholder `Models` rows
+
+Continue the `M-HYQU-####` sequence from whatever the current highest is (was `M-HYQU-0095`
+as of the 2026-08-13 16:54 export — re-check the live list, more may have been added
+since). Identity only, everything else blank:
+
+| New Model_ID | Client | Model_Code | SA Model |
+|---|---|---|---|
+| (next in sequence) | HYDRO QUEBEC | 426870 | No |
+| (next in sequence) | HYDRO QUEBEC | 4276699 | No |
+
+### Step 3 — 15 new `Models` rows, one per `Models SA` row
+
+Continuing the `M-HYQU-####` sequence (after the two placeholders above). For each row:
+`Client` = HYDRO QUEBEC, `Model_Code` = the `Models SA` row's own code (keep the `" SA"`
+suffix, e.g. `4261870 SA`), `SA Model` = Yes, `Parent Model` = the matched row from the
+mapping table above, `Modification_Status` = `Up to Date`, `Estimated Effort` = 0,
+`Current Changes Priority` = `ASAP`, `Is Cancelled` = No. Everything else (the legacy spec
+fields) blank — see note above.
+
+### Step 4 — 15 new `Model Revisions` rows, one per new `Models` row
+
+Naming convention confirmed from the live list: `MR-HYQU-{same number}-V1` (e.g. `Model_ID
+M-HYQU-0096` → `Model_Revion_ID MR-HYQU-0096-V1`). For each: `Client` = HYDRO QUEBEC,
+`Pioneer Model Code` = Lookup to the new `Models` row from step 3, and copy straight across
+from the matching `Models SA` row:
+
+| `Models SA` field | → `Model Revisions` field |
+|---|---|
+| Model Type | Model Type |
+| Description | Model Description |
+| kVA and kV | kVA (`Primary Voltage`/`Secondary Voltage` stay blank — see above) |
+| Oil Type | Oil Type |
+| Oil Amount | Oil Amount |
+| Core Type | Core Type |
+| Phases | Phases |
+| Cable | Cable |
+| Form | Form |
+| Copper (LV) | Copper (LV) |
+| Wire (HV) | Wire (HV) |
+| Overcoil | Overcoil |
+
+`Spec_ID`, `Spec_Revision`, `Spec_Date`, `Client_Model_Code`, `Notes`, `JS #`, `Duplicate
+Order`, `Family` — no source data on `Models SA`, leave blank.
+
+### Step 5 — link back
+
+Set each new `Models` row's `Latest Model Revision` Lookup to point at its new `Model
+Revisions` row from step 4. (The two placeholder rows from step 2 have no `Model Revisions`
+entry — nothing to link, by design, since they're empty placeholders.)
+
+### After that
+
+Steps 3-5 of "Migration scope" above (repoint `ColumnMap.pq`/`TableOrders.pq`, retire
+`Models SA`, build order-item-generation logic) — not started, come back to these once the
+15+2 new `Models`/`Model Revisions` rows exist live.
 
 ## Relationship to other work
 
