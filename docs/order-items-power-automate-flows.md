@@ -6,7 +6,10 @@ SharePoint connector is available now, buildable directly at make.powerautomate.
 
 ## Progress
 
-- [ ] 2b. TextField auto-sync (this doc, below)
+- [x] 2b. TextField auto-sync — `Order Number` piece built and tested 2026-08-13
+      (single run per change, confirmed no loop). `Regrouped Into` piece **deferred as a
+      future nice-to-have** — user's call, 2026-08-13: not needed now, revisit once
+      regrouping is actually used. `Model Revisions`/`Duplicate Order` piece still to build.
 - [ ] 2c. Production-sequence auto-stamp
 - [ ] 3. Excel → SharePoint transfer flow (re-runnable)
 
@@ -25,24 +28,25 @@ nothing to change and exits without looping.
 
 ### Flow A — `Order Items` Lookup sync
 
+**Built and tested 2026-08-13** (the `Order Number` piece):
 - **Trigger**: SharePoint *"When an item is created or modified"* — Site:
   `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`, List: `Order Items`.
-- **Action 1 — Get item** (or use trigger outputs directly if the connector exposes lookup
-  display values on the trigger — check `Order Number` and `Regrouped Into`'s available
-  dynamic content fields first; Lookup columns typically expose both an ID and a
-  Value/display-text output).
-- **Condition 1**: `Order Number` (lookup display value) **is not equal to**
-  `Order_Number_TextField` (current stored text).
-  - **If yes**: Update item — set `Order_Number_TextField` = `Order Number`'s display
-    value.
-  - **If no**: do nothing (this is the loop-prevention guard).
-- **Condition 2** (separate, for the multi-value lookup): `Regrouped Into` values, joined
-  with a comma (`join(outputs('Get_item')?['body/RegroupedInto']?['value'], ', ')` or
-  equivalent — the exact expression depends on how the connector surfaces a multi-value
-  lookup; test this against a real multi-value row before trusting it) **is not equal to**
-  `Regrouped_Into_TextField`.
-  - **If yes**: Update item — set `Regrouped_Into_TextField` = the joined text.
-  - **If no**: do nothing.
+- **Condition**: `Order Number Value` (the dynamic-content variant that holds the
+  looked-up item's display text — not `Order Number` or `Order Number Id`) **is equal to**
+  `Order_Number_TextField`.
+  - **If yes**: nothing (already in sync).
+  - **If no**: Update item (Id = trigger's `ID`, only `Order_Number_TextField` set = `Order
+    Number Value`) — this is the loop-prevention guard, structured around "equal" instead
+    of "not equal" but same effect.
+- **Tested**: changing `Order Number` on a row produces exactly one flow run and updates
+  the TextField correctly — confirmed no loop.
+
+**`Regrouped Into` piece — deferred, 2026-08-13.** Not needed now, user's call — nothing's
+been regrouped yet and it's a nice-to-have, not blocking. If picked up later: same
+condition/update structure as `Order Number`, but `Regrouped Into` is multi-value, so its
+dynamic content is an array, not a plain string — needs a `join(select(...), ', ')`-style
+expression to flatten it to text first. Check the actual dynamic-content picker output for
+this field before trusting any specific expression syntax.
 
 ### Flow B — `Model Revisions` Lookup sync
 
@@ -56,12 +60,9 @@ nothing to change and exits without looping.
 
 ### Testing before trusting this
 
-1. Change `Order Number` on one `Order Items` row → confirm `Order_Number_TextField`
-   updates within a few seconds, and confirm the flow run history shows exactly **one**
-   run per change, not a runaway loop.
-2. Repeat for `Duplicate Order` on one `Model Revisions` row.
-3. `Regrouped Into` can't be tested yet — nothing has been regrouped, and building the
-   actual `Regrouped Into` UX (which items are legal targets, etc.) is separate future
-   work. Test this one once a real regroup happens, or fabricate a test row/value first —
-   don't skip testing it just because it's inconvenient right now, the multi-value join
-   expression is the most likely part of this flow to be wrong.
+1. ✅ **Done 2026-08-13**: changed `Order Number` on one `Order Items` row, confirmed
+   `Order_Number_TextField` updated and exactly **one** flow run in the run history — no
+   loop.
+2. Repeat the same test for `Duplicate Order` on one `Model Revisions` row once Flow B is
+   built.
+3. `Regrouped Into` — deferred, see note above. Test whenever it's picked up.
