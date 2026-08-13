@@ -42,10 +42,24 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 | Order | Model | *(missing — to add)* | *(verify)* | Needs a TextField companion. Confirm what `ShowField` currently displays (likely `Model_Code`) before deciding Simple vs. Get-item. |
 | Order | Model Revision | *(missing — to add)* | *(verify)* | Needs a TextField companion. Confirm `ShowField` (likely something identifying the specific revision, e.g. `Spec_ID` or `Model_Revion_ID`) before deciding pattern. |
 
-## Open items
+## To-do
 
-- The three `Order` fields above need their TextField companions **built in SharePoint
-  first** (schema step, manual — same PnP-blocked situation as the rest of this migration)
-  before a sync flow can be built for them.
-- Three fields marked *(verify)* need their Lookup's `ShowField` checked against the live
-  list before assuming Simple vs. Get-item — don't build blind.
+**Current focus (2026-08-13): finishing `Model Revisions`' flow first** (three fields —
+`Duplicate Order`, `Client`, `Pioneer Model Code`). Everything below is queued after that,
+not urgent right now.
+
+- [ ] Add `Client_ID_TextField` to `Order` (schema step, manual — same PnP-blocked
+      situation as the rest of this migration) — then build its sync flow (**Get-item**
+      pattern, near-certain given every other `Client` Lookup needs it).
+- [ ] Add a TextField companion to `Order`'s `Model` field (name TBD, e.g.
+      `Model_Code_TextField`) — schema step first, then verify `ShowField` before deciding
+      Simple vs. Get-item.
+- [ ] Add a TextField companion to `Order`'s `Model Revision` field (name TBD) — schema
+      step first, then verify `ShowField` before deciding pattern.
+- [ ] Verify `ShowField` on `ModelChanges`' `Model_ID` and `ECO_ID` Lookups before building
+      their flows (marked *(verify)* in the table above).
+- [ ] Verify `ShowField` on `Model Revisions`' `Pioneer Model Code` Lookup (target list
+      confirmed as `Models`, exact displayed field still needs checking).
+- [ ] Build the chained Get-item flow for `ModelChanges`' `Client_ID_TextField`
+      (`ModelChanges.Model_ID` → `Models`' `Client` → `Clients`' `Client_ID`) — the most
+      complex one here, do it after the simpler single-hop ones are working.
