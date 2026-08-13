@@ -95,7 +95,7 @@ gets filled once its Status = Completed.
 | Field name | Type | Choice values / details |
 |---|---|---|
 | Engineering Required | Yes/No | Matches the pattern of Order's existing workflow booleans (e.g. `Receive CRM Sales Order`). |
-| LDs | ⚠ Number | Type not pinned down in the schema doc — best guess is a numeric (liquidated-damages amount or day count). **Confirm the real type/sample value from `TableOrders` before creating**, don't take this as final. |
+| LDs | Yes/No | Verified directly against `TableOrders` column Y across ~1000 rows: clean binary `Y`/`N` text flag (175 `Y`, 38 `N`, rest blank), not a numeric amount. One stray row had a formula-glitch value, ignored as noise. |
 | Client Date Status | Choice | `Confirmed`, `Not Confirmed`, `Pending` |
 | Sales Notes | Multiple lines of text | |
 | Protector & Switchgear PO | Single line of text | |
