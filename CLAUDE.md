@@ -32,7 +32,13 @@ had — hence a dedicated place to plan it before touching production.
 - `workflow-data/` — exports/samples of workflow data (Power Automate flow definitions,
   run logs, etc.) once that automation layer exists.
 - `sharepoint-lists/` — schema/export staging for new lists designed here (starting with
-  **Order Items**), same convention as FRM10-12's `sharepoint-lists/`.
+  **Order Items**), same convention as FRM10-12's `sharepoint-lists/`. Filenames follow
+  `{List Name} {YYYY-MM-DD} {HHMM}.csv` (export timestamp appended, not just the list
+  name) — added 2026-08-13 so re-exports don't silently overwrite the record of when a
+  snapshot was taken, which matters while the manual `Order Items` build is still in
+  progress. Superseded exports move to `sharepoint-lists/Archive/` rather than being
+  deleted. Docs reference this folder generically (`sharepoint-lists/*.csv`), not by exact
+  filename, so this convention can keep evolving without breaking doc links.
 
 ## Related repos
 - `FRM09/` — Winding department workbook, depends on FRM10-12's `Orders` sheet via external
