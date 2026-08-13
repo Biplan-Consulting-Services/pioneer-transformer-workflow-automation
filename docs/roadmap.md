@@ -99,6 +99,13 @@ Items` auxiliary row instead, but that field was never built.
 **Open question, must be answered before starting**: how to distinguish an SA-type
 `Models` row from a regular one once they're the same list — not yet designed.
 
+**Now also blocks a new schema item**: `order-items-manual-build-checklist.md`'s step 8 —
+new direct `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself (decided
+2026-08-13, to work around SharePoint's inability to cascade through a Lookup in
+views/filters/reports — same pattern already used on `Model Revisions`' own `Client`
+Lookup). Can't be built until this fusion resolves which list `Model`/`Model Revision`
+should point at.
+
 **Creates new logic work**: whatever generates the SA auxiliary `Order Items` row (the
 transfer flow now, `phase1-plan.md`'s `Work Order` fan-out later) needs to correctly
 resolve *which* `Models` row is the right one for a given unit, main vs. SA — today the
@@ -137,3 +144,10 @@ building the sync flows in `order-items-power-automate-flows.md`.
 - **Standing future review point**: once `Order Items`/`Workflow Tasks` have real usage
   history, revisit any field placed on a hunch during this initial design pass (starting
   with `Trimestrial Customer`) — don't wait to be reminded, this is a deliberate open loop.
+- **`Order` → `Order Items` cascade-update flow** for the new `Client`/`Model`/`Model
+  Revision` Lookups (workstream 1, step 8): if `Order`'s own `Client`/`Model`/`Model
+  Revision` ever changes after an `Order Items` row already exists, nothing currently
+  propagates that change down to the row's copy. User's call, 2026-08-13: sync risk
+  assessed as low (these values are set once at order creation and essentially never change
+  after), so this is a nice-to-have, not needed at launch — build only if drift actually
+  turns out to happen in practice.

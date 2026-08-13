@@ -71,5 +71,10 @@ used.**
   `phase1-plan.md`'s `Work Order` fan-out — both eventually need step 5's order-item
   generation logic once this fusion happens, but neither is blocked from proceeding on
   other fronts in the meantime.
+- **Also blocks** `order-items-manual-build-checklist.md`'s step 8 (new direct
+  `Client`/`Model`/`Model Revision` Lookups on `Order Items`, decided 2026-08-13, to work
+  around SharePoint's lack of cascading Lookups) — a Lookup column can only target one
+  list, so the `Model`/`Model Revision` lookups can't be built until SA designs and regular
+  designs live in the same list.
 - Don't start the actual migration until the open question (how to distinguish SA rows
   post-fusion) is answered — starting the data move before that risks having to redo it.

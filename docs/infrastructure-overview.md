@@ -303,6 +303,26 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Qty | Number | The denominator (`1` in `21408-1/1`) — for convenience/sanity-checking only; `Order` list's `Qty` stays authoritative. |
 | SA Job | Yes/No | **Real meaning confirmed 2026-08-13** (matches `TableOrders.pq`'s existing computed boolean, but that alone didn't explain what it *means*): some transformers ship with an auxiliary unit needing its own independent production tracking despite conceptually being "the same order item" — it gets its own `Order Items` row, `Title` = parent unit ID + ` SA` suffix (e.g. `21408-1/1` / `21408-1/1 SA`), `Unit #`/`Qty` copied from the parent. `SA Job = Yes` marks that row as the auxiliary, not an abstract property. Not counted as a separately priced/reported unit — Power BI today filters SA rows out of reporting, keeping only the main version; relevant when `Price` and other calculated columns/reports get built against this list. Most important spec fields for an SA unit's own construction: `Cable`, `Form`, `Copper (LV)`, `Wire (HV)`, `Overcoil` (already on `Models`/`Model Revisions`). |
 
+**Cross-reference lookups (added 2026-08-13, ⚠ blocked on the Models SA fusion):**
+
+| Field | Type | Notes |
+|---|---|---|
+| Client | Lookup → `Clients`/`Models`/`Models SA` (source TBD) | **Decided 2026-08-13**: duplicate `Client`/`Model`/`Model Revision` directly onto `Order Items` rather than relying on the cascade through `Order` — SharePoint can't join through a Lookup in views/filters/reports, and this exact workaround is already used on `Model Revisions`' own `Client` Lookup. For a normal unit these mirror the parent `Order`'s value; for an SA auxiliary row (`SA Job = Yes`) they point at the SA-specific model/revision instead, which also resolves the older "SA row has nowhere to point at its own model" gap. |
+| Model | Lookup → `Models` | Same rationale as `Client` above. |
+| Model Revision | Lookup → `Model Revisions` | Same rationale as `Client` above. |
+
+**Blocked, not just deferred**: a Lookup column can only target one list, so these can't be
+built until `Models SA` is fused into `Models`/`Model Revisions` ([[models-sa-fusion-plan]])
+— otherwise an SA row's `Model` lookup would need a different target list than a normal
+row's `Model` lookup, which one column can't do. Full detail:
+`order-items-manual-build-checklist.md`'s step 8.
+
+**Sync note**: these are one-time stamps at row-creation (backfill/transfer flow, later the
+`Work Order` fan-out), not continuously synced from `Order` — user's call, sync risk judged
+low since these values essentially never change post-creation. A "parent changed → update
+children" flow is logged as a future nice-to-have in `roadmap.md` if that assumption ever
+proves wrong.
+
 **Test/QA results** (⚠ currently stored as a text marker — `'x'` for done/pass, blank otherwise; proposing Yes/No instead, which is a real type change worth confirming, not just a formality):
 
 | Field | Type |

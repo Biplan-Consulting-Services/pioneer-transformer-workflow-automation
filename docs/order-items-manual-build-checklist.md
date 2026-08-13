@@ -25,9 +25,13 @@ Site: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`
 - [x] 5. Other dates — done 2026-08-13
 - [x] 6. Companion columns on `Order` — done 2026-08-13 (`Protector & Switchgear PO` moved to `Order Items` instead, see note in that section)
 - [x] 7. Companion columns on `Model Revisions` — done 2026-08-13
+- [ ] 8. `Client`/`Model`/`Model Revision` lookups on `Order Items` — new, decided
+      2026-08-13, **blocked on the Models SA fusion's disambiguation question** (see
+      `models-sa-fusion-plan.md`)
 
-**All 7 sub-steps done — the manual schema build is complete.** Next real task (not part
-of this checklist): the TextField auto-sync Power Automate flow — see
+**Sub-steps 1-7 done — the original schema build is complete.** Step 8 is a later addition,
+not part of the original scope — see its own section below. Next real task otherwise (not
+part of this checklist): the TextField auto-sync Power Automate flow — see
 `order-items-build-plan.md` step 2b, elevated to a tracked build step since manual
 TextField upkeep has been a genuine pain point, not just a "nice to have."
 
@@ -114,10 +118,6 @@ blank, so re-editing the item later doesn't re-stamp it.
 | — | Finishing Start Date | 42 | Finishing End Date | 43 | Finishing Status |
 | — | Delivery Start Date | 44 | Delivery End Date | 45 | Delivery Status |
 
-**To-do**: the 8 `{Stage} Started` columns still need to be added in SharePoint (schema
-step, manual, same PnP-blocked situation as the rest of this migration) before the
-auto-stamp flow can be built against them.
-
 **Fixed 2026-08-13**: the `Delivery Data` typo is resolved — deleted and recreated as
 `Delivery Date` (safe, zero data-loss since the list was still empty), also picking up a
 clean matching internal name in the process.
@@ -156,6 +156,44 @@ revision, not just model-to-model.
 | Duplicate Order | **Lookup** | Get information from: **Order**. In this column: **Order Number**. |
 | Duplicate_Order_TextField | Single line of text | Companion text field, same convention as `Order_Number_TextField` above. |
 | Family | Choice | `A`, `B1`, `B2`, `C` |
+
+## Step 8 — `Client`/`Model`/`Model Revision` lookups on `Order Items` (added 2026-08-13)
+
+**Why**: `Order Items` currently has no lookup to `Client`/`Models`/`Model Revisions` at
+all — that data only exists one hop away, on the parent `Order`. SharePoint can't cascade
+through a Lookup in views/filters/reports, so anything wanting an Order Item's client or
+model has to join through `Order` every time. User's call: duplicate these three directly
+onto `Order Items`, same pattern already used on `Model Revisions` (which has its own
+`Client` Lookup rather than cascading through `Models`).
+
+**Side benefit**: this also resolves the older gap where the SA auxiliary row (`SA Job =
+Yes`) had nowhere to point at its own (different) model — a normal unit's `Model`/`Model
+Revision` mirrors the parent `Order`'s value, an SA row's points at the SA-specific
+model/revision instead. One column serves both cases.
+
+**Blocked on the Models SA fusion, not on anything else**: a Lookup column can only target
+one list, so this can't be built cleanly until `Models SA` is fused into `Models`/`Model
+Revisions` (see `models-sa-fusion-plan.md`) — otherwise an SA row's `Model` lookup would
+need to point at a different list than a normal row's, which SharePoint doesn't support on
+one column. Don't build this step until that fusion's disambiguation question is answered.
+
+**Sync risk assessed as low, 2026-08-13**: these three values are set once at order
+creation and essentially never change afterward (unlike `Location`/`Status`), so a
+one-time stamp at row-creation (the backfill/transfer flow now, the `Work Order` fan-out
+later) is enough — no continuous sync flow needed at launch. **Logged as a future
+nice-to-have in `roadmap.md`**: a "parent changed → update children" flow (if `Order`'s
+`Client`/`Model`/`Model Revision` ever changes after creation, propagate to that order's
+`Order Items` rows) — not needed now, worth building if that turns out to happen in
+practice.
+
+| Field name | Type | Details |
+|---|---|---|
+| Client | **Lookup** | Get information from: **Order** (mirrors parent) or **Models SA/Models** (SA row) — exact source TBD once the fusion is resolved. |
+| Client_ID_TextField | Single line of text | Companion text field, same convention as every other `Client` Lookup system-wide — see `lookup-textfield-reference.md`. |
+| Model | **Lookup** | Get information from: **Models** (post-fusion). |
+| Model_ID_TextField | Single line of text | Companion text field. |
+| Model Revision | **Lookup** | Get information from: **Model Revisions** (post-fusion). |
+| Model_Revision_ID_TextField | Single line of text | Companion text field. |
 
 ## After the list exists
 
