@@ -14,12 +14,14 @@ just consumes it once it exists, no separate minimal version needed.
    schema" section, which is the single source of truth for field names/types; this doc
    doesn't duplicate that table, just sequences the build around it.
 2. Companion new columns added to `Order` (`Engineering Required`, `LDs`, `Client Date
-   Status`, `Sales Notes`, `Protector & Switchgear PO`, `Order Status`) and
-   `Model Revisions` (`Duplicate Order`, `Family` — decided 2026-08-12 to go on Model
-   Revisions specifically, not Models, since both can change revision-to-revision) — not
-   `Order Items` fields
-   themselves, but part of the same "stop manually editing Excel" migration, since they're
-   also currently manual `TableOrders` columns.
+   Status`, `Sales Notes`, `Order Status`) and `Model Revisions` (`Duplicate Order`,
+   `Family` — decided 2026-08-12 to go on Model Revisions specifically, not Models, since
+   both can change revision-to-revision) — not `Order Items` fields themselves, but part
+   of the same "stop manually editing Excel" migration, since they're also currently
+   manual `TableOrders` columns. (`Protector & Switchgear PO` was originally planned here
+   too, but **moved to `Order Items` instead, 2026-08-13** — user's call: it's per-unit
+   purchasing, not per-order, pairing with `Protector Status` which is per-unit for the
+   same reason.)
 3. **Existing live orders' current data backfilled** from `TableOrders` into new `Order
    Items` rows — a one-time migration. Without this, staff can't actually stop touching
    Excel for orders already in flight; they'd have nowhere to see/edit that data until it's

@@ -54,6 +54,7 @@ Create a new custom list named **Order Items**, no template, blank.
 | 12 | SFRA | Yes/No | |
 | 13 | CSA | Yes/No | |
 | 14 | Protector Status | Choice | `Entrepôt SN`, `Reçu`, `à vérifier` |
+| 14b | Protector & Switchgear PO | Single line of text | **Moved here from the `Order` companion columns (step 2) by user decision, 2026-08-13**: it's a per-transformer purchasing column, not per-order — each unit's protector/switchgear can be a separate PO. Pairs naturally with `Protector Status` above, which is per-unit for the same reason. |
 
 ### Production tracking
 
@@ -110,8 +111,10 @@ gets filled once its Status = Completed.
 | LDs | Yes/No | Verified directly against `TableOrders` column Y across ~1000 rows: clean binary `Y`/`N` text flag (175 `Y`, 38 `N`, rest blank), not a numeric amount. One stray row had a formula-glitch value, ignored as noise. |
 | Client Date Status | Choice | `Confirmed`, `Not Confirmed`, `Pending` |
 | Sales Notes | Multiple lines of text | |
-| Protector & Switchgear PO | Single line of text | |
 | Order Status | Choice | `Active` (default), `Cancelled` |
+
+*(`Protector & Switchgear PO` moved to `Order Items` — see row 14b above — per-unit, not
+per-order.)*
 
 ## Step 3 — Companion columns on `Model Revisions`
 

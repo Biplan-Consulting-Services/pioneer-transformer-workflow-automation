@@ -225,10 +225,16 @@ field in the new list, same as it is today, just off `TableOrders`.
 
 **→ Existing `Order` list, as new columns** (one value per Order Number, not per unit —
 sales/engineering-process fields, matching the workflow booleans `Order` already has like
-"Receive CRM Sales Order"): Engineering Required, LDs, Client Date Status, Sales Notes,
-Protector & Switchgear PO. Plus **`Order Status`** (Choice: Active/Cancelled — new,
-decided 2026-08-12, see [completion/cancellation/archiving
+"Receive CRM Sales Order"): Engineering Required, LDs, Client Date Status, Sales Notes.
+Plus **`Order Status`** (Choice: Active/Cancelled — new, decided 2026-08-12, see
+[completion/cancellation/archiving
 logic](#planned-completion-cancellation-and-archiving-logic) below).
+
+`Protector & Switchgear PO` was originally listed here too, but **reclassified to
+`Order Items` instead — user's call, 2026-08-13**: it's a per-transformer purchasing
+column (each unit's protector/switchgear can be a separate PO), not per-order — pairs with
+`Protector Status`, which is per-unit for the same reason (see the Test/QA results table
+below).
 
 **`Order Entry Status` redesign — proposed 2026-08-12, NOT yet confirmed.** The existing
 `Order Entry Status` (In Progress/Done) only ever reflects whichever `Order Step` stage is
@@ -310,6 +316,7 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | SFRA | Yes/No (confirmed 2026-08-12) |
 | CSA | Yes/No (confirmed 2026-08-12) |
 | Protector Status | Choice: Entrepôt SN, Reçu, à vérifier (real values found 2026-08-12, from `TableValidationProtectorStatus` on the workbook's `List` sheet) |
+| Protector & Switchgear PO | Text — moved here from `Order` (2026-08-13): per-transformer purchasing, not per-order |
 
 **Production tracking:**
 
