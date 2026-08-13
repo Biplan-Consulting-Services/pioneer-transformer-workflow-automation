@@ -56,7 +56,7 @@ Create a new custom list named **Order Items**, no template, blank.
 | 20 | Production Line | Choice | `Power / Ligne 1`, `Distribution`, `Power`, `Zone B`, `Ligne 1` (as found in the original validation list — the near-duplicate "Power" entries are verbatim from the source, not a typo introduced here) |
 | 21 | Time (days) | Number | |
 | 22 | Tank | Single line of text | Confirmed: `R` = "Received." Stays Text, not Choice — deliberately manually-filled. |
-| 23 | Frame | Choice | `Plaspak`, `Reçu` — ⚠ note: an earlier pass on this same audit also saw a literal `0` value in the source validation table that didn't make it into the doc's final 2-value list. Worth a quick double-check against the `List` sheet in FRM10-12 before finalizing; safe to add a third choice later if needed. |
+| 23 | Frame | Choice | `Plaspak`, `Reçu`, `0` — re-verified directly against `Table20` on the `List` sheet (`Y8:Y11`); all 3 are real values in the source, not a typo. Meaning of `0` as a choice is unconfirmed (likely "none/not applicable") but include it as-is. |
 | 24 | ISO Stack | Single line of text | Same as Tank — confirmed `R` = "Received," manually-filled. |
 | 25 | ISO Coil | Single line of text | Same as Tank — confirmed `R` = "Received," manually-filled. |
 | 26 | Lead Assembly | Single line of text | Same as Tank — confirmed `R` = "Received," manually-filled. |

@@ -319,7 +319,7 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Production Line | Choice: Power / Ligne 1, Distribution, Power, Zone B, Ligne 1 | Confirmed 2026-08-12 from `TableValidationProductionLine`. |
 | Time (days) | Number | |
 | Tank | Text | **Confirmed 2026-08-12: `R` = "Received."** Stays Text, not Choice — user confirmed this is deliberately a manually-filled field, not a fixed value list. |
-| Frame | Choice: Plaspak, Reçu | **Corrected 2026-08-12** — earlier guessed this was a numeric identifier from the sample (`0`), but the real validation list (`Table20`/`Frame`) shows it's a status Choice field instead. |
+| Frame | Choice: Plaspak, Reçu, 0 | **Re-verified 2026-08-12 directly against `Table20` (`List` sheet, range `Y8:Y11`)**: the real validation list has all 3 values, not 2 — an earlier pass on this doc dropped the literal `0` entry. Meaning of `0` as a choice (vs. blank) is unconfirmed — likely a "none/not applicable" placeholder — but it's a real, present option in the source table, not a data-entry error, so it belongs in the Choice list as-is. |
 | ISO Stack | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
 | ISO Coil | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
 | Lead Assembly | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
