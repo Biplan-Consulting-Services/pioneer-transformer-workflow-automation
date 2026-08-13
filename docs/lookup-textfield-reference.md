@@ -29,9 +29,9 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 |---|---|---|---|---|
 | Order Items | Order Number | `Order_Number_TextField` | Simple | ✅ Built & tested 2026-08-13 |
 | Order Items | Regrouped Into | `Regrouped_Into_TextField` | Simple (multi-value) | Deferred — nice-to-have, nothing regrouped yet |
-| Model Revisions | Client | `Client_ID_TextField` | **Get-item** | On `Clients`: pull `Client_ID` |
-| Model Revisions | Pioneer Model Code | `Pioneer_Model_Code_TextField` | Simple *(verify ShowField)* | **Confirmed 2026-08-13 by user: points at `Models`** (the "model table lookup table"). Target list confirmed — still confirm the exact `ShowField` (likely `Model_Code`) before building. |
-| Model Revisions | Duplicate Order | `Duplicate_Order_TextField` | Simple | Same shape as Order Items' `Order Number` |
+| Model Revisions | Client | `Client_ID_TextField` | **Get-item** | ✅ Built 2026-08-13 (pending test confirmation). On `Clients`: pulls `Client_ID` |
+| Model Revisions | Pioneer Model Code | `Pioneer_Model_Code_TextField` | Simple | ✅ Built 2026-08-13 (pending test confirmation). Points at `Models`. |
+| Model Revisions | Duplicate Order | `Duplicate_Order_TextField` | Simple | ✅ Built 2026-08-13 (pending test confirmation). Same shape as Order Items' `Order Number`. |
 | Models | Client | `Client_ID_TextField` | **Get-item** | Same as Model Revisions |
 | Models SA | Client | `Client_ID_TextField` | **Get-item** | Same as Model Revisions |
 | EngineeringChangeOrders | Client | `Client_ID_TextField` | **Get-item** | Same as Model Revisions |
@@ -44,10 +44,16 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 
 ## To-do
 
-**Current focus (2026-08-13): finishing `Model Revisions`' flow first** (three fields —
-`Duplicate Order`, `Client`, `Pioneer Model Code`). Everything below is queued after that,
-not urgent right now.
+**`Model Revisions`' three-field flow built 2026-08-13** (`Duplicate Order`, `Client`,
+`Pioneer Model Code`) — pending the test-and-confirm pass described in
+`order-items-power-automate-flows.md` before checking this off for good. Everything below
+is queued next.
 
+- [ ] Build the `Client`-sync flow for `Models` and `Models SA` (same **Get-item** pattern
+      just proven on `Model Revisions` — should be quick to repeat).
+- [ ] Build the `Client`-sync flow for `EngineeringChangeOrders` (same pattern).
+- [ ] Verify `ShowField` on `ModelChanges`' `Model_ID` and `ECO_ID` Lookups, then build
+      those two (likely Simple pattern).
 - [ ] Add `Client_ID_TextField` to `Order` (schema step, manual — same PnP-blocked
       situation as the rest of this migration) — then build its sync flow (**Get-item**
       pattern, near-certain given every other `Client` Lookup needs it).
@@ -56,10 +62,6 @@ not urgent right now.
       Simple vs. Get-item.
 - [ ] Add a TextField companion to `Order`'s `Model Revision` field (name TBD) — schema
       step first, then verify `ShowField` before deciding pattern.
-- [ ] Verify `ShowField` on `ModelChanges`' `Model_ID` and `ECO_ID` Lookups before building
-      their flows (marked *(verify)* in the table above).
-- [ ] Verify `ShowField` on `Model Revisions`' `Pioneer Model Code` Lookup (target list
-      confirmed as `Models`, exact displayed field still needs checking).
 - [ ] Build the chained Get-item flow for `ModelChanges`' `Client_ID_TextField`
       (`ModelChanges.Model_ID` → `Models`' `Client` → `Clients`' `Client_ID`) — the most
       complex one here, do it after the simpler single-hop ones are working.

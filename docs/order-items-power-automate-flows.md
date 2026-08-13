@@ -12,10 +12,13 @@ standalone reference rather than duplicated here.
 
 ## Progress
 
-- [x] 2b. TextField auto-sync — `Order Number` piece built and tested 2026-08-13
-      (single run per change, confirmed no loop). `Regrouped Into` piece **deferred as a
-      future nice-to-have** — user's call, 2026-08-13: not needed now, revisit once
-      regrouping is actually used. `Model Revisions`/`Duplicate Order` piece still to build.
+- [x] 2b. TextField auto-sync — `Order Items`/`Order Number` piece built and tested
+      2026-08-13 (single run per change, confirmed no loop). `Model Revisions`' three-field
+      flow (`Duplicate Order`, `Client`, `Pioneer Model Code`) **built 2026-08-13** —
+      pending test confirmation (see below). `Regrouped Into` piece **deferred as a future
+      nice-to-have** — user's call, not needed now, revisit once regrouping is actually
+      used. Remaining lists (`Models`, `Models SA`, `EngineeringChangeOrders`,
+      `ModelChanges`, `Order`) still queued — see `lookup-textfield-reference.md`'s to-do.
 - [ ] 2c. Production-sequence auto-stamp
 - [ ] 3. Excel → SharePoint transfer flow (re-runnable)
 
@@ -56,27 +59,21 @@ this field before trusting any specific expression syntax.
 
 ### Flow B — `Model Revisions` Lookup sync
 
-**Scope grew once building started**: `Model Revisions` actually has three Lookups needing
-sync (`Duplicate Order`, `Client`, `Pioneer Model Code`), not just `Duplicate Order` — see
-`lookup-textfield-reference.md`. `Client` needs the **Get-item** pattern (fetch `Client_ID`
-from `Clients`), the other two are Simple. Given three fields on one list, use the
-consolidated-update shape discussed for `ModelChanges` (variables per field, one boolean
-flag flipped on any mismatch, one final `Update item` gated on that flag) rather than three
+**Built 2026-08-13** — three Lookups synced (`Duplicate Order`, `Client`, `Pioneer Model
+Code`, not just `Duplicate Order` as originally scoped — see `lookup-textfield-reference.md`).
+`Client` used the **Get-item** pattern (fetch `Client_ID` from `Clients`); the other two are
+Simple. Built using the consolidated-update shape (variables per field, one boolean flag
+flipped on any mismatch, one final `Update item` gated on that flag) rather than three
 separate update actions.
-
-- **Trigger**: SharePoint *"When an item is created or modified"* — same site, List:
-  `Model Revisions`.
-- **Condition**: `Duplicate Order` (lookup display value) **is not equal to**
-  `Duplicate_Order_TextField`.
-  - **If yes**: Update item — set `Duplicate_Order_TextField` = `Duplicate Order`'s
-    display value.
-  - **If no**: do nothing.
 
 ### Testing before trusting this
 
-1. ✅ **Done 2026-08-13**: changed `Order Number` on one `Order Items` row, confirmed
-   `Order_Number_TextField` updated and exactly **one** flow run in the run history — no
-   loop.
-2. Repeat the same test for `Duplicate Order` on one `Model Revisions` row once Flow B is
-   built.
+1. ✅ **Done 2026-08-13** (`Order Items`/`Order Number`): changed `Order Number` on one
+   `Order Items` row, confirmed `Order_Number_TextField` updated and exactly **one** flow
+   run in the run history — no loop.
+2. **`Model Revisions` — confirm before moving on**: test each of the three fields
+   independently (change `Duplicate Order` alone, `Client` alone, `Pioneer Model Code`
+   alone) and check the run history shows exactly one run per change, all three TextFields
+   land correctly, and no loop. Also worth one test changing more than one field at once,
+   to confirm the consolidated update still fires exactly once and gets all of them right.
 3. `Regrouped Into` — deferred, see note above. Test whenever it's picked up.
