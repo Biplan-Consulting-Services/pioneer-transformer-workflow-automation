@@ -88,23 +88,29 @@ Matched by exact `Model_Code` string after stripping `" SA"` — 11 of 15 matche
 4 needed the user's judgment call since `Model_Code` didn't line up exactly (typos/omissions
 in the original data, not a matching-logic problem):
 
-| `Models SA` row | Its `Model_Code` | → Parent `Models` row | Parent's `Model_Code` |
-|---|---|---|---|
-| MSA-HYQU-0001 | 4251081 SA | M-HYQU-0064 | 4251081 |
-| MSA-HYQU-0002 | 4261859 SA | M-HYQU-0066 | 4261859 |
-| MSA-HYQU-0003 | 4261871 SA | M-HYQU-0069 | 4261871 |
-| MSA-HYQU-0004 | 426870 SA | M-HYQU-0096 (new placeholder) | 426870 |
-| MSA-HYQU-0005 | 4251082 SA | M-HYQU-0065 | 4251082 |
-| MSA-HYQU-0006 | 4261865 SA | M-HYQU-0067 | 4261865 |
-| MSA-HYQU-0007 | 4276087 SA | M-HYQU-0070 | 4276087 |
-| MSA-HYQU-0008 | 4276699 SA | M-HYQU-0097 (new placeholder) | 4276699 |
-| MSA-HYQU-0009 | 4251001 SA | M-HYQU-0082 | 4251001 / 1166058 |
-| MSA-HYQU-0010 | 4276269 (no " SA" suffix — confirmed a data-entry omission, not a different case) | M-HYQU-0071 | 4276269 |
-| MSA-HYQU-0011 | 4261870 SA | M-HYQU-0068 | 4261870 |
-| MSA-HYQU-0012 | TMP9 SA | M-HYQU-0092 | TMP9 |
-| MSA-HYQU-0013 | G21523 SA | M-HYQU-0002 | G21523 |
-| MSA-HYQU-0014 | 4251081/1166353 SA | M-HYQU-0076 | 4251081/1166353 |
-| MSA-HYQU-0015 | 4251082/1166354 SA | M-HYQU-0077 | 4251082/1166354 |
+**Note on the leftmost column below**: `MSA-HYQU-####` here is the *old* `Models SA`
+list's own `Model_ID` (kept for traceability) — the *new*, fused `Models` row built from
+each one gets its own new `Model_ID`, listed in the "New `Models` row" column (see
+"Step 3, done" below for how that naming was chosen — parent's number, not a fresh
+sequential one).
+
+| Old `Models SA` row | Its `Model_Code` | New `Models` row | → Parent `Models` row | Parent's `Model_Code` |
+|---|---|---|---|---|
+| MSA-HYQU-0001 | 4251081 SA | MSA-HYQU-0064 | M-HYQU-0064 | 4251081 |
+| MSA-HYQU-0002 | 4261859 SA | MSA-HYQU-0066 | M-HYQU-0066 | 4261859 |
+| MSA-HYQU-0003 | 4261871 SA | MSA-HYQU-0069 | M-HYQU-0069 | 4261871 |
+| MSA-HYQU-0004 | 426870 SA | MSA-HYQU-0096 | M-HYQU-0096 (new placeholder) | 426870 |
+| MSA-HYQU-0005 | 4251082 SA | MSA-HYQU-0065 | M-HYQU-0065 | 4251082 |
+| MSA-HYQU-0006 | 4261865 SA | MSA-HYQU-0067 | M-HYQU-0067 | 4261865 |
+| MSA-HYQU-0007 | 4276087 SA | MSA-HYQU-0070 | M-HYQU-0070 | 4276087 |
+| MSA-HYQU-0008 | 4276699 SA | MSA-HYQU-0097 | M-HYQU-0097 (new placeholder) | 4276699 |
+| MSA-HYQU-0009 | 4251001 SA | MSA-HYQU-0082 | M-HYQU-0082 | 4251001 / 1166058 |
+| MSA-HYQU-0010 | 4276269 (no " SA" suffix — confirmed a data-entry omission, not a different case) | MSA-HYQU-0071 | M-HYQU-0071 | 4276269 |
+| MSA-HYQU-0011 | 4261870 SA | MSA-HYQU-0068 | M-HYQU-0068 | 4261870 |
+| MSA-HYQU-0012 | TMP9 SA | MSA-HYQU-0092 | M-HYQU-0092 | TMP9 |
+| MSA-HYQU-0013 | G21523 SA | MSA-HYQU-0002 | M-HYQU-0002 | G21523 |
+| MSA-HYQU-0014 | 4251081/1166353 SA | MSA-HYQU-0076 | M-HYQU-0076 | 4251081/1166353 |
+| MSA-HYQU-0015 | 4251082/1166354 SA | MSA-HYQU-0077 | M-HYQU-0077 | 4251082/1166354 |
 
 **Two new placeholder `Models` rows, user's call, 2026-08-13**: rather than force-matching
 `MSA-HYQU-0004`/`MSA-HYQU-0008` to the nearest-but-not-exact existing codes (`4261870`/
@@ -161,19 +167,26 @@ Identity only, everything else blank:
 
 ### Step 3 — 15 new `Models` rows, one per `Models SA` row
 
-Continuing the `M-HYQU-####` sequence (after the two placeholders above). For each row:
-`Client` = HYDRO QUEBEC, `Model_Code` = the `Models SA` row's own code (keep the `" SA"`
-suffix, e.g. `4261870 SA`), `SA Model` = Yes, `Parent Model` = the matched row from the
-mapping table above, `Modification_Status` = `Up to Date`, `Estimated Effort` = 0,
-`Current Changes Priority` = `ASAP`, `Is Cancelled` = No. Everything else (the legacy spec
-fields) blank — see note above.
+**Done, 2026-08-13.** `Model_ID` naming changed from the originally-planned fresh
+sequential numbers (`M-HYQU-0098`-`0112`) to the user's better idea, confirmed while
+building: **`MSA-HYQU-{parent's number}`** — reuses the existing `MSA` prefix, and is
+self-documenting (`MSA-HYQU-0064` is immediately readable as "the SA design for
+`M-HYQU-0064`"). Final IDs listed in the mapping table above. Built via a generated Excel
+workbook (`workflow-data/Models SA migration - new Models rows.xlsx`, not committed —
+one-time working aid, safe to delete once done) rather than typed row-by-row, with
+`Parent_Model_TextField` filled directly (mirroring `Parent Model`'s value, same as every
+other Lookup/TextField pair) instead of left for a future sync flow.
 
 ### Step 4 — 15 new `Model Revisions` rows, one per new `Models` row
 
-Naming convention confirmed from the live list: `MR-HYQU-{same number}-V1` (e.g. `Model_ID
-M-HYQU-0096` → `Model_Revion_ID MR-HYQU-0096-V1`). For each: `Client` = HYDRO QUEBEC,
-`Pioneer Model Code` = Lookup to the new `Models` row from step 3, and copy straight across
-from the matching `Models SA` row:
+**Naming decided 2026-08-13**: `MR-HYQU-{same number}-V1` (the convention confirmed from
+the live list) would collide with each *parent's own* revision ID — e.g. `MSA-HYQU-0064`'s
+revision can't also be `MR-HYQU-0064-V1`, since parent `M-HYQU-0064` already owns that
+string. **Using `MRSA-HYQU-{number}-V1` instead** (mirrors the `MSA` prefix, stays unique) —
+e.g. `Model_ID MSA-HYQU-0064` → `Model_Revion_ID MRSA-HYQU-0064-V1`.
+
+For each: `Client` = HYDRO QUEBEC, `Pioneer Model Code` = Lookup to the new `Models` row
+from step 3, and copy straight across from the matching `Models SA` row:
 
 | `Models SA` field | → `Model Revisions` field |
 |---|---|
