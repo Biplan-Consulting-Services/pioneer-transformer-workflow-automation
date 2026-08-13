@@ -179,6 +179,10 @@ other Lookup/TextField pair) instead of left for a future sync flow.
 
 ### Step 4 — 15 new `Model Revisions` rows, one per new `Models` row
 
+**Done, 2026-08-13.** Built via a generated Excel workbook
+(`workflow-data/Models SA migration - new Model Revisions rows.xlsx`, not committed —
+one-time working aid, safe to delete once done).
+
 **Naming decided 2026-08-13**: `MR-HYQU-{same number}-V1` (the convention confirmed from
 the live list) would collide with each *parent's own* revision ID — e.g. `MSA-HYQU-0064`'s
 revision can't also be `MR-HYQU-0064-V1`, since parent `M-HYQU-0064` already owns that
