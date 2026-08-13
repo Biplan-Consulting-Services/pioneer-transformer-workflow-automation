@@ -96,15 +96,18 @@ Items`' SA auxiliary row has no lookup field pointing at `Models SA` at all toda
 always points at `Models`, and the SA-specific link was expected to live on the `Order
 Items` auxiliary row instead, but that field was never built.
 
-**Open question, must be answered before starting**: how to distinguish an SA-type
-`Models` row from a regular one once they're the same list — not yet designed.
+**Disambiguation resolved 2026-08-13** — see `models-sa-fusion-plan.md`: confirmed 1:1 by
+the user (who built the original `Models SA` logic), so `Models` gets a new `SA Model`
+(Yes/No) field plus a self-referencing `Parent Model` Lookup (populated only for SA rows,
+pointing at the specific main model it pairs with). No existing link column to repoint —
+this is new. Only the actual migration (moving `Models SA`'s rows over) is left to do.
 
-**Now also blocks a new schema item**: `order-items-manual-build-checklist.md`'s step 8 —
-new direct `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself (decided
-2026-08-13, to work around SharePoint's inability to cascade through a Lookup in
+**Now also unblocks (design-wise) a schema item**: `order-items-manual-build-checklist.md`'s
+step 8 — new direct `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself
+(decided 2026-08-13, to work around SharePoint's inability to cascade through a Lookup in
 views/filters/reports — same pattern already used on `Model Revisions`' own `Client`
-Lookup). Can't be built until this fusion resolves which list `Model`/`Model Revision`
-should point at.
+Lookup). Still can't be built until the migration itself happens (both lists need to
+actually be one list first).
 
 **Creates new logic work**: whatever generates the SA auxiliary `Order Items` row (the
 transfer flow now, `phase1-plan.md`'s `Work Order` fan-out later) needs to correctly

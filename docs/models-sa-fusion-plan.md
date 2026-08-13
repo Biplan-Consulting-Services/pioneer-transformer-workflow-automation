@@ -1,7 +1,7 @@
 # Models SA Fusion Plan
 
-**Status:** decided in principle 2026-08-13, not yet scoped in detail or started. Logged
-here so the decision and its consequences aren't lost before work on it begins.
+**Status:** decided in principle 2026-08-13, disambiguation design resolved the same day
+(see below), migration itself not yet started.
 
 ## The decision
 
@@ -42,17 +42,36 @@ level (both just rows in `Models`), whatever creates the SA auxiliary `Order Ite
 (today: manual; later: the transfer flow, and eventually `phase1-plan.md`'s `Work Order`
 fan-out logic) needs correct logic to resolve *which* `Models` row is the SA-specific
 design for a given order — not just "the" model, since a main unit and its SA auxiliary
-may need different model rows. **How to distinguish them once fused is not yet designed —
-open question, needs answering before the fusion is implemented, not just before it's
-used.**
+may need different model rows.
 
-## Migration scope (not yet detailed — sketch only)
+## Disambiguation design — decided 2026-08-13
 
-1. Design how to distinguish an "SA-type" `Models` row from a regular one post-fusion
-   (a flag? a naming convention? something else?) — the open question above, needed before
-   step 2 can be done correctly.
+**Confirmed by the user (who built the original `Models SA` logic): pairing is 1:1** —
+each SA design belongs to exactly one specific main model, not shared/reused across
+several. There is **no existing link column today** — this is new, not something already
+built and overlooked; the only prior signal was which list a row lived in, plus the
+`Model_Code` naming convention (`"4261870 SA"` implying `"4261870"`), never a real FK.
+
+**New fields on `Models`** (not `Model Revisions` — this is an identity-level
+classification, doesn't change revision-to-revision):
+- `SA Model` (Yes/No, default No) — marks this row as an SA (auxiliary) design rather than
+  a main one. **Not named `Model Type`** — that name's already taken by an unrelated
+  existing spec field on both `Models` and `Models SA` (an oil/core/construction
+  classification), confirmed by checking the live schema exports before naming this.
+- `Parent Model` (self-referencing **Lookup** → `Models` itself) — populated only when
+  `SA Model = Yes`; points at the specific main `Models` row this SA design pairs with.
+  Blank for main rows. This is what lets order-item generation resolve "which SA model for
+  this order" directly (`Models` row where `Parent Model = <the order's Model>`) instead of
+  string-matching `Model_Code`.
+- `Parent_Model_TextField` — companion text field, per the standing Lookup convention.
+
+## Migration scope
+
+1. ~~Design how to distinguish an "SA-type" `Models` row~~ — **done, see above.**
 2. Migrate every existing `Models SA` row into `Models` + a new `Model Revisions` entry
-   for it.
+   for it, setting `SA Model = Yes` and `Parent Model` = the corresponding main model (using
+   the `Model_Code` naming convention to find the right one, since that's the only signal
+   that exists in the current data).
 3. Repoint anything referencing `Models SA`: `ColumnMap.pq`'s `Models SA` entity,
    `TableOrders.pq`'s merge logic (`#"Imported SA Models"`/`#"Complete Imported Models"`
    branch), any live `Order`/`Order Items` rows currently pointing at `Models SA` records.
@@ -75,6 +94,5 @@ used.**
   `Client`/`Model`/`Model Revision` Lookups on `Order Items`, decided 2026-08-13, to work
   around SharePoint's lack of cascading Lookups) — a Lookup column can only target one
   list, so the `Model`/`Model Revision` lookups can't be built until SA designs and regular
-  designs live in the same list.
-- Don't start the actual migration until the open question (how to distinguish SA rows
-  post-fusion) is answered — starting the data move before that risks having to redo it.
+  designs live in the same list. **This is now unblocked design-wise** (disambiguation
+  resolved above) — still blocked on the migration steps below actually happening.
