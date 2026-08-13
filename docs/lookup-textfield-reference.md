@@ -33,7 +33,7 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 | Model Revisions | Pioneer Model Code | `Pioneer_Model_Code_TextField` | Simple | ✅ Built 2026-08-13 (pending test confirmation). Points at `Models`. |
 | Model Revisions | Duplicate Order | `Duplicate_Order_TextField` | Simple | ✅ Built 2026-08-13 (pending test confirmation). Same shape as Order Items' `Order Number`. |
 | Models | Client | `Client_ID_TextField` | **Get-item** | Same as Model Revisions |
-| Models SA | Client | `Client_ID_TextField` | **Get-item** | Same as Model Revisions |
+| Models SA | Client | `Client_ID_TextField` | ~~Get-item~~ | **Superseded 2026-08-13** — `Models SA` is being fused into `Models` (see `models-sa-fusion-plan.md`), don't build a dedicated flow for it. |
 | EngineeringChangeOrders | Client | `Client_ID_TextField` | **Get-item** | Same as Model Revisions |
 | ModelChanges | Model_ID | `Model_ID_TextField` | Simple *(verify)* | Confirm `ShowField` on the Model_ID lookup |
 | ModelChanges | ECO_ID | `ECO_ID_TextField` | Simple *(verify)* | Confirm `ShowField` on the ECO_ID lookup |
@@ -49,8 +49,10 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 `order-items-power-automate-flows.md` before checking this off for good. Everything below
 is queued next.
 
-- [ ] Build the `Client`-sync flow for `Models` and `Models SA` (same **Get-item** pattern
-      just proven on `Model Revisions` — should be quick to repeat).
+- [ ] Build the `Client`-sync flow for `Models` (same **Get-item** pattern just proven on
+      `Model Revisions` — should be quick to repeat). **Do NOT build one for `Models SA`**
+      — see `models-sa-fusion-plan.md`, decided 2026-08-13: `Models SA` is being fused into
+      `Models` instead, so a dedicated sync flow for it would be thrown away.
 - [ ] Build the `Client`-sync flow for `EngineeringChangeOrders` (same pattern).
 - [ ] Verify `ShowField` on `ModelChanges`' `Model_ID` and `ECO_ID` Lookups, then build
       those two (likely Simple pattern).

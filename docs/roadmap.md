@@ -3,7 +3,7 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
-## Three workstreams, mostly independent, all ready to build now
+## Four workstreams, mostly independent, all ready to build now
 
 ### 1. Order Items migration — **priority** (get staff off editing Excel)
 → `docs/order-items-build-plan.md`
@@ -83,6 +83,30 @@ enough to matter, not deferred indefinitely.
 
 **Depends on**: `Item Status`/`Order Status` existing (workstream 1) as the trigger
 conditions — no new fields needed beyond what's already designed.
+
+### 4. Models SA fusion
+→ `docs/models-sa-fusion-plan.md`
+
+Decided in principle 2026-08-13, not yet started: fuse `Models SA` into `Models`/`Model
+Revisions` so SA (auxiliary) model designs get real revision history instead of living in
+a separate, never-versioned, structurally-duplicated list. Surfaced while building
+workstream 1's Lookup→TextField sync flows — `Models` and `Models SA` were about to need
+the same `Client`-sync flow built twice for no reason. Also resolves a real gap: `Order
+Items`' SA auxiliary row has no lookup field pointing at `Models SA` at all today: `Order`
+always points at `Models`, and the SA-specific link was expected to live on the `Order
+Items` auxiliary row instead, but that field was never built.
+
+**Open question, must be answered before starting**: how to distinguish an SA-type
+`Models` row from a regular one once they're the same list — not yet designed.
+
+**Creates new logic work**: whatever generates the SA auxiliary `Order Items` row (the
+transfer flow now, `phase1-plan.md`'s `Work Order` fan-out later) needs to correctly
+resolve *which* `Models` row is the right one for a given unit, main vs. SA — today the
+separate `Models`/`Models SA` lists themselves did that disambiguation implicitly; fusing
+removes that free signal, so the logic has to do it explicitly instead.
+
+**Supersedes**: the `lookup-textfield-reference.md` to-do to build a `Models SA`
+`Client`-sync flow — don't build one, it would be thrown away.
 
 ## Reference (not a build plan — background/audit)
 → `docs/infrastructure-overview.md`
