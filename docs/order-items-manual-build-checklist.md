@@ -84,9 +84,11 @@ Create a new custom list named **Order Items**, no template, blank.
 
 ### Production-sequence dates (8 pairs)
 
-Each stage gets a `{Stage} Date` (Date only, no time) + `{Stage} Status` (Choice:
-`Pending`, `In Progress`, `Completed`; leave blank = not relevant yet). Date field only
-gets filled once its Status = Completed.
+Each stage gets a `{Stage} Date` (**Date and Time** — changed from Date-only, 2026-08-13:
+useful later for finer-grained production-time analytics, e.g. actual duration between
+stages) + `{Stage} Status` (Choice: `Pending`, `In Progress`, `Completed`; leave blank =
+not relevant yet). Date field only gets filled once its Status = Completed — auto-stamped
+by a Power Automate flow (see `order-items-build-plan.md` step 2c), not typed by hand.
 
 | # | Date field | # | Status field |
 |---|---|---|---|

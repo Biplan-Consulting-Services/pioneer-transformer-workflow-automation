@@ -52,6 +52,16 @@ just consumes it once it exists, no separate minimal version needed.
    (`Order Items`'s `Order Number`/`Regrouped Into`, `Model Revisions`'s `Duplicate
    Order`). Worth building **before or alongside step 3's backfill**, not after — the
    backfill will otherwise recreate the same manual-sync burden for every row it creates.
+2c. **Build the production-sequence auto-stamp Power Automate flow, added 2026-08-13**:
+   when any of the 8 `{Stage} Status` fields (Coiling/Stacking/Assembly/Drying/Tanking/
+   Testing/Finishing/Delivery Status) is set to `Completed`, automatically stamp the
+   matching `{Stage} Date` field with the current date **and time** — not left for staff
+   to type in by hand. **Resolved 2026-08-13**: the 8 `{Stage} Date` fields are being
+   changed from Date-only to **Date and Time** in SharePoint (manual schema tweak on the
+   already-built list) — user's call, useful later for finer-grained production-time
+   analytics (e.g. actual duration between stages, not just which day). Update
+   `order-items-manual-build-checklist.md`'s Production-sequence dates section to say
+   Date+Time once that change is made there too, so the two docs don't drift.
 3. **One-time backfill**: export current `TableOrders` data (per the confirmed
    field-to-column mapping already worked out) into `Order Items` rows, one row per current
    `Order` value (e.g. `21865-1/5`). Needs a script or Power Query one-shot — given the
