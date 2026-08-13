@@ -38,19 +38,15 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 | ModelChanges | Model_ID | `Model_ID_TextField` | Simple | ✅ Built 2026-08-13, `ShowField` verified during build |
 | ModelChanges | ECO_ID | `ECO_ID_TextField` | Simple | ✅ Built 2026-08-13, `ShowField` verified during build |
 | ModelChanges | *(none directly)* | `Client_ID_TextField` | **Chained Get-item** | ✅ Built 2026-08-13. Path: `ModelChanges.Model_ID` → that `Models` item's `Client` lookup ID → that `Clients` item's `Client_ID`. |
-| Order | Client | `Client_ID_TextField` (exact name pending fresh export) | **Get-item**, likely | ✅ Column added + flow built 2026-08-13, per user. Exact field name/pattern to be confirmed against a fresh `sharepoint-lists/Order.csv` export. |
-| Order | Model | *(exact name pending fresh export)* | *(pending confirmation)* | ✅ Column added + flow built 2026-08-13, per user. Details to confirm against a fresh export. |
-| Order | Model Revision | *(exact name pending fresh export)* | *(pending confirmation)* | ✅ Column added + flow built 2026-08-13, per user. Details to confirm against a fresh export. |
+| Order | Client | `Client_ID_TextField` | **Get-item** | ✅ Confirmed live 2026-08-13. On `Clients`: pulls `Client_ID` — same pattern as every other `Client` Lookup in this table. |
+| Order | Model | `Model_ID_TextField` | **Get-item**, likely | ✅ Confirmed live 2026-08-13. Naming matches `ModelChanges`' `Model_ID_TextField` (which pulls `Models`' `Model_ID`) — near-certain same pattern, not independently re-verified against `ShowField`. |
+| Order | Model Revision | `Model_Revision_ID_TextField` | **Get-item**, likely | ✅ Confirmed live 2026-08-13. Naming implies it pulls `Model Revisions`' `Model_Revion_ID` field (note: source field is spelled without the second "s" — a pre-existing typo on `Model Revisions`, not a naming mismatch to "fix" here). Not independently re-verified against `ShowField`. |
 
 ## To-do
 
 **All TextField sync flows built as of 2026-08-13** — every Lookup across every list now
-has its companion built, including all three `Order` fields (columns added + flows built
-in the same session, per user). Only one thing remains, already known, not a new gap:
+has its companion built and confirmed live, including all three `Order` fields. Only one
+thing remains, already known, not a new gap:
 
 - [ ] `Regrouped Into` (`Order Items`) — deferred as a future nice-to-have, nothing
       regrouped yet. See the note in `order-items-power-automate-flows.md`.
-- [ ] **Verify the three `Order` rows above** against a fresh `sharepoint-lists/*.csv`
-      export once the user re-exports — the table currently just trusts "done," the exact
-      field names/patterns were placeholders and haven't been confirmed against live data
-      the way every other row in this table was.
