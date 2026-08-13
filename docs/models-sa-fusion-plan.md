@@ -93,11 +93,11 @@ in the original data, not a matching-logic problem):
 | MSA-HYQU-0001 | 4251081 SA | M-HYQU-0064 | 4251081 |
 | MSA-HYQU-0002 | 4261859 SA | M-HYQU-0066 | 4261859 |
 | MSA-HYQU-0003 | 4261871 SA | M-HYQU-0069 | 4261871 |
-| MSA-HYQU-0004 | 426870 SA | **NEW placeholder `Models` row** | 426870 |
+| MSA-HYQU-0004 | 426870 SA | M-HYQU-0096 (new placeholder) | 426870 |
 | MSA-HYQU-0005 | 4251082 SA | M-HYQU-0065 | 4251082 |
 | MSA-HYQU-0006 | 4261865 SA | M-HYQU-0067 | 4261865 |
 | MSA-HYQU-0007 | 4276087 SA | M-HYQU-0070 | 4276087 |
-| MSA-HYQU-0008 | 4276699 SA | **NEW placeholder `Models` row** | 4276699 |
+| MSA-HYQU-0008 | 4276699 SA | M-HYQU-0097 (new placeholder) | 4276699 |
 | MSA-HYQU-0009 | 4251001 SA | M-HYQU-0082 | 4251001 / 1166058 |
 | MSA-HYQU-0010 | 4276269 (no " SA" suffix — confirmed a data-entry omission, not a different case) | M-HYQU-0071 | 4276269 |
 | MSA-HYQU-0011 | 4261870 SA | M-HYQU-0068 | 4261870 |
@@ -139,17 +139,20 @@ nothing to carry forward. Not a design gap, just nothing to migrate.
 
 ### Step 1 — schema additions on `Models` (manual, PnP still blocked)
 
+**Done, 2026-08-13.**
+
 | Field name | Type | Details |
 |---|---|---|
 | SA Model | Yes/No, default No | See "Disambiguation design" above. |
-| Parent Model | **Lookup**, self-referencing → `Models` | Get information from: **Models** itself. In this column: **Model_ID** (or `Model_Code`, whichever `Order`/`Model Revisions`' existing Lookups use for `Models` — match that convention). Only populate for rows where `SA Model = Yes`. |
+| Parent Model | **Lookup**, self-referencing → `Models` | Get information from: **Models** itself. In this column: **Model_Code** (chosen over `Model_ID` — human-recognizable value). Only populate for rows where `SA Model = Yes`. |
 | Parent_Model_TextField | Single line of text | Companion text field, per the standing Lookup convention. |
 
 ### Step 2 — two new placeholder `Models` rows
 
-Continue the `M-HYQU-####` sequence from whatever the current highest is (was `M-HYQU-0095`
-as of the 2026-08-13 16:54 export — re-check the live list, more may have been added
-since). Identity only, everything else blank:
+**Done, 2026-08-13 — built as `M-HYQU-0096` (Model_Code `426870`) and `M-HYQU-0097`
+(Model_Code `4276699`).**
+
+Identity only, everything else blank:
 
 | New Model_ID | Client | Model_Code | SA Model |
 |---|---|---|---|
