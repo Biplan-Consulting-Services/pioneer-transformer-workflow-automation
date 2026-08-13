@@ -4,6 +4,12 @@ Build-ready specs for the flows tracked in `order-items-build-plan.md`'s build s
 (steps 2b, 2c, 3). Not blocked by the PnP consent issue — Power Automate's first-party
 SharePoint connector is available now, buildable directly at make.powerautomate.com.
 
+**Scope note (2026-08-13)**: the TextField auto-sync work (2b) turned out to span every
+Lookup column across the whole system, not just `Order Items`/`Model Revisions` — see
+`docs/lookup-textfield-reference.md` for the complete list-by-list table (which fields need
+the Simple pattern vs. the Get-item pattern vs. the one chained case), kept there as a
+standalone reference rather than duplicated here.
+
 ## Progress
 
 - [x] 2b. TextField auto-sync — `Order Number` piece built and tested 2026-08-13
@@ -49,6 +55,14 @@ expression to flatten it to text first. Check the actual dynamic-content picker 
 this field before trusting any specific expression syntax.
 
 ### Flow B — `Model Revisions` Lookup sync
+
+**Scope grew once building started**: `Model Revisions` actually has three Lookups needing
+sync (`Duplicate Order`, `Client`, `Pioneer Model Code`), not just `Duplicate Order` — see
+`lookup-textfield-reference.md`. `Client` needs the **Get-item** pattern (fetch `Client_ID`
+from `Clients`), the other two are Simple. Given three fields on one list, use the
+consolidated-update shape discussed for `ModelChanges` (variables per field, one boolean
+flag flipped on any mismatch, one final `Update item` gated on that flag) rather than three
+separate update actions.
 
 - **Trigger**: SharePoint *"When an item is created or modified"* — same site, List:
   `Model Revisions`.

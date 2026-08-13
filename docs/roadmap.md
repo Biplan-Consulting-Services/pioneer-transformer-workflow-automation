@@ -92,6 +92,14 @@ architecture diagram (SharePoint ↔ Power Query ↔ Excel ↔ Power BI/Power Ap
 business-process diagram description. Read this for *why* a field ended up where it did;
 read the build-plan docs for *what to actually do*.
 
+→ `docs/lookup-textfield-reference.md`
+
+Every Lookup column across the live SharePoint lists (`Order Items`, `Order`, `Model
+Revisions`, `Models`, `Models SA`, `ModelChanges`, `EngineeringChangeOrders`), its
+companion `_TextField`, and which sync pattern it needs (Simple / Get-item / the one
+chained case). Doubles as a reference for diagramming list relationships, not just for
+building the sync flows in `order-items-power-automate-flows.md`.
+
 ## Explicitly not planned yet (future phases)
 
 - **Phase 2+ of the business process**: `Electrical Design`/`Mechanical Design` execution,
