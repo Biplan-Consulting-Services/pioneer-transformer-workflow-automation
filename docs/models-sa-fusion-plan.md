@@ -68,18 +68,62 @@ classification, doesn't change revision-to-revision):
 ## Migration scope
 
 1. ~~Design how to distinguish an "SA-type" `Models` row~~ — **done, see above.**
-2. Migrate every existing `Models SA` row into `Models` + a new `Model Revisions` entry
-   for it, setting `SA Model = Yes` and `Parent Model` = the corresponding main model (using
-   the `Model_Code` naming convention to find the right one, since that's the only signal
-   that exists in the current data).
+2. **Migration mapping — confirmed 2026-08-13, see below.** All 15 live `Models SA` rows
+   (all `Client = HYDRO QUEBEC`) matched to their parent `Models` row.
 3. Repoint anything referencing `Models SA`: `ColumnMap.pq`'s `Models SA` entity,
    `TableOrders.pq`'s merge logic (`#"Imported SA Models"`/`#"Complete Imported Models"`
-   branch), any live `Order`/`Order Items` rows currently pointing at `Models SA` records.
+   branch). **Nothing in live `Order`/`Order Items` data needs repointing** — confirmed
+   earlier that `Order.Model` never pointed at `Models SA` in the first place, so there are
+   no live lookups to a `Models SA` record anywhere; the only references are in Power Query
+   code, not data.
 4. Retire the `Models SA` list once nothing points at it anymore.
 5. Build the order-item-generation logic that resolves the correct `Models` row (main vs.
    SA) for each unit — this is new logic, not just a repoint, since today `Models`/`Models
    SA` being separate lists was itself how "which one" got resolved (the list you queried
    told you which kind), a distinction the fusion removes.
+
+## Migration mapping — confirmed 2026-08-13
+
+Matched by exact `Model_Code` string after stripping `" SA"` — 11 of 15 matched cleanly,
+4 needed the user's judgment call since `Model_Code` didn't line up exactly (typos/omissions
+in the original data, not a matching-logic problem):
+
+| `Models SA` row | Its `Model_Code` | → Parent `Models` row | Parent's `Model_Code` |
+|---|---|---|---|
+| MSA-HYQU-0001 | 4251081 SA | M-HYQU-0064 | 4251081 |
+| MSA-HYQU-0002 | 4261859 SA | M-HYQU-0066 | 4261859 |
+| MSA-HYQU-0003 | 4261871 SA | M-HYQU-0069 | 4261871 |
+| MSA-HYQU-0004 | 426870 SA | **NEW placeholder `Models` row** | 426870 |
+| MSA-HYQU-0005 | 4251082 SA | M-HYQU-0065 | 4251082 |
+| MSA-HYQU-0006 | 4261865 SA | M-HYQU-0067 | 4261865 |
+| MSA-HYQU-0007 | 4276087 SA | M-HYQU-0070 | 4276087 |
+| MSA-HYQU-0008 | 4276699 SA | **NEW placeholder `Models` row** | 4276699 |
+| MSA-HYQU-0009 | 4251001 SA | M-HYQU-0082 | 4251001 / 1166058 |
+| MSA-HYQU-0010 | 4276269 (no " SA" suffix — confirmed a data-entry omission, not a different case) | M-HYQU-0071 | 4276269 |
+| MSA-HYQU-0011 | 4261870 SA | M-HYQU-0068 | 4261870 |
+| MSA-HYQU-0012 | TMP9 SA | M-HYQU-0092 | TMP9 |
+| MSA-HYQU-0013 | G21523 SA | M-HYQU-0002 | G21523 |
+| MSA-HYQU-0014 | 4251081/1166353 SA | M-HYQU-0076 | 4251081/1166353 |
+| MSA-HYQU-0015 | 4251082/1166354 SA | M-HYQU-0077 | 4251082/1166354 |
+
+**Two new placeholder `Models` rows, user's call, 2026-08-13**: rather than force-matching
+`MSA-HYQU-0004`/`MSA-HYQU-0008` to the nearest-but-not-exact existing codes (`4261870`/
+`4276691`, both already claimed by other rows), create two brand-new `Models` rows using
+the SA row's own code (`426870`, `4276699`) as their `Model_Code` — mostly empty otherwise,
+"just in case." **Logged as a new standing future review point** (same treatment as
+`Trimestrial Customer`): revisit once there's usage history to tell whether these two
+placeholders were genuinely needed or should be cleaned up/merged — don't wait to be
+reminded.
+
+**Not yet resolved — needs your input when you're ready for it**: how each `Models SA`
+row's flat spec fields (`kVA and kV`, `Description`, `Model Type`, `Oil Type`, `Core Type`,
+`Phases`, etc.) map onto the fused shape's `Models`-vs-`Model Revisions` split. This isn't
+a rename exercise — `Model Revisions` already split what used to be one `kVA and kV` value
+into separate `kVA`/`Primary Voltage`/`Secondary Voltage` fields (the same split that broke
+FRM09's external references, see that repo's `CLAUDE.md`), and the sampled `Models SA` `kVA
+and kV` values (e.g. `24.94`, `12.5`, `300`, `1,000`) don't obviously separate into those
+three on their own — that needs your read on what those numbers actually represent for an
+SA design, not a guess from the raw values.
 
 ## Relationship to other work
 
