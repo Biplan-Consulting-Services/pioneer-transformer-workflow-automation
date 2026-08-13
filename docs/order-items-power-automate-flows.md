@@ -12,13 +12,14 @@ standalone reference rather than duplicated here.
 
 ## Progress
 
-- [x] 2b. TextField auto-sync — `Order Items`/`Order Number` piece built and tested
-      2026-08-13 (single run per change, confirmed no loop). `Model Revisions`' three-field
-      flow (`Duplicate Order`, `Client`, `Pioneer Model Code`) **built 2026-08-13** —
-      pending test confirmation (see below). `Regrouped Into` piece **deferred as a future
-      nice-to-have** — user's call, not needed now, revisit once regrouping is actually
-      used. Remaining lists (`Models`, `Models SA`, `EngineeringChangeOrders`,
-      `ModelChanges`, `Order`) still queued — see `lookup-textfield-reference.md`'s to-do.
+- [x] 2b. TextField auto-sync — **done 2026-08-13 for every Lookup that currently has a
+      TextField column**: `Order Items`/`Order Number` (built & tested), `Model Revisions`
+      (all three: `Duplicate Order`, `Client`, `Pioneer Model Code`), `Models`,
+      `EngineeringChangeOrders`, and `ModelChanges` (all three, including the chained
+      `Client_ID_TextField`). Full detail in `lookup-textfield-reference.md`. Two things
+      remain, both already known, not new gaps: `Regrouped Into` (deferred, nice-to-have)
+      and the three `Order` fields (blocked — missing their TextField columns in SharePoint
+      entirely, a schema step first).
 - [ ] 2c. Production-sequence auto-stamp
 - [ ] 3. Excel → SharePoint transfer flow (re-runnable)
 
