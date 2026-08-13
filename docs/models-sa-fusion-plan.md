@@ -203,8 +203,12 @@ from step 3, and copy straight across from the matching `Models SA` row:
 | Wire (HV) | Wire (HV) |
 | Overcoil | Overcoil |
 
-`Spec_ID`, `Spec_Revision`, `Spec_Date`, `Client_Model_Code`, `Notes`, `JS #`, `Duplicate
-Order`, `Family` — no source data on `Models SA`, leave blank.
+`Client_Model_Code` — **required, corrected 2026-08-13**: not blank as first drafted: this
+is just the model's own code, same value as the new `Models` row's `Model_Code` (e.g.
+`4261870 SA`).
+
+`Spec_ID`, `Spec_Revision`, `Spec_Date`, `Notes`, `JS #`, `Duplicate Order`, `Family` — no
+source data on `Models SA`, leave blank.
 
 ### Step 5 — link back
 
