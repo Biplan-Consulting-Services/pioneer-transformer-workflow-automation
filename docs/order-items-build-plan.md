@@ -40,6 +40,18 @@ just consumes it once it exists, no separate minimal version needed.
    `docs/order-items-manual-build-checklist.md`.
 2. **Add the companion new columns** to `Order`/`Model Revisions` (list above; also covered
    by the same manual checklist).
+2b. **Build the TextField auto-sync Power Automate flow — elevated to a real task,
+   2026-08-13** (previously just a passing "good later addition" comment in
+   `order-items-manual-build-checklist.md`, not actually tracked anywhere — user flagged
+   this while building: keeping `Order_Number_TextField`/`Regrouped_Into_TextField`/
+   `Duplicate_Order_TextField` in sync by hand has been a real pain, not a hypothetical
+   one). Not blocked by the PnP consent issue — Power Automate's first-party SharePoint
+   connector is available now. Flow: on the source item (`Order`/`Order Items`) being
+   created or having its lookup-target field change, write the looked-up value's text
+   into the companion `_TextField` column on whichever list holds the Lookup
+   (`Order Items`'s `Order Number`/`Regrouped Into`, `Model Revisions`'s `Duplicate
+   Order`). Worth building **before or alongside step 3's backfill**, not after — the
+   backfill will otherwise recreate the same manual-sync burden for every row it creates.
 3. **One-time backfill**: export current `TableOrders` data (per the confirmed
    field-to-column mapping already worked out) into `Order Items` rows, one row per current
    `Order` value (e.g. `21865-1/5`). Needs a script or Power Query one-shot — given the

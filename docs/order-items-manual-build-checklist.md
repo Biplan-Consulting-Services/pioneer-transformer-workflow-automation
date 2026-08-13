@@ -23,8 +23,13 @@ Site: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`
 - [x] 3. Production tracking
 - [x] 4. Production-sequence dates (8 pairs) — done 2026-08-13
 - [x] 5. Other dates — done 2026-08-13
-- [ ] 6. Companion columns on `Order`
-- [ ] 7. Companion columns on `Model Revisions`
+- [x] 6. Companion columns on `Order` — done 2026-08-13 (`Protector & Switchgear PO` moved to `Order Items` instead, see note in that section)
+- [x] 7. Companion columns on `Model Revisions` — done 2026-08-13
+
+**All 7 sub-steps done — the manual schema build is complete.** Next real task (not part
+of this checklist): the TextField auto-sync Power Automate flow — see
+`order-items-build-plan.md` step 2b, elevated to a tracked build step since manual
+TextField upkeep has been a genuine pain point, not just a "nice to have."
 
 ## Step 1 — Create the `Order Items` list
 
@@ -36,7 +41,7 @@ Create a new custom list named **Order Items**, no template, blank.
 |---|---|---|---|
 | 1 | Title | (default, already exists) | Rename nothing — just note for later: at backfill time, set to the unit ID, e.g. `21408-1/1`. Nothing to configure now. |
 | 2 | Order Number | **Lookup** | Get information from: **Order**. In this column: **Order Number** (confirmed — Order's own "Order Number" text field, not `Title`; `Order` list's `Title` field holds something else, not the order number). |
-| 2b | Order_Number_TextField | Single line of text | Companion text field for the `Order Number` Lookup, per user's standing convention (2026-08-13): every Lookup gets a sibling `{Field}_TextField` holding a plain-text copy of the looked-up value, for search/filtering. Manually kept in sync for now; a Power Automate flow to auto-copy it is a good later addition (not blocked — see `order-items-build-plan.md`'s Power Automate note), just not built yet. |
+| 2b | Order_Number_TextField | Single line of text | Companion text field for the `Order Number` Lookup, per user's standing convention (2026-08-13): every Lookup gets a sibling `{Field}_TextField` holding a plain-text copy of the looked-up value, for search/filtering. **Manually kept in sync for now — confirmed a real pain point, not hypothetical.** Auto-sync via Power Automate is now a tracked build step, not just a comment — see `order-items-build-plan.md`'s step 2b. |
 | 3 | Unit # | Number | No decimals. For an SA (auxiliary) row, **copy the parent unit's value** — confirmed 2026-08-13, not left blank. |
 | 4 | Qty | Number | No decimals. Same as Unit # — copied from the parent unit for an SA row. |
 | 5 | SA Job | Yes/No | **Real meaning confirmed 2026-08-13** (the earlier "matches TableOrders.pq's computed boolean" note was a placeholder, not an explanation): some transformers ship with an auxiliary unit that needs its own independent production tracking (own `Location`/`Status`/dates) despite conceptually being "the same order item." That auxiliary gets its own `Order Items` row, `Title` = the parent unit ID + ` SA` suffix (e.g. `21408-1/1` and `21408-1/1 SA`). `SA Job = Yes` marks "this row is that auxiliary row," not an abstract property. An SA row does **not** count as a separately priced/reported unit — Power BI today filters SA rows out of reporting and keeps only the main version; keep that in mind whenever calculated columns (`Price`, etc.) or reports get built against this list later. Most important spec fields for an SA unit's construction: `Cable`, `Form`, `Copper (LV)`, `Wire (HV)`, `Overcoil` (all on `Models`/`Model Revisions`, nothing new needed here). |
