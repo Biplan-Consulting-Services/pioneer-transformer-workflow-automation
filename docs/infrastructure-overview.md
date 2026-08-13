@@ -359,12 +359,12 @@ Completed` (holds the actual completion date, otherwise blank).
 | Tanking Date | Tanking Status |
 | Testing Date | Testing Status |
 | Finishing Date | Finishing Status |
-| Delivery Date ⚠ | Delivery Status |
+| Delivery Date | Delivery Status |
 
-⚠ **Pending fix, found 2026-08-13 via the live schema export**: this field is actually
-named **`Delivery Data`** in the live list right now (a typo — every other pair correctly
-says "Date"). User has noted it to fix but it isn't renamed yet as of this writing — check
-the live list before building anything that references it by exact name.
+**Fixed 2026-08-13**: the `Delivery Data` typo is resolved — user deleted and recreated
+the column as `Delivery Date` (zero data-loss risk since `Order Items` was still empty),
+which also gives it a clean matching internal name instead of a permanent
+`DeliveryData`/`Delivery Date` mismatch.
 
 Also confirmed live 2026-08-13: all 8 `{Stage} Date` fields are **Date and Time** (changed
 from Date-only) — useful later for finer-grained production-time analytics.

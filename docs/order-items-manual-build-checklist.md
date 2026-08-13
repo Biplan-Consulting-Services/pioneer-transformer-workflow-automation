@@ -99,13 +99,11 @@ by a Power Automate flow (see `order-items-build-plan.md` step 2c), not typed by
 | 38 | Tanking Date | 39 | Tanking Status |
 | 40 | Testing Date | 41 | Testing Status |
 | 42 | Finishing Date | 43 | Finishing Status |
-| 44 | Delivery Date ⚠ | 45 | Delivery Status |
+| 44 | Delivery Date | 45 | Delivery Status |
 
-⚠ **Pending fix, found 2026-08-13 via the live schema export**: this field is actually
-named **`Delivery Data`** in the live list (a typo — every other pair correctly says
-"Date"). User has noted this to fix but it isn't renamed yet as of this writing — check
-the live list before building anything (Power Automate flow, `ColumnMap.pq`) that
-references it by exact name, since `Delivery Data` ≠ `Delivery Date`.
+**Fixed 2026-08-13**: the `Delivery Data` typo is resolved — deleted and recreated as
+`Delivery Date` (safe, zero data-loss since the list was still empty), also picking up a
+clean matching internal name in the process.
 
 ### Other dates (plain, not split into Date+Status pairs)
 
