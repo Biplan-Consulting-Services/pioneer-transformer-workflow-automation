@@ -210,6 +210,10 @@ their orders), but whether it truly needs to vary *within* a single multi-unit o
 **User's call: start per-unit, revisit once there's enough real usage data to run a
 proper table/workflow-optimization analysis** — if that analysis shows it's actually
 order-level, descope it down to the `Order` list then rather than guessing now.
+(**Separately, 2026-08-13**: a full-history data check found this field likely isn't even a
+yes/no attribute at all — see the schema table below, "Trimestrial Customer" row, for the
+`Pénalité Trimestrielle` finding. Pending clarification from business users, unrelated to
+the placement question above.)
 
 `Winder` and `Coil Winder` also both belong here, per-unit — confirmed 2026-08-12 they're
 genuinely two different things, not a duplicate: `Winder` is the *set of possible* winders a
@@ -325,7 +329,7 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 | Lead Assembly | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
 | Winder | Text | Must stay Text (not Number) — values mix plain IDs and ranges (`100-104`) in the sample. Per user, stays manually-filled, not derived. |
 | Coil Winder | Text | Same as `Winder` — kept Text even though the sample looked numeric, for consistency and to avoid a type mismatch if another row uses a non-numeric ID. Manually-filled. |
-| Trimestrial Customer | Text ⚠ | Blank in the sampled rows — type genuinely unconfirmed; provisional per-unit placement (see above), revisit together with the placement question. |
+| Trimestrial Customer | Text (staying Text, not Choice — decided 2026-08-13) | **Full-history check (2026-08-13) across ~1018 `TableOrders` rows found it's NOT a simple Yes/No**: 160 rows hold literal text `N` (never `Y`, anywhere), 2 rows hold what look like real Excel dates (serials `46452`/`46295`, ≈ Feb 2027 / Sept 2026), rest blank. A formula-glitch artifact also revealed the column's real French label: **`Pénalité Trimestrielle`** ("Trimestrial **Penalty**," not "Trimestrial Customer" as a classification) — suggesting this may actually track *when* a quarterly penalty applies, not a yes/no customer attribute. **Pending clarification from the business users who actually know this field, once they're back from holidays** — don't build a Choice/Yes-No list off any guess until then; stays a plain Text field so no data shape is assumed prematurely. Per-unit placement question (see above) is still separately open too. |
 
 **Dates:**
 

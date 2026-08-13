@@ -61,11 +61,16 @@ just consumes it once it exists, no separate minimal version needed.
    truth, consider protecting/locking those columns in `TableOrders` so a stray manual edit
    there goes nowhere silently rather than creating a conflicting value.
 
-## One open item — doesn't block starting the build
+## Open items — don't block starting the build
 
 - `Trimestrial Customer`'s per-unit granularity is still provisional (see
   `infrastructure-overview.md`) — build it per-unit as planned, revisit later per the
   standing future-review-point note.
+- `Trimestrial Customer`'s **type/values are now actively pending clarification**, not just
+  provisional: a full-history check (2026-08-13) found the field likely tracks a penalty
+  date (`Pénalité Trimestrielle`), not a yes/no attribute — built as plain Text for now,
+  **waiting on the business users who know this field to get back from holidays** before
+  going further. Separate open item from the placement question above.
 
 (`Tank`/`ISO Stack`/`ISO Coil`/`Lead Assembly`'s `R` = "Received" hypothesis is now
 **confirmed** — 2026-08-12 — and stays Text/manually-filled by design, not converted to

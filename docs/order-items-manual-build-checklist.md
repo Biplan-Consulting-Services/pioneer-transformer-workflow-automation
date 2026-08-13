@@ -64,7 +64,7 @@ Create a new custom list named **Order Items**, no template, blank.
 | 26 | Lead Assembly | Single line of text | Same as Tank — confirmed `R` = "Received," manually-filled. |
 | 27 | Winder | Single line of text | Must stay Text — values mix plain IDs and ranges (e.g. `100-104`). Manually-filled, not derived. |
 | 28 | Coil Winder | Single line of text | Same as Winder — Text even though samples look numeric. Manually-filled. |
-| 29 | Trimestrial Customer | Single line of text | ⚠ Per-unit placement is provisional — see `infrastructure-overview.md`, standing future review point. |
+| 29 | Trimestrial Customer | Single line of text | ⚠ Stays Text, not Choice — a full-history data check (2026-08-13) found `N` (never `Y`) and 2 real date-like values in `TableOrders`, plus a formula-glitch reveal that the real French label is `Pénalité Trimestrielle` ("Trimestrial Penalty"), suggesting this may track a penalty date, not a yes/no attribute. **Pending clarification from business users once they're back from holidays** — don't build a Choice/Yes-No list until then. Per-unit placement is also still separately provisional — see `infrastructure-overview.md`. |
 
 ### Production-sequence dates (8 pairs)
 
