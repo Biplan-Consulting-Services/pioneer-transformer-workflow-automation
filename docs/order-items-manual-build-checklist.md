@@ -16,6 +16,16 @@ made while preparing this checklist (noted inline where they update that doc).
 
 Site: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`
 
+## Progress (7 sub-steps, user's own numbering)
+
+- [x] 1. Identity / merge key
+- [x] 2. Test/QA results
+- [x] 3. Production tracking
+- [x] 4. Production-sequence dates (8 pairs) — done 2026-08-13
+- [ ] 5. Other dates
+- [ ] 6. Companion columns on `Order`
+- [ ] 7. Companion columns on `Model Revisions`
+
 ## Step 1 — Create the `Order Items` list
 
 Create a new custom list named **Order Items**, no template, blank.
