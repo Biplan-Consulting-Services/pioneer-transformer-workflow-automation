@@ -340,39 +340,47 @@ the type is a real guess, not just a formality. Not yet built in SharePoint.
 
 **Dates:**
 
-**Production-sequence dates — redesigned 2026-08-12.** The sample data only showed real
-dates, but the user confirmed these 8 fields can actually hold either a real date OR
-in-progress text today — something SharePoint's Date type can't represent. They line up
-exactly with the `Location` stages (Bobinage→Stacking→Assemblage→...→Test→Finition→
-Livraison), i.e. they're the *history* of when a unit passed through each stage that
-`Location` only shows the *current* one for. **Each one splits into a pair**: a `Status`
-Choice field (`Pending`, `In Progress`, `Completed` — blank means "not relevant yet," before
-the step is next in line) and a `Date` field that only gets filled in once `Status =
-Completed` (holds the actual completion date, otherwise blank).
+**Production-sequence dates — redesigned 2026-08-12, expanded to Start/End 2026-08-13.**
+The sample data only showed real dates, but the user confirmed these 8 fields can actually
+hold either a real date OR in-progress text today — something SharePoint's Date type can't
+represent. They line up exactly with the `Location` stages (Bobinage→Stacking→Assemblage→
+...→Test→Finition→Livraison), i.e. they're the *history* of when a unit passed through each
+stage that `Location` only shows the *current* one for. **Each one is now a triple**: a
+`Status` Choice field (`Pending`, `In Progress`, `Completed` — blank means "not relevant
+yet," before the step is next in line), a `Start Date` field that gets stamped when `Status`
+first becomes `In Progress`, and an `End Date` field that gets stamped once `Status =
+Completed`. The `Start Date` addition (2026-08-13) is for real time-*spent* tracking, not
+just completion timestamps — inferring a start time from the previous stage's finish time
+instead would wrongly count idle/waiting time as work time. The original `{Stage} Date`
+field was renamed to `{Stage} End Date` for symmetry with the new `Start Date` field — same
+field, new name, not a new column.
 
-| Date field | Paired Status field |
-|---|---|
-| Coiling Date | Coiling Status |
-| Stacking Date | Stacking Status |
-| Assembly Date | Assembly Status |
-| Drying Date | Drying Status |
-| Tanking Date | Tanking Status |
-| Testing Date | Testing Status |
-| Finishing Date | Finishing Status |
-| Delivery Date | Delivery Status |
+| Start Date field (NEW) | End Date field (renamed from `{Stage} Date`) | Status field |
+|---|---|---|
+| Coiling Start Date | Coiling End Date | Coiling Status |
+| Stacking Start Date | Stacking End Date | Stacking Status |
+| Assembly Start Date | Assembly End Date | Assembly Status |
+| Drying Start Date | Drying End Date | Drying Status |
+| Tanking Start Date | Tanking End Date | Tanking Status |
+| Testing Start Date | Testing End Date | Testing Status |
+| Finishing Start Date | Finishing End Date | Finishing Status |
+| Delivery Start Date | Delivery End Date | Delivery Status |
 
 **Fixed 2026-08-13**: the `Delivery Data` typo is resolved — user deleted and recreated
 the column as `Delivery Date` (zero data-loss risk since `Order Items` was still empty),
 which also gives it a clean matching internal name instead of a permanent
-`DeliveryData`/`Delivery Date` mismatch.
+`DeliveryData`/`Delivery Date` mismatch. It was then folded into the Start/End expansion
+above as `Delivery End Date`.
 
-Also confirmed live 2026-08-13: all 8 `{Stage} Date` fields are **Date and Time** (changed
-from Date-only) — useful later for finer-grained production-time analytics.
+Confirmed live 2026-08-13 (fresh `Order Items` export): all 16 Start/End fields are **Date
+and Time** (not Date-only) — useful later for finer-grained production-time analytics (e.g.
+actual duration between stages, not just which day).
 
-Both fields per pair: `Date` = Date(+Time), `Status` = Choice (Pending/In Progress/Completed).
-`Item Status = Delivered` still triggers off `Delivery Date` populated (i.e. `Delivery
-Status = Completed`) AND `Location = Livraison` — unaffected by this split, just now sourced
-from `Delivery Status` instead of a bare presence check.
+All three fields per triple: `Start Date`/`End Date` = Date+Time, `Status` = Choice
+(Pending/In Progress/Completed). `Item Status = Delivered` still triggers off `Delivery End
+Date` populated (i.e. `Delivery Status = Completed`) AND `Location = Livraison` —
+unaffected by this expansion, just now sourced from `Delivery Status`/`Delivery End Date`
+instead of the old single `Delivery Date` field.
 
 **Other dates — stay plain Date fields, NOT split** (confirmed 2026-08-12: a different
 category — vendor/audit/override dates, not steps in the production sequence):

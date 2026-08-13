@@ -84,33 +84,35 @@ Create a new custom list named **Order Items**, no template, blank.
 
 ### Production-sequence dates (8 triples — expanded 2026-08-13)
 
-**Expanded from Date+Status pairs to Date+Status+Started triples**: user wants real
+**Expanded from Date+Status pairs to Start Date+End Date+Status triples**: user wants real
 time-spent tracking per stage (not just when it finished), and since `Status` already
 distinguishes `Pending` (not started) from `In Progress` (actively being worked), a
-`{Stage} Started` stamp captured at that specific transition gives an accurate start time
-— unaffected by any idle/waiting time before work actually began (the alternative,
+`{Stage} Start Date` stamp captured at that specific transition gives an accurate start
+time — unaffected by any idle/waiting time before work actually began (the alternative,
 inferring start from the previous stage's finish time, would wrongly count that idle time
-as work time). Each stage now needs:
-- `{Stage} Date` (**Date and Time**) — stamped when `Status` becomes `Completed` (existing).
-- `{Stage} Status` (Choice: `Pending`, `In Progress`, `Completed`; blank = not relevant yet)
-  (existing).
-- `{Stage} Started` (**Date and Time**, NEW) — stamped when `Status` first becomes
+as work time). Each stage now has (confirmed live 2026-08-13):
+- `{Stage} Start Date` (**Date and Time**, NEW) — stamped when `Status` first becomes
   `In Progress`.
+- `{Stage} End Date` (**Date and Time**) — stamped when `Status` becomes `Completed`.
+  **Renamed from the original `{Stage} Date`** for symmetry with the new `Start Date`
+  field — same field, new name.
+- `{Stage} Status` (Choice: `Pending`, `In Progress`, `Completed`; blank = not relevant yet)
+  (unchanged).
 
 Both date fields are auto-stamped by a Power Automate flow (see `order-items-build-plan.md`
 step 2c), not typed by hand — each only fills in once, guarded by the field itself being
 blank, so re-editing the item later doesn't re-stamp it.
 
-| # | Started field (NEW) | # | Date field | # | Status field |
+| # | Start Date field (NEW) | # | End Date field (renamed) | # | Status field |
 |---|---|---|---|---|---|
-| — | Coiling Started | 30 | Coiling Date | 31 | Coiling Status |
-| — | Stacking Started | 32 | Stacking Date | 33 | Stacking Status |
-| — | Assembly Started | 34 | Assembly Date | 35 | Assembly Status |
-| — | Drying Started | 36 | Drying Date | 37 | Drying Status |
-| — | Tanking Started | 38 | Tanking Date | 39 | Tanking Status |
-| — | Testing Started | 40 | Testing Date | 41 | Testing Status |
-| — | Finishing Started | 42 | Finishing Date | 43 | Finishing Status |
-| — | Delivery Started | 44 | Delivery Date | 45 | Delivery Status |
+| — | Coiling Start Date | 30 | Coiling End Date | 31 | Coiling Status |
+| — | Stacking Start Date | 32 | Stacking End Date | 33 | Stacking Status |
+| — | Assembly Start Date | 34 | Assembly End Date | 35 | Assembly Status |
+| — | Drying Start Date | 36 | Drying End Date | 37 | Drying Status |
+| — | Tanking Start Date | 38 | Tanking End Date | 39 | Tanking Status |
+| — | Testing Start Date | 40 | Testing End Date | 41 | Testing Status |
+| — | Finishing Start Date | 42 | Finishing End Date | 43 | Finishing Status |
+| — | Delivery Start Date | 44 | Delivery End Date | 45 | Delivery Status |
 
 **To-do**: the 8 `{Stage} Started` columns still need to be added in SharePoint (schema
 step, manual, same PnP-blocked situation as the rest of this migration) before the

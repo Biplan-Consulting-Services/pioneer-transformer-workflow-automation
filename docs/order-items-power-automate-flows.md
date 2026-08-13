@@ -81,24 +81,25 @@ separate update actions.
 
 ## Step 2c — Production-sequence auto-stamp
 
-**⚠ Blocked on a schema addition, 2026-08-13**: each of the 8 stages needs a new
-`{Stage} Started` column (Date and Time) before this flow can be built — see
-`order-items-manual-build-checklist.md`'s Production-sequence dates section. Expanded from
-"stamp finish time only" to "stamp start *and* finish" for real time-spent tracking, not
-just completion dates — see `order-items-build-plan.md` step 2c for why.
+**Schema ready as of 2026-08-13** — each of the 8 stages now has `{Stage} Start Date`
+(NEW) and `{Stage} End Date` (renamed from the original `{Stage} Date`), confirmed live via
+a fresh export. See `order-items-manual-build-checklist.md`'s Production-sequence dates
+section for the full field list. Expanded from "stamp finish time only" to "stamp start
+*and* finish" for real time-spent tracking, not just completion dates — see
+`order-items-build-plan.md` step 2c for why.
 
 **Why two stamps per stage, not one**: `{Stage} Status` already distinguishes `Pending`
 (not started) from `In Progress` (actively being worked) from `Completed`. Capturing the
-`Pending → In Progress` transition as `{Stage} Started` gives an accurate start time,
+`Pending → In Progress` transition as `{Stage} Start Date` gives an accurate start time,
 unaffected by any idle/waiting time before work actually began — inferring a start time
 from the *previous* stage's finish time instead would wrongly count that idle time as work
 time.
 
-**Flow — `Order Items`, "When an item is created or modified"**, once the schema exists:
-for each of the 8 stages, two independent stamp checks:
-- `{Stage} Status = In Progress` **AND** `{Stage} Started` is blank → that stage needs its
-  start stamped now.
-- `{Stage} Status = Completed` **AND** `{Stage} Date` is blank → that stage needs its
+**Flow — `Order Items`, "When an item is created or modified"**: for each of the 8 stages,
+two independent stamp checks:
+- `{Stage} Status = In Progress` **AND** `{Stage} Start Date` is blank → that stage needs
+  its start stamped now.
+- `{Stage} Status = Completed` **AND** `{Stage} End Date` is blank → that stage needs its
   finish stamped now.
 
 Same consolidated-update shape as the TextField flows: one variable per field that needs
