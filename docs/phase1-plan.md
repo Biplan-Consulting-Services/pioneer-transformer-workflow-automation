@@ -115,6 +115,18 @@ whether a given `Step Name` creates one row per Order or one row per Order Item.
 - `Order Status` (Active/Cancelled, already decided in `infrastructure-overview.md`) is
   unrelated to this phase and can happen independently, in either order.
 
+## Not blocked by the PnP PowerShell issue
+
+**Added 2026-08-13**: while building `Order Items`, PnP PowerShell (a scripting route for
+SharePoint *schema* changes) turned out to be blocked — `ermcopower` hasn't granted tenant
+admin consent for that specific third-party app. That block is narrow: it does **not**
+extend to the Power Automate flows this whole plan depends on. Power Automate's SharePoint
+connector is Microsoft's first-party connector, already available under the existing
+Microsoft 365 license, buildable directly in the browser with no IT consent needed. Nothing
+in this plan is stuck — the only thing that requires manual, no-script UI work is
+*creating* the `Workflow Tasks` list/columns themselves (see `order-items-manual-build-checklist.md`'s
+approach for the equivalent step on `Order Items`); every flow below is fully buildable now.
+
 ## Power Automate flows
 
 **Recommendation: one flow with branching logic (a `Switch` on `Step Name`), not one flow

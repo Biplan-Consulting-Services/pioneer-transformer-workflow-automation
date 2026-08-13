@@ -75,13 +75,21 @@ Choice. No longer an open item.)
 
 The original plan for step 1 below was a PnP PowerShell script. That's blocked: the
 `ermcopower` tenant hasn't granted admin consent for the PnP Management Shell Azure AD app,
-and this user doesn't hold a role that can grant it — and since any PowerShell automation
-route hits the same tenant-consent wall, not just PnP specifically, there's no scripting
-workaround available right now. **`docs/order-items-manual-build-checklist.md`** has the
-full field-by-field list to build by hand in the SharePoint UI instead — same way
-`Order`/`Models`/`Model Revisions` were originally built. If IT ever grants that consent,
-scripting becomes an option again for later steps (backfill, companion columns) — this
-doesn't block anything permanently, just this session's build.
+and this user doesn't hold a role that can grant it. **`docs/order-items-manual-build-checklist.md`**
+has the full field-by-field list to build by hand in the SharePoint UI instead — same way
+`Order`/`Models`/`Model Revisions` were originally built.
+
+**Important scope correction (2026-08-13): this block is narrower than first framed.** It's
+specific to PnP PowerShell — a third-party, multi-tenant Azure AD app that needs explicit
+tenant admin consent before *anyone* in this tenant can use it at all. It does **not** extend
+to **Power Automate cloud flows**, which use Microsoft's own first-party SharePoint
+connector — already trusted under the existing Microsoft 365 license, no IT consent needed,
+buildable directly in the browser today. So: **creating/modifying list schema (columns,
+lists themselves)** stays manual for now (no scripting path). **Working with data once the
+schema exists** — the one-time backfill's row creation, any future auto-sync flow (e.g.
+keeping a Lookup's companion text field in sync), and all of Phase 1's `Workflow Tasks`
+automation — is fully available via Power Automate, unaffected by this block. Don't treat
+the whole migration as stuck on IT; only the schema-build step is.
 
 ## Relationship to `phase1-plan.md`
 

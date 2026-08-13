@@ -26,9 +26,10 @@ Create a new custom list named **Order Items**, no template, blank.
 |---|---|---|---|
 | 1 | Title | (default, already exists) | Rename nothing — just note for later: at backfill time, set to the unit ID, e.g. `21408-1/1`. Nothing to configure now. |
 | 2 | Order Number | **Lookup** | Get information from: **Order**. In this column: **Order Number** (confirmed — Order's own "Order Number" text field, not `Title`; `Order` list's `Title` field holds something else, not the order number). |
-| 3 | Unit # | Number | No decimals. |
-| 4 | Qty | Number | No decimals. |
-| 5 | SA Job | Yes/No | |
+| 2b | Order_Number_TextField | Single line of text | Companion text field for the `Order Number` Lookup, per user's standing convention (2026-08-13): every Lookup gets a sibling `{Field}_TextField` holding a plain-text copy of the looked-up value, for search/filtering. Manually kept in sync for now; a Power Automate flow to auto-copy it is a good later addition (not blocked — see `order-items-build-plan.md`'s Power Automate note), just not built yet. |
+| 3 | Unit # | Number | No decimals. For an SA (auxiliary) row, **copy the parent unit's value** — confirmed 2026-08-13, not left blank. |
+| 4 | Qty | Number | No decimals. Same as Unit # — copied from the parent unit for an SA row. |
+| 5 | SA Job | Yes/No | **Real meaning confirmed 2026-08-13** (the earlier "matches TableOrders.pq's computed boolean" note was a placeholder, not an explanation): some transformers ship with an auxiliary unit that needs its own independent production tracking (own `Location`/`Status`/dates) despite conceptually being "the same order item." That auxiliary gets its own `Order Items` row, `Title` = the parent unit ID + ` SA` suffix (e.g. `21408-1/1` and `21408-1/1 SA`). `SA Job = Yes` marks "this row is that auxiliary row," not an abstract property. An SA row does **not** count as a separately priced/reported unit — Power BI today filters SA rows out of reporting and keeps only the main version; keep that in mind whenever calculated columns (`Price`, etc.) or reports get built against this list later. Most important spec fields for an SA unit's construction: `Cable`, `Form`, `Copper (LV)`, `Wire (HV)`, `Overcoil` (all on `Models`/`Model Revisions`, nothing new needed here). |
 
 ### Test/QA results
 
@@ -51,6 +52,7 @@ Create a new custom list named **Order Items**, no template, blank.
 | 15 | Location | Choice | `Isolation`, `Bobinage`, `Stacking`, `Assemblage`, `Four`, `Tanking`, `Test`, `Finition`, `Livraison`, `Entrepôt`, `Extérieur`, `Réparation` — **decided this session: full descriptive names, not the short codes** (`IS`/`BO`/etc.). This changes the Delivered-trigger wording documented below from "Location = LI" to "Location = Livraison". |
 | 16 | Item Status | Choice | `Active` (default), `Delivered`, `Cancelled`, `Regrouped` |
 | 17 | Regrouped Into | **Lookup (multi-value)** | Get information from: **Order Items** itself (self-referencing — you can only pick this once the list already exists, so add this field in a second pass after step 1's other fields are created). In this column: **Title**. Allow multiple values: Yes. |
+| 17b | Regrouped_Into_TextField | Single line of text | Companion text field, same convention as `Order_Number_TextField` above. |
 | 18 | Status | Single line of text | Composite value, e.g. `TE-Jui-16` — kept as plain text, not split. |
 | 19 | Core Status | Choice | `Entrepôt SN`, `Reçu`, `Transport` |
 | 20 | Production Line | Choice | `Power / Ligne 1`, `Distribution`, `Power`, `Zone B`, `Ligne 1` (as found in the original validation list — the near-duplicate "Power" entries are verbatim from the source, not a typo introduced here) |
@@ -111,6 +113,7 @@ revision, not just model-to-model.
 | Field name | Type | Choice values / details |
 |---|---|---|
 | Duplicate Order | **Lookup** | Get information from: **Order**. In this column: **Order Number**. |
+| Duplicate_Order_TextField | Single line of text | Companion text field, same convention as `Order_Number_TextField` above. |
 | Family | Choice | `A`, `B1`, `B2`, `C` |
 
 ## After the list exists
