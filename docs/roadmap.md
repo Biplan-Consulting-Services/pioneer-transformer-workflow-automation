@@ -87,27 +87,30 @@ conditions — no new fields needed beyond what's already designed.
 ### 4. Models SA fusion
 → `docs/models-sa-fusion-plan.md`
 
-Decided in principle 2026-08-13, not yet started: fuse `Models SA` into `Models`/`Model
-Revisions` so SA (auxiliary) model designs get real revision history instead of living in
-a separate, never-versioned, structurally-duplicated list. Surfaced while building
-workstream 1's Lookup→TextField sync flows — `Models` and `Models SA` were about to need
-the same `Client`-sync flow built twice for no reason. Also resolves a real gap: `Order
-Items`' SA auxiliary row has no lookup field pointing at `Models SA` at all today: `Order`
-always points at `Models`, and the SA-specific link was expected to live on the `Order
-Items` auxiliary row instead, but that field was never built.
+**Schema and data migration complete, 2026-08-13** — see `models-sa-fusion-plan.md`: fused
+`Models SA` into `Models`/`Model Revisions` so SA (auxiliary) model designs get real
+revision history instead of living in a separate, never-versioned, structurally-duplicated
+list. Surfaced while building workstream 1's Lookup→TextField sync flows — `Models` and
+`Models SA` were about to need the same `Client`-sync flow built twice for no reason. Also
+resolves a real gap: `Order Items`' SA auxiliary row had no lookup field pointing at
+`Models SA` at all: `Order` always points at `Models`, and the SA-specific link was
+expected to live on the `Order Items` auxiliary row instead, but that field was never
+built.
 
-**Disambiguation resolved 2026-08-13** — see `models-sa-fusion-plan.md`: confirmed 1:1 by
-the user (who built the original `Models SA` logic), so `Models` gets a new `SA Model`
-(Yes/No) field plus a self-referencing `Parent Model` Lookup (populated only for SA rows,
-pointing at the specific main model it pairs with). No existing link column to repoint —
-this is new. Only the actual migration (moving `Models SA`'s rows over) is left to do.
+Disambiguation confirmed 1:1 by the user (who built the original `Models SA` logic):
+`Models` got a new `SA Model` (Yes/No) field plus a self-referencing `Parent Model` Lookup
+(populated only for SA rows, pointing at the specific main model it pairs with). All 15
+live `Models SA` rows migrated (plus 2 new placeholder `Models` rows for two codes with no
+existing match), each with a new `Model Revisions` entry and `Latest Model Revision` link.
 
-**Now also unblocks (design-wise) a schema item**: `order-items-manual-build-checklist.md`'s
+**Now also unblocks (design-wise and migration-wise)**: `order-items-manual-build-checklist.md`'s
 step 8 — new direct `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself
 (decided 2026-08-13, to work around SharePoint's inability to cascade through a Lookup in
 views/filters/reports — same pattern already used on `Model Revisions`' own `Client`
-Lookup). Still can't be built until the migration itself happens (both lists need to
-actually be one list first).
+Lookup). Buildable now that `Models`/`Models SA` are one list.
+
+**Still to do**: repoint `ColumnMap.pq`/`TableOrders.pq` (FRM10-12), retire the `Models SA`
+list, build the order-item-generation logic that resolves main-vs-SA at unit-creation time.
 
 **Creates new logic work**: whatever generates the SA auxiliary `Order Items` row (the
 transfer flow now, `phase1-plan.md`'s `Work Order` fan-out later) needs to correctly

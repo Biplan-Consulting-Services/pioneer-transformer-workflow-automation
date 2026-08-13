@@ -1,7 +1,8 @@
 # Models SA Fusion Plan
 
-**Status:** decided in principle 2026-08-13, disambiguation design resolved the same day
-(see below), migration itself not yet started.
+**Status:** decided, designed, and the schema/data migration completed — all 2026-08-13.
+Remaining: repoint `ColumnMap.pq`/`TableOrders.pq`, retire `Models SA`, build the
+order-item-generation logic (see "Migration scope" steps 3-5, not started).
 
 ## The decision
 
@@ -216,6 +217,8 @@ source data on `Models SA`, leave blank.
 
 ### Step 4b — 2 more `Model Revisions` rows, for the placeholders
 
+**Done, 2026-08-13.**
+
 **Corrected 2026-08-13**: the two placeholder `Models` rows (`M-HYQU-0096`/`M-HYQU-0097`)
 need a `Latest Model Revision` too, not left unlinked as first drafted — every `Models` row
 needs one. Naming: since these are regular (non-SA) rows, use the **standard**
@@ -229,8 +232,8 @@ are brand-new numbers, not reused from an existing parent.
 
 ### Step 5 — link back
 
-Set each new `Models` row's `Latest Model Revision` Lookup to point at its new `Model
-Revisions` row (from step 4, or step 4b for the two placeholders).
+**Done, 2026-08-13.** All 17 `Models` rows (15 SA-origin + 2 placeholders) now have their
+`Latest Model Revision` set. **The full migration (schema through data) is complete.**
 
 ### After that
 
