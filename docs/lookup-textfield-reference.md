@@ -38,22 +38,19 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 | ModelChanges | Model_ID | `Model_ID_TextField` | Simple | ✅ Built 2026-08-13, `ShowField` verified during build |
 | ModelChanges | ECO_ID | `ECO_ID_TextField` | Simple | ✅ Built 2026-08-13, `ShowField` verified during build |
 | ModelChanges | *(none directly)* | `Client_ID_TextField` | **Chained Get-item** | ✅ Built 2026-08-13. Path: `ModelChanges.Model_ID` → that `Models` item's `Client` lookup ID → that `Clients` item's `Client_ID`. |
-| Order | Client | *(missing — to add)* | **Get-item**, likely | User's call, 2026-08-13: this needs a `Client_ID_TextField` too, currently missing. Verify `ShowField`, but almost certainly the same Get-item shape as every other `Client` Lookup here. |
-| Order | Model | *(missing — to add)* | *(verify)* | Needs a TextField companion. Confirm what `ShowField` currently displays (likely `Model_Code`) before deciding Simple vs. Get-item. |
-| Order | Model Revision | *(missing — to add)* | *(verify)* | Needs a TextField companion. Confirm `ShowField` (likely something identifying the specific revision, e.g. `Spec_ID` or `Model_Revion_ID`) before deciding pattern. |
+| Order | Client | `Client_ID_TextField` (exact name pending fresh export) | **Get-item**, likely | ✅ Column added + flow built 2026-08-13, per user. Exact field name/pattern to be confirmed against a fresh `sharepoint-lists/Order.csv` export. |
+| Order | Model | *(exact name pending fresh export)* | *(pending confirmation)* | ✅ Column added + flow built 2026-08-13, per user. Details to confirm against a fresh export. |
+| Order | Model Revision | *(exact name pending fresh export)* | *(pending confirmation)* | ✅ Column added + flow built 2026-08-13, per user. Details to confirm against a fresh export. |
 
 ## To-do
 
-**All TextField sync flows built as of 2026-08-13** for every Lookup that currently has a
-TextField column to sync into — `Order Items`/`Order Number`, `Model Revisions` (all
-three), `Models`, `EngineeringChangeOrders`, and `ModelChanges` (all three, including the
-chained one). Only two things remain, both already known/deferred, not new gaps:
+**All TextField sync flows built as of 2026-08-13** — every Lookup across every list now
+has its companion built, including all three `Order` fields (columns added + flows built
+in the same session, per user). Only one thing remains, already known, not a new gap:
 
 - [ ] `Regrouped Into` (`Order Items`) — deferred as a future nice-to-have, nothing
       regrouped yet. See the note in `order-items-power-automate-flows.md`.
-- [ ] The three `Order` fields (`Client`, `Model`, `Model Revision`) — still **missing
-      their TextField columns entirely** in SharePoint (a schema step, manual, same
-      PnP-blocked situation as the rest of this migration). Can't build sync flows for
-      these until the columns exist. See rows above for what each likely needs
-      (`Client_ID_TextField` almost certainly Get-item; `Model`/`Model Revision`'s pattern
-      still needs `ShowField` verification once their columns are added).
+- [ ] **Verify the three `Order` rows above** against a fresh `sharepoint-lists/*.csv`
+      export once the user re-exports — the table currently just trusts "done," the exact
+      field names/patterns were placeholders and haven't been confirmed against live data
+      the way every other row in this table was.
