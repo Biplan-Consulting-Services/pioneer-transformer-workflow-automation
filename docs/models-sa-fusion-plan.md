@@ -214,11 +214,23 @@ is just the model's own code, same value as the new `Models` row's `Model_Code` 
 `Spec_ID`, `Spec_Revision`, `Spec_Date`, `Notes`, `JS #`, `Duplicate Order`, `Family` — no
 source data on `Models SA`, leave blank.
 
+### Step 4b — 2 more `Model Revisions` rows, for the placeholders
+
+**Corrected 2026-08-13**: the two placeholder `Models` rows (`M-HYQU-0096`/`M-HYQU-0097`)
+need a `Latest Model Revision` too, not left unlinked as first drafted — every `Models` row
+needs one. Naming: since these are regular (non-SA) rows, use the **standard**
+`MR-HYQU-{number}-V1` convention (not `MRSA-`) — no collision risk here since `0096`/`0097`
+are brand-new numbers, not reused from an existing parent.
+
+| Model_Revion_ID | Client | Pioneer Model Code | Client_Model_Code | Everything else |
+|---|---|---|---|---|
+| MR-HYQU-0096-V1 | HYDRO QUEBEC | M-HYQU-0096 | 426870 | blank |
+| MR-HYQU-0097-V1 | HYDRO QUEBEC | M-HYQU-0097 | 4276699 | blank |
+
 ### Step 5 — link back
 
 Set each new `Models` row's `Latest Model Revision` Lookup to point at its new `Model
-Revisions` row from step 4. (The two placeholder rows from step 2 have no `Model Revisions`
-entry — nothing to link, by design, since they're empty placeholders.)
+Revisions` row (from step 4, or step 4b for the two placeholders).
 
 ### After that
 
