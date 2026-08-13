@@ -127,13 +127,108 @@ list-of-record behind it tied to `Order`/`Order Items` — an approval happens a
 not queryable the way a `Workflow Tasks` row is. Could layer in later for a genuinely
 simple single-person sign-off step, but not as the backbone.
 
-### 5. Third-party tools (Monday.com, Smartsheet, Asana, etc.) — not researched in depth, not recommended
+### 5. Third-party tools (monday.com, Smartsheet, etc.) — viable only as a synced presentation layer, not as the system of record
 
-Not pursued beyond a sanity check: adopting one would mean abandoning the native Lookup
-relationships to `Order`/`Order Items`/`Model Revisions` this session already confirmed work
-natively in SharePoint, adding a new per-seat cost on top of Microsoft 365 licensing already
-in place, and introducing a tool most of the team hasn't used before — three real costs for
-no capability this project actually needs that SharePoint + Power Automate lacks.
+Looked at properly this round, not just waved off. Two real options surfaced:
+
+**monday.com** — has a Power Automate connector, so a `Workflow Tasks` ↔ monday.com board
+sync is genuinely buildable, the same way Planner Premium was considered as a synced *view*
+above. But several real costs stack up:
+- The connector is a **Premium** Power Automate connector
+  ([apps-for-monday.com](https://apps-for-monday.com/apps/10000270/)) — extra cost beyond
+  what's already licensed, on top of monday.com's own per-seat pricing.
+- Microsoft's own listing shows the connector still in **(Preview)**
+  ([learn.microsoft.com](https://learn.microsoft.com/nb-no/Connectors/monday)) — not
+  GA, a real maturity/reliability flag for something this project would depend on daily.
+- One integrator states plainly that "Power Automate integration is not natively offered by
+  monday.com and requires third-party developer add-ons"
+  ([dsapps.dev](https://www.dsapps.dev/compare/monday-sharepoint-vs-power-automate/)) — the
+  sync path runs through an extra third-party layer (e.g. David Simpson Apps' SharePoint
+  integration), not a first-party Microsoft-to-monday bridge.
+- monday.com caps automations at 25,000/month even on its top plan
+  ([monday.com blog](https://monday.com/blog/project-management/monday-com-vs-smartsheet-2026/)) —
+  unlikely to matter at Pioneer's volume, but worth knowing it's not unlimited.
+
+**Smartsheet** — a plausible alternative to monday.com in this comparison specifically
+because reviewers repeatedly frame it as the better Microsoft-365-native fit: *"enterprise
+teams already using... heavy Microsoft Office 365 workflows will find Smartsheet's
+integrations more valuable"*, and its spreadsheet-grid model is called out as a good match
+for *"manufacturing workflows... detailed scheduling and milestone tracking"* specifically
+([tech.co](https://tech.co/project-management-software/smartsheet-vs-monday);
+[monday.com blog](https://monday.com/blog/project-management/monday-com-vs-smartsheet-2026/)) —
+plus unlimited automations on its Business plan, vs. monday.com's capped 25,000/month.
+
+**Verdict**: real options if the actual want is a nicer Kanban/timeline board and the team
+is willing to pay for extra seats + a Premium connector — but they'd solve a problem
+(prettier visualization) that Adaptive Cards + a filtered SharePoint view already solve
+inside licensing Pioneer already has, while adding a second synced system that can drift out
+of step with `Order`/`Order Items` and a maintenance dependency on a third-party connector.
+Not recommended as the system of record for the same reason Planner Premium isn't: it would
+sit *beside* the native-Lookup architecture already proven in this tenant, not inside it.
+Worth revisiting only if, after Phase 1 ships, staff specifically ask for board/timeline
+visualization the SharePoint list view genuinely can't give them.
+
+## What an Adaptive Card actually is, concretely
+
+Since this is the specific mechanism being proposed for notifications, worth explaining
+fully rather than just naming it.
+
+**The technology**: an Adaptive Card is a small JSON document describing a UI — text,
+images, input fields, and buttons — that gets rendered *natively* by whatever app displays
+it (Teams, Outlook, even a bot), so the same JSON payload looks and behaves like a normal
+Teams card in Teams, a normal Outlook card in Outlook, without writing app-specific UI code
+([learn.microsoft.com](https://learn.microsoft.com/en-us/adaptive-cards/);
+[imrizwan.com](https://imrizwan.com/blog/adaptive-cards-m365-developer-guide)). The JSON has
+two main parts: a `body` array (the layout — `TextBlock` for text, `ColumnSet`/`Container`
+for layout structure, `Image`) and an `actions` array (the buttons — `Action.Submit` sends
+data back to whatever triggered the card, `Action.OpenUrl` opens a link).
+
+**A concrete card for this project** — what a `Planning Schedule` task notification could
+actually look like, sent to Scheduling when a `Work Order` task completes:
+
+```json
+{
+  "type": "AdaptiveCard",
+  "version": "1.5",
+  "body": [
+    { "type": "TextBlock", "text": "Planning Schedule needed", "weight": "Bolder", "size": "Medium" },
+    { "type": "TextBlock", "text": "Order 21865-1/5", "isSubtle": true },
+    {
+      "type": "FactSet",
+      "facts": [
+        { "title": "Step", "value": "Planning Schedule" },
+        { "title": "Department", "value": "Scheduling" },
+        { "title": "Status", "value": "Not Started" }
+      ]
+    }
+  ],
+  "actions": [
+    { "type": "Action.Submit", "title": "Mark as Started", "data": { "itemId": 4821, "newStatus": "In Progress" } },
+    { "type": "Action.OpenUrl", "title": "Open in SharePoint", "url": "https://ermcopower.sharepoint.com/..." }
+  ]
+}
+```
+
+**How it plugs into the flow, mechanically**: Power Automate's action is literally called
+**"Post an Adaptive Card to a Teams user (or channel) and wait for a response"**
+([learn.microsoft.com](https://learn.microsoft.com/en-us/power-automate/create-adaptive-cards)).
+The word "wait" is functional, not cosmetic — the flow run genuinely pauses at that step
+until the recipient clicks a button in Teams. Once they click "Mark as Started," the
+`data` payload from that button (`itemId: 4821, newStatus: "In Progress"`) becomes available
+as dynamic content in every step *after* the wait action
+([community.dynamics.com](https://community.dynamics.com/blogs/post/?postid=d055f96f-b8c5-4f89-8aab-cd895ac53cab)) —
+so the very next flow step is just "Update item" on `Workflow Tasks`, setting `Status` to
+whatever came back in `newStatus`. No polling, no separate "did they click it yet" check —
+the flow is asleep until they act, then wakes up already holding what they clicked. Note the
+`Action.Submit` buttons specifically **require** the "wait for a response" variant of the
+action — a plain "Post message" card can't collect a response at all
+([community.powerplatform.com](https://community.powerplatform.com/forums/thread/details/?threadid=e01ee0c2-21bd-ef11-b8e8-7c1e52025ab5)).
+
+**Authoring**: hand-writing the JSON above works fine for something this size, but Microsoft
+also ships a visual [Adaptive Cards
+Designer](https://learn.microsoft.com/en-us/adaptive-cards/) (drag-and-drop, live preview
+against the actual Teams/Outlook rendering) if a more complex card is wanted later — not
+needed to get started.
 
 ## Two things worth changing in `phase1-plan.md`, based on this research
 
