@@ -22,7 +22,7 @@ Site: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`
 - [x] 2. Test/QA results
 - [x] 3. Production tracking
 - [x] 4. Production-sequence dates (8 pairs) — done 2026-08-13
-- [ ] 5. Other dates
+- [x] 5. Other dates — done 2026-08-13
 - [ ] 6. Companion columns on `Order`
 - [ ] 7. Companion columns on `Model Revisions`
 
