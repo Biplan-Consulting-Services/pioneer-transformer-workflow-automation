@@ -45,6 +45,14 @@ only when both say Yes, and Engineering's start gated on client-date confirmatio
 with department-filtered views) vs. the originally-floated separate list per department;
 the list's exact name.
 
+**Tooling choice researched and confirmed 2026-08-12** — see `docs/phase1-tooling-research.md`:
+staying in SharePoint + Power Automate is still the right call (vs. Planner Premium, which
+turned out to be Dataverse-backed and would break Lookup compatibility with `Order`/`Order
+Items`; vs. Power Apps + Dataverse, which is over-engineering at this project's ~1000
+orders/year scale). Two changes folded back into `phase1-plan.md` from that research: use
+Adaptive Cards for notifications from the start, and give `Workflow Tasks` its own archiving
+flow rather than deferring it.
+
 **Dependency on workstream 1**: Phase 1's `Work Order`/`Planning Schedule` steps are
 per-unit, so they need `Order Items` rows to exist. Once workstream 1's list/schema exists,
 this is satisfied — Phase 1's flow just creates new `Order Items` rows for new orders going

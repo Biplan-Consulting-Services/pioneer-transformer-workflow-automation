@@ -158,19 +158,35 @@ gets unmaintainable fast once later phases add more steps. One flow, triggered o
 
 ## Notifications
 
+**Updated 2026-08-12 per `phase1-tooling-research.md`**: use Adaptive Cards from the start,
+not a plain Teams message — this was previously an "open decision for later," but research
+into exactly this "whose turn is it" problem shows Adaptive Cards is the established
+pattern, and it's not meaningfully more setup effort than a plain message.
+
 Every task-creation branch above should also **notify the newly-responsible
 person/department** so they can start immediately — this is the actual pain point being
 fixed. Use both:
 - **Email** (Outlook `Send an email (V2)` action) — subject includes Order Number + Step
   Name, body links directly to the `Workflow Tasks` item (or a filtered view).
-- **Teams message** (Teams `Post message in a chat or channel` action, or `Post adaptive
-  card and wait for a response` if an interactive "Mark as started" button is wanted later)
-  — same content, posted to the relevant department's channel or the assigned person's
-  chat.
+- **Adaptive Card in Teams** (`Post an adaptive card and wait for a response`, posted to the
+  relevant department's channel or the assigned person's chat) — shows task title, order
+  number, due context, and current status in a consistent layout, with a "Mark as Started"
+  (or similar) action button that flips `Status` directly from the card, not just a
+  read-only ping.
 
 Both Outlook and Teams are standard (non-premium) Power Automate connectors under most
 Microsoft 365 plans — shouldn't need extra licensing, but wasn't independently confirmed
 for Pioneer's specific tenant.
+
+## Archiving — needed for this list too, not deferred
+
+**Added 2026-08-12 per `phase1-tooling-research.md`**: SharePoint Online has a hard,
+non-configurable 5,000-item List View Threshold per query scan, and a task-per-step design
+generates rows faster than `Order`/`Order Items` do. Reuse the same scheduled,
+verify-before-delete archiving mechanism `archiving-plan.md` already designs for
+`Order`/`Order Items` — gate it on `Status = Completed` (mirroring that mechanism's
+delivered/cancelled trigger). Don't defer this until the list is already large; build it
+alongside the rest of Phase 1, not after.
 
 ## Nice-to-have, not blocking Phase 1
 
@@ -178,7 +194,11 @@ A Microsoft Planner board or a small Power App front-end over the `Workflow Task
 would look nicer than a raw SharePoint list view for day-to-day use — but that's a
 presentation layer over the same data model above, addable later without reshaping the
 list or the flow. Don't build it as part of getting Phase 1 functional; a filtered
-SharePoint list view is enough to ship and start using.
+SharePoint list view is enough to ship and start using. **Note (2026-08-12 research):** if
+this is ever revisited, it means Microsoft **Planner Premium** specifically — Planner
+Premium is Dataverse-backed, not SharePoint-backed, so it could only ever be a
+Power-Automate-synced *view* of `Workflow Tasks`, never the list itself, without breaking
+this project's native-Lookup compatibility with `Order`/`Order Items`.
 
 ## Build order (checklist)
 
@@ -196,7 +216,10 @@ SharePoint list view is enough to ship and start using.
       (create `Order Items` rows + one `Work Order` task per unit), and the converge-back
       "all Planning Schedule tasks done" check before creating `Confirm Planned Dates with
       Client`.
-- [ ] Wire in email + Teams notifications on every task-creation branch.
+- [ ] Wire in email + Adaptive Card notifications on every task-creation branch.
+- [ ] Build the archiving flow for `Workflow Tasks` (`Status = Completed` trigger, same
+      scheduled/verify-before-delete mechanism as `archiving-plan.md`) alongside the rest of
+      this build, not deferred.
 - [ ] Test end-to-end with one real or dummy multi-unit order (`Qty` > 1) through the whole
       Phase 1 chain before rolling out to the team — the fan-out/converge logic is the part
       most likely to have an off-by-one or timing bug, worth deliberately testing with more
@@ -208,5 +231,6 @@ SharePoint list view is enough to ship and start using.
 
 - Named-person `Assigned To` vs. department-queue-only notification, at least at first?
 - Teams: channel post vs. DM to the assigned person?
-- Interactive adaptive card (e.g. a "Start" button that flips Status to `In Progress`
-  right from Teams) vs. plain notification-only message, for a later iteration?
+
+(Adaptive card vs. plain message is no longer open — decided 2026-08-12, see
+`phase1-tooling-research.md`: build the interactive Adaptive Card from the start.)
