@@ -36,7 +36,16 @@ re-trigger itself forever. **Guard every flow with a condition that skips the up
 the TextField already matches the looked-up value** — the self-triggered re-run then finds
 nothing to change and exits without looping.
 
-### Flow A — `Order Items` Lookup sync
+### Flow A — `Order Items - created or updated trigger`
+
+**Naming decision, 2026-08-13**: this flow is named after its trigger (`Order Items -
+created or updated trigger`), not its current purpose — user's call, so that adding more
+logic to it later (which is exactly what happened with step 2c below) never requires a
+rename. **This is also the single merged flow for both step 2b's TextField sync and step
+2c's production-sequence auto-stamp** — both already trigger on the same event on the same
+list and both use the same consolidated-variable-then-gated-update shape, so one flow with
+one `Update item` call handles both concerns instead of two flows each re-triggering the
+other on every write.
 
 **Built and tested 2026-08-13** (the `Order Number` piece):
 - **Trigger**: SharePoint *"When an item is created or modified"* — Site:
@@ -80,6 +89,11 @@ separate update actions.
 3. `Regrouped Into` — deferred, see note above. Test whenever it's picked up.
 
 ## Step 2c — Production-sequence auto-stamp
+
+**Built into the same flow as step 2b** — `Order Items - created or updated trigger`, not a
+separate flow (see the naming decision under Flow A above). Same trigger, same list, same
+consolidated-update shape, so it's just more variables/conditions feeding the one shared
+`Update item` call rather than a second flow.
 
 **Schema ready as of 2026-08-13** — each of the 8 stages now has `{Stage} Start Date`
 (NEW) and `{Stage} End Date` (renamed from the original `{Stage} Date`), confirmed live via
