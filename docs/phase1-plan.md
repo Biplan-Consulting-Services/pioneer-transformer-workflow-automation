@@ -243,6 +243,30 @@ this project's native-Lookup compatibility with `Order`/`Order Items`.
 
 - Named-person `Assigned To` vs. department-queue-only notification, at least at first?
 - Teams: channel post vs. DM to the assigned person?
+- **Adaptive Card granularity and lifecycle — added 2026-08-14, discuss when this workstream
+  is actually picked up, not decided yet:**
+  - Cards should **link directly to the actual `Workflow Tasks` item in SharePoint**, so
+    clicking through goes straight to the task, not just a generic list view.
+  - Open question on granularity — three options floated, none chosen: **(a)** one card per
+    department/person showing a *total count* of how many open tasks they currently have
+    (a summary/dashboard-style card), **(b)** one card per task *type* (`Step Name`),
+    listing open tasks of that kind, or **(c)** one card per individual task (today's
+    default assumption in this plan, one `Post an adaptive card` call per task-creation
+    branch).
+  - **Requirement, whichever granularity is chosen**: cards should disappear or update once
+    their underlying task is `Completed`, so a person's Teams view only ever shows
+    outstanding work, not a growing pile of stale completed-task cards. Note for whoever
+    builds this: Power Automate's Teams connector can **update or delete a previously
+    posted adaptive card** if the message ID from the original post is captured and stored
+    (e.g. on the `Workflow Tasks` row itself) — a live-count summary card (option a) would
+    need this same message-ID-tracking approach, updated in place rather than reposted, to
+    behave like a running dashboard rather than a new message every time.
+- **New idea, 2026-08-14**: a separate **`Task Responsibilities`** list (name TBD) mapping
+  each `Step Name` to its owning department/person, instead of hardcoding that mapping
+  inside the Switch-based flow's branches. Would let responsibility assignments be edited by
+  an admin directly in SharePoint without touching the Power Automate flow logic — worth
+  weighing against the current plan's simpler hardcoded-in-flow approach when this
+  workstream is built.
 
 (Adaptive card vs. plain message is no longer open — decided 2026-08-12, see
 `phase1-tooling-research.md`: build the interactive Adaptive Card from the start.)
