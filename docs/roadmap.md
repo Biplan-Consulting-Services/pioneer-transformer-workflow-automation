@@ -109,8 +109,12 @@ step 8 — new direct `Client`/`Model`/`Model Revision` Lookups on `Order Items`
 views/filters/reports — same pattern already used on `Model Revisions`' own `Client`
 Lookup). Buildable now that `Models`/`Models SA` are one list.
 
-**Still to do**: repoint `ColumnMap.pq`/`TableOrders.pq` (FRM10-12), retire the `Models SA`
-list, build the order-item-generation logic that resolves main-vs-SA at unit-creation time.
+`ColumnMap.pq`/`TableOrders.pq` (FRM10-12) repointed off the retired `Models SA` entity,
+2026-08-13 (commit `9aeb9c7`) — the existing `Models`/`Model Revisions` merge already
+covers the fused SA rows.
+
+**Still to do**: retire the `Models SA` list, build the order-item-generation logic that
+resolves main-vs-SA at unit-creation time.
 
 **Creates new logic work**: whatever generates the SA auxiliary `Order Items` row (the
 transfer flow now, `phase1-plan.md`'s `Work Order` fan-out later) needs to correctly

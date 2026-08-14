@@ -1,8 +1,8 @@
 # Models SA Fusion Plan
 
-**Status:** decided, designed, and the schema/data migration completed — all 2026-08-13.
-Remaining: repoint `ColumnMap.pq`/`TableOrders.pq`, retire `Models SA`, build the
-order-item-generation logic (see "Migration scope" steps 3-5, not started).
+**Status:** decided, designed, schema/data migration completed, and `ColumnMap.pq`/
+`TableOrders.pq` repointed — all 2026-08-13. Remaining: retire `Models SA`, build the
+order-item-generation logic (see "Migration scope" steps 4-5, not started).
 
 ## The decision
 
@@ -71,12 +71,16 @@ classification, doesn't change revision-to-revision):
 1. ~~Design how to distinguish an "SA-type" `Models` row~~ — **done, see above.**
 2. **Migration mapping — confirmed 2026-08-13, see below.** All 15 live `Models SA` rows
    (all `Client = HYDRO QUEBEC`) matched to their parent `Models` row.
-3. Repoint anything referencing `Models SA`: `ColumnMap.pq`'s `Models SA` entity,
-   `TableOrders.pq`'s merge logic (`#"Imported SA Models"`/`#"Complete Imported Models"`
-   branch). **Nothing in live `Order`/`Order Items` data needs repointing** — confirmed
-   earlier that `Order.Model` never pointed at `Models SA` in the first place, so there are
-   no live lookups to a `Models SA` record anywhere; the only references are in Power Query
-   code, not data.
+3. **Done, 2026-08-13** (FRM10-12 commit `9aeb9c7`). Repointed `ColumnMap.pq` (dropped the
+   `Models SA` entity block) and `TableOrders.pq` (removed the separate
+   `#"Imported SA Models"` merge — `#"Complete Imported Models"` now just selects
+   `ModelAllCols` off `#"Imported Base Models"`, which already covers the fused SA rows
+   since their `Model_Code` keeps its `" SA"` suffix, matching `TableOrders`' existing merge
+   key unchanged). `power-query/sharepoint-lists/Models SA.pq` itself deliberately left in
+   place — that's step 4 (retire), not this step. **Nothing in live `Order`/`Order Items`
+   data needed repointing** — confirmed earlier that `Order.Model` never pointed at
+   `Models SA` in the first place, so there were no live lookups to a `Models SA` record
+   anywhere; the only references were in Power Query code, not data.
 4. Retire the `Models SA` list once nothing points at it anymore.
 5. Build the order-item-generation logic that resolves the correct `Models` row (main vs.
    SA) for each unit — this is new logic, not just a repoint, since today `Models`/`Models
