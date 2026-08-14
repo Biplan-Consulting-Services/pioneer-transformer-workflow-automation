@@ -3,6 +3,45 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
+## Where things stand right now (end of day, 2026-08-13) — read this before anything else
+
+**Done and verified working, this session:**
+- Workstream 1: full `Order Items` schema built live (all 8 sub-steps, including the new
+  `Client`/`Model`/`Model Revision` Lookups' *design* — not yet actually built, see below).
+  Every Lookup→TextField sync flow built system-wide except `Regrouped Into` (deferred).
+- Workstream 4 (Models SA fusion): **fully done, schema through data through Power Query**.
+  All 15 live `Models SA` rows + 2 new placeholder rows migrated into `Models`/`Model
+  Revisions` with real revision history; `FRM10-12`'s `ColumnMap.pq`/`TableOrders.pq`
+  repointed off the retired entity (commit `9aeb9c7`); a related stale-model-data bug in
+  `TableOrders.pq` found and fixed (commit `516134c`); a data-entry bug (crossed `Latest
+  Model Revision` links from the migration paste) found and fixed by the user directly in
+  SharePoint, confirmed via refresh. Full detail: `models-sa-fusion-plan.md`.
+
+**Immediate next steps, not yet started — pick any, none blocked:**
+1. Build workstream 1 step 2c's Power Automate flow (production-sequence auto-stamp) —
+   fully spec'd in `order-items-power-automate-flows.md`, timezone decided (Eastern), goes
+   into the existing merged flow `Order Items - created or updated trigger`.
+2. Build workstream 1 step 3's transfer flow (Excel → SharePoint, re-runnable, upsert) —
+   fully spec'd in `order-items-build-plan.md`.
+3. Build the new `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself (step 8,
+   `order-items-manual-build-checklist.md`) — was blocked on the Models SA fusion, now
+   unblocked since that's done.
+4. Workstream 4 cleanup: retire the old `Models SA` list once nothing points at it; build
+   the order-item-generation logic that resolves main-vs-SA `Models` row for a new unit.
+5. Workstream 2 (Phase 1 business process automation) — not started, fully spec'd in
+   `phase1-plan.md`, one open question (`Workflow Tasks` as one shared list vs. per-department).
+6. Workstream 3 (Archiving) — not started, fully spec'd in `archiving-plan.md`.
+
+**Standing things to remember when resuming, regardless of which item above gets picked:**
+- Re-read this repo's actual docs fresh before acting — don't trust a memory summary's
+  narrative for current state (memory has drifted stale on this project before).
+- FRM10-12: never refresh via generic "Refresh All"/COM `RefreshAll` — use the Office
+  Script button on the `Orders` sheet (wipes native formula columns otherwise). Check for
+  an existing automation script (e.g. `scripts/Sync-PowerQuery.ps1`) before giving manual
+  "paste into Advanced Editor" instructions.
+- `sharepoint-lists/*.csv` exports use `{List Name} {YYYY-MM-DD} {HHMM}.csv` naming,
+  superseded ones move to `Archive/`.
+
 ## Four workstreams, mostly independent, all ready to build now
 
 ### 1. Order Items migration — **priority** (get staff off editing Excel)
