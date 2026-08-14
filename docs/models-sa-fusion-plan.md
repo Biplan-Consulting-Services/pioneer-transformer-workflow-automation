@@ -81,6 +81,20 @@ classification, doesn't change revision-to-revision):
    data needed repointing** — confirmed earlier that `Order.Model` never pointed at
    `Models SA` in the first place, so there were no live lookups to a `Models SA` record
    anywhere; the only references were in Power Query code, not data.
+
+   **Related hardening fix, same day, found while verifying the repoint**: `TableOrders.pq`
+   used to route model spec fields (`Form`, `Copper (LV)`, `Type`, etc.) for *existing*
+   order rows through `ApplyPrefixedOverrides` — the same "preserve last-known value if no
+   live match found" protection Order fields legitimately need (so an order doesn't lose
+   data if it transiently drops out of a SharePoint pull). Model spec fields don't need that
+   protection (never staff-edited in Excel, always sourced), and *new* order rows already
+   got them via a plain overwrite with no such fallback — an inconsistency between the two
+   paths. Fixed existing orders to match: model fields now always reflect current live
+   data, direct join + expand, no stale-preserve fallback. **This didn't turn out to be the
+   root cause of the `4251082 SA`/`4261871 SA` mismatch below** (that was a bad `Latest
+   Model Revision` link, and a fresh merge just faithfully reflects whatever that link
+   says) — but it closes a real gap that could cause a similar-looking issue in the future
+   if a model-side join ever genuinely fails to match.
 4. Retire the `Models SA` list once nothing points at it anymore.
 5. Build the order-item-generation logic that resolves the correct `Models` row (main vs.
    SA) for each unit — this is new logic, not just a repoint, since today `Models`/`Models
@@ -238,6 +252,16 @@ are brand-new numbers, not reused from an existing parent.
 
 **Done, 2026-08-13.** All 17 `Models` rows (15 SA-origin + 2 placeholders) now have their
 `Latest Model Revision` set. **The full migration (schema through data) is complete.**
+
+**Data-entry bug found and fixed, 2026-08-13**: one or more of the 17 `Latest Model
+Revision` links got crossed during the Step 5 paste (e.g. `4251082 SA`'s `Models` row was
+pointing at a *different* SA design's `Model Revisions` entry) — surfaced when the user
+spotted a live order (`21611-1/1 SA`) showing another model's spec data (`Form`/`Copper
+(LV)`/`Wire (HV)`/`Overcoil`/`kVA` all matching `4261871 SA` instead of its own linked
+`4251082 SA`). Confirmed systemic (every order pointing at that code showed the same wrong
+data, not just one stale row) before concluding it was a genuine bad link, not a caching
+artifact. **User corrected the `Latest Model Revision` links directly in SharePoint and
+confirmed the data resolves correctly on refresh.**
 
 ### After that
 
