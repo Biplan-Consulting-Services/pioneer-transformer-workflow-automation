@@ -17,18 +17,19 @@ first, then follow the links into whichever workstream you're picking up.
   `TableOrders.pq` found and fixed (commit `516134c`); a data-entry bug (crossed `Latest
   Model Revision` links from the migration paste) found and fixed by the user directly in
   SharePoint, confirmed via refresh. Full detail: `models-sa-fusion-plan.md`.
+- Workstream 1 step 2c: production-sequence auto-stamp, **built and tested 2026-08-14** —
+  16 Start/End Date stamps, plus (added mid-build) an `N/A` status option and full
+  advance-to-Pending chain across all 8 stages. Full-cycle test (In Progress → Completed →
+  N/A, repeated for every stage) passed. Full detail: `order-items-power-automate-flows.md`.
 
 **Immediate next steps, not yet started — pick any, none blocked:**
-1. Build workstream 1 step 2c's Power Automate flow (production-sequence auto-stamp) —
-   fully spec'd in `order-items-power-automate-flows.md`, timezone decided (Eastern), goes
-   into the existing merged flow `Order Items - created or updated trigger`.
-2. Build workstream 1 step 3's transfer flow (Excel → SharePoint, re-runnable, upsert) —
+1. Build workstream 1 step 3's transfer flow (Excel → SharePoint, re-runnable, upsert) —
    fully spec'd in `order-items-build-plan.md`.
-3. Workstream 4 cleanup: retire the old `Models SA` list once nothing points at it; build
+2. Workstream 4 cleanup: retire the old `Models SA` list once nothing points at it; build
    the order-item-generation logic that resolves main-vs-SA `Models` row for a new unit.
-4. Workstream 2 (Phase 1 business process automation) — not started, fully spec'd in
+3. Workstream 2 (Phase 1 business process automation) — not started, fully spec'd in
    `phase1-plan.md`, one open question (`Workflow Tasks` as one shared list vs. per-department).
-5. Workstream 3 (Archiving) — not started, fully spec'd in `archiving-plan.md`.
+4. Workstream 3 (Archiving) — not started, fully spec'd in `archiving-plan.md`.
 
 **Standing things to remember when resuming, regardless of which item above gets picked:**
 - Re-read this repo's actual docs fresh before acting — don't trust a memory summary's

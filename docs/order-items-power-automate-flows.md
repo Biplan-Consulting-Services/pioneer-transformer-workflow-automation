@@ -22,8 +22,8 @@ standalone reference rather than duplicated here.
       entirely, a schema step first).
 - [x] 2c. Production-sequence auto-stamp (16 Start/End Date stamps) — **built & tested
       2026-08-14**, in its own parallel branch alongside 2b's TextField sync branch
-- [ ] 2c-extra. N/A status handling (added mid-build, 2026-08-14): schema done, flow logic
-      not yet built — see its own section below
+- [x] 2c-extra. N/A status handling + advance-to-Pending logic — **built & tested
+      2026-08-14**, full production cycle (all 8 stages) confirmed working end-to-end
 - [ ] 3. Excel → SharePoint transfer flow (re-runnable)
 
 ## Step 2b — TextField auto-sync
@@ -162,27 +162,32 @@ store UTC and misrepresent shift times).
    `Update item`) — open its "..." menu → Configure run after → confirm both branches' last
    actions are listed with "is successful" checked. If only one branch shows up there, the
    flow will race ahead without waiting for the other.
+5. **Setting a variable to `null` in the designer**: click the Value box → Expression tab →
+   type `null()` (a function call, not the bare word `null`) → Add. This is what the 8
+   clear-on-N/A actions below use to blank out the date variables.
 
-## N/A status handling (added mid-build, 2026-08-14) — schema done, flow logic NOT built yet
+## N/A status handling + advance-to-Pending logic
 
-**Why**: the auto-advance logic below (still to build) assumes every unit goes through all
-8 stages with no skips. Since that's not always true, staff need a manual way to mark a
-stage as not applicable to a given unit, without breaking the auto-advance chain or leaving
-stale dates behind. **Future idea** (logged in `roadmap.md`, not started): a Model
-Revisions-level field listing which stages actually apply to a design, so this could be
-inferred automatically instead of relying on staff to catch it — not needed to ship this.
+**Built and tested 2026-08-14.** Both pieces below, built together in one pass (the N/A
+extension is just part of the advance-to-Pending conditions' final form, not a separate
+edit — see chat history if picking this apart later).
+
+**Why**: the advance-to-Pending logic assumes every unit goes through all 8 stages with no
+skips. Since that's not always true, staff need a manual way to mark a stage as not
+applicable to a given unit, without breaking the auto-advance chain or leaving stale dates
+behind. **Future idea** (logged in `roadmap.md`, not started): a Model Revisions-level field
+listing which stages actually apply to a design, so this could be inferred automatically
+instead of relying on staff to catch it — not needed to ship this.
 
 - [x] Schema: added **`N/A`** as a 4th Choice option on all 8 `{Stage} Status` fields.
-- [ ] Flow logic — **not yet built**, two pieces:
+- [x] Flow logic — both pieces below, built and tested.
 
-**A. Extend the 7 advance-to-Pending conditions** (see next section — these aren't built
-yet either) to treat `N/A` the same as `Completed` as a trigger for advancing the next
-stage: `({Stage} Status Value = Completed OR {Stage} Status Value = N/A) AND {NextStage}
-Status Value is empty`. Needs a **nested row group** in the Condition action (top-level
-And, with a nested Or group for Completed/N/A) — see chat for the exact "Add row group" UI
-steps, or use advanced/expression mode with `and(or(...), empty(...))`.
+**A. The 7 advance-to-Pending conditions** treat `N/A` the same as `Completed` as a trigger
+for advancing the next stage: `({Stage} Status Value = Completed OR {Stage} Status Value =
+N/A) AND {NextStage} Status Value is empty`. Built with a **nested row group** in the
+Condition action (top-level And, with a nested Or group for Completed/N/A).
 
-**B. Clear dates when a stage is set to `N/A`** — 8 new conditions, one per stage (including
+**B. Clear dates when a stage is set to `N/A`** — 8 conditions, one per stage (including
 Coiling, since staff can mark it N/A directly with nothing "previous" involved):
 
 | Stage | Condition | Action |
@@ -201,13 +206,13 @@ corrected to `N/A` after already picking up a stamp has the clear win out (defen
 ordering — a stage can't actually be both `In Progress`/`Completed` and `N/A` at once, but
 order matters if that assumption is ever wrong).
 
-## Advance-to-Pending logic — NOT built yet
+## Advance-to-Pending logic (built together with the N/A handling above)
 
 **Why**: when a stage finishes (`Completed`) or is skipped (`N/A`), the *next* stage should
 automatically move from blank ("not relevant yet") to `Pending` ("queued, not started"), so
-staff don't have to manually advance every stage themselves. Confirmed design 2026-08-14:
-fires on `Completed` **or** `N/A` (not just Completed), only when the next stage is
-currently blank (so it never overwrites a stage a human has already touched).
+staff don't have to manually advance every stage themselves. Fires on `Completed` **or**
+`N/A`, only when the next stage is currently blank (so it never overwrites a stage a human
+has already touched).
 
 7 transitions (Delivery has no next stage):
 
@@ -221,14 +226,29 @@ currently blank (so it never overwrites a stage a human has already touched).
 | Testing | Finishing | (`Testing Status Value` = `Completed` OR `= N/A`) AND `Finishing Status Value` is empty | Set `vFinishingStatusValue` = `Pending`, flag = `true` |
 | Finishing | Delivery | (`Finishing Status Value` = `Completed` OR `= N/A`) AND `Delivery Status Value` is empty | Set `vDeliveryStatusValue` = `Pending`, flag = `true` |
 
-**Build steps**:
-1. **7 new "Initialize variable" actions** (String), one per next-stage
+**Built as**:
+1. **7 "Initialize variable" actions** (String), one per next-stage
    (`v{NextStage}StatusValue`), initial value = that stage's current trigger Status value.
-2. **7 new Condition actions**, per the table — needs the same nested-row-group technique as
-   the N/A extension above (Or inside, And outside).
-3. **7 new field mappings on the shared `Update item`**: `{NextStage} Status` =
+2. **7 Condition actions**, per the table, using the nested-row-group technique (Or inside,
+   And outside).
+3. **7 field mappings on the shared `Update item`**: `{NextStage} Status` =
    `if(equals(variables('v{NextStage}StatusValue'), ''), null, variables('v{NextStage}StatusValue'))`
    — same null-safe wrapper as the dates, since blank is a valid real state here too.
 
-This won't loop: once `{NextStage} Status` flips from blank to `Pending`, the self-triggered
-re-run sees it's no longer blank and the guard stops it from firing again.
+Confirmed no loop: once `{NextStage} Status` flips from blank to `Pending`, the
+self-triggered re-run sees it's no longer blank and the guard stops it from firing again.
+
+## Full-cycle test — passed 2026-08-14
+
+Tested per stage, repeated for all 8 (Coiling through Delivery), in this order:
+1. Set `{Stage} Status` to `In Progress` → confirmed `{Stage} Start Date` gets stamped.
+2. Set `{Stage} Status` to `Completed` → confirmed `{Stage} End Date` gets stamped **and**
+   `{NextStage} Status` advances to `Pending`.
+3. Set `{Stage} Status` to `N/A` → confirmed both `{Stage} Start Date` and `{Stage} End
+   Date` get cleared back to blank.
+
+All 8 stages passed. **Step 2c (including N/A handling and advance-to-Pending) is fully
+built and tested.** Not yet tried: the bulk-edit case (changing two non-adjacent stages'
+Status in a single save) — logic analysis says it should behave correctly (advances exactly
+one stage past whichever was last explicitly touched, no double-cascade), but this hasn't
+been run for real. Worth a quick test if this flow gets revisited, not blocking anything now.
