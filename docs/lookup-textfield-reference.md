@@ -29,6 +29,9 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 |---|---|---|---|---|
 | Order Items | Order Number | `Order_Number_TextField` | Simple | ✅ Built & tested 2026-08-13 |
 | Order Items | Regrouped Into | `Regrouped_Into_TextField` | Simple (multi-value) | Deferred — nice-to-have, nothing regrouped yet |
+| Order Items | Client | `Client_ID_TextField` | **Get-item**, likely | ✅ Built 2026-08-14 (step 8 schema + sync flow both done, added into the existing merged flow). Direct Lookup to `Clients` (not chained through `Order`) — same shape as `Models`/`Order`'s own `Client` Lookup. |
+| Order Items | Model | `Model_ID_TextField` | **Get-item**, likely | ✅ Built 2026-08-14. Same shape as `Order`'s `Model` Lookup. |
+| Order Items | Model Revision | `Model_Revision_ID_TextField` | **Get-item**, likely | ✅ Built 2026-08-14. Same shape as `Order`'s `Model Revision` Lookup. |
 | Model Revisions | Client | `Client_ID_TextField` | **Get-item** | ✅ Built 2026-08-13 (pending test confirmation). On `Clients`: pulls `Client_ID` |
 | Model Revisions | Pioneer Model Code | `Pioneer_Model_Code_TextField` | Simple | ✅ Built 2026-08-13 (pending test confirmation). Points at `Models`. |
 | Model Revisions | Duplicate Order | `Duplicate_Order_TextField` | Simple | ✅ Built 2026-08-13 (pending test confirmation). Same shape as Order Items' `Order Number`. |
@@ -44,9 +47,10 @@ those (or fresher exports) if this goes stale, don't trust this table blindly fo
 
 ## To-do
 
-**All TextField sync flows built as of 2026-08-13** — every Lookup across every list now
-has its companion built and confirmed live, including all three `Order` fields. Only one
-thing remains, already known, not a new gap:
+**Only one thing remains** — the new `Client`/`Model`/`Model Revision` Lookups added
+2026-08-14 (step 8) have their sync flow built too, added into the existing
+`Order Items - created or updated trigger` flow alongside step 2b/2c, same merged-flow home
+as the rest of `Order Items`'s Lookup syncs.
 
 - [ ] `Regrouped Into` (`Order Items`) — deferred as a future nice-to-have, nothing
       regrouped yet. See the note in `order-items-power-automate-flows.md`.

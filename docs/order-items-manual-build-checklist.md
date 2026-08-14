@@ -25,15 +25,12 @@ Site: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`
 - [x] 5. Other dates — done 2026-08-13
 - [x] 6. Companion columns on `Order` — done 2026-08-13 (`Protector & Switchgear PO` moved to `Order Items` instead, see note in that section)
 - [x] 7. Companion columns on `Model Revisions` — done 2026-08-13
-- [ ] 8. `Client`/`Model`/`Model Revision` lookups on `Order Items` — new, decided
-      2026-08-13, **blocked on the Models SA fusion's disambiguation question** (see
-      `models-sa-fusion-plan.md`)
+- [x] 8. `Client`/`Model`/`Model Revision` lookups on `Order Items` — done 2026-08-14, all 6
+      columns (3 Lookups + 3 TextField companions) built live
 
-**Sub-steps 1-7 done — the original schema build is complete.** Step 8 is a later addition,
-not part of the original scope — see its own section below. Next real task otherwise (not
-part of this checklist): the TextField auto-sync Power Automate flow — see
-`order-items-build-plan.md` step 2b, elevated to a tracked build step since manual
-TextField upkeep has been a genuine pain point, not just a "nice to have."
+**All 8 sub-steps done — the schema build (including step 8) is complete**, and its
+TextField sync flow is built too (see `lookup-textfield-reference.md`). Next real task:
+`order-items-build-plan.md` step 3, the Excel → SharePoint transfer/backfill flow.
 
 ## Step 1 — Create the `Order Items` list
 
@@ -157,7 +154,7 @@ revision, not just model-to-model.
 | Duplicate_Order_TextField | Single line of text | Companion text field, same convention as `Order_Number_TextField` above. |
 | Family | Choice | `A`, `B1`, `B2`, `C` |
 
-## Step 8 — `Client`/`Model`/`Model Revision` lookups on `Order Items` (added 2026-08-13)
+## Step 8 — `Client`/`Model`/`Model Revision` lookups on `Order Items` (added 2026-08-13, built 2026-08-14)
 
 **Why**: `Order Items` currently has no lookup to `Client`/`Models`/`Model Revisions` at
 all — that data only exists one hop away, on the parent `Order`. SharePoint can't cascade
@@ -186,14 +183,25 @@ nice-to-have in `roadmap.md`**: a "parent changed → update children" flow (if 
 `Order Items` rows) — not needed now, worth building if that turns out to happen in
 practice.
 
+**Client source, resolved 2026-08-14**: unlike `Model`/`Model Revision`, `Client` doesn't
+need SA branching — every unit in an order belongs to the same client regardless of
+`SA Job`, so it always mirrors the parent Order's client. Built as a direct Lookup to
+**Clients** (same pattern as `Model Revisions`' own `Client` Lookup, not chained through
+`Order`), not through `Order`/`Models SA`.
+
 | Field name | Type | Details |
 |---|---|---|
-| Client | **Lookup** | Get information from: **Order** (mirrors parent) or **Models SA/Models** (SA row) — exact source TBD once the fusion is resolved. |
-| Client_ID_TextField | Single line of text | Companion text field, same convention as every other `Client` Lookup system-wide — see `lookup-textfield-reference.md`. |
-| Model | **Lookup** | Get information from: **Models** (post-fusion). |
-| Model_ID_TextField | Single line of text | Companion text field. |
-| Model Revision | **Lookup** | Get information from: **Model Revisions** (post-fusion). |
-| Model_Revision_ID_TextField | Single line of text | Companion text field. |
+| Client | **Lookup** | Get information from: **Clients** (direct). Value always mirrors the parent Order's client, no SA branching. **Built 2026-08-14.** |
+| Client_ID_TextField | Single line of text | Companion text field, same convention as every other `Client` Lookup system-wide — see `lookup-textfield-reference.md`. **Built 2026-08-14.** |
+| Model | **Lookup** | Get information from: **Models** (post-fusion). Normal row mirrors parent Order's Model; SA row (`SA Job = Yes`) points at the SA-specific model instead. **Built 2026-08-14.** |
+| Model_ID_TextField | Single line of text | Companion text field. **Built 2026-08-14.** |
+| Model Revision | **Lookup** | Get information from: **Model Revisions** (post-fusion). Same SA branching as `Model`. **Built 2026-08-14.** |
+| Model_Revision_ID_TextField | Single line of text | Companion text field. **Built 2026-08-14.** |
+
+**Data not yet populated** — schema only, same status as the rest of `Order Items` (empty
+list). Backfill happens at `order-items-build-plan.md` step 3, same as every other field.
+**TextField sync flow for these 3 new Lookups built 2026-08-14**, added into the existing
+merged `Order Items - created or updated trigger` flow — see `lookup-textfield-reference.md`.
 
 ## After the list exists
 

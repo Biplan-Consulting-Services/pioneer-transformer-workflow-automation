@@ -3,12 +3,13 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
-## Where things stand right now (end of day, 2026-08-13) — read this before anything else
+## Where things stand right now (2026-08-14) — read this before anything else
 
-**Done and verified working, this session:**
-- Workstream 1: full `Order Items` schema built live (all 8 sub-steps, including the new
-  `Client`/`Model`/`Model Revision` Lookups' *design* — not yet actually built, see below).
-  Every Lookup→TextField sync flow built system-wide except `Regrouped Into` (deferred).
+**Done and verified working:**
+- Workstream 1: full `Order Items` schema built live, all 8 sub-steps including step 8
+  (`Client`/`Model`/`Model Revision` Lookups + TextField companions, built 2026-08-14 now
+  that the Models SA fusion unblocked it). Every Lookup→TextField sync flow built
+  system-wide except `Regrouped Into` (deferred).
 - Workstream 4 (Models SA fusion): **fully done, schema through data through Power Query**.
   All 15 live `Models SA` rows + 2 new placeholder rows migrated into `Models`/`Model
   Revisions` with real revision history; `FRM10-12`'s `ColumnMap.pq`/`TableOrders.pq`
@@ -23,14 +24,11 @@ first, then follow the links into whichever workstream you're picking up.
    into the existing merged flow `Order Items - created or updated trigger`.
 2. Build workstream 1 step 3's transfer flow (Excel → SharePoint, re-runnable, upsert) —
    fully spec'd in `order-items-build-plan.md`.
-3. Build the new `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself (step 8,
-   `order-items-manual-build-checklist.md`) — was blocked on the Models SA fusion, now
-   unblocked since that's done.
-4. Workstream 4 cleanup: retire the old `Models SA` list once nothing points at it; build
+3. Workstream 4 cleanup: retire the old `Models SA` list once nothing points at it; build
    the order-item-generation logic that resolves main-vs-SA `Models` row for a new unit.
-5. Workstream 2 (Phase 1 business process automation) — not started, fully spec'd in
+4. Workstream 2 (Phase 1 business process automation) — not started, fully spec'd in
    `phase1-plan.md`, one open question (`Workflow Tasks` as one shared list vs. per-department).
-6. Workstream 3 (Archiving) — not started, fully spec'd in `archiving-plan.md`.
+5. Workstream 3 (Archiving) — not started, fully spec'd in `archiving-plan.md`.
 
 **Standing things to remember when resuming, regardless of which item above gets picked:**
 - Re-read this repo's actual docs fresh before acting — don't trust a memory summary's
@@ -142,11 +140,12 @@ Disambiguation confirmed 1:1 by the user (who built the original `Models SA` log
 live `Models SA` rows migrated (plus 2 new placeholder `Models` rows for two codes with no
 existing match), each with a new `Model Revisions` entry and `Latest Model Revision` link.
 
-**Now also unblocks (design-wise and migration-wise)**: `order-items-manual-build-checklist.md`'s
-step 8 — new direct `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself
-(decided 2026-08-13, to work around SharePoint's inability to cascade through a Lookup in
+**Unblocked, then built, 2026-08-14**: `order-items-manual-build-checklist.md`'s step 8 —
+new direct `Client`/`Model`/`Model Revision` Lookups on `Order Items` itself (decided
+2026-08-13, to work around SharePoint's inability to cascade through a Lookup in
 views/filters/reports — same pattern already used on `Model Revisions`' own `Client`
-Lookup). Buildable now that `Models`/`Models SA` are one list.
+Lookup). Schema plus TextField sync flow both done — see `order-items-manual-build-checklist.md`
+and `lookup-textfield-reference.md`.
 
 `ColumnMap.pq`/`TableOrders.pq` (FRM10-12) repointed off the retired `Models SA` entity,
 2026-08-13 (commit `9aeb9c7`) — the existing `Models`/`Model Revisions` merge already
