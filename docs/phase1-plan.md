@@ -4,6 +4,37 @@
 without re-deriving this. Update the checkboxes as pieces land; update the plan itself if
 reality diverges from it.
 
+## ⚠ Proposed reordering, raised 2026-08-14 — NOT confirmed, do not build against this yet
+
+User raised a possible change to this plan's step order/ownership, but explicitly does **not**
+want it treated as replacing the plan below — it needs confirming with the actual business
+users (department staff) first. **The plan below (Work Order before Planning Schedule,
+Scheduling-owned) remains the build-ready version until this is resolved.**
+
+**What's being proposed:**
+1. **`Order Entry` moves from Inside Sales to Quotation** — since Quotation already has all
+   the necessary data from the quote and can fill/link everything directly, removing a
+   handoff.
+2. **Engineering Preliminary Review** (Electrical + Mechanical, parallel) stays next,
+   expected turnaround **15-30 minutes**.
+3. **Possible reordering**: Planning produces the planned/due dates *before* `Work Order`
+   (the job scope workorder) exists, then sends those dates to Internal (Inside) Sales, who
+   creates the job scope workorder using that date and *then* confirms with the client. This
+   would reverse the plan's current assumption that `Work Order` (Scheduling) unlocks
+   `Planning Schedule` — instead `Planning Schedule` would unlock `Work Order`, and `Work
+   Order` may become an Inside Sales deliverable rather than Scheduling's. **Rationale given**:
+   Inside Sales can't create the job scope workorder without a due date, so confirming with
+   the client before that workorder exists is backwards / inefficient.
+
+**Still unresolved, not yet asked**: does Scheduling still own something called `Work Order`
+under this reordering, or does that step/name move entirely to Inside Sales? Needs a real
+answer before this can be turned into a build plan, not just my inference from the
+description above.
+
+**Action before building any of this**: confirm the full reordering (and the Order Entry
+department change) with the actual department staff, not just take it as decided from this
+conversation alone.
+
 ## Why this slice, first
 
 This is the front end of the business-process workflow documented in
