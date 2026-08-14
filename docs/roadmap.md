@@ -199,3 +199,14 @@ building the sync flows in `order-items-power-automate-flows.md`.
   assessed as low (these values are set once at order creation and essentially never change
   after), so this is a nice-to-have, not needed at launch — build only if drift actually
   turns out to happen in practice.
+- **Model Revisions-level production-stage skip list, idea logged 2026-08-14**: step 2c's
+  auto-stamp/auto-advance flow (`order-items-power-automate-flows.md`) currently assumes
+  every `Order Items` row goes through all 8 production stages (Coiling → Delivery) with no
+  skips, and relies on staff manually setting a stage's Status to a new `N/A` choice value
+  (added 2026-08-14) when a stage genuinely doesn't apply to a given unit — this clears that
+  stage's dates and still advances the next stage to `Pending`, same as `Completed` would.
+  **Future idea, not started**: instead of relying on manual `N/A` flagging after the fact,
+  add a field on `Model Revisions` listing which of the 8 stages actually apply to that
+  design, so `Order Items` rows could be pre-populated (or auto-N/A'd) correctly at creation
+  time based on the model, rather than staff catching it stage-by-stage during production.
+  Worth revisiting once there's real usage data on which models actually skip which stages.
