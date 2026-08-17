@@ -211,3 +211,17 @@ building the sync flows in `order-items-power-automate-flows.md`.
   design, so `Order Items` rows could be pre-populated (or auto-N/A'd) correctly at creation
   time based on the model, rather than staff catching it stage-by-stage during production.
   Worth revisiting once there's real usage data on which models actually skip which stages.
+- **`ModelChanges` linking logic needs a real audit, flagged 2026-08-17**: while doing an
+  unrelated `Models` duplicate cleanup (see `models-sa-fusion-plan.md`-adjacent session work,
+  not yet written up as its own doc), found 9 duplicate `(Model, ECO)` pairs in
+  `ModelChanges` — all on one model (`M-TOHY-0002`), each an old empty `Not Assigned` stub
+  alongside a real, actually-worked `Completed` row for the same ECO. User's read: this
+  double-linking shouldn't be possible at all, so there's likely a logic flaw somewhere in
+  how the Engineering modification-tracking app creates `ModelChanges` rows (duplicate
+  trigger firings? no uniqueness check on `Model`+`ECO` before creating a new link?). **Not
+  in scope now** — revisit once Phase 2 (the Engineering-side business process, gated on
+  Phase 1 shipping through client approbation — see "Phase 2+" above) is actually being
+  built, since that's when the real linking flow(s) get designed/rebuilt properly. When
+  picked up: (1) find and fix whatever's letting duplicate `(Model, ECO)` pairs get created
+  in the first place, (2) decide whether a uniqueness constraint or dedup check belongs in
+  the flow itself vs. relying on manual cleanup like today's.
