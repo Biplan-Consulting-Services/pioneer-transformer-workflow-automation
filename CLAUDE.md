@@ -31,21 +31,28 @@ had — hence a dedicated place to plan it before touching production.
   static image).
 - `workflow-data/` — exports/samples of workflow data (Power Automate flow definitions,
   run logs, etc.) once that automation layer exists.
-- `sharepoint-lists/` — schema/export staging for new lists designed here (starting with
-  **Order Items**), same convention as FRM10-12's `sharepoint-lists/`. Filenames follow
-  `{List Name} {YYYY-MM-DD} {HHMM}.csv` (export timestamp appended, not just the list
-  name) — added 2026-08-13 so re-exports don't silently overwrite the record of when a
-  snapshot was taken, which matters while the manual `Order Items` build is still in
-  progress. Superseded exports move to `sharepoint-lists/Archive/` rather than being
+- `sharepoint-lists/` — canonical export staging for **all** shared SharePoint lists used
+  across Pioneer Transformer projects (`Models`, `Model Revisions`, `Models SA`, `Order`,
+  `EngineeringChangeOrders`, `ModelChanges`, `Clients`, plus new-in-design lists like
+  **Order Items**). FRM10-12 stopped keeping its own duplicate copies of these (2026-08-17)
+  and points here instead — this is the one place to look for current list-shape exports.
+  Filenames follow `{List Name} {YYYY-MM-DD} {HHMM}.csv` (export timestamp appended, not
+  just the list name) — added 2026-08-13 so re-exports don't silently overwrite the record
+  of when a snapshot was taken, which matters while the manual `Order Items` build is still
+  in progress. Superseded exports move to `sharepoint-lists/Archive/` rather than being
   deleted. Docs reference this folder generically (`sharepoint-lists/*.csv`), not by exact
   filename, so this convention can keep evolving without breaking doc links.
 
 ## Related repos
-- `FRM09/` — Winding department workbook, depends on FRM10-12's `Orders` sheet via external
-  references.
-- `FRM10-12/` — the main planning/production workbook and source of truth; most of the
-  underlying Power Query/SharePoint migration work happens there. This repo documents the
-  system FRM10-12 is part of and stages the next list to migrate into it.
+- `../FRM09/` — Winding department workbook; depends on FRM10-12's `TableOrders` via its own
+  Power Query, not on this repo's list exports directly.
+- `../FRM10-12/` — the main planning/production workbook and source of truth; most of the
+  underlying Power Query/SharePoint migration work happens there, and its `.pq` queries hit
+  live SharePoint directly (never stale). This repo documents the system FRM10-12 is part of,
+  stages the next list to migrate into it, and now holds the canonical shared-list export
+  snapshots FRM10-12 used to duplicate (see `sharepoint-lists/` above).
+- These are separate git repos — the cross-links above are documentation only (relative
+  folder paths under the same client directory), not a git/build dependency.
 
 ## Working notes
 - Binary Office files here are tracked via **Git LFS** — see `.gitattributes`.
