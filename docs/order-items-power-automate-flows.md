@@ -116,9 +116,16 @@ Flow name: **`Order Items - Excel transfer flow`**. Status as of 2026-08-18:
   to `5000`) — not done; only ad hoc spot-checks so far.
 
 **Next concrete step when resuming**: the 3 remaining "other dates" fields + the
-justification text field (same section further down this doc, "Other dates" heading) —
-same Excel-serial conversion as the production-sequence dates, now also worth double-checking
-for the `EC`-style non-numeric marker before assuming a clean number-or-blank shape.
+justification text field (same section further down this doc, "Other dates" heading) — same
+Excel-serial conversion as the production-sequence dates. **Checked directly against raw
+`TableOrders` data 2026-08-18 (unzip+parse, not guessed) before assuming the `EC` gotcha
+carries over**: it doesn't — `Tank Delivery Date` (79 non-blank), `Original Tanking Date`
+(413 non-blank), and `Manual Estimated Delivery Date` (1000/1000 rows non-blank — notably
+not sparse like the other two, worth a heads-up that this one might actually be a
+computed/native column rather than truly manual, contradicting how it's currently
+documented) are all cleanly numeric-or-blank, zero non-numeric values found in any of the
+three. Plain `if(equals(trim(...), ''), null, addDays('1899-12-30', int(...)))` is enough —
+no composite-status-code guard needed here, unlike the production-sequence dates.
 
 ## Step 2b — TextField auto-sync
 
