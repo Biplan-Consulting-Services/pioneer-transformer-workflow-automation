@@ -662,21 +662,35 @@ for each order (`#"Merged Model Revisions"` step):
    *is* the `Model Revisions` item's SharePoint ID. No second Get-items call needed — skip
    straight to updating that ID.
 
+**⚠ Raw-data conflict found 2026-08-18, resolution deferred — read before touching either
+field.** Pulling the actual raw `TableOrders` data for `Family`/`Duplicate Order` (not just
+trusting the 2026-08-12 decision) found real contamination: `Duplicate Order` overwhelmingly
+equals that row's own `PO Item #` (a self-reference, not an Order Number — live Order
+Numbers are 5-digit, these values are model-code-shaped), with a handful of rows pointing at
+a genuinely *different* model code instead. `Family` is only ~72% clean `A`/`B1`/`B2`/`C`
+Choice values — the rest are stray plain numbers (`91`, `99`, `133`, `167`, `178`, `342`,
+`1234`, `46264`/`46446`, `107`/`108`, `0`) that also show up contaminating the *old* `Duplicate`
+Y/N column on the same rows, suggesting a shared legacy data-quality issue on older rows, not
+three independent problems. **User's call after finding the real explanation** (not written
+up here — ask the user directly if this needs revisiting): **for now, just pull the raw
+Excel values across as-is, don't build any validation/resolution logic against the
+2026-08-12 "Lookup → Order" assumption.** Flagged as a standing item to review with the
+engineering team later, once real usage/domain input is available — same "provisional
+placement, revisit later" treatment as `Trimestrial Customer` elsewhere in this project.
+
 Once resolved:
 
 | Excel column | Model Revisions field | Mapping |
 |---|---|---|
-| Family | Family | Direct copy (Choice: `A`/`B1`/`B2`/`C`) — matched to the resolved `Model Revisions` row. |
-| Duplicate Order | Duplicate Order | Resolve the referenced order's `Order` list item (same Get-item pattern as `Order Number` above), set via `{Field}Id`. |
+| Family | Family | Direct copy, whatever raw value is in Excel (no validation against the `A`/`B1`/`B2`/`C` Choice list — some rows won't match, that's expected and fine for now) — matched to the resolved `Model Revisions` row. |
+| Duplicate Order | `Duplicate_Order_TextField` | Direct copy of the raw Excel value as plain text — **not** the actual `Duplicate Order` Lookup field itself, since the raw values don't resolve to real `Order` items (see the conflict above). Leave the Lookup field unmapped/untouched until the real semantics are confirmed. |
 
 **Multiple `TableOrders` rows can point at the same `Model Revisions` row** (every order built
-against that model/revision) — last-write-wins as the flow processes rows is the intended
-behavior here (`Duplicate Order` means "the *last* order built against this," per its
-confirmed definition in `infrastructure-overview.md`), not a bug to guard against. Row
-*processing order* therefore matters for this one field — if `TableOrders` rows aren't
-already in a meaningful order (e.g. `Order Date` ascending), sort by `Order Date` ascending
-before this step so "last write" actually means "most recent order," not "whichever row
-Excel happened to list last."
+against that model/revision) — last-write-wins as the flow processes rows, same reasoning as
+before (whichever value should "win" once the real meaning is confirmed, it should be the
+most recent order's, not an arbitrary one). Row *processing order* therefore still matters —
+if `TableOrders` rows aren't already in a meaningful order, sort by `Order Date` ascending
+before this step.
 
 **`Duplicate` (the old Y/N field) is excluded from this flow entirely** — confirmed elsewhere
 (`infrastructure-overview.md`) as superseded by the `EngineeringChangeOrders`/`ModelChanges`
