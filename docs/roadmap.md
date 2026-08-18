@@ -200,8 +200,13 @@ building the sync flows in `order-items-power-automate-flows.md`.
   `Customer Drawings`, the `P.O.` chain, `Production`. Don't scope-creep into these before
   Phase 1 ships and the team's used it for a while.
 - The 7 native-formula calculated columns (`Price`, `Estimated Delivery Date`, `Price
-  CAD/USD`, `Navigation Order/Model`, `Archived`) — parallel-run plan decided
-  (`infrastructure-overview.md`), not yet built.
+  CAD/USD`, `Navigation Order/Model`, `Archived`) — **analysis done, 2026-08-18**, see
+  `calculated-columns-plan.md`: none can be a plain SharePoint calculated column;
+  `Price`/`Navigation Order`/`Navigation Model` should be dropped, `Estimated Delivery
+  Date`/`Price CAD`/`Price USD` need a Power Automate flow (blocked on `ClientLeadTimes`/
+  `TableCanadianProvince`/`Table_USD_CAD_Conversion_Rate` getting a SharePoint home first),
+  and `Archived` has no live formula at all anymore — needs a drop/keep decision from you,
+  not a port. Not yet built/decided-on-Archived, but no longer just "not yet built."
 - FRM09's raw-column-letter external-reference fragility — actually already resolved per
   FRM09's own `CLAUDE.md` (2026-08-12), unrelated to this repo's remaining work.
 - **Standing future review point**: once `Order Items`/`Workflow Tasks` have real usage

@@ -34,7 +34,7 @@ flowchart TB
     subgraph FRM1012["FRM10-12.xlsx — main workbook (source of truth)"]
         PQ["Power Query<br/>TableOrders.pq + ColumnMap.pq"]
         TO["TableOrders<br/>(one row per order, native +<br/>PQ-managed columns)"]
-        NativeCols["Native formula columns<br/>(Archived, Price CAD/USD,<br/>Estimated Delivery Date,<br/>Navigation Order/Model)"]
+        NativeCols["Native formula columns<br/>(Price CAD/USD,<br/>Estimated Delivery Date,<br/>Navigation Order/Model, Price)<br/>+ Archived (static, formula lost)"]
         ManualCols["Manually-tracked columns<br/>(Location, Status, Tank, Frame,<br/>Core Status, Coil Winder,<br/>Tanking/Delivery Date, BO)"]
         OScript["Office Script<br/>(Mixed Query Refresher)<br/>preserves native formulas<br/>across a Power Query refresh"]
     end
@@ -184,12 +184,16 @@ confirmed live-adjacent data, not reconstructed from memory:
 
 ### Native Excel calculated columns (7) — not data, don't need a "home" so much as a new place to *compute*
 `Price`, `Estimated Delivery Date`, `Price CAD`, `Price USD`, `Navigation Order`,
-`Navigation Model`, `Archived`. These are formulas over other columns, not source data — the
-question per column is where the computation should live once the inputs are elsewhere
-(a SharePoint calculated column, a Power Automate flow, a Power BI measure, or a Power Apps
-formula), not "which list stores this value." `Navigation Order`/`Navigation Model` in
-particular may not need to exist at all if the eventual UI is a SharePoint list view with
-its own native navigation instead of a hyperlink column.
+`Navigation Model`, `Archived`. **Full analysis done, 2026-08-18 — see
+`calculated-columns-plan.md`** for the exact formula text and per-column destination
+(pulled directly from the workbook, not guessed). Short version: none of the 7 can be a
+plain SharePoint calculated column (cross-list lookups and `TODAY()`/Hyperlink output are
+both hard-blocked there) — `Price`/`Navigation Order`/`Navigation Model` should be dropped
+(redundant with SharePoint's native Lookup-column navigation), `Estimated Delivery
+Date`/`Price CAD`/`Price USD` need a Power Automate flow instead, and **`Archived` turned
+out to have no live formula at all** — it's a flattened static `"Exists"`/blank marker
+whose values don't correlate with today's delivered/cancelled criteria, needing a drop/keep
+decision rather than a port.
 
 ### Remaining 42 manually-typed columns — proposed destination (⚠ = needs your confirmation, not a domain call I can make from the data alone)
 
