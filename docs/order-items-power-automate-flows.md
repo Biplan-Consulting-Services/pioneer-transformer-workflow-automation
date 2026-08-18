@@ -662,35 +662,44 @@ for each order (`#"Merged Model Revisions"` step):
    *is* the `Model Revisions` item's SharePoint ID. No second Get-items call needed — skip
    straight to updating that ID.
 
-**⚠ Raw-data conflict found 2026-08-18, resolution deferred — read before touching either
-field.** Pulling the actual raw `TableOrders` data for `Family`/`Duplicate Order` (not just
-trusting the 2026-08-12 decision) found real contamination: `Duplicate Order` overwhelmingly
-equals that row's own `PO Item #` (a self-reference, not an Order Number — live Order
-Numbers are 5-digit, these values are model-code-shaped), with a handful of rows pointing at
-a genuinely *different* model code instead. `Family` is only ~72% clean `A`/`B1`/`B2`/`C`
-Choice values — the rest are stray plain numbers (`91`, `99`, `133`, `167`, `178`, `342`,
-`1234`, `46264`/`46446`, `107`/`108`, `0`) that also show up contaminating the *old* `Duplicate`
-Y/N column on the same rows, suggesting a shared legacy data-quality issue on older rows, not
-three independent problems. **User's call after finding the real explanation** (not written
-up here — ask the user directly if this needs revisiting): **for now, just pull the raw
-Excel values across as-is, don't build any validation/resolution logic against the
-2026-08-12 "Lookup → Order" assumption.** Flagged as a standing item to review with the
-engineering team later, once real usage/domain input is available — same "provisional
-placement, revisit later" treatment as `Trimestrial Customer` elsewhere in this project.
+**⚠ `Duplicate Order` — frozen out of this flow entirely, 2026-08-18, pending a real
+requirements review.** Pulling the actual raw `TableOrders` data found `Duplicate Order`
+overwhelmingly equals that row's own `PO Item #` (a self-reference, not an Order Number —
+live Order Numbers are 5-digit, these values are model-code-shaped), with a handful of rows
+pointing at a genuinely *different* model code instead — directly contradicting the
+2026-08-12 "Lookup → Order" decision. **User's call after looking closer**: don't migrate
+`Duplicate Order` at all right now, not even as a raw copy into its `_TextField` companion —
+it needs a proper review of what's actually needed here, not a data-quality patch. This
+column is excluded from the transfer flow entirely until that review happens.
 
-Once resolved:
+**A different, not-yet-built field idea surfaced during this review, NOT decided or
+scoped — logged so it isn't lost, don't build against it yet**: something like `Latest
+Released Design` or `Latest Completed Order` on `Model Revisions` — a pointer to the most
+recent order that actually used this design. User's own hesitation on `Latest Completed
+Order` naming: an order's *completion* (delivery) date isn't the same as when its
+*engineering design* was actually finished — a design could be done long before the order
+it's attached to ships, so "last completed order" could misrepresent design currency. Needs
+real design before building: what event should stamp it (order completion? an engineering
+milestone? something in `EngineeringChangeOrders`/`ModelChanges`?), and whether it replaces
+`Duplicate Order` outright or is a genuinely separate concept. Revisit together with the
+`Duplicate Order` requirements review, not as its own separate exercise.
+
+`Family` has no such conflict in *scope* (unlike `Duplicate Order` it's not being frozen) —
+it's a plain Text-to-Choice migration, per the user's own framing. The only wrinkle is data
+quality: only ~72% of live rows are clean `A`/`B1`/`B2`/`C`; the rest are stray legacy
+numbers (`91`, `99`, `133`, `167`, `178`, `342`, `1234`, `46264`/`46446`, `107`/`108`, `0`)
+that also contaminate the old `Duplicate` Y/N column on the same rows — a shared legacy
+data-quality issue, not something specific to `Family`. **Still pull the raw value across
+as-is, no filtering** — same "don't guess a fix, just move the data" call as before.
+**Practical build risk to check before running this**: if `Model Revisions`' live `Family`
+Choice column does **not** have "Allow fill-in values" enabled, `Update item` will likely
+error on every one of the ~28% non-clean rows instead of silently accepting them — confirm
+that setting (or catch/skip the error per-row) before the real run, not just on a small test
+slice that might not include one of the contaminated rows.
 
 | Excel column | Model Revisions field | Mapping |
 |---|---|---|
-| Family | Family | Direct copy, whatever raw value is in Excel (no validation against the `A`/`B1`/`B2`/`C` Choice list — some rows won't match, that's expected and fine for now) — matched to the resolved `Model Revisions` row. |
-| Duplicate Order | `Duplicate_Order_TextField` | Direct copy of the raw Excel value as plain text — **not** the actual `Duplicate Order` Lookup field itself, since the raw values don't resolve to real `Order` items (see the conflict above). Leave the Lookup field unmapped/untouched until the real semantics are confirmed. |
-
-**Multiple `TableOrders` rows can point at the same `Model Revisions` row** (every order built
-against that model/revision) — last-write-wins as the flow processes rows, same reasoning as
-before (whichever value should "win" once the real meaning is confirmed, it should be the
-most recent order's, not an arbitrary one). Row *processing order* therefore still matters —
-if `TableOrders` rows aren't already in a meaningful order, sort by `Order Date` ascending
-before this step.
+| Family | Family | Direct copy, whatever raw value is in Excel — matched to the resolved `Model Revisions` row. |
 
 **`Duplicate` (the old Y/N field) is excluded from this flow entirely** — confirmed elsewhere
 (`infrastructure-overview.md`) as superseded by the `EngineeringChangeOrders`/`ModelChanges`

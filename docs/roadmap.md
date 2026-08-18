@@ -212,17 +212,19 @@ building the sync flows in `order-items-power-automate-flows.md`.
 - **Standing future review point**: once `Order Items`/`Workflow Tasks` have real usage
   history, revisit any field placed on a hunch during this initial design pass (starting
   with `Trimestrial Customer`) — don't wait to be reminded, this is a deliberate open loop.
-- **`Family`/`Duplicate Order` real semantics — review with the engineering team, logged
-  2026-08-18**: raw `TableOrders` data doesn't match the 2026-08-12 decision that
-  `Duplicate Order` is a Lookup to the *Order* that last built this model — the actual
-  values are model-code-shaped (mostly a self-reference to the row's own `PO Item #`, a
-  handful pointing at a different model code), and `Family` is only ~72% clean `A`/`B1`/
-  `B2`/`C`, the rest stray legacy numbers shared with the old `Duplicate` column's
-  contamination. User found the real explanation but it's not written up yet — for now the
-  step-3 transfer flow just copies the raw Excel values across (`Duplicate Order` into its
-  `_TextField` companion, not the actual Lookup), no validation/resolution logic built
-  against the unconfirmed assumption. Revisit before trusting either field for anything
-  beyond raw storage.
+- **`Duplicate Order` — frozen out of the transfer flow entirely, logged 2026-08-18,
+  needs a real requirements review**: raw `TableOrders` data doesn't match the 2026-08-12
+  decision that it's a Lookup to the *Order* that last built this model — actual values are
+  model-code-shaped (mostly a self-reference to the row's own `PO Item #`, a handful
+  pointing at a different model code). User found the real explanation but it's not written
+  up yet; for now this column isn't migrated at all, not even as a raw text copy. **A
+  possibly-related but distinct new field idea surfaced, not scoped**: `Latest Released
+  Design`/`Latest Completed Order` on `Model Revisions` — a pointer to the most recent order
+  that used this design, complicated by design-completion vs. order-completion timing not
+  being the same thing. Needs design before building. `Family` is unaffected by this freeze
+  (plain Text→Choice, per the user's own framing) but is only ~72% clean `A`/`B1`/`B2`/`C`
+  data — pulled raw as-is, no filtering, same as everything else migrated this way; check
+  whether the live Choice column allows fill-in values before the real run.
 - **`Order` → `Order Items` cascade-update flow** for the new `Client`/`Model`/`Model
   Revision` Lookups (workstream 1, step 8): if `Order`'s own `Client`/`Model`/`Model
   Revision` ever changes after an `Order Items` row already exists, nothing currently
