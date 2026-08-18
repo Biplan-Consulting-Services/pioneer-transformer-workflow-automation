@@ -35,9 +35,38 @@ standalone reference rather than duplicated here.
 
 ### Build progress (live Power Automate flow — updated as pieces land, not just the spec)
 
-Flow name: **`Order Items - Excel transfer flow`**. Status as of end of day 2026-08-17:
+Flow name: **`Order Items - Excel transfer flow`**. Status as of 2026-08-18:
 
 **Built and tested:**
+- **All 8 production-sequence stages' `{Stage} End Date`/`{Stage} Status`** (16 fields, on
+  both `CreateOrderItem` and `UpdateOrderItem`) — built and confirmed passing all 256 rows
+  2026-08-18. `{Stage} Start Date` deliberately **not mapped at all** (user's call — an
+  unmapped field on a new `Create item` row stays blank exactly like an explicit `null()`
+  would, so there's no need to spell it out; note this means a re-run of `UpdateOrderItem`
+  will **not** clear a manually-set `Start Date` the way the rest of the "always overwrite"
+  design does for every other field — accepted as fine since Start Date is never written by
+  this flow in the first place, so there's nothing of its own to reset).
+  - **Real production data gotcha, found via a live test failure (6 of 256 rows, first
+    failure at iteration 114)**: `int()` on the raw serial value threw
+    `"The value cannot be converted to the target type"` — root cause was **not** a bad
+    value, it's a real, intentional non-date marker. The per-stage `{Stage} Date` columns
+    can hold the literal text `EC` (**"En cours"**, i.e. "in progress") instead of a serial
+    number, when that specific stage is actively being worked and not yet finished — the
+    same `EC` code already documented (2026-08-17) as the composite `Status` field's
+    in-progress prefix, just also used per-stage in these columns, previously undiscovered.
+    **This does not violate the 2026-08-17 "don't infer In Progress from Location" decision**
+    — that rule was about not *guessing* which of the 8 stages is active from an unrelated
+    field; `EC` in a stage's own date column is an explicit, per-stage signal, not an
+    inference. Final expressions (both fields check for `EC` in addition to blank):
+    `{Stage} Status` = `if(equals(trim(item()?['{Stage} Date']), ''), null,
+    if(equals(trim(item()?['{Stage} Date']), 'EC'), 'In Progress', 'Completed'))`;
+    `{Stage} End Date` = `if(or(equals(trim(item()?['{Stage} Date']), ''),
+    equals(trim(item()?['{Stage} Date']), 'EC')), null, addDays('1899-12-30',
+    int(item()?['{Stage} Date'])))`. **Lesson for any future raw-`TableOrders` field parsing
+    in this flow**: check for known non-numeric status-code markers (`EC` and possibly other
+    composite-`Status` prefixes — `AT`/`RE`/`BO`/`TE`/`B1`-`B3`) before assuming a "date"
+    column is cleanly numeric-or-blank, same category of gotcha as `indéterrminé`/`CONFRIMED`
+    elsewhere in this data.
 - Trigger (manual) + `List rows present in a table` on `TableOrders` (pagination
   threshold set to `5000` for the real run; was temporarily lowered to `10` during
   testing — **confirm it's back to `5000` before the next real transfer run**).
@@ -72,10 +101,6 @@ Flow name: **`Order Items - Excel transfer flow`**. Status as of end of day 2026
   no duplicates), and the Yes/No fix for `Tank`/`ISO`/etc.
 
 **Not yet built:**
-- **All 8 production-sequence stages' `{Stage} Start Date`/`{Stage} End Date`/`{Stage}
-  Status`** (24 fields) — discussed and decided (always-overwrite on re-run, per the
-  user's explicit 2026-08-17 call — see that section above) but **not actually added to
-  either action yet**. This is the next concrete thing to build.
 - The 3 remaining "other dates" (`Tank Delivery Date`, `Original Tanking Date`, `Manual
   Estimated Delivery Date`) + `Tanking date change justification` — not yet added.
 - The reconciliation pass (missing-row → check Archive source → finalize
@@ -90,9 +115,10 @@ Flow name: **`Order Items - Excel transfer flow`**. Status as of end of day 2026
   reconciliation-pass test) and the real full-scale initial-transfer run (threshold back
   to `5000`) — not done; only ad hoc spot-checks so far.
 
-**Next concrete step when resuming**: add the 24 production-sequence date/status fields
-(table further up this doc, "Production-sequence dates (8 stages)" section) to both
-`CreateOrderItem` and `UpdateOrderItem`.
+**Next concrete step when resuming**: the 3 remaining "other dates" fields + the
+justification text field (same section further down this doc, "Other dates" heading) —
+same Excel-serial conversion as the production-sequence dates, now also worth double-checking
+for the `EC`-style non-numeric marker before assuming a clean number-or-blank shape.
 
 ## Step 2b — TextField auto-sync
 
