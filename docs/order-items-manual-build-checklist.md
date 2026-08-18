@@ -74,11 +74,11 @@ Create a new custom list named **Order Items**, no template, blank.
 | 19 | Core Status | Choice | `Entrepôt SN`, `Reçu`, `Transport` |
 | 20 | Production Line | Choice | `Power / Ligne 1`, `Distribution`, `Power`, `Zone B`, `Ligne 1` (as found in the original validation list — the near-duplicate "Power" entries are verbatim from the source, not a typo introduced here) |
 | 21 | Time (days) | Number | |
-| 22 | Tank | Single line of text | Confirmed: `R` = "Received." Stays Text, not Choice — deliberately manually-filled. |
+| 22 | Tank | **Yes/No** | **Corrected 2026-08-17 — built live as Yes/No, not Text as originally planned below.** Original intent (2026-08-12) was Text (`R` = "Received," deliberately manually-filled, not Choice) — found to be Yes/No instead while building the transfer flow (`order-items-power-automate-flows.md` step 3), confirmed directly against the live list. Not reverted — Yes/No is simpler for staff to check off and the transfer flow now maps to it (`'R'` present → `Yes`) — but flagging the discrepancy rather than silently treating it as always-intended. |
 | 23 | Frame | Choice | `Plaspak`, `Reçu`, `0` — re-verified directly against `Table20` on the `List` sheet (`Y8:Y11`); all 3 are real values in the source, not a typo. Meaning of `0` as a choice is unconfirmed (likely "none/not applicable") but include it as-is. |
-| 24 | ISO Stack | Single line of text | Same as Tank — confirmed `R` = "Received," manually-filled. |
-| 25 | ISO Coil | Single line of text | Same as Tank — confirmed `R` = "Received," manually-filled. |
-| 26 | Lead Assembly | Single line of text | Same as Tank — confirmed `R` = "Received," manually-filled. |
+| 24 | ISO Stack | **Yes/No** | Same correction as `Tank` above — confirmed live 2026-08-17. |
+| 25 | ISO Coil | **Yes/No** | Same correction as `Tank` above — confirmed live 2026-08-17. |
+| 26 | Lead Assembly | **Yes/No** | Same correction as `Tank` above — confirmed live 2026-08-17. |
 | 27 | Winder | Single line of text | Must stay Text — values mix plain IDs and ranges (e.g. `100-104`). Manually-filled, not derived. |
 | 28 | Coil Winder | Single line of text | Same as Winder — Text even though samples look numeric. Manually-filled. |
 | 29 | Trimestrial Customer | Single line of text | ⚠ Stays Text, not Choice — a full-history data check (2026-08-13) found `N` (never `Y`) and 2 real date-like values in `TableOrders`, plus a formula-glitch reveal that the real French label is `Pénalité Trimestrielle` ("Trimestrial Penalty"), suggesting this may track a penalty date, not a yes/no attribute. **Pending clarification from business users once they're back from holidays** — don't build a Choice/Yes-No list until then. Per-unit placement is also still separately provisional — see `infrastructure-overview.md`. |

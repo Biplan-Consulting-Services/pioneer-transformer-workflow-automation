@@ -24,7 +24,75 @@ standalone reference rather than duplicated here.
       2026-08-14**, in its own parallel branch alongside 2b's TextField sync branch
 - [x] 2c-extra. N/A status handling + advance-to-Pending logic — **built & tested
       2026-08-14**, full production cycle (all 8 stages) confirmed working end-to-end
-- [ ] 3. Excel → SharePoint transfer flow (re-runnable)
+- [ ] 3. Excel → SharePoint transfer flow (re-runnable) — spec fully drafted and resolved
+      2026-08-17. Full field-by-field mapping below, verified against the live workbook's
+      raw `TableOrders` data (not guessed) — see "How this was verified" at the end of the
+      step. All design questions raised during drafting (archive reconciliation, the
+      `In Progress` stage guess, the `Model Revisions` matching key) are resolved — no open
+      design items blocking the build. **Build itself is in progress, started 2026-08-17 —
+      see "Build progress" right below this list for exactly what's built/tested vs. not, so
+      resuming doesn't require re-deriving state from memory.**
+
+### Build progress (live Power Automate flow — updated as pieces land, not just the spec)
+
+Flow name: **`Order Items - Excel transfer flow`**. Status as of end of day 2026-08-17:
+
+**Built and tested:**
+- Trigger (manual) + `List rows present in a table` on `TableOrders` (pagination
+  threshold set to `5000` for the real run; was temporarily lowered to `10` during
+  testing — **confirm it's back to `5000` before the next real transfer run**).
+- `Filter array` dropping blank-`Order` rows.
+- Apply to each, with identity Composes: `RawOrder`, `IsSA`, `OrderNumberText`,
+  `UnitFraction`.
+- `Get Orders` (was called `GetOrderItem` earlier in this doc's walkthrough — the actual
+  built name is `Get Orders`) filtered on `Order_x0020_Number1 eq '<OrderNumberText>'`
+  — **note the real internal field name has a trailing `1`** (`Order_x0020_Number1`),
+  confirmed live, not `Order_x0020_Number`. `CheckOrderMatch` condition (`length(...) =
+  1`) with an `UnmatchedOrder` flag Compose in the "no match" branch.
+  `ResolvedOrderId` Compose pulls the matched `Order` item's `ID`.
+- `Get Order Items` (was called `GetExistingOrderItem` earlier in this doc — built name
+  is `Get Order Items`) filtered on `Title eq '<RawOrder>'`, feeding a **Switch** on
+  `length(...)` with cases `0` (→ `CreateOrderItem`), `1` (→ `UpdateOrderItem`), default
+  (→ `DuplicateOrderItem` flag Compose).
+- `CreateOrderItem`/`UpdateOrderItem` both built, kept in sync field-for-field, with:
+  identity (`Title`, `SA Job`, `Unit #`, `Qty`, `Order NumberId`); all 8 Test/QA fields;
+  all production-tracking fields **including the corrected Yes/No mapping** for `Tank`/
+  `ISO Stack`/`ISO Coil`/`Lead Assembly` (live schema is Yes/No, not Text as originally
+  documented — see the correction note in the Production tracking table above); `Frame`
+  as a plain-text copy (`item()?['Frame']`) — the live field was briefly changed to
+  Yes/No, found not to fit its real 3-value data (`Plaspak`/`Reçu`/`0`), and changed
+  back to Choice, at which point both actions had to be **fully rebuilt** (an accidental
+  List-Name-dropdown reselection wiped every existing field mapping — see the
+  `feedback_dont_rebuild_existing_artifacts` lesson logged in memory, a different
+  incident than this one but same "don't lose completed work" theme) — confirmed
+  rebuilt and working afterward; `MappedLocation`/`ItemStatus` Composes wired into
+  `Location`/`Item Status`.
+- Confirmed via real test runs: pagination fix (256→full table), identity parsing
+  (including an SA row), the upsert round-trip (same test rows Create then Update,
+  no duplicates), and the Yes/No fix for `Tank`/`ISO`/etc.
+
+**Not yet built:**
+- **All 8 production-sequence stages' `{Stage} Start Date`/`{Stage} End Date`/`{Stage}
+  Status`** (24 fields) — discussed and decided (always-overwrite on re-run, per the
+  user's explicit 2026-08-17 call — see that section above) but **not actually added to
+  either action yet**. This is the next concrete thing to build.
+- The 3 remaining "other dates" (`Tank Delivery Date`, `Original Tanking Date`, `Manual
+  Estimated Delivery Date`) + `Tanking date change justification` — not yet added.
+- The reconciliation pass (missing-row → check Archive source → finalize
+  `Cancelled`/`Delivered`) — not started at all.
+- `Order` companion columns branch (`Engineering Required`, `LDs`, `Client Date Status`,
+  `Sales Notes`, `Order Status`) — not started.
+- `Model Revisions` companion columns branch (`Family`, `Duplicate Order`, the
+  `PO Item #` → `Models.Model_Code` → `Latest Model Revision` resolution, plus sorting
+  rows by `Order Date` ascending for `Duplicate Order`'s last-write-wins semantics) — not
+  started.
+- The structured test plan (synthetic `AN` row, `indéterrminé` edge case run for real,
+  reconciliation-pass test) and the real full-scale initial-transfer run (threshold back
+  to `5000`) — not done; only ad hoc spot-checks so far.
+
+**Next concrete step when resuming**: add the 24 production-sequence date/status fields
+(table further up this doc, "Production-sequence dates (8 stages)" section) to both
+`CreateOrderItem` and `UpdateOrderItem`.
 
 ## Step 2b — TextField auto-sync
 
@@ -252,3 +320,368 @@ built and tested.** Not yet tried: the bulk-edit case (changing two non-adjacent
 Status in a single save) — logic analysis says it should behave correctly (advances exactly
 one stage past whichever was last explicitly touched, no double-cascade), but this hasn't
 been run for real. Worth a quick test if this flow gets revisited, not blocking anything now.
+
+## Step 3 — Excel → SharePoint transfer flow (re-runnable upsert)
+
+**Spec drafted 2026-08-17.** Per `order-items-build-plan.md` step 3: a manually-triggered,
+re-runnable Power Automate flow, Excel `TableOrders` → SharePoint (`Order Items` + the
+companion columns on `Order`/`Model Revisions`), upserting on the unit identifier so it's
+safe to run twice (once now to seed real data, once again right before cutover).
+
+**Scope, per the build plan**: only the ~40 manually-typed columns that are moving, plus the
+`Order`/`Model Revisions` companion columns. **Explicitly out of scope for this flow**: the
+`Client`/`Model`/`Model Revision` Lookups added to `Order Items` in step 8 — those aren't
+data that "moved from Excel" (TableOrders never had them), they're a new cross-reference
+resolved from the parent Order, and the SA-row disambiguation logic they need is a separate,
+still-open piece of work (`roadmap.md`'s Workstream 4 "still to do" item). Don't build that
+resolution here — it's the `Work Order` fan-out's job later, or a dedicated follow-up.
+
+### Trigger and source
+
+- **Trigger**: Manually trigger a flow (button trigger) — matches the plan's "triggered
+  manually/on-demand," not an automatic trigger.
+- **Source action**: Excel Online (Business) *"List rows present in a table"* — Table:
+  `TableOrders`. **File location not yet confirmed** — pick the actual file from wherever
+  FRM10-12.xlsx lives in OneDrive/SharePoint in the connector's file picker when building
+  this (the repo only holds a staging copy, not the live file's cloud path) — don't guess a
+  site/library URL.
+- **Row filter — do this first, before any mapping runs**: `TableOrders`' formatted range
+  extends well past the last real row (confirmed live: 2,616 rows scanned, 1,616 with a
+  blank `Order` column). Add a **Filter array** (or a Condition inside Apply to each) that
+  skips any row where `Order` (the unit ID, e.g. `21408-1/1`) is empty — otherwise the flow
+  tries to upsert ~1,600 blank/junk rows.
+
+### Parsing the unit ID (`Order` column)
+
+`Order` values look like `21408-1/1` or, for an SA auxiliary row, `21408-1/1 SA` (confirmed
+live 2026-08-17: 43 rows currently carry the ` SA` suffix directly in this column — the
+suffix is already native to the Excel data, not something derived elsewhere). Everything
+below is one row's worth of parsing, done once per row via string functions (no regex action
+needed in Power Automate — `split()`/`indexOf()`/`substring()`/`endsWith()` cover this):
+
+| Target field | Derivation |
+|---|---|
+| `Unit ID` (Title) | The raw `Order` value, as-is — already in final form, including the ` SA` suffix where present. |
+| `SA Job` | `endsWith(trim(item()?['Order']), ' SA')` → Yes/No. |
+| Order Number (for the Lookup, see below) | Text before the first `-`, e.g. `21408` from `21408-1/1` or `21408-1/1 SA`. |
+| `Unit #` | The numerator between `-` and `/` — strip ` SA` first if present, then parse, e.g. `1` from `21408-1/1`. |
+| `Qty` | The denominator after `/` — same strip-then-parse, e.g. `1` from `21408-1/1`. |
+
+### Resolving the `Order Number` Lookup
+
+`Order Number` is a Lookup to the `Order` list, so it needs that list's item ID, not just the
+text. Same **Get-item pattern** already used elsewhere in this system (`lookup-textfield-reference.md`):
+**Get items** from `Order`, filter on `Order Number eq '<parsed Order Number>'`, take the
+first result's `ID`, and use that for `Order NumberId` on the `Order Items` create/update
+call (SharePoint Lookup fields are set via the `{Field}Id` suffix in Power Automate, not the
+plain field name). If no match is found, log/skip the row rather than silently creating an
+orphaned `Order Items` row — this shouldn't happen for any row with a real `Order` value
+(the `Order` list should already exist for every live order), so treat a miss as a data
+problem worth surfacing, not a normal case to swallow.
+
+### Upsert logic
+
+**Get items** from `Order Items`, filter `Title eq '<Unit ID>'`. If the count of results is 0
+→ **Create item**. If 1 → **Update item** using that item's `ID`. (If ever >1, that's a
+duplicate that shouldn't exist — surface it, don't just pick one.) Same shape as the
+`Order`/`Model Revisions` companion writes below, each keyed on their own natural match
+instead of `Title`.
+
+### Field mapping — `Order Items`
+
+**Identity fields**: see the parsing table above (`Unit ID`, `SA Job`, `Unit #`, `Qty`,
+`Order Number`/`Order NumberId`). `Order_Number_TextField` — leave blank on create/update;
+the existing `Order Items - created or updated trigger` flow (step 2b) fills it in
+automatically on the next trigger, no need to duplicate that logic here.
+
+**Test/QA results** — verified live 2026-08-17 against ~2,600 rows: every one of these except
+`SFRA` uses `'x'` for pass/done and blank otherwise, but `SFRA` uses `'Y'` instead (6 live
+rows) — **map on "non-blank" for all of them, not on the literal value `'x'`**, so this
+inconsistency doesn't silently drop `SFRA`'s real data:
+
+| Excel column | Order Items field | Mapping |
+|---|---|---|
+| Witness/Other | Witness/Other | Direct copy (Text → Text). |
+| Temperature Rise | Temperature Rise | `if(empty(trim(...)), 'No', 'Yes')` |
+| Impulse | Impulse | Same non-blank→Yes/No pattern. |
+| DB | DB | Same pattern. |
+| Partial D | Partial D | Same pattern. |
+| Oil Analysis | Oil Analysis | Same pattern. |
+| SFRA | SFRA | Same pattern — confirmed source uses `'Y'` not `'x'`, non-blank check still works. |
+| CSA | CSA | Same pattern (0 live values currently, still map it). |
+| Protector Status | Protector Status | Direct copy — confirmed 100% blank in current live data, so there's nothing to validate against the Choice list yet; if a future non-blank value doesn't match one of `Entrepôt SN`/`Reçu`/`à vérifier` exactly, the write will fail loudly rather than silently mismatching, which is fine here. |
+| Protector & Switchgear PO | Protector & Switchgear PO | Direct copy (Text → Text; 100% blank in live data today, same as above). |
+
+**Production tracking**:
+
+| Excel column | Order Items field | Mapping |
+|---|---|---|
+| Location | Location | **Needs the code→name lookup below** — Excel stores the short code (`TA`, `XT`, `FO`, ...), the list wants the full name. |
+| — | Item Status | **Not a direct copy — derived.** See "Item Status derivation" below. |
+| Status | Status | Direct copy (Text → Text, composite value like `TE-Jui-16` stays as one string). |
+| Core Status | Core Status | Direct copy — confirmed live 2026-08-17: Excel already stores the full display value (`Reçu`, `Entrepôt SN`), not a separate code, so no lookup table needed here (unlike Location). |
+| Production Line | Production Line | Direct copy — same as Core Status, Excel already stores the full value (`Power`, `Power / Ligne 1`, `Zone B`). |
+| Time (days) | Time (days) | Direct copy (Number). |
+| Tank | Tank | **Correction, confirmed live 2026-08-17**: actually a **Yes/No** field live, not Text — same as `ISO Stack`/`ISO Coil`/`Lead Assembly` below. `not(equals(item()?['Tank'], ''))`. |
+| Frame | Frame | Direct copy — confirmed live: Excel already stores the full value (`Plaspak`, `Reçu`, `0`), same as Core Status/Production Line. |
+| ISO Stack / ISO Coil / Lead Assembly | (same names) | **Correction, confirmed live 2026-08-17**: these are actually **Yes/No** fields in the live list, not Text as `order-items-manual-build-checklist.md` originally specified (docs vs. live reality mismatch, found while testing this flow — docs updated to match). Same non-blank pattern as the test markers: `not(equals(item()?['ISO Stack'], ''))`, one per field. |
+| Winder / Coil Winder | (same names) | Direct copy each (Text → Text — don't coerce to Number, values mix IDs and ranges like `100-104`). |
+| Trimestrial Customer | Trimestrial Customer | Direct copy (Text → Text) — per `infrastructure-overview.md`, stays Text pending the business-user clarification on `Pénalité Trimestrielle`; don't build any Yes/No logic against this column. |
+
+**`Location` code→name table** (confirmed live 2026-08-17 from `TableValidationLocationCodes`
+on the workbook's `List` sheet — this is the authoritative source, not a guess):
+
+| Code | Full name |
+|---|---|
+| IS | Isolation |
+| BO | Bobinage |
+| ST | Stacking |
+| AS | Assemblage |
+| FO | Four |
+| TA | Tanking |
+| TE | Test |
+| FI | Finition |
+| LI | Livraison |
+| ENT | Entrepôt |
+| XT | Extérieur |
+| RE | Réparation |
+| AN | *(not a Location value — see below)* |
+
+Build as a **Switch** (or nested `if()`) on the raw code. **`AN` (Annulée) is the one code
+that doesn't map to a `Location` Choice value at all** — it was deliberately dropped from the
+new Location list (`infrastructure-overview.md`'s cancellation-logic section) in favor of the
+new `Item Status = Cancelled`. Also true historically of `GR` (regroup) — already confirmed
+elsewhere as untraceable and not present in current data, so it needs no mapping at all, just
+don't treat an unrecognized code as an error if it's `GR`.
+
+**Why no live row has `Location = AN` today, and why that's structural, not incidental —
+raised by the user 2026-08-17**: `TableOrders.pq` (the existing Excel Power Query) already
+merges every row against a separate `ArchivedOrders` source (a linked "Archived Orders"
+workbook, `TableArchiveFRM10_12` table, resolved via the SharePoint `Index` list — see
+`ImportFromIndex.pq`) and **filters out of `TableOrders` entirely** any row where that
+Archive match shows `Location = AN` or (`Location = LI` and `Delivery Date` populated) — see
+`#"Filtered Out Archived Orders"` in `TableOrders.pq`. So the moment staff mark a unit
+cancelled or delivered *and the workbook refreshes*, that row **disappears from
+`TableOrders`** — it never sits there showing `AN`/`LI` for this flow to read directly. Its
+final state only survives in the separate Archive workbook from that point on. **This means a
+straight upsert isn't enough**: a unit could go from `Active` to `Cancelled`/`Delivered` and
+vanish from `TableOrders` entirely in the gap between two runs of this flow, and a create/
+update-only flow would never see that transition — it would just leave the `Order Items` row
+stuck at whatever `Active` state it last synced.
+
+### Reconciliation pass — required, not optional, per the above
+
+After the main per-row upsert loop, add a second pass that catches rows that **disappeared**
+from `TableOrders` since the last run:
+
+1. **Get items** from `Order Items` where `Item Status eq 'Active'` (only active rows can go
+   missing meaningfully — already-`Delivered`/`Cancelled` rows are done, no need to re-check
+   them every run).
+2. For each, check whether its `Unit ID` appears in **this run's** `TableOrders` pull (the
+   filtered, non-blank `Order` values collected earlier in the flow — e.g. via
+   `contains(...)` against a compose'd array of this run's Unit IDs, not a second live query).
+3. **If found** → already handled by the main upsert loop, skip.
+4. **If missing** → it was archived since the last run. **Get rows** from the same Archive
+   source `TableOrders.pq` already reads (`TableArchiveFRM10_12`, via an Excel Online action
+   against the "Archive active" workbook — resolve its file location the same way
+   `ImportFromIndex.pq` does, by checking the `Index` SharePoint list's `Archive active` row
+   for the path, not a hardcoded file), filtered on `Order eq '<Unit ID>'`:
+   - Archive row's `Location = AN` → `Item Status = Cancelled`, `Location` left blank (same
+     rule as a direct `AN` sighting above).
+   - Archive row's `Location = LI` **and** `Delivery Date` populated → `Item Status =
+     Delivered`, `Location = Livraison`.
+   - **No match found in the Archive either** → don't guess; flag this row for the user to
+     check by hand (it's now missing from both live and archived Excel data, which shouldn't
+     happen and is worth a human look rather than a silent assumption).
+
+**This is the same logic a direct `AN`/`LI`+`Delivery Date` sighting in `TableOrders` itself
+would trigger** (see the `Item Status` derivation below) — the reconciliation pass just
+covers the case where that sighting already happened and got filtered out of Excel *before*
+this flow ever ran, rather than being visible in the current pull.
+
+### `Item Status` derivation (not a direct copy from any one column)
+
+Per `infrastructure-overview.md`'s completion/cancellation logic, for rows actually present in
+this run's `TableOrders` pull:
+- Raw `Location = AN` → `Item Status = Cancelled` (see above). **Expected to be rare-to-never
+  seen directly** per the structural reason above — most cancellations will instead surface
+  through the reconciliation pass once the row's already been archived out of `TableOrders`.
+- Else if `Location = Livraison` (post-mapping) **and** `Delivery Date` is populated →
+  `Item Status = Delivered`. Same rarity caveat as above.
+- Else → `Item Status = Active` (the default for every other live row).
+- `Regrouped`/`Regrouped Into` — **not handled by this flow at all**. No live row is
+  currently regrouped (the old `GR` code is untraceable/unused today), and regrouping is a
+  manual, two-step action per the schema (create the new item(s) first, then point the old
+  one at them) — not something a bulk backfill should ever infer.
+
+### Production-sequence dates (8 stages)
+
+`TableOrders` only ever had **one** date per stage (`Coiling Date`, `Stacking Date`, ...
+`Delivery Date`) — there's no historical "start date" in Excel, only the "finished" date the
+new schema calls `{Stage} End Date`. The new schema's `{Stage} Start Date` only starts
+getting populated going forward, by the already-built step 2c auto-stamp flow, once a row's
+`Status` transitions to `In Progress` *after* this backfill.
+
+**Decided 2026-08-17 — don't guess `In Progress` from `Location` at all.** `Location`'s 12
+values don't map 1:1 onto the 8 production stages (`Isolation`, `Entrepôt`, `Extérieur`,
+`Réparation` don't correspond to any of the 8 at all), so this flow only ever writes
+`Completed` (from an old per-stage date that's actually present) or leaves a stage fully
+blank — never an inferred `In Progress`. Staff correct the actual current stage by hand,
+once, right after cutover — safer than a guess propagating a wrong "in progress" stage into
+live data.
+
+- If the old `{Stage} Date` column has a value → `{Stage} End Date` = that value, `{Stage}
+  Status` = `Completed`, `{Stage} Start Date` = **leave blank** (genuinely unknown history,
+  don't fabricate one — e.g. by copying the previous stage's end date, which would
+  misrepresent idle time as work time, the exact trap step 2c's own design notes already
+  warn about).
+- Every stage with no old date → leave `Status`/dates fully blank (not `Pending`, not
+  `In Progress`) — consistent with step 2c's own convention that blank means "not relevant
+  yet," only becoming `Pending` once the stage immediately before it actually completes for
+  real, and only becoming `In Progress` when staff (or step 2c) actually sets it after cutover.
+
+**Confirmed 2026-08-17 — always overwrite on re-run, deliberately, not preserve-on-blank.**
+`UpdateOrderItem` uses the exact same expressions as `CreateOrderItem` for every date/status
+field below, with no "don't clobber what's already live" protection. User's explicit call:
+during this build/testing phase, re-running the flow is the intended way to **reset a test
+row's `Order Items` data back to whatever `TableOrders` currently says**, discarding any
+manual poking done directly in SharePoint in between (e.g. testing step 2c's auto-stamp on a
+seeded row). This is safe specifically because `TableOrders`/the workbook gets **locked for
+edits once SharePoint goes fully live** — after that point nobody edits Excel anymore, so
+there's no live-progress-in-SharePoint scenario left to protect against; the always-overwrite
+behavior only matters during this pre-cutover window, where it's a feature (a reset button),
+not a risk.
+
+**Note for later, not used by this flow**: the composite `Status` column's prefix code
+`EC` = *"En cours"* ("in progress") **is** the real in-progress marker in the old system —
+confirmed by the user 2026-08-17 (see `TableValidationStatusCode` in the "Status field"
+section above: `Attente`/`AT`, `En cours`/`EC`, `Réparation`/`RE`, `Manque Pièces`/`BO`,
+`Terminé`/`TE`, `Bobine 1-3`/`B1`-`B3`). It doesn't solve the stage-guessing problem above
+(`EC` says *something* is in progress, not *which* of the 8 stages) — `Status` stays a
+single opaque Text copy per the schema, not decomposed — but it's worth keeping in mind if
+this ever gets revisited: a per-unit "is anything in progress right now" check should key off
+`Status` starting with `EC`, not off `Location`.
+
+### Other dates — need the serial-number conversion below, not a plain copy
+
+`Tank Delivery Date`, `Original Tanking Date`, `Manual Estimated Delivery Date` need the same
+serial-number handling as the production-sequence dates above (see "Date fields" hard-won
+lesson below) — only `Tanking date change justification` (Text, not a date) is a true direct
+copy.
+
+### Hard-won lesson, confirmed 2026-08-17 from a real test-run JSON — read before mapping any date
+
+**Every date-like value comes back from "List rows present in a table" as a plain string
+holding the raw Excel serial number** (e.g. `"Order Date": "45398"`, `"Coiling Date":
+"46126"`) — not an ISO date string. Confirmed directly from a saved test-run output
+(`workflow-data/Excel Table list items raw output.json`), so this isn't a guess: **every**
+date field mapped anywhere in this flow (all 16 production-sequence Start/End dates, `Tank
+Delivery Date`, `Original Tanking Date`, `Manual Estimated Delivery Date`) needs this
+conversion, not a direct copy:
+
+```
+if(equals(<rawValue>, ''), null, addDays('1899-12-30', int(<rawValue>)))
+```
+
+Excel's date epoch is December 30, 1899 (the classic Excel/Lotus leap-year quirk baked into
+the serial system) — `addDays` from that anchor reproduces the real date. The `if(equals(...,
+''), null, ...)` wrapper is the same null-safety pattern step 2c's own build notes already
+established (an empty string fed to `int()` errors, and `Update item` rejects `""` for Date
+fields) — reuse it here rather than rediscovering it.
+
+**Field-name encoding, also confirmed from the same test-run JSON**: any source column whose
+display name contains `#` or `.` comes back from the connector with that character XML-encoded
+in its JSON key — e.g. `JS #` → `JS _x0023_`, `Ing. Due Date` → `Ing_x002e_ Due Date`, `PO
+Item #` → `PO Item _x0023_`. This matters for the `Model Revisions` companion step below,
+which reads `PO Item #` as a join key — **always insert that field via the dynamic-content
+picker, never hand-type `item()?['PO Item #']`**, since the picker resolves the real
+underlying key automatically and typing the plain display name will silently return nothing
+instead of erroring.
+
+### Field mapping — `Order` companion columns
+
+Matched by **Get items** on `Order`, filter `Order Number eq '<parsed Order Number>'` (same
+lookup as above — reuse the result rather than querying twice per row if both are needed),
+then **Update item** (these columns are being added to *existing* Order rows, never created
+fresh here).
+
+| Excel column | Order field | Mapping |
+|---|---|---|
+| Engineering Required | Engineering Required | Y/N → Yes/No. **Data-quality exception found live 2026-08-17**: one row's raw value is `indéterrminé` (a typo'd French "undetermined"), neither `Y` nor `N` — don't let this crash the flow. Map anything that isn't exactly `Y` or `N` to blank/leave-unset and let the condition fall through, rather than defaulting it to `No` (which would assert something false). Worth flagging to the user directly once found in a real test run, not silently absorbed. |
+| LDs | LDs | Y/N → Yes/No, clean binary in the live data (167 `Y`, 38 `N`, rest blank) — no exceptions found. |
+| Client Date Status | Client Date Status | **Needs normalization, not a direct copy** — live data is inconsistent: `CONFIRMED`/`CONFIRMED ` (trailing space)/`Confirmed`/`CONFRIMED` (typo) all mean `Confirmed`; `PENDING `/`Pending` mean `Pending`. Build as `trim(toUpper(...))` compared against `CONFIRMED`/`CONFRIMED` → `Confirmed`, `PENDING` → `Pending`, blank → leave blank. **No live row currently maps to `Not Confirmed`** — that Choice value exists in the schema but has no historical Excel equivalent found; don't force blank rows into it. |
+| Sales Notes | Sales Notes | Direct copy (Multi-line text) — confirmed 100% blank in current live data, still map the column for whenever it does get used. |
+| — | Order Status | **Not from Excel — set to `Active` for every row this flow touches.** There's no raw "is this order cancelled" column on `TableOrders` (cancellation was smuggled into `Location = AN` at the unit level, not tracked order-wide) — every currently-live order is implicitly active, so this is a safe default, not a real mapping. |
+
+### Field mapping — `Model Revisions` companion columns
+
+**Matching key confirmed 2026-08-17, from `ColumnMap.pq`/`TableOrders.pq` directly (not
+guessed)**: there's no single shared field between `TableOrders` and `Model Revisions` — the
+real chain is two hops, exactly how `TableOrders.pq` itself already resolves a Model Revision
+for each order (`#"Merged Model Revisions"` step):
+
+1. `TableOrders`' `PO Item #` column (already present, already SharePoint-backed as the
+   `Orders`/`Models` merge key — confirmed reliably populated for every live order) matches
+   `Models`' `Model_Code` field. **Get items** from `Models`, filter `Model_Code eq '<PO Item
+   #>'`.
+2. That `Models` item's **`Latest Model Revision`** field is itself a Lookup pointing directly
+   at the target `Model Revisions` row — its `Latest Model RevisionId` (the `{Field}Id` form)
+   *is* the `Model Revisions` item's SharePoint ID. No second Get-items call needed — skip
+   straight to updating that ID.
+
+Once resolved:
+
+| Excel column | Model Revisions field | Mapping |
+|---|---|---|
+| Family | Family | Direct copy (Choice: `A`/`B1`/`B2`/`C`) — matched to the resolved `Model Revisions` row. |
+| Duplicate Order | Duplicate Order | Resolve the referenced order's `Order` list item (same Get-item pattern as `Order Number` above), set via `{Field}Id`. |
+
+**Multiple `TableOrders` rows can point at the same `Model Revisions` row** (every order built
+against that model/revision) — last-write-wins as the flow processes rows is the intended
+behavior here (`Duplicate Order` means "the *last* order built against this," per its
+confirmed definition in `infrastructure-overview.md`), not a bug to guard against. Row
+*processing order* therefore matters for this one field — if `TableOrders` rows aren't
+already in a meaningful order (e.g. `Order Date` ascending), sort by `Order Date` ascending
+before this step so "last write" actually means "most recent order," not "whichever row
+Excel happened to list last."
+
+**`Duplicate` (the old Y/N field) is excluded from this flow entirely** — confirmed elsewhere
+(`infrastructure-overview.md`) as superseded by the `EngineeringChangeOrders`/`ModelChanges`
+tracker, not migrated as-is.
+
+### Testing plan, once built
+
+1. Run once against a **small manual test slice first** if possible (a saved copy of
+   `TableOrders` with a handful of rows), not the full ~1,000 live orders on the first run —
+   this flow writes to four different lists across three logic branches, worth confirming the
+   mapping end-to-end on a few rows before trusting it at scale.
+2. Specifically verify: an SA row (`21408-1/1 SA`) creates correctly with `SA Job = Yes` and
+   `Unit #`/`Qty` matching its parent; a row with `Location = AN` (manually add one to the
+   test slice, since none exist live) produces `Item Status = Cancelled` and blank `Location`;
+   the `indéterrminé` `Engineering Required` row (or a synthetic equivalent) doesn't crash the
+   flow; re-running the same test slice a second time updates the same rows rather than
+   duplicating them (the actual upsert requirement).
+3. **Specifically test the reconciliation pass**: run once with a test row present and
+   `Active`, then remove that row from the test `TableOrders` slice entirely (simulating it
+   getting archived) and add a matching row to a test Archive slice with `Location = AN` (and
+   separately, on another test row, `Location = LI` + a `Delivery Date`) — confirm the second
+   run correctly flips those `Order Items` rows to `Cancelled`/`Delivered` without them ever
+   having shown that value directly in the main `TableOrders` pull.
+4. Only after that, run against the full live `TableOrders` data — this is the "initial
+   transfer" run from `order-items-build-plan.md` step 3, done to get real data into
+   SharePoint to develop the rest of the system against. A second, final run happens again
+   right before cutover.
+
+### How this was verified (2026-08-17)
+
+Every raw-value claim above (Location codes, which fields already store full text vs. codes,
+the `SFRA`/`indéterrminé`/`Client Date Status` data-quality exceptions, the SA-suffix
+behavior, the absence of live `AN`/`GR` rows) came from unzipping the actual staging copy of
+`FRM10-12.xlsx` (`workbook/FRM10-12.xlsx`) and reading `TableOrders`' real cell data plus the
+`List` sheet's validation tables directly — the same audit method `infrastructure-overview.md`
+used originally, re-run fresh rather than trusted from memory. The archive-reconciliation
+mechanism and the `Model Revisions` matching key came from reading the actual
+`TableOrders.pq`/`ArchivedOrders.pq`/`ColumnMap.pq`/`ImportFromIndex.pq` M code directly, not
+from any doc's prose description of them. Re-verify against the live file/M code before
+actually building if either's been edited significantly since 2026-08-13/17 (the copy's last
+sync dates).

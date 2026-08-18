@@ -349,11 +349,11 @@ proves wrong.
 | Core Status | Choice: Entrepôt SN, Reçu, Transport | Confirmed 2026-08-12 from `TableValidationCoreStatus`. |
 | Production Line | Choice: Power / Ligne 1, Distribution, Power, Zone B, Ligne 1 | Confirmed 2026-08-12 from `TableValidationProductionLine`. |
 | Time (days) | Number | |
-| Tank | Text | **Confirmed 2026-08-12: `R` = "Received."** Stays Text, not Choice — user confirmed this is deliberately a manually-filled field, not a fixed value list. |
+| Tank | **Yes/No** (corrected 2026-08-17 — see note) | Originally planned 2026-08-12 as Text (`R` = "Received," deliberately manually-filled, not Choice). **Found built live as Yes/No instead**, discovered while building the transfer flow (`order-items-power-automate-flows.md` step 3) — kept as Yes/No rather than reverted, but recorded here since it contradicts this doc's original decision. |
 | Frame | Choice: Plaspak, Reçu, 0 | **Re-verified 2026-08-12 directly against `Table20` (`List` sheet, range `Y8:Y11`)**: the real validation list has all 3 values, not 2 — an earlier pass on this doc dropped the literal `0` entry. Meaning of `0` as a choice (vs. blank) is unconfirmed — likely a "none/not applicable" placeholder — but it's a real, present option in the source table, not a data-entry error, so it belongs in the Choice list as-is. |
-| ISO Stack | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
-| ISO Coil | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
-| Lead Assembly | Text | Same as `Tank` — confirmed `R` = "Received," stays manually-filled Text. |
+| ISO Stack | **Yes/No** (corrected 2026-08-17) | Same correction as `Tank` above. |
+| ISO Coil | **Yes/No** (corrected 2026-08-17) | Same correction as `Tank` above. |
+| Lead Assembly | **Yes/No** (corrected 2026-08-17) | Same correction as `Tank` above. |
 | Winder | Text | Must stay Text (not Number) — values mix plain IDs and ranges (`100-104`) in the sample. Per user, stays manually-filled, not derived. |
 | Coil Winder | Text | Same as `Winder` — kept Text even though the sample looked numeric, for consistency and to avoid a type mismatch if another row uses a non-numeric ID. Manually-filled. |
 | Trimestrial Customer | Text (staying Text, not Choice — decided 2026-08-13) | **Full-history check (2026-08-13) across ~1018 `TableOrders` rows found it's NOT a simple Yes/No**: 160 rows hold literal text `N` (never `Y`, anywhere), 2 rows hold what look like real Excel dates (serials `46452`/`46295`, ≈ Feb 2027 / Sept 2026), rest blank. A formula-glitch artifact also revealed the column's real French label: **`Pénalité Trimestrielle`** ("Trimestrial **Penalty**," not "Trimestrial Customer" as a classification) — suggesting this may actually track *when* a quarterly penalty applies, not a yes/no customer attribute. **Pending clarification from the business users who actually know this field, once they're back from holidays** — don't build a Choice/Yes-No list off any guess until then; stays a plain Text field so no data shape is assumed prematurely. Per-unit placement question (see above) is still separately open too. |

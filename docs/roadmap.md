@@ -24,7 +24,21 @@ first, then follow the links into whichever workstream you're picking up.
 
 **Immediate next steps, not yet started — pick any, none blocked:**
 1. Build workstream 1 step 3's transfer flow (Excel → SharePoint, re-runnable, upsert) —
-   fully spec'd in `order-items-build-plan.md`.
+   **build-ready spec drafted 2026-08-17** in `order-items-power-automate-flows.md`'s new
+   "Step 3" section (field-by-field mapping, verified against the live workbook's real raw
+   data, not guessed). Two design points surfaced and resolved with the user during drafting:
+   (a) a **reconciliation pass is required, not optional** — `TableOrders.pq` already filters
+   cancelled/delivered rows out of `TableOrders` once they're archived, so this flow can't
+   just react to what it sees in the current pull; it has to check the separate Archive
+   source for any `Order Items` row that's gone missing since the last run. (b) the backfill
+   deliberately does **not** guess which of the 8 production stages is `In Progress` from
+   `Location` (the 12 Location values don't map 1:1 onto the 8 stages) — only writes
+   `Completed` from an old per-stage date or leaves a stage blank; staff correct the current
+   stage by hand once, right after cutover. (c) the `Model Revisions` companion columns'
+   matching key resolved directly from `ColumnMap.pq`/`TableOrders.pq` (no new field needed):
+   `TableOrders`' `PO Item #` → `Models.Model_Code` → that `Models` row's `Latest Model
+   Revision` Lookup ID *is* the target `Model Revisions` row. **No remaining open items —
+   ready to build.**
 2. Workstream 4 cleanup: retire the old `Models SA` list once nothing points at it; build
    the order-item-generation logic that resolves main-vs-SA `Models` row for a new unit.
 3. Workstream 2 (Phase 1 business process automation) — not started, fully spec'd in
