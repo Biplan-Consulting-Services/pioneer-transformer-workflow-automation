@@ -209,6 +209,28 @@ building the sync flows in `order-items-power-automate-flows.md`.
   not a port. Not yet built/decided-on-Archived, but no longer just "not yet built."
 - FRM09's raw-column-letter external-reference fragility — actually already resolved per
   FRM09's own `CLAUDE.md` (2026-08-12), unrelated to this repo's remaining work.
+- **`Clients`/`Models`/`Model Revisions` cascade-refresh flow — assessed, deliberately not
+  built, logged 2026-08-19.** Idea: when a master record is edited, push a refresh out to
+  every downstream `_TextField` companion pointing at it (today's sync flows only go the
+  other direction — refreshing a TextField when the *referencing* item is edited, never
+  when the *referenced* one changes). Checked before building: **zero confirmed consumers**
+  of any `_TextField` column anywhere (not in Power Query — `ColumnMap.pq`/`TableOrders.pq`
+  merge against live Lookup/master values directly, never a TextField; not in any
+  documented SharePoint view/filter/report; no Power BI files exist yet) — the only stated
+  purpose is `lookup-textfield-reference.md`'s own "for search/filtering" line, with no
+  evidence anyone's built against it. Also checked `Models`/`Model Revisions` `Created` vs.
+  `Modified` timestamps: only 3 of 224 rows show a genuine standalone post-creation edit
+  (the rest collapse into two explainable bulk events), suggesting these lists are
+  effectively write-once in practice so far; `Clients` couldn't be checked the same way (no
+  timestamp columns exported), but no doc mentions a live row being renamed/merged either.
+  **One real counterpoint, not zero risk**: the Models SA fusion did catch a crossed
+  `Latest Model Revision` link that had already silently propagated wrong spec data to a
+  live order before being fixed directly in SharePoint — real evidence mistakes happen and
+  propagate, just not (yet) a recurring pattern. **Revisit if**: a real consumer of a
+  `_TextField` gets built (a view, a Power BI report, a filter), or client/model
+  renames/merges start happening as routine business events rather than one-off migration
+  corrections — don't build the three flows (one, the `ModelChanges` chain, genuinely
+  complex) speculatively before either happens.
 - **Standing future review point**: once `Order Items`/`Workflow Tasks` have real usage
   history, revisit any field placed on a hunch during this initial design pass (starting
   with `Trimestrial Customer`) — don't wait to be reminded, this is a deliberate open loop.
