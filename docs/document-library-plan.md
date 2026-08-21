@@ -2,10 +2,10 @@
 
 **Status: early — problem and goal confirmed, seed data found, real design not started.**
 **Blocked on Monday.com access (2026-08-21)**: user's account access to Monday.com is
-pending approval — nothing that requires logging into Monday (the native automation/Link
-column setup, the live inline-preview test) can happen until that lands. The SharePoint-side
-work below (library setup, tagging drawings from the spreadsheet, building the 11 filtered
-views) has no Monday dependency and can proceed in the meantime.
+pending approval — nothing that requires logging into Monday (the Formula column, the live
+inline-preview test) can happen until that lands. The SharePoint-side work below (library
+setup, the `Order Number`/`Order Item` folder structure, tagging drawings from the
+spreadsheet) has no Monday dependency and can proceed in the meantime.
 Same spirit as `order-items-build-plan.md`/`phase1-plan.md` when they began: capture what's
 known, propose one direction, flag the real open questions rather than guessing a full
 design. Part of Workstream 5 (`roadmap.md`) — production-tracking-only scope, alongside the
@@ -75,55 +75,70 @@ problem, not just a theoretical one.
 
 A **SharePoint Document Library** for the drawings, consistent with "SharePoint = database"
 (Workstream 5's confirmed shape) and the user's own "document library sync" phrasing:
-- Library holds the actual drawing files (migrated from the local file server).
-- Metadata columns on each file record which department(s)/production step(s) need it —
+- Library holds the actual drawing files (migrated from the local file server), organized
+  into `{Order Number}/{Order Item}` subfolders — human-navigable on its own, see below.
+- A `Production Step(s)` metadata column on each file records which department(s) need it —
   seeded from the spreadsheet's matrix above, either as a one-time tagging pass or an
   import script.
-- Monday surfaces the relevant filtered subset of the library for a given production-step
-  task, rather than staff hunting for the right file.
+- Monday surfaces the relevant filtered subset (this specific unit's folder, further
+  narrowed to one department) for a given production-step task, rather than staff hunting
+  for the right file — see the mechanism below.
 
 **NC photos/notes**: a second, separate library or list (needs attachment/photo support,
 which either a SharePoint list or a document library provides) keyed to `Order Item` +
 production step — structurally simple, but the actual schema isn't designed yet.
 
-## How Monday surfaces the filtered SharePoint view (researched 2026-08-21)
+## How Monday surfaces the filtered SharePoint view (researched + revised 2026-08-21)
 
-**Recommended mechanism — native, no extra cost:** monday.com's item view natively renders
-an inline preview of an Office/SharePoint document when a **Link column** on that item holds
-a link to it — no third-party app or per-seat cost needed for this part. Design:
+**First pass of this design was incomplete** — it only filtered by department/step, not by
+*which order/unit*. Since drawings turn out to be mostly **order-item-specific, not generic**
+(confirmed by the user — engineering redraws things like nameplates per unit, with real
+variation even between units in the same order), a department-only filter would mix every
+order's drawings together — useless on the shop floor. The corrected design filters on
+**both** dimensions at once, and folds in the user's separate ask for human-navigable
+folders rather than treating that as a competing idea:
 
-1. **One SharePoint Document Library** for all drawings (e.g. "Engineering Drawings"),
-   populated from the local file server migration.
-2. **One multi-select Choice metadata column** on that library, `Production Step(s)`, using
-   the same ~11 values as the spreadsheet's department/step columns (`Isolation`, `Ass +
-   Stacking`, `Tanking`, `Test`, `Finition`, `Filerie`, `Cuve`, `Vente`, `Achats`, `Essai`,
-   `Qualité`) — tag each drawing per the spreadsheet's existing matrix. A single file needed
-   by multiple departments (common in the matrix) just gets multiple tags — no duplicate
-   copies, unlike the current colored-folder system.
-3. **One saved/filtered view per department/step** on that library (filter: `Production
-   Step(s)` contains `X`) — 11 fixed views, each with a stable URL. Built once, not
-   per-order/per-unit.
-4. **On the Monday side**: each production-step task item already has a Step/Department
-   value. Because there are only ~11 fixed target URLs (one per step, not one per task), a
-   plain **native monday automation** ("when Production Step is set to X → set Link column
-   to [that step's fixed view URL]") populates the Link column — no Power Automate, no
-   third-party connector, no per-automation cost, and nothing to build/maintain beyond the
-   11 recipes.
-5. The populated Link column then shows the inline document preview directly in the item
-   view — this is what a shop-floor tablet operator sees when opening their task.
-
-**What's confirmed by research vs. still needs a hands-on test**: monday.com's own docs
-confirm a link column holding an Office/SharePoint **file** link renders an inline preview
-in the item view. What's *not* confirmed is whether that same inline-preview behavior
-extends to a SharePoint **filtered library view URL** (multiple files, not one document) —
-that specific case wasn't found documented either way. **Do a quick live test before
-committing to this design**: create one filtered view, drop its URL into a monday Link
-column, and check whether it renders inline or just as a clickable link.
-
-**Safe fallback either way**: if the inline multi-file preview doesn't render, the Link
-column still works as a plain clickable link that opens the filtered SharePoint view in the
-tablet's browser — one tap to the exact right document set, still a large improvement over
-the current printed/color-folder process, just not embedded in-page.
+1. **One SharePoint Document Library** ("Engineering Drawings"), populated from the local
+   file server migration.
+2. **Folder structure: `{Order Number} / {Order Item}`** — e.g. `21865/21865-1_5/` —
+   mirroring the Order → Order Item hierarchy already used everywhere else in this system.
+   This is what makes the library human-browsable directly (useful on its own, and
+   especially right now while Monday access is pending) — someone can navigate straight to
+   a specific unit's folder without going through Monday at all.
+   - **Real gotcha to handle**: `Order Item` IDs contain a literal `/` (e.g. `21865-1/5`),
+     which isn't safe as a folder name or URL path segment as-is — needs a sanitized variant
+     (e.g. `21865-1_5`) wherever a folder gets created or a link gets built. Flagging this
+     now, same category of surprise as the `EC`-in-a-date-column gotcha found earlier in
+     this project — don't let it get discovered mid-build instead.
+3. **Still keep the `Production Step(s)` multi-select tag** on each file, from the
+   spreadsheet's type mapping — the folder narrows to *whose unit*, the tag narrows to
+   *which department* within that unit's own folder.
+4. **The Monday link — one formula, not 11 automations.** A production-step task item
+   already has both an `Order Item` value and a `Step` value on itself. A native monday
+   **Formula column** can concatenate: the library's fixed base URL + `/{Order Number
+   from the task}/{sanitized Order Item from the task}/` + a SharePoint view-filter query
+   string built from that same task's own `Step` value — e.g. (illustrative, not exact
+   syntax): `CONCATENATE(baseUrl, "/", {Order Item}, "/Drawings.aspx?useFiltersInViewXml=1&FilterField1=Production_Step&FilterValue1=", {Step})`.
+   No per-department automation rules to build or maintain — a future new department just
+   works, since the formula references the task's own columns rather than a fixed lookup
+   table. **Requires**: the text used for `Step` on the Monday task and the Choice values
+   used to tag drawings in SharePoint match exactly (same spelling/casing) — a data-
+   consistency detail to get right when building, not a design risk.
+5. **Both technical pieces behind this are confirmed by documentation, not assumed**:
+   - SharePoint modern list/library views accept stacked URL filters —
+     `?useFiltersInViewXml=1&FilterField1=<field>&FilterValue1=<value>&FilterField2=...`
+     (up to 10, AND-combined) — confirmed via
+     [Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-365/community/query-string-url-tricks-sharepoint-m365)
+     and the [PnP community docs](https://pnp.github.io/community-docs/articles/query-string-url-tricks-sharepoint-m365.html).
+   - monday's Formula column supports nested `IF`/`CONCATENATE` referencing other columns on
+     the same item — confirmed via [monday's own Formula Column support docs](https://support.monday.com/hc/en-us/articles/360001235445-The-Formula-Column)
+     and its [available-functions reference](https://support.monday.com/hc/en-us/articles/360001276465-Available-functions-in-the-Formula-Column).
+6. **Still an open, not-yet-tested question**: whether monday renders that resulting
+   SharePoint view URL as an **inline preview** in the item view (confirmed behavior for a
+   single Office file link) or only as a **clickable link** (multi-file filtered views
+   weren't found documented either way). Either outcome is fine functionally — a clickable
+   link is still one tap to exactly the right document set — but worth a live test once
+   Monday access lands, before assuming the inline-preview version.
 
 **Paid alternative, if the native approach falls short in testing**: the "Microsoft 365
 SharePoint & Outlook integration" marketplace app (dsapps.dev) does purpose-built
@@ -133,19 +148,25 @@ decision above. Seat-based pricing from $15/month (3 users) scaling up; **requir
 Microsoft 365 admin to grant one-time org-wide consent** — worth flagging given this tenant
 (`ermcopower`) has a history of withheld admin consent blocking similar app installs (see
 the PnP PowerShell block noted throughout this repo). Keep as a fallback, not the default
-plan, given the native approach above should be free and simpler if the inline-preview test
-passes.
+plan.
 
 **This mechanism only covers *viewing* existing drawings** — it doesn't address how NC
 photos/notes get *created* (see below), which is a write path, not a read/link path.
 
 ## Explicitly open — not decided, needs a real design pass
 
-- Exact library/list structure for both the drawings and the NC entries.
+- Exact library/list structure for the NC entries (the drawings side now has a concrete
+  shape — folders + tag — see above).
+- Who/what creates each `{Order Number}/{Order Item}` folder and when (at `Order Item`
+  creation, automatically? manually by whoever uploads the first drawing for that unit?),
+  and where the `/`-to-`_` ID sanitization actually happens.
 - How a drawing's metadata tags actually get populated from the spreadsheet — manual tagging
   pass in the SharePoint UI, or a scripted import (blocked by the same PnP/tenant-consent
   wall as other schema work, if scripting is wanted — see `order-items-manual-build-checklist.md`
   for that constraint).
+- Keeping the monday `Step` column's text values and the SharePoint `Production Step(s)`
+  Choice values in exact sync (same spelling/casing) — not hard, but a real thing to get
+  right once, not an afterthought.
 - How NC entries get created in practice — directly in Monday? A form? Who's expected to
   file one, and when?
 - Whether every one of the 56 drawings in the spreadsheet is still current, or whether the
