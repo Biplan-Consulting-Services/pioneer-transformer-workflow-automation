@@ -717,21 +717,70 @@ Corrected mapping for these two stages only:
 **Confirmed 2026-08-21**: this backfill already executed against the live `Order Items` list
 before this bug was found, so some real rows currently have a fabricated `Tanking
 Status`/`Delivery Status = Completed` and a `Tanking End Date`/`Delivery End Date` that's
-actually just the old planning estimate, not a real completion date. This needs a one-time
-corrective pass, run **after** the `Planned Tanking Date`/`Planned Delivery Date` fields
-exist (see `order-items-manual-build-checklist.md`):
+actually just the old planning estimate, not a real completion date. Needs a one-time
+corrective pass, run **after** `Planned Tanking Date`/`Planned Delivery Date` exist (see
+`order-items-manual-build-checklist.md`). **Not yet built or run.**
 
-For every live `Order Items` row:
-1. If `Tanking End Date` is populated: copy its current value into `Planned Tanking Date`
-   (it's the same raw estimate the corrected mapping above would have produced), then clear
-   `Tanking End Date` and reset `Tanking Status` back to blank.
-2. Same treatment for `Delivery End Date` → `Planned Delivery Date`, then clear `Delivery
-   End Date`/`Delivery Status`.
-3. This can run as a one-time `Update item` pass inside the existing `Order Items - Excel
-   transfer flow` (add the corrective logic, run once against every current row, then remove
-   or disable it) or as a small standalone one-off flow — either is fine since it's a single
-   corrective run, not something that needs to persist. **Not yet built or run** — flag as
-   the next concrete build step for this doc.
+**The critical safety problem this flow has to solve**: not every row with `Tanking Status
+= Completed` is wrong. Step 2c's live auto-stamp flow has been running since 2026-08-14, so
+some units may have genuinely, correctly reached `Tanking = Completed` through real
+production since then — those rows must **not** be touched, or real production history gets
+destroyed.
+
+**The fix: use `Tanking Start Date` (and `Delivery Start Date`) as the discriminator.** This
+backfill flow deliberately never sets `{Stage} Start Date` (documented above — "no
+historical start date in Excel"). Step 2c's live flow, by contrast, *always* stamps `Start
+Date` the moment a row transitions to `In Progress` — which has to happen before it can ever
+reach `Completed` through the real flow. So:
+- `Tanking Status = Completed` **AND** `Tanking Start Date` is blank → this row's
+  `Completed`/`End Date` can only have come from the old backfill mapping (the real flow
+  never produces a `Completed` row without a `Start Date` first) — **safe to remediate**.
+- `Tanking Status = Completed` **AND** `Tanking Start Date` is populated → a genuine live
+  completion — **leave it alone**.
+- Same logic, independently, for `Delivery`.
+
+*(Residual, low-probability edge case worth knowing about, not fully closed by this check:
+a staff member manually typing `Status = Completed` directly into SharePoint without ever
+passing through `In Progress` would also show a blank `Start Date` and get swept up in the
+remediation. No evidence this has happened — flagging so it's a known assumption, not a
+silent one.)*
+
+**Flow: "Order Items — Tanking/Delivery backfill remediation" (new, one-time, manual
+trigger)** — a small standalone flow, not an addition to the recurring transfer flow (this
+runs once, not on every future re-run):
+
+1. **Trigger**: manual (`Manually trigger a flow`) — this is a deliberate one-time corrective
+   pass, run by a person when ready, not a re-runnable/scheduled flow.
+2. **`Get items`** on `Order Items`, filter query:
+   `(Tanking_x0020_Status eq 'Completed' and Tanking_x0020_Start_x0020_Date eq null) or
+   (Delivery_x0020_Status eq 'Completed' and Delivery_x0020_Start_x0020_Date eq null)`.
+   **Verify the real internal field names before building** — this repo has already hit one
+   surprise internal name (`Order_x0020_Number1`, not `Order_x0020_Number`) on this exact
+   list; don't assume the `_x0020_`-encoded guesses above are exactly right without checking
+   list settings first. Set the pagination/**Top Count** threshold to `5000` (same as the
+   transfer flow's real-run setting), not the `10` used for that flow's testing.
+3. **Apply to each** returned item.
+4. Inside the loop, one **`Update item`** action per row (single call handling both stages —
+   no `Condition` branching needed, since the expressions below are self-guarding and simply
+   no-op when a stage doesn't need correction):
+   - `Planned Tanking Date` = `if(and(equals(item()?['Tanking_x0020_Status'], 'Completed'),
+     equals(item()?['Tanking_x0020_Start_x0020_Date'], null)),
+     item()?['Tanking_x0020_End_x0020_Date'], item()?['Planned_x0020_Tanking_x0020_Date'])` —
+     i.e. only overwrite from the old `End Date` when the safety condition holds; otherwise
+     leave whatever `Planned Tanking Date` already has (blank, on a first run).
+   - `Tanking End Date` = `if(and(equals(item()?['Tanking_x0020_Status'], 'Completed'),
+     equals(item()?['Tanking_x0020_Start_x0020_Date'], null)), null,
+     item()?['Tanking_x0020_End_x0020_Date'])` — clears only the rows being remediated.
+   - `Tanking Status` = same guard, `null` vs. leave as-is.
+   - Same three expressions mirrored for `Delivery Start Date`/`Delivery End Date`/`Delivery
+     Status`/`Planned Delivery Date`.
+5. **Naturally safe to re-run**: once a row's `Tanking Status` is cleared, the guard
+   condition is false on any later run, so accidentally running this flow twice does not
+   re-clobber anything — no extra "already remediated" tracking field needed.
+6. After confirming the run succeeded (spot-check a handful of previously-`Completed`
+   Tanking/Delivery rows now show blank `Status`/`End Date` and a populated `Planned`
+   date), **delete or disable this flow** — it has no reason to exist after its one
+   corrective run.
 
 **Confirmed 2026-08-17 — always overwrite on re-run, deliberately, not preserve-on-blank.**
 `UpdateOrderItem` uses the exact same expressions as `CreateOrderItem` for every date/status

@@ -48,6 +48,24 @@ binary Office files here). Inspected directly — actual structure, not guessed:
 This is the existing document-to-step mapping to build from, not something to re-derive by
 hand.
 
+## Storage location — confirmed 2026-08-21: centralize in SharePoint, not Monday
+
+The production team has been struggling with Monday's native file storage in practice.
+User's call: centralize the documents (drawings + NC photos/notes) in one place rather than
+leaving them scattered across Monday, and that place should be SharePoint — consistent with
+the "SharePoint = database" shape Workstream 5 already settled on, and it's what the rest of
+this system already runs on (Power Automate, the same tenant, the same Microsoft 365
+license). Monday links out to / surfaces a filtered view of the SharePoint library rather
+than storing the files itself.
+
+**Considered and ruled out, for completeness**: a separate document-management/PLM system
+(overkill at this scale and adds a fourth system to maintain), plain Azure Blob storage (no
+native metadata/tagging or browsing UI, would need custom tooling for exactly what a
+Document Library gives for free), and Monday's own storage (the thing already causing
+problems). Nothing found beats a SharePoint Document Library for this — same recommendation
+as before, now on firmer footing since the alternative (Monday storage) has a confirmed real
+problem, not just a theoretical one.
+
 ## Proposed direction (recommendation — not yet confirmed with the user)
 
 A **SharePoint Document Library** for the drawings, consistent with "SharePoint = database"
@@ -72,9 +90,10 @@ production step — structurally simple, but the actual schema isn't designed ye
   for that constraint).
 - How NC entries get created in practice — directly in Monday? A form? Who's expected to
   file one, and when?
-- How Monday's per-task view actually pulls the right filtered document set — native Monday
-  document integration, or a link out to a filtered SharePoint view? Not researched yet
+- How Monday's per-task view actually surfaces the right filtered document set from
+  SharePoint (confirmed 2026-08-21 as the storage location, see above) — a link/embed to a
+  filtered library view, or something deeper via the connector? Not researched yet
   (`phase1-tooling-research.md` only evaluated monday.com as a task/automation layer, not
-  its document-handling capabilities).
+  its document-linking capabilities).
 - Whether every one of the 56 drawings in the spreadsheet is still current, or whether the
   file-server migration is a good moment to prune stale ones.
