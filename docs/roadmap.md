@@ -108,9 +108,9 @@ described in `docs/infrastructure-overview.md`) already reflects the final logic
 Electrical/Mechanical duplicate-check reviews, an AND-gate unlocking early Purchasing start
 only when both say Yes, and Engineering's start gated on client-date confirmation.
 
-**Not yet confirmed**: one shared `Workflow Tasks` list across departments (recommended,
-with department-filtered views) vs. the originally-floated separate list per department;
-the list's exact name.
+**Confirmed 2026-08-21**: one shared `Workflow Tasks` list across departments, with
+department-filtered views (not the originally-floated separate list per department). List's
+exact name still TBD, defaulting to `Workflow Tasks`.
 
 **Tooling choice researched and confirmed 2026-08-12** — see `docs/phase1-tooling-research.md`:
 staying in SharePoint + Power Automate is still the right call (vs. Planner Premium, which

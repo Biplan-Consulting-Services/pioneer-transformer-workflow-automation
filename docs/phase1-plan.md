@@ -84,8 +84,11 @@ consumes the resulting list, no separate minimal version needed here.
 
 ## Architecture decision: one shared `Workflow Tasks` list, not one list per department
 
+**Confirmed 2026-08-21** — going with the recommendation below: a single shared list, not
+one per department.
+
 User's original idea was a separate SharePoint list per department, each holding that
-department's tasks/progress. **Recommended instead**: a single `Workflow Tasks` list
+department's tasks/progress. **Built instead**: a single `Workflow Tasks` list
 (exact name TBD, see below) covering every department, with **department-filtered views**
 so each team still only sees their own queue day to day — looks the same to users, but:
 
@@ -101,9 +104,8 @@ so each team still only sees their own queue day to day — looks the same to us
   Lists supports natively — no loss of the clean-per-department feel the original idea was
   going for.
 
-This is a recommendation, not yet confirmed with the user — flag it explicitly when
-resuming if they'd rather keep separate lists after all; the flow design below still mostly
-works either way, just multiplied per list instead of centralized.
+~~This is a recommendation, not yet confirmed with the user~~ — confirmed 2026-08-21, build
+against the single-list design below.
 
 ## New list: `Workflow Tasks` (name not yet confirmed)
 
@@ -251,8 +253,14 @@ this project's native-Lookup compatibility with `Order`/`Order Items`.
 
 ## Build order (checklist)
 
-- [ ] Confirm the `Workflow Tasks` list name and the "one shared list vs. per-department"
-      decision with the user (recommendation above, not yet confirmed).
+**Field-by-field execution steps: `workflow-tasks-manual-build-checklist.md`** (added
+2026-08-21, same manual-build-via-UI pattern as `order-items-manual-build-checklist.md`,
+now that both the reorder and the one-shared-list decision are confirmed). The checklist
+below is the summary; that doc is what to actually follow step by step.
+
+- [x] Confirm the "one shared list vs. per-department" decision with the user — **one
+      shared list, confirmed 2026-08-21** (see above). List name still TBD, default to
+      `Workflow Tasks` unless the user wants something else.
 - [ ] `Order Items` list exists — see `order-items-build-plan.md` (elevated priority, full
       build, not just an identity slice; tracked there, not duplicated here).
 - [ ] Create `Workflow Tasks` list in SharePoint with the schema above (both `Order Number`

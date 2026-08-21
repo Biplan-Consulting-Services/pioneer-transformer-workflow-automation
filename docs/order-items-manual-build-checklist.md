@@ -208,3 +208,35 @@ merged `Order Items - created or updated trigger` flow — see `lookup-textfield
 Circle back to `order-items-build-plan.md` step 3 (one-time backfill of existing live
 orders' current `TableOrders` data into these new fields) — not covered by this checklist,
 which only takes you through having the empty schema in place.
+
+## Production-floor view (raised 2026-08-21)
+
+User wants a simplified, "nice to look at" view of `Order Items` for the shop floor —
+just the current production step + basic identifying info, not all ~49 columns. This is a
+**view/formatting-only change** — no new columns, no flow, nothing PnP-blocked. Build it
+directly in the SharePoint UI (List → Create view → Format):
+
+- **Columns to show**: `Unit ID` (Title), `Order_Number_TextField`, **`Location`** (this
+  *is* the "production step" — the same field staff already read for this purpose today,
+  distinct from the 8 automated `{Stage} Status` columns which track granular start/end
+  timing, not "where is it right now"), `Item Status`, `Coil Winder`, and one target date
+  (`Manual Estimated Delivery Date` is the best single "when's this due" column — falls
+  back sensibly since it's meant to override the computed estimate). Everything else
+  (test/QA results, the 8 stage-date triples, companion Lookups) stays off this view.
+- **Filter**: `Item Status = Active` — hides `Delivered`/`Cancelled`/`Regrouped` so the
+  board only ever shows live work.
+- **Group by `Location`**: clusters units by current production stage — reads like a
+  shop-floor board rather than a flat table (SharePoint modern list views support Group By
+  natively, collapsible per group).
+- **Sort within group**: `Manual Estimated Delivery Date` ascending, so the most urgent
+  unit in each stage surfaces first.
+- **"Nice to look at" formatting**: use **Format this column → Choice column colors** on
+  `Location` (built into the modern list UI for Choice fields, no JSON needed) so each
+  production stage gets a distinct color chip — that alone does most of the visual work.
+  If a card-style layout is wanted instead of a data grid, SharePoint's **Gallery** view
+  type is worth trying — same columns, shown as cards.
+- **Name it something staff-facing**, e.g. `Production Floor` or `Shop Floor Board`, not a
+  generic "Filtered view" default name.
+
+Not yet built — this is the recommended spec; adjust the column list if the shop floor
+wants something different once they see a first draft.
