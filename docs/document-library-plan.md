@@ -81,6 +81,59 @@ A **SharePoint Document Library** for the drawings, consistent with "SharePoint 
 which either a SharePoint list or a document library provides) keyed to `Order Item` +
 production step — structurally simple, but the actual schema isn't designed yet.
 
+## How Monday surfaces the filtered SharePoint view (researched 2026-08-21)
+
+**Recommended mechanism — native, no extra cost:** monday.com's item view natively renders
+an inline preview of an Office/SharePoint document when a **Link column** on that item holds
+a link to it — no third-party app or per-seat cost needed for this part. Design:
+
+1. **One SharePoint Document Library** for all drawings (e.g. "Engineering Drawings"),
+   populated from the local file server migration.
+2. **One multi-select Choice metadata column** on that library, `Production Step(s)`, using
+   the same ~11 values as the spreadsheet's department/step columns (`Isolation`, `Ass +
+   Stacking`, `Tanking`, `Test`, `Finition`, `Filerie`, `Cuve`, `Vente`, `Achats`, `Essai`,
+   `Qualité`) — tag each drawing per the spreadsheet's existing matrix. A single file needed
+   by multiple departments (common in the matrix) just gets multiple tags — no duplicate
+   copies, unlike the current colored-folder system.
+3. **One saved/filtered view per department/step** on that library (filter: `Production
+   Step(s)` contains `X`) — 11 fixed views, each with a stable URL. Built once, not
+   per-order/per-unit.
+4. **On the Monday side**: each production-step task item already has a Step/Department
+   value. Because there are only ~11 fixed target URLs (one per step, not one per task), a
+   plain **native monday automation** ("when Production Step is set to X → set Link column
+   to [that step's fixed view URL]") populates the Link column — no Power Automate, no
+   third-party connector, no per-automation cost, and nothing to build/maintain beyond the
+   11 recipes.
+5. The populated Link column then shows the inline document preview directly in the item
+   view — this is what a shop-floor tablet operator sees when opening their task.
+
+**What's confirmed by research vs. still needs a hands-on test**: monday.com's own docs
+confirm a link column holding an Office/SharePoint **file** link renders an inline preview
+in the item view. What's *not* confirmed is whether that same inline-preview behavior
+extends to a SharePoint **filtered library view URL** (multiple files, not one document) —
+that specific case wasn't found documented either way. **Do a quick live test before
+committing to this design**: create one filtered view, drop its URL into a monday Link
+column, and check whether it renders inline or just as a clickable link.
+
+**Safe fallback either way**: if the inline multi-file preview doesn't render, the Link
+column still works as a plain clickable link that opens the filtered SharePoint view in the
+tablet's browser — one tap to the exact right document set, still a large improvement over
+the current printed/color-folder process, just not embedded in-page.
+
+**Paid alternative, if the native approach falls short in testing**: the "Microsoft 365
+SharePoint & Outlook integration" marketplace app (dsapps.dev) does purpose-built
+SharePoint↔monday linking — confirmed (via its own docs) to link/embed files in place rather
+than duplicating them into monday's storage, consistent with the centralize-in-SharePoint
+decision above. Seat-based pricing from $15/month (3 users) scaling up; **requires a
+Microsoft 365 admin to grant one-time org-wide consent** — worth flagging given this tenant
+(`ermcopower`) has a history of withheld admin consent blocking similar app installs (see
+the PnP PowerShell block noted throughout this repo). Keep as a fallback, not the default
+plan, given the native approach above should be free and simpler if the inline-preview test
+passes.
+
+**This mechanism only covers *viewing* existing drawings** — it doesn't address how NC
+photos/notes get *created* (see below), which is a write path, not a read/link path.
+
 ## Explicitly open — not decided, needs a real design pass
 
 - Exact library/list structure for both the drawings and the NC entries.
@@ -90,10 +143,5 @@ production step — structurally simple, but the actual schema isn't designed ye
   for that constraint).
 - How NC entries get created in practice — directly in Monday? A form? Who's expected to
   file one, and when?
-- How Monday's per-task view actually surfaces the right filtered document set from
-  SharePoint (confirmed 2026-08-21 as the storage location, see above) — a link/embed to a
-  filtered library view, or something deeper via the connector? Not researched yet
-  (`phase1-tooling-research.md` only evaluated monday.com as a task/automation layer, not
-  its document-linking capabilities).
 - Whether every one of the 56 drawings in the spreadsheet is still current, or whether the
   file-server migration is a good moment to prune stale ones.
