@@ -18,8 +18,9 @@ standalone reference rather than duplicated here.
       `EngineeringChangeOrders`, and `ModelChanges` (all three, including the chained
       `Client_ID_TextField`). Full detail in `lookup-textfield-reference.md`. Two things
       remain, both already known, not new gaps: `Regrouped Into` (deferred, nice-to-have)
-      and the three `Order` fields (blocked — missing their TextField columns in SharePoint
-      entirely, a schema step first).
+      and the three `Order` fields — schema columns exist live, but no sync flow was ever
+      built for them; **now scoped as Step 4's one-time backfill pass below**, not an
+      ongoing flow (see Step 4 for why).
 - [x] 2c. Production-sequence auto-stamp (16 Start/End Date stamps) — **built & tested
       2026-08-14**, in its own parallel branch alongside 2b's TextField sync branch
 - [x] 2c-extra. N/A status handling + advance-to-Pending logic — **built & tested
@@ -31,7 +32,11 @@ standalone reference rather than duplicated here.
       `In Progress` stage guess, the `Model Revisions` matching key) are resolved — no open
       design items blocking the build. **Build itself is in progress, started 2026-08-17 —
       see "Build progress" right below this list for exactly what's built/tested vs. not, so
-      resuming doesn't require re-deriving state from memory.**
+      resuming doesn't require re-deriving state from memory.** Scope grew 2026-08-20 to also
+      include the `Client`/`Model`/`Model Revision` Lookup resolution — see "Resolving the
+      Client/Model/Model Revision Lookups" under Step 3 below.
+- [x] 4. `Order` TextField one-time backfill flow — **built & tested 2026-08-21**. See
+      Step 4 below.
 
 ### Build progress (live Power Automate flow — updated as pieces land, not just the spec)
 
@@ -100,32 +105,63 @@ Flow name: **`Order Items - Excel transfer flow`**. Status as of 2026-08-18:
   (including an SA row), the upsert round-trip (same test rows Create then Update,
   no duplicates), and the Yes/No fix for `Tank`/`ISO`/etc.
 
+**Built and tested, 2026-08-20/21:**
+- **Client/Model/Model Revision Lookup resolution** (SA disambiguation) on
+  `CreateOrderItem`/`UpdateOrderItem` — built once before the Create/Update Switch (not
+  duplicated per branch), using `ModelIdToWrite`/`ModelRevisionIdToWrite` as variables
+  (Compose names can't repeat across a Condition's two branches) and `ClientIdToWrite` as a
+  Compose. SA-row `Get items` filter on `Models` confirmed working as `ParentModelId eq
+  <id> and SAModel eq 1` (see "Resolving the Client/Model/Model Revision Lookups" below for
+  the full gotcha history — a missing `and`, a capitalized `True`, and `eq true` silently
+  matching zero rows were all hit and fixed in that order). TextField auto-population via
+  the existing `Order Items - created or updated trigger` flow **confirmed working** live.
+- **`Order` TextField one-time backfill flow** — built & tested. See Step 4 below.
+- **`Model Revisions` companion columns branch — `Family` only** (`Duplicate Order` stays
+  frozen out, per the requirements-review note below) — built & tested: `Get items` on
+  `Models` filtered on `Model_Code eq '<PO Item #>'`, that row's `Latest Model RevisionId`
+  used directly, `Update item` on `Model Revisions` writing the raw `Family` value.
+- **The 3 remaining "other dates" fields + justification** (`Tank Delivery Date`, `Original
+  Tanking Date`, `Manual Estimated Delivery Date`, `Tanking date change justification`) —
+  **confirmed already built** (2026-08-21 check found the mappings already present on both
+  `CreateOrderItem`/`UpdateOrderItem`, from a session close to 2026-08-18 that was never
+  marked done in this doc). Same Excel-serial conversion as the production-sequence dates,
+  no composite-status-code guard needed (confirmed clean 2026-08-18: `Tank Delivery Date`
+  79 non-blank, `Original Tanking Date` 413 non-blank, `Manual Estimated Delivery Date`
+  1000/1000 non-blank — that last one notably not sparse like the other two, worth a
+  heads-up it might actually be a computed/native column rather than truly manual).
+
+- **`Order` companion columns branch** (`Engineering Required`, `LDs`, `Client Date Status`,
+  `Sales Notes`, `Order Status`) — **confirmed already built** (2026-08-21 check found it
+  already on the `Update item` against `Order` via `ResolvedOrderId`, same as the "other
+  dates" fields above — from a session that predates this doc being kept current).
+
 **Not yet built:**
-- The 3 remaining "other dates" (`Tank Delivery Date`, `Original Tanking Date`, `Manual
-  Estimated Delivery Date`) + `Tanking date change justification` — not yet added.
-- The reconciliation pass (missing-row → check Archive source → finalize
-  `Cancelled`/`Delivered`) — not started at all.
-- `Order` companion columns branch (`Engineering Required`, `LDs`, `Client Date Status`,
-  `Sales Notes`, `Order Status`) — not started.
-- `Model Revisions` companion columns branch (`Family`, `Duplicate Order`, the
-  `PO Item #` → `Models.Model_Code` → `Latest Model Revision` resolution, plus sorting
-  rows by `Order Date` ascending for `Duplicate Order`'s last-write-wins semantics) — not
-  started.
+- **The reconciliation pass** (missing-row → check Archive source → finalize
+  `Cancelled`/`Delivered`) — not started. Full walkthrough drafted 2026-08-21 (Steps 0-4:
+  track this run's processed Unit IDs via an array variable, pull currently-`Active` `Order
+  Items` rows, diff against the array, resolve the Archive file via the `Index` list same as
+  `ImportFromIndex.pq`, then finalize `Cancelled`/`Delivered` or flag an unresolved miss).
+  **Deprioritized 2026-08-21, user's call**: not needed for workflow development/testing,
+  since it only matters once cancelled/delivered units are actually vanishing from
+  `TableOrders` between runs — **push this to the pre-final-migration pass** (the second,
+  right-before-cutover transfer run from `order-items-build-plan.md` step 3), not blocking
+  before then.
 - The structured test plan (synthetic `AN` row, `indéterrminé` edge case run for real,
   reconciliation-pass test) and the real full-scale initial-transfer run (threshold back
-  to `5000`) — not done; only ad hoc spot-checks so far.
+  to `5000`) — not done; only ad hoc spot-checks so far. (Re-running against the existing
+  test-slice rows to confirm each new piece backfills retroactively **is** covered — that's
+  the standard test-after-each-feature loop already being followed throughout this build,
+  not a separate outstanding step.)
 
-**Next concrete step when resuming**: the 3 remaining "other dates" fields + the
-justification text field (same section further down this doc, "Other dates" heading) — same
-Excel-serial conversion as the production-sequence dates. **Checked directly against raw
-`TableOrders` data 2026-08-18 (unzip+parse, not guessed) before assuming the `EC` gotcha
-carries over**: it doesn't — `Tank Delivery Date` (79 non-blank), `Original Tanking Date`
-(413 non-blank), and `Manual Estimated Delivery Date` (1000/1000 rows non-blank — notably
-not sparse like the other two, worth a heads-up that this one might actually be a
-computed/native column rather than truly manual, contradicting how it's currently
-documented) are all cleanly numeric-or-blank, zero non-numeric values found in any of the
-three. Plain `if(equals(trim(...), ''), null, addDays('1899-12-30', int(...)))` is enough —
-no composite-status-code guard needed here, unlike the production-sequence dates.
+**Next concrete step when resuming**: with the reconciliation pass deferred, workstream 1's
+build is functionally ready for the initial (non-final) transfer run. Move on to Phase 1
+(business process automation, `phase1-plan.md`) per the user's sequencing, and circle back to
+the reconciliation pass + full-scale run as part of the pre-cutover pass.
+
+**Next concrete step when resuming**: the reconciliation pass — the last piece still needed
+before the real full-scale import run. Worth a live check of the flow first to confirm it
+genuinely isn't built yet, given the last two "not yet built" items turned out to already be
+done.
 
 ## Step 2b — TextField auto-sync
 
@@ -362,12 +398,18 @@ companion columns on `Order`/`Model Revisions`), upserting on the unit identifie
 safe to run twice (once now to seed real data, once again right before cutover).
 
 **Scope, per the build plan**: only the ~40 manually-typed columns that are moving, plus the
-`Order`/`Model Revisions` companion columns. **Explicitly out of scope for this flow**: the
-`Client`/`Model`/`Model Revision` Lookups added to `Order Items` in step 8 — those aren't
-data that "moved from Excel" (TableOrders never had them), they're a new cross-reference
-resolved from the parent Order, and the SA-row disambiguation logic they need is a separate,
-still-open piece of work (`roadmap.md`'s Workstream 4 "still to do" item). Don't build that
-resolution here — it's the `Work Order` fan-out's job later, or a dedicated follow-up.
+`Order`/`Model Revisions` companion columns.
+
+**Scope reversal, 2026-08-20**: the `Client`/`Model`/`Model Revision` Lookups added to `Order
+Items` in step 8 were originally called out of scope here (see the old note this replaces —
+they aren't data that "moved from Excel," they're a new cross-reference resolved from the
+parent `Order`, and the SA-row disambiguation logic was still-open). User's call: build it
+into this flow now rather than as a separate follow-up, since every row this flow
+creates/updates needs these three Lookups populated before the real import run — see
+"Resolving the Client/Model/Model Revision Lookups" below, right after the Order Number
+resolution. This is also the dedicated follow-up `roadmap.md`'s Workstream 4 "still to do"
+main-vs-SA disambiguation item was waiting on — building it here resolves that roadmap item
+too.
 
 ### Trigger and source
 
@@ -412,6 +454,77 @@ orphaned `Order Items` row — this shouldn't happen for any row with a real `Or
 (the `Order` list should already exist for every live order), so treat a miss as a data
 problem worth surfacing, not a normal case to swallow.
 
+### Resolving the Client/Model/Model Revision Lookups (Order Items step 8 fields)
+
+**Added 2026-08-20**, resolving the SA-row disambiguation gap `roadmap.md`'s Workstream 4
+flagged as "still to do." Reuses `ResolvedOrderId` (already computed above) and the parsed
+`SA Job` flag (identity Compose section) — no new upstream data needed.
+
+**Placement — once, before the Switch, not duplicated per branch.** Every input this needs
+(`ResolvedOrderId`, `SA Job`) already exists before `Get Order Items`/the Create-vs-Update
+Switch — same as `OrderNumberId`, which both `CreateOrderItem` and `UpdateOrderItem` already
+reference without either branch re-deriving it. Build these steps once, right after
+`ResolvedOrderId`, and have both branches' field mappings reference the resulting
+`ClientIdToWrite`/`ModelIdToWrite`/`ModelRevisionIdToWrite` outputs — don't rebuild the
+Get item/Get items calls inside each branch.
+
+1. **Get item** on `Order` using `ResolvedOrderId` — pulls that Order's own `Client Id`,
+   `Model Id`, `Model Revision Id` (all three already exist as Lookups on `Order`, per
+   `lookup-textfield-reference.md`).
+2. `ClientIdToWrite` (Compose is fine here — single unconditional value, no branch writes
+   it twice) = direct copy of the Order's `Client Id`. Client has no main/SA split, so no
+   disambiguation needed.
+3. **`ModelIdToWrite`/`ModelRevisionIdToWrite` — built as Initialize variable + Set
+   variable, not Compose.** A Condition's two branches each need to produce a value under
+   the *same* name for the field mapping below to reference; Compose action names must be
+   unique flow-wide, so two Composes (one per branch) can't both be called
+   `ModelIdToWrite`. Same fix step 2c's date/status stamps already use for this exact shape
+   (see "Hard-won build lessons," point 5, for the `null()` variant of this pattern).
+   Initialize both (String) before the Condition below, then:
+   - **If `SA Job` = No** → Set `ModelIdToWrite`/`ModelRevisionIdToWrite` = direct copy of
+     the Order's `Model Id`/`Model Revision Id`.
+   - **If `SA Job` = Yes** → the Order's own `Model`/`Model Revision` point at the *main*
+     design, not the SA (auxiliary) one, so they can't be copied directly:
+     - **Get items** from `Models`, filter `ParentModelId eq <Order's Model Id> and
+       SAModel eq 1`. **Confirmed live 2026-08-21**: both internal names match their
+       display names with no `_x0020_`-style encoding (`ParentModel`, `SAModel` — despite
+       `SA Model`'s display-name space) — no `Order_x0020_Number1`-style surprise here.
+       **Three real gotchas hit and fixed while building this, in order**: (1) the two
+       clauses need an explicit `and` between them — concatenating them with just a space
+       (`...440 SAModel eq true`) throws Bad Request; (2) a capitalized `True` also throws
+       Bad Request — OData boolean literals must be lowercase; (3) **lowercase `true` still
+       silently matched zero rows** even with valid syntax — confirmed live: an actual SA
+       row's `Get items` call returned no results with `eq true`, causing the no-match path
+       to fire and the row to end up with the wrong (non-SA) `Model`/`Model Revision`
+       instead of an explicit flag. Switching to the numeral **`eq 1`** fixed it and returns
+       the correct match. Use `eq 1`/`eq 0` for this Yes/No field, not `eq true`/`eq false`
+       — the word form isn't reliable here even when it doesn't error outright.
+     - **If no match** (`length(...) = 0`) → flag/log rather than guess, same convention
+       as the Order Number lookup's miss-handling above — an SA row with no matching SA
+       `Models` entry is a data problem, not a normal case.
+     - **Else** → Set `ModelIdToWrite` = first result's own `Id`; Set
+       `ModelRevisionIdToWrite` = that same result's `Latest Model Revision Id` (no second
+       Get-items call needed, same shortcut the `Model Revisions` companion mapping below
+       already uses).
+4. Write all three resolved values (`outputs('ClientIdToWrite')`,
+   `variables('ModelIdToWrite')`, `variables('ModelRevisionIdToWrite')`) into `ClientId`,
+   `ModelId`, `Model RevisionId` on both `CreateOrderItem` and `UpdateOrderItem`, alongside
+   everything else already mapped there.
+
+**The TextFields are free** — `Client_ID_TextField`/`Model_ID_TextField`/
+`Model_Revision_ID_TextField` on `Order Items` already have a working sync flow (`Order
+Items - created or updated trigger`, built 2026-08-14 — see Flow A above) that fires on any
+Lookup change and populates the TextField automatically. Writing the three Lookup Ids above
+is enough; don't also write the TextFields directly from this flow.
+
+**Backfill is also free** — this flow already always-overwrites on re-run (confirmed
+2026-08-17, see "Confirmed 2026-08-17" below). Once this resolution logic is live, re-running
+the transfer flow against the rows already created by earlier test runs (e.g. the 256 rows
+confirmed 2026-08-18) backfills their Lookups — and, via the existing sync flow, their
+TextFields — with no separate one-time pass needed. (Contrast with `Order`'s own TextFields
+below, which do need a separate one-time pass — `Order` was never given an ongoing sync flow
+for these fields.)
+
 ### Upsert logic
 
 **Get items** from `Order Items`, filter `Title eq '<Unit ID>'`. If the count of results is 0
@@ -426,6 +539,10 @@ instead of `Title`.
 `Order Number`/`Order NumberId`). `Order_Number_TextField` — leave blank on create/update;
 the existing `Order Items - created or updated trigger` flow (step 2b) fills it in
 automatically on the next trigger, no need to duplicate that logic here.
+
+**Client/Model/Model Revision Lookups** (`ClientId`, `ModelId`, `Model RevisionId`) — see
+"Resolving the Client/Model/Model Revision Lookups" above. Their `_TextField` companions are
+likewise left blank here — the existing sync flow fills them in automatically.
 
 **Test/QA results** — verified live 2026-08-17 against ~2,600 rows: every one of these except
 `SFRA` uses `'x'` for pass/done and blank otherwise, but `SFRA` uses `'Y'` instead (6 live
@@ -741,3 +858,44 @@ mechanism and the `Model Revisions` matching key came from reading the actual
 from any doc's prose description of them. Re-verify against the live file/M code before
 actually building if either's been edited significantly since 2026-08-13/17 (the copy's last
 sync dates).
+
+## Step 4 — `Order` TextField one-time backfill flow
+
+**Added 2026-08-20.** `Order`'s three step-8-era TextFields (`Client_ID_TextField`,
+`Model_ID_TextField`, `Model_Revision_ID_TextField`) have live schema columns (confirmed
+2026-08-13, see `lookup-textfield-reference.md`) but **no ongoing sync flow was ever built**
+for them — that was deferred back when step 2b was originally scoped, and later reinforced by
+the 2026-08-19 decision (`roadmap.md`, "Explicitly not planned yet") not to build a
+cascade-refresh flow for master-record lists, since `Order`'s `Client`/`Model`/`Model
+Revision` values are set once at creation and essentially never change after. An always-on
+trigger flow would be solving a problem that doesn't really exist here — a **one-time,
+manually-triggered pass** is the right scope, not a standing flow.
+
+**Unlike `Order Items`, this doesn't happen automatically as a side effect of any other
+flow** — build this as its own small flow, separate from the transfer flow and from Flow A.
+
+### Build
+
+1. **Trigger**: Manually trigger a flow (button trigger) — same shape as the transfer flow,
+   run on demand, not on a schedule or item-change event.
+2. **Get items** on `Order` — no filter needed for a first run; if re-run later, filter to
+   `Client_ID_TextField eq ''` to skip rows already backfilled.
+3. **Apply to each**, per `Order` row:
+   - **Get item** on `Clients` using the row's `Client Id` → pull `Client_ID`.
+   - **Get item** on `Models` using the row's `Model Id` → pull `Model_ID`.
+   - **Get item** on `Model Revisions` using the row's `Model Revision Id` → pull
+     `Model_Revion_ID` (the field's real name is missing the second "s" — a pre-existing typo
+     on `Model Revisions`, not a mistake to fix here, see `lookup-textfield-reference.md`).
+   - **Update item** on the same `Order` row, writing all three fetched values into
+     `Client_ID_TextField`/`Model_ID_TextField`/`Model_Revision_ID_TextField`.
+4. Run once against the full live `Order` list. No second run needed unless a future
+   `Order`-level Client/Model/Model Revision edit is confirmed to actually happen in practice
+   (same low-risk assessment `roadmap.md` already made for the cascade-refresh idea) — if that
+   starts happening as a routine event rather than a one-off correction, revisit whether this
+   needs to become an ongoing flow instead of a one-time pass.
+
+### Testing
+
+Spot-check a handful of `Order` rows across different `Client`s/`Model`s after the run —
+confirm each TextField matches what the live `Clients`/`Models`/`Model Revisions` record
+actually shows for that Lookup's target, not just that the field isn't blank.

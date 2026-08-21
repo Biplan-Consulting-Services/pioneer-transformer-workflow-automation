@@ -3,7 +3,18 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
-## Where things stand right now (2026-08-14) — read this before anything else
+## Where things stand right now (2026-08-14, see 2026-08-21 update below) — read this first
+
+**Update, 2026-08-21**: workstream 1 step 3's transfer flow is now functionally built and
+tested end to end — Lookup resolution (including main-vs-SA disambiguation, closing
+Workstream 4's last "still to do" item), the `Order`/`Model Revisions` companion branches,
+and the "other dates" fields are all confirmed live (see
+`order-items-power-automate-flows.md`'s Progress section for the authoritative current
+state — this section below is kept for history/context, not current status). Only the
+reconciliation pass remains, and it's been **deliberately deferred to the pre-final-migration
+pass** (user's call, 2026-08-21) since it only matters once real cancel/deliver archival
+churn is happening — not needed for ongoing development/testing. **Next up: Workstream 2
+(Phase 1 business process automation)**, per the user's explicit sequencing.
 
 **Done and verified working:**
 - Workstream 1: full `Order Items` schema built live, all 8 sub-steps including step 8
@@ -166,8 +177,12 @@ and `lookup-textfield-reference.md`.
 2026-08-13 (commit `9aeb9c7`) — the existing `Models`/`Model Revisions` merge already
 covers the fused SA rows.
 
-**Still to do**: retire the `Models SA` list, build the order-item-generation logic that
-resolves main-vs-SA at unit-creation time.
+**Still to do**: retire the `Models SA` list. The order-item-generation main-vs-SA
+disambiguation logic is **built & tested, 2026-08-21** — landed in workstream 1's transfer
+flow (`order-items-power-automate-flows.md`'s Step 3, "Resolving the Client/Model/Model
+Revision Lookups") rather than as a separate piece, since every row that flow
+creates/updates needs it. Phase 1's `Work Order` fan-out can reuse the same resolved
+`Models` row, no separate logic needed there.
 
 **Creates new logic work**: whatever generates the SA auxiliary `Order Items` row (the
 transfer flow now, `phase1-plan.md`'s `Work Order` fan-out later) needs to correctly
