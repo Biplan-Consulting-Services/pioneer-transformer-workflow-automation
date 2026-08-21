@@ -117,70 +117,85 @@ short, structured NC record (who logged it, when, which stage) also needs a real
 list entry alongside the photo file, or whether the monday Update itself (with its
 timestamp/author already built in) is enough of a record on its own.
 
-## How Monday surfaces the filtered SharePoint view (researched + revised 2026-08-21)
+## How Monday surfaces the filtered SharePoint view (researched + revised twice, 2026-08-21)
 
 **First pass of this design was incomplete** — it only filtered by department/step, not by
 *which order/unit*. Since drawings turn out to be mostly **order-item-specific, not generic**
 (confirmed by the user — engineering redraws things like nameplates per unit, with real
 variation even between units in the same order), a department-only filter would mix every
-order's drawings together — useless on the shop floor. The corrected design filters on
-**both** dimensions at once, and folds in the user's separate ask for human-navigable
-folders rather than treating that as a competing idea:
+order's drawings together — useless on the shop floor. That led to a **second pass** (native
+monday Formula column + SharePoint stacked URL-filters), kept below as a fallback. Then,
+digging further into the same dsapps.dev app already confirmed for NC capture, a **simpler
+primary mechanism** emerged that the app can plausibly do end-to-end on its own:
 
-1. **One SharePoint Document Library** ("Engineering Drawings"), populated from the local
-   file server migration.
-2. **Folder structure: `{Order Number} / {Order Item}`** — e.g. `21865/21865-1_5/` —
-   mirroring the Order → Order Item hierarchy already used everywhere else in this system.
-   This is what makes the library human-browsable directly (useful on its own, and
-   especially right now while Monday access is pending) — someone can navigate straight to
-   a specific unit's folder without going through Monday at all.
-   - **Real gotcha to handle**: `Order Item` IDs contain a literal `/` (e.g. `21865-1/5`),
-     which isn't safe as a folder name or URL path segment as-is — needs a sanitized variant
-     (e.g. `21865-1_5`) wherever a folder gets created or a link gets built. Flagging this
-     now, same category of surprise as the `EC`-in-a-date-column gotcha found earlier in
-     this project — don't let it get discovered mid-build instead.
-3. **Still keep the `Production Step(s)` multi-select tag** on each file, from the
-   spreadsheet's type mapping — the folder narrows to *whose unit*, the tag narrows to
-   *which department* within that unit's own folder.
-4. **The Monday link — one formula, not 11 automations.** A production-step task item
-   already has both an `Order Item` value and a `Step` value on itself. A native monday
-   **Formula column** can concatenate: the library's fixed base URL + `/{Order Number
-   from the task}/{sanitized Order Item from the task}/` + a SharePoint view-filter query
-   string built from that same task's own `Step` value — e.g. (illustrative, not exact
-   syntax): `CONCATENATE(baseUrl, "/", {Order Item}, "/Drawings.aspx?useFiltersInViewXml=1&FilterField1=Production_Step&FilterValue1=", {Step})`.
-   No per-department automation rules to build or maintain — a future new department just
-   works, since the formula references the task's own columns rather than a fixed lookup
-   table. **Requires**: the text used for `Step` on the Monday task and the Choice values
-   used to tag drawings in SharePoint match exactly (same spelling/casing) — a data-
-   consistency detail to get right when building, not a design risk.
-5. **Both technical pieces behind this are confirmed by documentation, not assumed**:
-   - SharePoint modern list/library views accept stacked URL filters —
-     `?useFiltersInViewXml=1&FilterField1=<field>&FilterValue1=<value>&FilterField2=...`
-     (up to 10, AND-combined) — confirmed via
-     [Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-365/community/query-string-url-tricks-sharepoint-m365)
-     and the [PnP community docs](https://pnp.github.io/community-docs/articles/query-string-url-tricks-sharepoint-m365.html).
-   - monday's Formula column supports nested `IF`/`CONCATENATE` referencing other columns on
-     the same item — confirmed via [monday's own Formula Column support docs](https://support.monday.com/hc/en-us/articles/360001235445-The-Formula-Column)
-     and its [available-functions reference](https://support.monday.com/hc/en-us/articles/360001276465-Available-functions-in-the-Formula-Column).
-6. **Still an open, not-yet-tested question**: whether monday renders that resulting
-   SharePoint view URL as an **inline preview** in the item view (confirmed behavior for a
-   single Office file link) or only as a **clickable link** (multi-file filtered views
-   weren't found documented either way). Either outcome is fine functionally — a clickable
-   link is still one tap to exactly the right document set — but worth a live test once
-   Monday access lands, before assuming the inline-preview version.
+### Primary plan: let the app template the folder AND embed it
 
-**Paid alternative, if the native approach falls short in testing**: the "Microsoft 365
-SharePoint & Outlook integration" marketplace app (dsapps.dev) does purpose-built
-SharePoint↔monday linking — confirmed (via its own docs) to link/embed files in place rather
-than duplicating them into monday's storage, consistent with the centralize-in-SharePoint
-decision above. Seat-based pricing from $15/month (3 users) scaling up; **requires a
-Microsoft 365 admin to grant one-time org-wide consent** — worth flagging given this tenant
-(`ermcopower`) has a history of withheld admin consent blocking similar app installs (see
-the PnP PowerShell block noted throughout this repo). Keep as a fallback, not the default
-plan.
+dsapps.dev's docs describe a distinct **folder-templating feature family** ("Simple folder
+generation", "Simple folder generation – advanced usage", "Templated folder generation",
+"Templated folder generation – advanced usage"), explicitly described as supporting
+"organizing SharePoint folders by order numbers, item identifiers, and other column-based
+parameters" — its placeholder system spans "item fields, subitems, column values, and
+board-level metadata," not just the item's name.
 
-**This mechanism only covers *viewing* existing drawings** — it doesn't address how NC
-photos/notes get *created* (see below), which is a write path, not a read/link path.
+If that's accurate, the app can build **`{Order Number}/{Order Item}`** (and potentially a
+further `/{Step}` level) as a real SharePoint folder automatically from a task item's own
+column values — the same folder structure already wanted for human navigability — and its
+already-confirmed embedding feature ("browse SharePoint... files inside monday.com",
+document previews in item/board views) can show that specific folder directly on the task.
+That would mean **one tool handles folder creation, drawings viewing, and NC capture**,
+instead of stitching together a tagged metadata column, a native monday Formula column, and
+SharePoint URL-filter tricks.
+
+**Confirmed vs. not, precisely:**
+- Confirmed (multiple dsapps.dev doc pages): the folder-templating feature exists and does
+  support column-based paths, not just a fixed folder typed in once.
+- **Not confirmed**: the exact placeholder syntax (e.g. whether it's literally `{Order
+  Number}` or some other bracket format) — need to check inside the app itself once there's
+  access, not a blocking unknown, just not verifiable from public docs alone.
+- **Not confirmed**: whether the embed feature shows a **folder's full contents** (every
+  file in it, multiple at once — what's actually wanted here) or only a **single linked
+  file**. The docs pages fetched didn't settle this either way. This is the one real
+  open question before committing to this as the final design — test it once there's
+  Monday + app access.
+
+**Would this app work for the design drawings too, not just NC photos?** Yes, on the same
+evidence — it's the same embedding capability either way, just pointed at a folder full of
+drawings instead of a folder receiving NC photos. If the folder-embed granularity question
+above resolves in its favor, this single app covers both problems this doc set out to solve.
+
+### Fallback plan (previous pass, if folder-embed turns out to be single-file-only)
+
+1. **One SharePoint Document Library** ("Engineering Drawings"), with `{Order Number}/
+   {Order Item}` folders — same structure either way, human-browsable regardless of which
+   mechanism ends up surfacing it in Monday.
+   - **Real gotcha, applies either way**: `Order Item` IDs contain a literal `/` (e.g.
+     `21865-1/5`), unsafe as a folder name or URL path segment as-is — needs a sanitized
+     variant (e.g. `21865-1_5`).
+2. A `Production Step(s)` multi-select tag on each file, from the spreadsheet's type mapping.
+3. A native monday **Formula column** concatenating the library's base URL + that task's own
+   `Order Item` value + a SharePoint stacked URL-filter built from that task's own `Step`
+   value — e.g. (illustrative): `CONCATENATE(baseUrl, "/", {Order Item},
+   "/Drawings.aspx?useFiltersInViewXml=1&FilterField1=Production_Step&FilterValue1=",
+   {Step})`. Requires the `Step` text and the SharePoint tag's Choice values to match exactly.
+4. Both technical pieces behind *this* fallback are independently confirmed by
+   documentation: SharePoint modern views accept stacked URL filters —
+   `?useFiltersInViewXml=1&FilterField1=<field>&FilterValue1=<value>&FilterField2=...` (up to
+   10, AND-combined) — via [Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-365/community/query-string-url-tricks-sharepoint-m365)
+   and [PnP community docs](https://pnp.github.io/community-docs/articles/query-string-url-tricks-sharepoint-m365.html);
+   monday's Formula column supports nested `IF`/`CONCATENATE` over other columns — via
+   [monday's Formula Column docs](https://support.monday.com/hc/en-us/articles/360001235445-The-Formula-Column)
+   and its [functions reference](https://support.monday.com/hc/en-us/articles/360001276465-Available-functions-in-the-Formula-Column).
+
+**Cost/consent note, relevant either way if the app is used**: seat-based pricing from
+$15/month (3 users) scaling up; **requires a Microsoft 365 admin to grant one-time org-wide
+consent** — worth flagging given this tenant (`ermcopower`) has a history of withheld admin
+consent blocking similar app installs (see the PnP PowerShell block noted throughout this
+repo).
+
+**Next concrete step for this whole section**: once there's app + Monday access, test the
+folder-embed granularity question first — it decides which of the two plans above to
+actually build, and the fallback's extra moving parts (tag column, Formula column) are only
+worth building if the primary plan's embed turns out to be single-file-only.
 
 ## Explicitly open — not decided, needs a real design pass
 
