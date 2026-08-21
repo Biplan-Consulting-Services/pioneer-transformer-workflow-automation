@@ -155,6 +155,6 @@ Two independent, parallel tracks — proceeding on one doesn't block the other:
 - **`phase1-plan.md`**: the front-of-process business workflow (Sales → Engineering →
   Planning → Client confirmation) and its `Workflow Tasks` automation/notifications.
 
-Where they touch: `phase1-plan.md`'s fan-out logic (`Work Order`/`Planning Schedule` being
+Where they touch: `phase1-plan.md`'s fan-out logic (`Planning Schedule`/`Work Order` being
 per-unit) needs `Order Items` rows to exist — once this build is done, that dependency is
 fully satisfied (and then some), no separate minimal version needed on that side.

@@ -4,44 +4,42 @@
 without re-deriving this. Update the checkboxes as pieces land; update the plan itself if
 reality diverges from it.
 
-## ⚠ Proposed reordering, raised 2026-08-14 — NOT confirmed, do not build against this yet
+## Reordering (raised 2026-08-14) — confirmed 2026-08-21, plan below now reflects it
 
-User raised a possible change to this plan's step order/ownership, but explicitly does **not**
-want it treated as replacing the plan below — it needs confirming with the actual business
-users (department staff) first. **The plan below (Work Order before Planning Schedule,
-Scheduling-owned) remains the build-ready version until this is resolved.**
+This was the plan's one open blocker; it's resolved. Per the user, 2026-08-21: the
+`Planning Schedule`/`Work Order` sequence change (item 3 below) was already approved and is
+reflected in the redone Visio project — build against it directly. The `Order Entry`
+department move (item 1) is low-risk (it only shifts *who* creates the order, not the data
+model or flow logic) and just needs a quick review once the rest is built, not a blocking
+confirmation up front.
 
-**What's being proposed:**
-1. **`Order Entry` moves from Inside Sales to Quotation** — since Quotation already has all
-   the necessary data from the quote and can fill/link everything directly, removing a
-   handoff.
-2. **Engineering Preliminary Review** (Electrical + Mechanical, parallel) stays next,
-   expected turnaround **15-30 minutes**.
-3. **Possible reordering**: Planning produces the planned/due dates *before* `Work Order`
-   (the job scope workorder) exists, then sends those dates to Internal (Inside) Sales, who
-   creates the job scope workorder using that date and *then* confirms with the client. This
-   would reverse the plan's current assumption that `Work Order` (Scheduling) unlocks
-   `Planning Schedule` — instead `Planning Schedule` would unlock `Work Order`, and `Work
-   Order` may become an Inside Sales deliverable rather than Scheduling's. **Rationale given**:
-   Inside Sales can't create the job scope workorder without a due date, so confirming with
-   the client before that workorder exists is backwards / inefficient.
+**What changed from the original plan:**
+1. **`Order Entry` moves from Inside Sales to Quotation** — Quotation already has all the
+   necessary data from the quote and can fill/link everything directly, removing a handoff.
+   Build against Quotation as the owning department; final sign-off is a quick post-build
+   review, not a gate.
+2. **Engineering Preliminary Review** (Electrical + Mechanical, parallel) stays next, same
+   as the original plan, expected turnaround **15-30 minutes**.
+3. **`Planning Schedule` now comes before `Work Order`, and fan-out moves with it.**
+   Planning produces the planned/due dates first (per unit); those dates go to Inside Sales,
+   who creates the job scope `Work Order` using that date and *then* confirms with the
+   client. This reverses the original assumption that `Work Order` (Scheduling) unlocks
+   `Planning Schedule` — instead `Planning Schedule` (Scheduling, still owns this step)
+   unlocks `Work Order`, and `Work Order` becomes an **Inside Sales** deliverable rather than
+   Scheduling's. Rationale: Inside Sales can't create the job scope workorder without a due
+   date, so confirming with the client before that workorder exists was backwards.
 
-**Still unresolved, not yet asked**: does Scheduling still own something called `Work Order`
-under this reordering, or does that step/name move entirely to Inside Sales? Needs a real
-answer before this can be turned into a build plan, not just my inference from the
-description above.
-
-**Action before building any of this**: confirm the full reordering (and the Order Entry
-department change) with the actual department staff, not just take it as decided from this
-conversation alone.
+See "Order-level vs. unit-level" and "Power Automate flows" below — both sections are
+written against this confirmed order already.
 
 ## Why this slice, first
 
 This is the front end of the business-process workflow documented in
 `infrastructure-overview.md` (`## Business process workflow diagram`) —
 `Customer PO → PO Docs Complete? → Order Entry → Electrical Preliminary Review + Shop Order
-Preliminary Review (parallel) → Both Reference Designs Available? → Work Order → Planning
-Schedule → Confirm Planned Dates with Client`. User's call, 2026-08-12: this is the biggest
+Preliminary Review (parallel) → Both Reference Designs Available? → Planning Schedule → Work
+Order → Confirm Planned Dates with Client` (reorder confirmed 2026-08-21, see above). User's
+call, 2026-08-12: this is the biggest
 current pain (no visibility/notification into whose turn it is to act, order-to-order) and
 it's small enough to ship and start using immediately.
 
@@ -58,20 +56,23 @@ order-level — it isn't): not every item in a multi-unit order shares the same 
 date, so planning and client-date-confirmation genuinely happen **per unit**, not once per
 order. Confirmed split:
 
-- **Order-level** (one `Workflow Tasks` row per Order): `Order Entry`, `Electrical
-  Preliminary Review`, `Shop Order Preliminary Review`. Engineering's duplicate-check is a
-  property of the *order/model*, not a specific unit.
-- **Fan-out point: `Work Order`.** This is where one Order becomes N per-unit records
-  (N = `Order`'s `Qty`) — confirmed per-unit, one step earlier than Planning Schedule.
-- **Unit-level**: `Work Order`, `Planning Schedule` — one `Workflow Tasks` row per **Order
-  Item**, not per Order, since units in the same order can end up with different planned
-  dates.
+- **Order-level** (one `Workflow Tasks` row per Order): `Order Entry` (Quotation, per the
+  2026-08-21-confirmed reorder), `Electrical Preliminary Review`, `Shop Order Preliminary
+  Review`. Engineering's duplicate-check is a property of the *order/model*, not a specific
+  unit.
+- **Fan-out point: `Planning Schedule`** (updated 2026-08-21 — was `Work Order`). This is
+  where one Order becomes N per-unit records (N = `Order`'s `Qty`).
+- **Unit-level**: `Planning Schedule` (Scheduling) then `Work Order` (**Inside Sales**,
+  updated 2026-08-21 — was Scheduling) — one `Workflow Tasks` row per **Order Item**, not per
+  Order, since units in the same order can end up with different planned dates. Planning
+  produces the date first; Inside Sales creates the job scope `Work Order` from that date.
 - **Back to order-level: `Confirm Planned Dates with Client`.** Corrected again
   2026-08-12 — even though the planning underneath it is per-unit, Sales treats the actual
   client confirmation as **one conversation covering every unit in the order**, not a
   separate confirmation per unit. So this step **converges back** to one `Workflow Tasks`
-  row per Order, created only once **all** of that order's per-unit `Planning Schedule`
-  tasks are `Completed` — not as soon as the first one finishes.
+  row per Order, created only once **all** of that order's per-unit `Work Order` tasks
+  (updated 2026-08-21 — was `Planning Schedule` tasks) are `Completed` — not as soon as the
+  first one finishes.
 
 **This means Phase 1 needs `Order Items` to exist** as the per-unit anchor for `Work
 Order`/`Planning Schedule`. **Superseded 2026-08-12**: this used to say "just build a
@@ -167,10 +168,12 @@ gets unmaintainable fast once later phases add more steps. One flow, triggered o
 
 **Flow: "Workflow Tasks — advance on completion"**
 - **Trigger**: `Workflow Tasks` item modified, where `Status` changed to `Completed`.
-- **Logic** (`Switch` on `Step Name` of the just-completed task):
-  - `Order Entry` completed (order-level) → create 2 new **order-level** tasks:
-    `Electrical Preliminary Review` (Electrical Engineering) + `Shop Order Preliminary
-    Review` (Mechanical Engineering), both for the same Order. Notify both.
+- **Logic** (`Switch` on `Step Name` of the just-completed task), reordered 2026-08-21 to
+  match the confirmed `Planning Schedule` → `Work Order` swap:
+  - `Order Entry` completed (order-level, Quotation per the 2026-08-21 department move) →
+    create 2 new **order-level** tasks: `Electrical Preliminary Review` (Electrical
+    Engineering) + `Shop Order Preliminary Review` (Mechanical Engineering), both for the
+    same Order. Notify both.
   - `Electrical Preliminary Review` OR `Shop Order Preliminary Review` completed
     (order-level) → **Get items** from `Workflow Tasks` filtered to the same Order + the
     *other* review step. If that sibling task is also `Completed`:
@@ -182,17 +185,20 @@ gets unmaintainable fast once later phases add more steps. One flow, triggered o
     - Either way (both siblings done, regardless of Yes/No): **fan out** — if this order's
       `Order Items` rows don't exist yet, create them now (N rows, N = `Order`'s `Qty`,
       same unit-identifier scheme as `TableOrders.pq`'s `Order` column, e.g. `21865-1/5`).
-      Then create one **unit-level** `Work Order` task (Scheduling) per `Order Item`, not
-      one for the whole order. If the sibling review isn't done yet, do nothing — wait for
-      it to trigger this same logic when *it* completes.
-  - `Work Order` completed (unit-level) → create `Planning Schedule` (Scheduling),
-    **unit-level** — same `Order Item` as the `Work Order` task that just completed.
-  - `Planning Schedule` completed (unit-level) → **converge back to order-level**: `Get
-    items` from `Workflow Tasks` filtered to this Order + `Step Name = Planning Schedule`.
-    If **all** of them are now `Completed` (not just this one — Sales needs every unit's
-    date before talking to the client), create ONE **order-level** `Confirm Planned Dates
-    with Client` task (Inside Sales). If any sibling `Planning Schedule` task for this
-    order is still open, do nothing yet.
+      Then create one **unit-level `Planning Schedule` task** (Scheduling, updated
+      2026-08-21 — was `Work Order`) per `Order Item`, not one for the whole order. If the
+      sibling review isn't done yet, do nothing — wait for it to trigger this same logic
+      when *it* completes.
+  - `Planning Schedule` completed (unit-level) → create **`Work Order`** task (**Inside
+    Sales**, updated 2026-08-21 — was Scheduling), **unit-level** — same `Order Item` as the
+    `Planning Schedule` task that just completed, carrying the planned date forward so
+    Inside Sales can build the job scope workorder from it.
+  - `Work Order` completed (unit-level) → **converge back to order-level**: `Get
+    items` from `Workflow Tasks` filtered to this Order + `Step Name = Work Order` (updated
+    2026-08-21 — was `Planning Schedule`). If **all** of them are now `Completed` (not just
+    this one — Sales needs every unit's date before talking to the client), create ONE
+    **order-level** `Confirm Planned Dates with Client` task (Inside Sales). If any sibling
+    `Work Order` task for this order is still open, do nothing yet.
   - `Confirm Planned Dates with Client` completed (order-level) → **end of Phase 1's
     automated chain.** (Phase 2 picks up here with Engineering execution.)
 - A separate, simpler **trigger flow** creates the *first* task (`Order Entry`,
@@ -255,10 +261,10 @@ this project's native-Lookup compatibility with `Order`/`Order Items`.
 - [ ] Add `Engineering Review Status` to the `Order` list.
 - [ ] Build the "new Order → create Order Entry task" trigger flow.
 - [ ] Build the main "Workflow Tasks — advance on completion" flow (the Switch-based one
-      above), including the AND-gate sibling-check logic, the fan-out at `Work Order`
-      (create `Order Items` rows + one `Work Order` task per unit), and the converge-back
-      "all Planning Schedule tasks done" check before creating `Confirm Planned Dates with
-      Client`.
+      above), including the AND-gate sibling-check logic, the fan-out at `Planning Schedule`
+      (create `Order Items` rows + one `Planning Schedule` task per unit, updated 2026-08-21),
+      and the converge-back "all `Work Order` tasks done" check (updated 2026-08-21 — was
+      `Planning Schedule`) before creating `Confirm Planned Dates with Client`.
 - [ ] Wire in email + Adaptive Card notifications on every task-creation branch.
 - [ ] Build the archiving flow for `Workflow Tasks` (`Status = Completed` trigger, same
       scheduled/verify-before-delete mechanism as `archiving-plan.md`) alongside the rest of

@@ -184,7 +184,8 @@ for layout structure, `Image`) and an `actions` array (the buttons — `Action.S
 data back to whatever triggered the card, `Action.OpenUrl` opens a link).
 
 **A concrete card for this project** — what a `Planning Schedule` task notification could
-actually look like, sent to Scheduling when a `Work Order` task completes:
+actually look like, sent to Scheduling when both Preliminary Review tasks complete (the
+fan-out point, updated 2026-08-21 — see `phase1-plan.md`'s reorder section):
 
 ```json
 {

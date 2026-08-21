@@ -110,8 +110,9 @@ additive changes via Visio COM, then refined further by the user directly in Vis
    an order is a repeat/duplicate build, to help Planning estimate the engineering work and
    set a realistic due date.
 2. **New `Confirm Planned Dates with Client` step, in the Inside Sales lane** (not a new
-   lane — this is Inside Sales' responsibility) — triggered automatically once Planning
-   Schedule finishes, for *every* order, not conditional on duplicate status.
+   lane — this is Inside Sales' responsibility) — triggered automatically once `Work Order`
+   finishes (updated 2026-08-21 — was `Planning Schedule`, see reorder note below), for
+   *every* order, not conditional on duplicate status.
 3. **Engineering always runs, for every order** — corrected 2026-08-12, the diagram's
    original `Y → Work Order 1` (skips engineering) / `N → Work Order 2` (full engineering)
    branching off Mechanical's `Reference Design Available?` was wrong and has been removed.
@@ -119,7 +120,11 @@ additive changes via Visio COM, then refined further by the user directly in Vis
    engineering scales by duplicate status, it's never skipped. **User simplified this
    further while applying it**: merged the now-redundant `Work Order 1`/`Work Order 2` split
    into a single `Work Order` box, since every order needs one regardless of duplicate
-   status once engineering is never skipped.
+   status once engineering is never skipped. **Reordered, confirmed 2026-08-21**: `Work
+   Order` now sits *after* `Planning Schedule`, not before — Planning produces the planned
+   date first, then Inside Sales (not Scheduling) creates the job scope `Work Order` from
+   that date and confirms with the client. Reflected in the redone Visio project; see
+   `phase1-plan.md`'s reorder section for the full rationale.
 4. **Duplicate status's real effect: unlocks an early, parallel Purchasing/supplier-contact
    path** — not a full alternate route. Confirmed 2026-08-12: this early start requires
    **both** Electrical AND Mechanical to say `Reference Design Available? = Yes` (a
@@ -140,18 +145,24 @@ additive changes via Visio COM, then refined further by the user directly in Vis
    rather than inventing a parallel mechanism.
 
 **Resulting logic** (see `docs/diagrams/design-eng-workflow-2026-08-12.png` for a rendered
-snapshot right after the additive Visio-COM pass, before the user's further manual cleanup):
+snapshot right after the additive Visio-COM pass, before the user's further manual cleanup
+**and before the 2026-08-21 `Planning Schedule`/`Work Order` reorder below — that snapshot is
+now stale; re-export from Visio if a current static image is needed**):
+
+**Reordered 2026-08-21** (confirmed, already applied in the redone Visio source): `Planning
+Schedule` now comes before `Work Order`, and `Work Order` is an Inside Sales deliverable, not
+Scheduling's. The mermaid below reflects the current, confirmed order.
 
 ```mermaid
 flowchart TB
     SOP["Shop Order Preliminary Review<br/>(Mechanical)"] --> RDAm{"Reference Design<br/>Available? (Mech)"}
     EPR["Electrical Preliminary Review<br/>(Electrical)"] --> RDAe{"Reference Design<br/>Available? (Elec)"}
 
-    RDAm -->|Y or N| WO["Work Order<br/>(single, merged — converges<br/>regardless of duplicate status)"]
-    RDAe -->|Y or N| WO
+    RDAm -->|Y or N| PS["Planning Schedule<br/>(Scheduling)"]
+    RDAe -->|Y or N| PS
 
-    WO --> PS["Planning Schedule"]
-    PS --> CPD["Confirm Planned Dates<br/>with Client (Inside Sales)"]
+    PS --> WO["Work Order<br/>(Inside Sales — single, merged,<br/>converges regardless of duplicate status)"]
+    WO --> CPD["Confirm Planned Dates<br/>with Client (Inside Sales)"]
     CPD -->|Y| ENG["Electrical Design + Mechanical Design<br/>(Engineering — starts only after<br/>confirmation, scaled by duplicate status)"]
     ENG --> PONormal["P.O. (Preliminary)<br/>(normal-path Purchasing)"]
 

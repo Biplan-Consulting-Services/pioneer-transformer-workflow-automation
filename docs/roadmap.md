@@ -97,8 +97,9 @@ no longer open.)
 → `docs/phase1-plan.md`
 
 Automates the front of the order process — `Customer PO → Order Entry → Electrical/
-Mechanical Preliminary Review → Work Order → Planning Schedule → Confirm Planned Dates
-with Client` — with a `Workflow Tasks` list and Power Automate flows that notify (email +
+Mechanical Preliminary Review → Planning Schedule → Work Order → Confirm Planned Dates
+with Client` (reorder confirmed 2026-08-21 — see `phase1-plan.md`) — with a `Workflow
+Tasks` list and Power Automate flows that notify (email +
 Teams) whoever's turn it is to act next. Fixes the other big current pain: no visibility
 into whose turn it is on an order.
 
@@ -119,7 +120,7 @@ orders/year scale). Two changes folded back into `phase1-plan.md` from that rese
 Adaptive Cards for notifications from the start, and give `Workflow Tasks` its own archiving
 flow rather than deferring it.
 
-**Dependency on workstream 1**: Phase 1's `Work Order`/`Planning Schedule` steps are
+**Dependency on workstream 1**: Phase 1's `Planning Schedule`/`Work Order` steps are
 per-unit, so they need `Order Items` rows to exist. Once workstream 1's list/schema exists,
 this is satisfied — Phase 1's flow just creates new `Order Items` rows for new orders going
 forward (see the fan-out logic in `phase1-plan.md`), on top of whatever workstream 1's
