@@ -207,6 +207,11 @@ removes that free signal, so the logic has to do it explicitly instead.
 ### 5. Monday.com production-tracking integration
 → `docs/document-library-plan.md` (document library / NC storage / design-doc routing)
 
+**Blocked, 2026-08-21**: user's Monday.com account access is pending approval — anything
+requiring a Monday login (native automations, the Link-column inline-preview test) waits on
+that. The SharePoint-side half of `document-library-plan.md` (library/view setup, tagging
+drawings) has no such dependency and can proceed now.
+
 **Added 2026-08-21**, per a meeting the user attended that day. **Confirmed scope:
 production tracking only** — this does not touch Phase 1 (`phase1-plan.md`'s Workflow
 Tasks / front-of-process automation), which stays a separate SharePoint + Power Automate

@@ -1,6 +1,11 @@
 # Document Library / NC Storage Plan (seed doc)
 
 **Status: early — problem and goal confirmed, seed data found, real design not started.**
+**Blocked on Monday.com access (2026-08-21)**: user's account access to Monday.com is
+pending approval — nothing that requires logging into Monday (the native automation/Link
+column setup, the live inline-preview test) can happen until that lands. The SharePoint-side
+work below (library setup, tagging drawings from the spreadsheet, building the 11 filtered
+views) has no Monday dependency and can proceed in the meantime.
 Same spirit as `order-items-build-plan.md`/`phase1-plan.md` when they began: capture what's
 known, propose one direction, flag the real open questions rather than guessing a full
 design. Part of Workstream 5 (`roadmap.md`) — production-tracking-only scope, alongside the
