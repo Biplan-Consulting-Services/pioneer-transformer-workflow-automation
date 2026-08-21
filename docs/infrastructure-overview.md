@@ -426,10 +426,21 @@ category — vendor/audit/override dates, not steps in the production sequence):
 | Original Tanking Date | Date |
 | Manual Estimated Delivery Date | Date |
 | Tanking date change justification | Multi-line text (Note) — sample value was a long `/`-delimited log of past change reasons. |
+| Planned Tanking Date | Date |
+| Planned Delivery Date | Date |
 
 *(One validation list found on the `List` sheet, `TableValidationTankingDateStatus`
 (Planned/Confirmed/Realised), doesn't correspond to any current `TableOrders` column —
 confirmed 2026-08-12 by user as dead/unused, not carried into this schema.)*
+
+**`Planned Tanking Date`/`Planned Delivery Date` added 2026-08-21**: found while running the
+backfill that raw `TableOrders`' `Tanking Date`/`Delivery Date` columns are planning/estimate
+dates (what production and procurement plan a due date around), not actual completion
+timestamps — they were wrongly headed into the automated `Tanking End Date`/`Delivery End
+Date` fields above, fabricating a `Completed` status. See `order-items-power-automate-flows.md`'s
+Step 3 for the corrected mapping and the remediation pass needed for rows already backfilled
+under the old (wrong) mapping. Not a duplicate of `Original Tanking Date`/`Manual Estimated
+Delivery Date` above — those come from separate raw Excel columns, already correctly mapped.
 
 ## Planned: completion, cancellation, and archiving logic
 

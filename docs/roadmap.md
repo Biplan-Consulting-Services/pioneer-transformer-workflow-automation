@@ -16,6 +16,16 @@ pass** (user's call, 2026-08-21) since it only matters once real cancel/deliver 
 churn is happening — not needed for ongoing development/testing. **Next up: Workstream 2
 (Phase 1 business process automation)**, per the user's explicit sequencing.
 
+**Second update, 2026-08-21**: a real bug found while running the backfill — raw
+`TableOrders` `Tanking Date`/`Delivery Date` are planning/estimate dates, not actual
+completion dates, and were wrongly mapped into the automated `Tanking End
+Date`/`Delivery End Date` fields (fabricating `Status = Completed`). Fixed going forward
+(new `Planned Tanking Date`/`Planned Delivery Date` fields); **a remediation pass against
+already-backfilled live rows is still needed, not yet run** — see
+`order-items-power-automate-flows.md`'s "Remediation" subsection. Also: **Workstream 5,
+Monday.com production-tracking integration, added** — production tracking is moving to
+Monday.com per a 2026-08-21 meeting; see below.
+
 **Done and verified working:**
 - Workstream 1: full `Order Items` schema built live, all 8 sub-steps including step 8
   (`Client`/`Model`/`Model Revision` Lookups + TextField companions, built 2026-08-14 now
@@ -66,7 +76,7 @@ churn is happening — not needed for ongoing development/testing. **Next up: Wo
 - `sharepoint-lists/*.csv` exports use `{List Name} {YYYY-MM-DD} {HHMM}.csv` naming,
   superseded ones move to `Archive/`.
 
-## Four workstreams, mostly independent, all ready to build now
+## Five workstreams, mostly independent, all ready to build now
 
 ### 1. Order Items migration — **priority** (get staff off editing Excel)
 → `docs/order-items-build-plan.md`
@@ -193,6 +203,42 @@ removes that free signal, so the logic has to do it explicitly instead.
 
 **Supersedes**: the `lookup-textfield-reference.md` to-do to build a `Models SA`
 `Client`-sync flow — don't build one, it would be thrown away.
+
+### 5. Monday.com production-tracking integration
+→ `docs/document-library-plan.md` (document library / NC storage / design-doc routing)
+
+**Added 2026-08-21**, per a meeting the user attended that day. **Confirmed scope:
+production tracking only** — this does not touch Phase 1 (`phase1-plan.md`'s Workflow
+Tasks / front-of-process automation), which stays a separate SharePoint + Power Automate
+build exactly as already planned.
+
+**Confirmed shape of the integration:**
+- **Monday.com is the tool the production team works in day to day** going forward — not
+  SharePoint directly.
+- **SharePoint's `Order Items` list stays the authoritative "database"** — it's what KPI/
+  Power BI reporting syncs against, and what the rest of the workflow (`Order`, and
+  eventually Phase 1's `Workflow Tasks`) cross-references. Monday is a working layer synced
+  on top via connector, not a replacement source of truth. Same columns/schema as already
+  built — nothing in `order-items-manual-build-checklist.md` changes because of this move.
+- **The existing SharePoint production-stage automation is being paused** — the 16 Start/End
+  Date stamps + `N/A` auto-advance flow (built/tested 2026-08-14, workstream 1 step 2c).
+  Equivalent stage-advance logic will live inside Monday instead. **Action item, not yet
+  done**: disable that flow in the Power Automate portal — this is a manual portal action,
+  not a doc change.
+- Worth noting for whoever picks this up: `docs/phase1-tooling-research.md` (2026-08-12)
+  already evaluated monday.com and rejected it as a *system of record* (third-party Power
+  Automate connector, cost, a 25,000-automations/month cap) — recommending it only as a
+  "synced presentation layer" at most. This new design (SharePoint as the database, Monday
+  as the working layer) lines up with that recommendation rather than contradicting it.
+
+**New, genuinely unbuilt scope, raised in the same meeting**: syncing a document library
+covering two distinct needs — engineering design docs routed to the correct production step
+(replacing today's local-file-server + multi-copy-print + color-coded-folder distribution,
+with a goal of shop-floor tablets pulling the right drawings automatically when a Monday
+task starts), and a place to store NC (non-conformance) photos/notes per unit/production
+step (nothing like this exists today). A completed department/drawing-needs analysis already
+exists to seed this — see `document-library-plan.md` for the real design questions still
+open; not duplicated here.
 
 ## Reference (not a build plan — background/audit)
 → `docs/infrastructure-overview.md`

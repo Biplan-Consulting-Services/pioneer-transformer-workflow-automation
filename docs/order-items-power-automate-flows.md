@@ -690,6 +690,49 @@ live data.
   yet," only becoming `Pending` once the stage immediately before it actually completes for
   real, and only becoming `In Progress` when staff (or step 2c) actually sets it after cutover.
 
+**Correction, 2026-08-21 — `Tanking` and `Delivery` are exceptions to the rule above.** Found
+while running the backfill: the raw `Tanking Date`/`Delivery Date` columns in `TableOrders`
+are not actual completion dates at all — they're **planning/estimate dates** staff use so
+production and procurement can plan around a due date. Treating them as "this stage
+completed on this date" (the general rule above) is wrong for these two stages specifically —
+it fabricates a `Completed` status and a completion timestamp that was never actually
+confirmed.
+
+Corrected mapping for these two stages only:
+- Raw `Tanking Date` → **`Planned Tanking Date`** (plain value copy, same serial→date
+  conversion as everywhere else). `Tanking End Date` and `Tanking Status` are **left blank**
+  at backfill — not set from this column at all.
+- Raw `Delivery Date` → **`Planned Delivery Date`** (same treatment). `Delivery End Date` and
+  `Delivery Status` are **left blank** at backfill.
+- The other 6 stages (Coiling, Stacking, Assembly, Drying, Testing, Finishing) are
+  unaffected — their raw `{Stage} Date` columns really do represent actual completion, per
+  the user's confirmation; only Tanking/Delivery had this planning-date confusion.
+- Going forward, `Tanking End Date`/`Tanking Status` and `Delivery End Date`/`Delivery
+  Status` only ever get set by the live Status-change auto-stamp flow (step 2c) once staff
+  actually mark a unit's Tanking/Delivery stage `Completed` in SharePoint — never by this
+  transfer flow.
+
+### Remediation — the old (wrong) mapping already ran against live data
+
+**Confirmed 2026-08-21**: this backfill already executed against the live `Order Items` list
+before this bug was found, so some real rows currently have a fabricated `Tanking
+Status`/`Delivery Status = Completed` and a `Tanking End Date`/`Delivery End Date` that's
+actually just the old planning estimate, not a real completion date. This needs a one-time
+corrective pass, run **after** the `Planned Tanking Date`/`Planned Delivery Date` fields
+exist (see `order-items-manual-build-checklist.md`):
+
+For every live `Order Items` row:
+1. If `Tanking End Date` is populated: copy its current value into `Planned Tanking Date`
+   (it's the same raw estimate the corrected mapping above would have produced), then clear
+   `Tanking End Date` and reset `Tanking Status` back to blank.
+2. Same treatment for `Delivery End Date` → `Planned Delivery Date`, then clear `Delivery
+   End Date`/`Delivery Status`.
+3. This can run as a one-time `Update item` pass inside the existing `Order Items - Excel
+   transfer flow` (add the corrective logic, run once against every current row, then remove
+   or disable it) or as a small standalone one-off flow — either is fine since it's a single
+   corrective run, not something that needs to persist. **Not yet built or run** — flag as
+   the next concrete build step for this doc.
+
 **Confirmed 2026-08-17 — always overwrite on re-run, deliberately, not preserve-on-blank.**
 `UpdateOrderItem` uses the exact same expressions as `CreateOrderItem` for every date/status
 field below, with no "don't clobber what's already live" protection. User's explicit call:

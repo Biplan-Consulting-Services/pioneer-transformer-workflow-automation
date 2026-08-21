@@ -127,6 +127,17 @@ clean matching internal name in the process.
 | 47 | Original Tanking Date | Date only |
 | 48 | Manual Estimated Delivery Date | Date only |
 | 49 | Tanking date change justification | Multiple lines of text (plain, not rich text) |
+| 50 | Planned Tanking Date | Date only |
+| 51 | Planned Delivery Date | Date only |
+
+**50/51 added 2026-08-21**: found while running the backfill — the raw `TableOrders` Excel
+columns `Tanking Date`/`Delivery Date` are **planning/estimate dates** (what production and
+procurement plan around), not actual completion timestamps. They were wrongly headed into
+the automated `Tanking End Date`/`Delivery End Date` fields (which stamp `Status =
+Completed`) — see `order-items-power-automate-flows.md`'s Step 3 for the corrected mapping.
+Not a duplicate of `Original Tanking Date` (a separate raw Excel column, already correctly
+mapped) or `Manual Estimated Delivery Date` (also separate, already mapped) — those come
+from different source columns.
 
 ## Step 2 — Companion columns on `Order`
 
