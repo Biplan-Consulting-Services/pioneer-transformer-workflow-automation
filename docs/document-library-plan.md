@@ -84,9 +84,38 @@ A **SharePoint Document Library** for the drawings, consistent with "SharePoint 
   narrowed to one department) for a given production-step task, rather than staff hunting
   for the right file — see the mechanism below.
 
-**NC photos/notes**: a second, separate library or list (needs attachment/photo support,
-which either a SharePoint list or a document library provides) keyed to `Order Item` +
-production step — structurally simple, but the actual schema isn't designed yet.
+**NC photos/notes — capture mechanism found, 2026-08-21**: the same dsapps.dev app named
+below (already recommended as a *viewing* fallback) turns out to directly do what the user
+guessed for *capture* too. Checked its feature list directly:
+- **"Copy assets to SharePoint"**: *"Automatically copy files attached to monday.com item
+  updates into the configured SharePoint folder for that item."* — a worker attaches a
+  photo to a Monday Update on their current task (a normal, lightweight thing to do in
+  monday, not the heavier Files-column browsing experience that's apparently been causing
+  trouble) and the app copies it out into that item's SharePoint folder automatically. This
+  is the confirmed answer to "where does an NC photo actually land."
+- It also does **"folder generation on item creation"** and **"templated folder generation
+  on status change"** — meaning this same app might be able to auto-create the
+  `{Order Number}/{Order Item}` folder structure itself when a task item is created, rather
+  than needing a separate Power Automate step for that.
+- **Real limitation, confirmed by the same check**: no conditional file routing based on
+  other column values — it copies into *one* folder configured per item, it doesn't branch
+  by department on its own. Not a problem as long as the monday item this is configured
+  against is already at the right granularity (one item per `Order Item` + production step,
+  which this system already uses) — the item's *own* configured folder just needs to already
+  point at the right place; the app doesn't need to compute that itself.
+- **Not yet confirmed**: whether that per-item "configured folder" can be a *template*
+  built from the item's own column values (so it resolves to that item's actual
+  `Order Item`, not a fixed folder typed in by hand) — the fetch found the feature names but
+  not the exact templating syntax. Needs checking once there's actual access to the app
+  (which needs Monday.com access first, and the same org-wide M365 admin consent flagged
+  below).
+
+Given this, NC photos/notes likely don't need a separate SharePoint list of their own —
+they can land as files inside the same `Order Number`/`Order Item` folder structure already
+designed for drawings, with the Update's text serving as the note. Still open: whether a
+short, structured NC record (who logged it, when, which stage) also needs a real SharePoint
+list entry alongside the photo file, or whether the monday Update itself (with its
+timestamp/author already built in) is enough of a record on its own.
 
 ## How Monday surfaces the filtered SharePoint view (researched + revised 2026-08-21)
 
