@@ -59,10 +59,16 @@ first (see Prerequisites below) — it's currently only a native Excel table.
 
 ### Price CAD (`CC`) / Price USD (`CD`)
 Depends on: `Province/State` → cross-list lookup into `TableCanadianProvince[Code]`,
-`Price Value`, a date cascade (`Delivery Date` → `Tanking Date` → `Estimated Delivery Date`
-→ `Initial Promised Date`, first non-blank) → `YEAR(...)` → cross-list lookup into
+`Price Value`, a date cascade → `YEAR(...)` → cross-list lookup into
 `Table_USD_CAD_Conversion_Rate[Year]/[Rate]` (approximate match, next-smaller-year
 fallback).
+
+**Correction, verified 2026-08-31**: this doc previously described the date cascade as
+`Delivery Date` → `Tanking Date` → `Estimated Delivery Date` → `Initial Promised Date`.
+The live formula's cascade is only two deep — `Estimated Delivery Date`, falling back to
+`Initial Promised Date`, and falling back to the *string* `"Invalid date for conversion"`
+if both are blank (which makes `YEAR()` error, so blank-on-both rows currently show an
+error, not a price). `Delivery Date` and `Tanking Date` are not referenced.
 
 Logic: if the order's province is a recognized Canadian code, `Price Value` is already CAD
 (Price CAD = as-is) / needs conversion (Price USD = ÷ rate). Otherwise the reverse (Price
@@ -77,8 +83,17 @@ branch which side gets multiplied). Needs `TableCanadianProvince` and
 ### Navigation Order (`CE`) / Navigation Model (`CF`)
 Depends on: `Order`, `PO Item #` (Navigation Model only), and the defined name
 `SelectedLanguage` (a single cell, `Orders!$E$2`, holding `"FR"`/other — used to pick a
-bilingual hyperlink label). Navigation Model also branches between the `Models` and
-`Models SA` list URLs depending on whether `Order` contains `"SA"`.
+bilingual hyperlink label).
+
+**Correction, verified against the live workbook 2026-08-31** (`FRM10-12_2026-08-31_09h41m.xlsx`,
+`xl/tables/table1.xml`): this doc previously said `Navigation Model` "branches between the
+`Models` and `Models SA` list URLs depending on whether `Order` contains `SA`". It does not,
+and there is no evidence it ever did in this revision. The live formula is a single
+unconditional `HYPERLINK` into the **`Models Revisions`** list (`viewid=5526fc48-6a40-4e8b-a015-7cb3f2c32705`),
+keyed on `PO Item #` — no `SA` branch, no `Models`/`Models SA` URLs at all. The
+"Models-vs-Models-SA branch is moot after the fusion" argument below was therefore arguing
+against something that isn't there; the recommendation to drop still stands, but on the
+Hyperlink-output ground alone, not that one.
 
 Blocked by: Hyperlink output again, plus `SelectedLanguage` has no per-item SharePoint
 equivalent (it's a single global Excel cell, not list data).
@@ -147,3 +162,101 @@ the flow instead:
 
 Zero of the 7 become plain SharePoint calculated columns — the original "calculated column
 where possible" framing doesn't apply to any of them in practice.
+
+---
+
+# Build pass — 2026-08-31 (supersedes the "zero of the 7" conclusion above)
+
+Verified live against SharePoint and against `FRM10-12_2026-08-31_09h41m.xlsx`
+(`xl/tables/table1.xml`). **Decisions taken by the user this session**: drop the three
+hyperlink columns entirely (`Price`, `Navigation Order`, `Navigation Model`); drop
+`Archived`; inline the small reference tables rather than creating SharePoint lists for
+them; build the estimation.
+
+## Correction to this doc's headline conclusion
+
+"Zero of the 7 become plain SharePoint calculated columns" was too strong. It treated
+`TableCanadianProvince` (13 static rows) and `Table_USD_CAD_Conversion_Rate` (6 rows,
+extended once a year) as cross-list lookups. They are small and static enough to **inline
+into the formula text**, which removes the cross-list wall entirely for `Price CAD`/
+`Price USD`. Those two are real, plain calculated columns — no flow needed.
+
+The live `Order` list also already disproves the "`ClientLeadTimes` needs a SharePoint home
+first" prerequisite: `Lead Time` exists there as a plain `Number`, and the list's one
+pre-existing calculated column `Ing. Due Date`
+(`=[Initial Promised Date]-(7*([Lead Time]+4))`) already consumes it.
+
+## Where each column has to live, and why
+
+Calculated columns cannot read across lists, so placement is forced by where the *inputs*
+already are — not by preference.
+
+| Column | List | Why |
+|---|---|---|
+| `Price CAD` / `Price USD` | **`Order`** | Inputs `Price [Currency]` and `Province/State [Text]` are `Order` fields. Price is also per-order, not per-unit — pushing it onto 1038 `Order Items` rows from 441 orders duplicates one price across units and invites double-counting in reports. |
+| Estimated Delivery Date (full, milestone-aware) | **`Order Items`** — but **not** as a calculated column | The milestone dates (`Coiling/Tanking/Testing/Finishing End Date`, `Tank Delivery Date`, `Manual Estimated Delivery Date`) are per-unit on `Order Items`, but the formula also needs `Order Date` + `Lead Time` (on `Order`), `TODAY()` (banned in calculated columns), and `BO` (**exists on neither list**). Spans both lists in both directions → Power Automate flow, on a daily recurrence so the `MAX(TODAY(), …)` branches don't freeze at last-save. |
+| Estimated Delivery Date (order-level projection) | **`Order`** | FRM10-12's *final fallback branch only* (`Order Date + 90 + Lead Time*7`). Both inputs are live on `Order`; no `TODAY()`, no cross-list. This is the only branch expressible at order level. |
+
+## Live data coverage (checked 2026-08-31, all 441 `Order` items)
+
+- `Price` non-null 426/441, non-zero 411
+- `Province/State` non-null 411/441 — Canadian: `QC` 233, `AB` 40, `ON` 30, `PE` 2 (=305);
+  remainder US (`USA` 45, `WI` 14, `US` 13, `GA` 6, `PA` 5, `KY`/`AL`/`CO` 4 each, `MN`/`TX` 3,
+  `TN` 2, `FL`/`LA`/`NO` 1)
+- `Order Date` 439/441, `Lead Time` 441/441
+
+`NO` (1 row) is not a US state or Canadian code — treated as non-Canadian (USD). Worth a
+data check.
+
+## Column specs — exact text
+
+Create in this order; each references the one before it.
+
+### 1. `Estimated Delivery Date (Projected)` — Calculated → Date and Time, Date Only
+**BUILT 2026-08-31, live on `Order`.** Not added to any view.
+```
+=IF(ISBLANK([Order Date]),"",[Order Date]+90+(IF(ISBLANK([Lead Time]),52,[Lead Time])*7))
+```
+The `52` mirrors FRM10-12's `XLOOKUP(..., 52)` default for a client missing from
+`ClientLeadTimes`. Verified: Order Date `2025-11-19`, Lead Time `26` → `2026-08-18`
+(= +90 +182 days). Internal name `Estimated_x0020_Delivery_x0020_D`.
+
+### 2. `FX Rate` — Calculated → Number, 4 decimals — NOT YET BUILT
+```
+=IF(YEAR([Estimated Delivery Date (Projected)])>=2029,1.47,IF(YEAR([Estimated Delivery Date (Projected)])>=2028,1.43,IF(YEAR([Estimated Delivery Date (Projected)])>=2027,1.39,IF(YEAR([Estimated Delivery Date (Projected)])>=2026,1.38,IF(YEAR([Estimated Delivery Date (Projected)])>=2025,1.44,1.35)))))
+```
+Inlines `Table_USD_CAD_Conversion_Rate` (`AI1:AJ7` on sheet4): 2024→1.35, 2025→1.44,
+2026→1.38, 2027→1.39, 2028→1.43, 2029→1.47. Descending `>=` reproduces XLOOKUP match
+mode `-1` (exact, else next smaller year).
+
+**Deliberate difference from Excel:** for a year before 2024 the workbook returns `#N/A`
+(`Price CAD`) / `"Year not found in conversion table"` (`Price USD`); this floors to 1.35
+instead. Extend this formula each year as the workbook table is extended.
+
+### 3. `Price CAD` — Calculated → Currency, 2 decimals, LCID 4105 — NOT YET BUILT
+```
+=IF(OR([Province/State]="AB",[Province/State]="BC",[Province/State]="MB",[Province/State]="NB",[Province/State]="NL",[Province/State]="NT",[Province/State]="NS",[Province/State]="NU",[Province/State]="ON",[Province/State]="PE",[Province/State]="QC",[Province/State]="SK",[Province/State]="YT"),[Price],[Price]*[FX Rate])
+```
+
+### 4. `Price USD` — Calculated → Currency, 2 decimals, LCID 1033 — NOT YET BUILT
+```
+=IF(OR([Province/State]="AB",[Province/State]="BC",[Province/State]="MB",[Province/State]="NB",[Province/State]="NL",[Province/State]="NT",[Province/State]="NS",[Province/State]="NU",[Province/State]="ON",[Province/State]="PE",[Province/State]="QC",[Province/State]="SK",[Province/State]="YT"),[Price]/[FX Rate],[Price])
+```
+
+Both inline `TableCanadianProvince` (`AL1:AM14` on sheet4). Direction check against the
+workbook: a province code *not* found → the order is priced in USD → `Price CAD = Price *
+Rate`, `Price USD = Price`. Found → priced in CAD → `Price CAD = Price`,
+`Price USD = Price / Rate`.
+
+**Note on the year source:** per the user's instruction this session, the
+`Initial Promised Date` fallback in the workbook's date cascade is dropped — the rate year
+comes from the projected delivery date alone. For orders already in production the
+projected date can land in a different year than the true (milestone-aware) estimate, which
+would pick a different rate. Revisit once the `Order Items` flow exists.
+
+## Still open
+
+- The three columns above are specced but **not built** — the create call was blocked by a
+  local tool-permission classifier, not by SharePoint.
+- The milestone-aware Estimated Delivery Date flow on `Order Items` (needs a `BO` field
+  created first — it exists on neither list today).
