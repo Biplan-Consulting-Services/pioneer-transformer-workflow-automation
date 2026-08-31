@@ -294,3 +294,41 @@ until someone adds them deliberately.
   treated as non-Canadian (USD). Data check worth doing.
 - 30 of 441 orders have no `Province/State`; they fall to the non-Canadian branch and are
   reported as USD-priced. Confirm that default is right.
+
+## How much does `TODAY()` actually matter? (measured 2026-08-31, all 1038 `Order Items`)
+
+`TODAY()` appears in four of the seven Estimated Delivery Date branches, always as
+`MAX(TODAY(), <milestone>) + <buffer>` (Finishing 7, Testing 10, Tanking 14,
+Coiling..Drying + Tank Delivery 21). It is a **floor, not a scheduler**: its only job is to
+stop the formula reporting a delivery estimate that is already in the past for a unit still
+in production.
+
+Live population:
+
+| Situation | Rows | Branch | `TODAY()` relevant? |
+|---|---:|---|---|
+| Delivered (`Delivery End Date` set) | 385 | real date | No |
+| `Manual Estimated Delivery Date` set | 171 | override | No |
+| No milestone reached yet | 61 | `Order Date + 90 + Lead Time*7` | No |
+| Milestone in the **future** | 400 | `MAX` returns the milestone | No |
+| **Milestone in the past** | **21** | `MAX` returns TODAY | **Yes** |
+
+Of the 21: `TankingDate` 14, `TestingDate` 5, `Coiling..Drying` 2. Staleness median 5 days,
+max 75, only 6 over 30 days. Worst case — tanking 75 days ago, undelivered — without
+`TODAY()` the estimate lands 61 days in the past; with it, today + 14.
+
+**Consequences for the unbuilt flow:**
+1. It does **not** need to rewrite all 1038 items daily. It only needs rows where the latest
+   milestone is in the past and `Delivery End Date` is empty — ~21 rows/day. Trivial flow.
+2. A plain calculated column would be correct for ~98% of rows and wrong only for stuck
+   units, and wrong *visibly* (a past-dated delivery estimate), not silently. That is a
+   legitimate cheaper option if a flow isn't wanted — decide deliberately, don't default.
+3. Caveat on the 400 future-dated rows: a calculated column only recomputes on item save,
+   so they stay right while people keep editing them and go stale exactly when a unit
+   stalls — the same rows as (1).
+
+**Field-name mapping confirmed** (`Order Items` internal names match FRM10-12's
+`TableOrders` column names one-for-one): `CoilingDate`, `DryingDate`, `TankingDate`,
+`TestingDate`, `FinishingDate`, `DeliveryDate`, `TankDeliveryDate`,
+`ManualEstimatedDeliveryDate`. The earlier worry that the `* End Date` display names might
+not line up was unfounded.
