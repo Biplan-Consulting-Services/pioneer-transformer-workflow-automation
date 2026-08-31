@@ -221,26 +221,39 @@ The `52` mirrors FRM10-12's `XLOOKUP(..., 52)` default for a client missing from
 `ClientLeadTimes`. Verified: Order Date `2025-11-19`, Lead Time `26` → `2026-08-18`
 (= +90 +182 days). Internal name `Estimated_x0020_Delivery_x0020_D`.
 
-### 2. `FX Rate` — Calculated → Number, 4 decimals — NOT YET BUILT
+### 2. `FX Rate` — Calculated → Number, 4 decimals
+**BUILT 2026-08-31, live on `Order`.** Internal name `FX_x0020_Rate`.
 ```
-=IF(YEAR([Estimated Delivery Date (Projected)])>=2029,1.47,IF(YEAR([Estimated Delivery Date (Projected)])>=2028,1.43,IF(YEAR([Estimated Delivery Date (Projected)])>=2027,1.39,IF(YEAR([Estimated Delivery Date (Projected)])>=2026,1.38,IF(YEAR([Estimated Delivery Date (Projected)])>=2025,1.44,1.35)))))
+=IF(ISBLANK([Order Date]),"",IF(YEAR(D)>=2029,1.47,IF(YEAR(D)>=2028,1.43,IF(YEAR(D)>=2027,1.39,IF(YEAR(D)>=2026,1.38,IF(YEAR(D)>=2025,1.44,1.35))))))
 ```
+where `D` is `([Order Date]+90+(IF(ISBLANK([Lead Time]),52,[Lead Time])*7))`, written out
+in full at each of the five occurrences.
+
 Inlines `Table_USD_CAD_Conversion_Rate` (`AI1:AJ7` on sheet4): 2024→1.35, 2025→1.44,
 2026→1.38, 2027→1.39, 2028→1.43, 2029→1.47. Descending `>=` reproduces XLOOKUP match
 mode `-1` (exact, else next smaller year).
 
+**Why it recomputes the projected date inline instead of referencing column 1.** The first
+build did reference `[Estimated Delivery Date (Projected)]`. That produced `error;#1` on
+the 2 orders with a blank `Order Date`: column 1 returns `""` for those, and a *second*
+calculated column reading that `""` through `YEAR()` errors — `ISBLANK()` on a chained
+calculated column does **not** catch it. Rebasing on `[Order Date]`, a real base field,
+fixes it. **Rule for this list: guard on a base field, never on another calculated column.**
+
 **Deliberate difference from Excel:** for a year before 2024 the workbook returns `#N/A`
-(`Price CAD`) / `"Year not found in conversion table"` (`Price USD`); this floors to 1.35
-instead. Extend this formula each year as the workbook table is extended.
+(`Price CAD`) / `"Year not found in conversion table"` (`Price USD`); this floors to 1.35.
+Extend this formula each year as the workbook table is extended.
 
-### 3. `Price CAD` — Calculated → Currency, 2 decimals, LCID 4105 — NOT YET BUILT
+### 3. `Price CAD` — Calculated → Currency, 2 decimals, LCID 4105
+**BUILT 2026-08-31.** Internal name `Price_x0020_CAD`.
 ```
-=IF(OR([Province/State]="AB",[Province/State]="BC",[Province/State]="MB",[Province/State]="NB",[Province/State]="NL",[Province/State]="NT",[Province/State]="NS",[Province/State]="NU",[Province/State]="ON",[Province/State]="PE",[Province/State]="QC",[Province/State]="SK",[Province/State]="YT"),[Price],[Price]*[FX Rate])
+=IF(ISBLANK([Order Date]),"",IF(OR([Province/State]="AB",[Province/State]="BC",[Province/State]="MB",[Province/State]="NB",[Province/State]="NL",[Province/State]="NT",[Province/State]="NS",[Province/State]="NU",[Province/State]="ON",[Province/State]="PE",[Province/State]="QC",[Province/State]="SK",[Province/State]="YT"),[Price],[Price]*[FX Rate]))
 ```
 
-### 4. `Price USD` — Calculated → Currency, 2 decimals, LCID 1033 — NOT YET BUILT
+### 4. `Price USD` — Calculated → Currency, 2 decimals, LCID 1033
+**BUILT 2026-08-31.** Internal name `Price_x0020_USD`.
 ```
-=IF(OR([Province/State]="AB",[Province/State]="BC",[Province/State]="MB",[Province/State]="NB",[Province/State]="NL",[Province/State]="NT",[Province/State]="NS",[Province/State]="NU",[Province/State]="ON",[Province/State]="PE",[Province/State]="QC",[Province/State]="SK",[Province/State]="YT"),[Price]/[FX Rate],[Price])
+=IF(ISBLANK([Order Date]),"",IF(OR([Province/State]="AB",[Province/State]="BC",[Province/State]="MB",[Province/State]="NB",[Province/State]="NL",[Province/State]="NT",[Province/State]="NS",[Province/State]="NU",[Province/State]="ON",[Province/State]="PE",[Province/State]="QC",[Province/State]="SK",[Province/State]="YT"),[Price]/[FX Rate],[Price]))
 ```
 
 Both inline `TableCanadianProvince` (`AL1:AM14` on sheet4). Direction check against the
@@ -254,9 +267,30 @@ comes from the projected delivery date alone. For orders already in production t
 projected date can land in a different year than the true (milestone-aware) estimate, which
 would pick a different rate. Revisit once the `Order Items` flow exists.
 
+## Verification (2026-08-31, all 441 `Order` items)
+
+Recomputed every row independently against `Price`, `Province/State` and `FX Rate` and
+compared to what SharePoint stored:
+
+- **410 rows checked, 0 mismatches, 0 `#ERROR` rows.**
+- Rate spread is real, not degenerate: 1.35 ×15, 1.44 ×25, 1.38 ×285, 1.39 ×114, blank ×2.
+- The 2 blank rows are the orders with no `Order Date` (ids 86, 541) — blank by design now,
+  not errors. Id 86 has a real `Price` (101,027.37) but no date, so no rate can be known;
+  id 541 has no `Price` either. **Worth fixing the source data.**
+- Direction confirmed against the workbook: province *not* in the Canadian list → order is
+  priced USD → `Price CAD = Price × Rate`, `Price USD = Price`. In the list → priced CAD →
+  `Price CAD = Price`, `Price USD = Price ÷ Rate`.
+
+None of the four columns were added to any view — nothing changed for the site's 54 members
+until someone adds them deliberately.
+
 ## Still open
 
-- The three columns above are specced but **not built** — the create call was blocked by a
-  local tool-permission classifier, not by SharePoint.
 - The milestone-aware Estimated Delivery Date flow on `Order Items` (needs a `BO` field
-  created first — it exists on neither list today).
+  created first — it exists on neither list today). Until it exists, `FX Rate` picks the
+  rate year from the order-level projection, which for an order already in production can
+  land in a different year than the true estimate and so pick a neighbouring rate.
+- `Province/State` holds `NO` on 1 row — neither a US state nor a Canadian code. Currently
+  treated as non-Canadian (USD). Data check worth doing.
+- 30 of 441 orders have no `Province/State`; they fall to the non-Canadian branch and are
+  reported as USD-priced. Confirm that default is right.
