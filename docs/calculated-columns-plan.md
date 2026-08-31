@@ -332,3 +332,58 @@ max 75, only 6 over 30 days. Worst case — tanking 75 days ago, undelivered —
 `TestingDate`, `FinishingDate`, `DeliveryDate`, `TankDeliveryDate`,
 `ManualEstimatedDeliveryDate`. The earlier worry that the `* End Date` display names might
 not line up was unfounded.
+
+## Start Dates — present in schema, empty in practice (checked 2026-08-31)
+
+`Order Items` carries 8 stage Start Date columns (`CoilingStartDate`, `StackingStartDate`,
+`AssemblyStartDate`, `DryingStartDate`, `TankingStartDate`, `TestingStartDate`,
+`FinishingStartDate`, `DeliveryStartDate`). **All 8 are populated on 0 of 1038 rows** —
+verified by full scan and independently by an `ne null` filter. The matching End Date
+columns do hold data (Tanking 975, Delivery 385, Coiling 209, Stacking 166, Assembly 158,
+Drying 146, Testing 95, Finishing 71).
+
+FRM10-12 has no equivalent: `TableOrders` has 82 columns and none contain "Start". These are
+a SharePoint-side addition with no data behind them.
+
+**So they cannot contribute to the estimate today.** If they ever get populated they would
+add something the Excel formula structurally cannot do — distinguish *started but not
+finished* from *not started*, where today the formula only ever walks backward through
+completion dates. Treat that as a future improvement contingent on the data existing, not
+as part of the initial port.
+
+**Naming smell worth a look:** `Tanking End Date` is set on 975/1038 rows, 400 of them
+dated in the *future*. It is being used as a planned/target date, not a completion stamp.
+Harmless for the formula (`MAX` picks whichever is later) but the display name misleads.
+
+## Where the Estimated Delivery Date computation should live
+
+**Decision direction (user, 2026-08-31): fold it into the existing `Order Items - created or
+updated trigger` flow** rather than building a standalone flow. Consistent with this repo's
+2026-08-13 naming decision — that flow is named after its trigger precisely so additional
+concerns get added to it instead of spawning flows that re-trigger each other.
+
+**This is necessary but not sufficient.** A create/update trigger fires only when the item
+changes. The whole purpose of `TODAY()` is to keep the estimate honest for items that are
+*not* changing — a unit stalled in production. Those are exactly the ~21 rows measured
+above, and a create-or-update trigger will never fire for them. Needed:
+
+1. **In the create/update flow** — recompute whenever milestone data actually changes.
+   Immediate, no lag.
+2. **A separate daily recurrence** — re-stamp only rows where the latest milestone is in the
+   past and `Delivery End Date` is empty (~21 rows/day). Small and cheap; do not rewrite all
+   1038.
+
+**Two documented lessons from this repo apply directly** (see "Hard-won build lessons",
+2026-08-14, in `order-items-power-automate-flows.md`):
+- **Self-trigger loop** — writing the estimate back onto the item re-fires the trigger.
+  Guard with "skip the update if the computed value already equals the stored value", the
+  same pattern Flow A uses for TextFields.
+- **Date null handling** — use `empty()`, not `= ""`; a SharePoint Date field's trigger value
+  is `null`, and writing `""` back to a Date field breaks it. The estimate has genuine blank
+  cases (no `Order Date`), so this will be hit.
+
+**Open blocker: `BO`.** A real `TableOrders` column, present on neither SharePoint list, so
+the `+30 unless BO is "OK"/blank` penalty cannot be computed. Either migrate `BO` onto
+`Order Items` or ship the estimate without the penalty — needs a decision. The flow also
+needs `Order Date` and `Lead Time` from the parent order via a `Get item` on the
+`Order Number` lookup.
