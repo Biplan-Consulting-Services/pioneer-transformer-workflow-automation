@@ -622,32 +622,70 @@ stuck at whatever `Active` state it last synced.
 ### Reconciliation pass — required, not optional, per the above
 
 After the main per-row upsert loop, add a second pass that catches rows that **disappeared**
-from `TableOrders` since the last run:
+from `TableOrders` since the last run.
 
-1. **Get items** from `Order Items` where `Item Status eq 'Active'` (only active rows can go
-   missing meaningfully — already-`Delivered`/`Cancelled` rows are done, no need to re-check
-   them every run).
-2. For each, check whether its `Unit ID` appears in **this run's** `TableOrders` pull (the
-   filtered, non-blank `Order` values collected earlier in the flow — e.g. via
-   `contains(...)` against a compose'd array of this run's Unit IDs, not a second live query).
-3. **If found** → already handled by the main upsert loop, skip.
-4. **If missing** → it was archived since the last run. **Get rows** from the same Archive
-   source `TableOrders.pq` already reads (`TableArchiveFRM10_12`, via an Excel Online action
-   against the "Archive active" workbook — resolve its file location the same way
-   `ImportFromIndex.pq` does, by checking the `Index` SharePoint list's `Archive active` row
-   for the path, not a hardcoded file), filtered on `Order eq '<Unit ID>'`:
-   - Archive row's `Location = AN` → `Item Status = Cancelled`, `Location` left blank (same
-     rule as a direct `AN` sighting above).
-   - Archive row's `Location = LI` **and** `Delivery Date` populated → `Item Status =
-     Delivered`, `Location = Livraison`.
-   - **No match found in the Archive either** → don't guess; flag this row for the user to
-     check by hand (it's now missing from both live and archived Excel data, which shouldn't
-     happen and is worth a human look rather than a silent assumption).
+**Redesigned 2026-08-31 — deletes, doesn't update `Item Status`.** User's call: no need to
+preserve a `Cancelled`/`Delivered` row in `Order Items` at all once confirmed — Excel's
+Archive workbook (`Archive active.xlsx`) is already the permanent historical record, so
+this pass just deletes the live row outright ("a fresh clean start"), instead of the earlier
+draft's "set `Item Status`/`Location` and leave it." This also drops the corresponding
+`archiving-plan.md` workstream's original job (which planned a separate SharePoint archive
+copy) down to just being the *later*, post-cutover cleanup mechanism — see that doc's
+2026-08-31 update for how the two relate.
 
-**This is the same logic a direct `AN`/`LI`+`Delivery Date` sighting in `TableOrders` itself
-would trigger** (see the `Item Status` derivation below) — the reconciliation pass just
-covers the case where that sighting already happened and got filtered out of Excel *before*
-this flow ever ran, rather than being visible in the current pull.
+**Two corrections to the mechanics below, found while re-deriving this from the drafted
+spec, before any of it was actually built**:
+- The Archive workbook can't be **`Get items`**-filtered like a SharePoint list — Excel
+  Online (Business)'s "List rows present in a table" action has no server-side filter
+  parameter. Pull the whole `TableArchiveFRM10_12` table **once**, alongside the initial
+  `TableOrders` pull (not per-row), then look up each missing unit against the already-
+  fetched array via an expression, not a second live query per row.
+- Pick `Archive active.xlsx` directly in the action's file picker (same as how the main
+  `TableOrders` source was built) rather than dynamically resolving it via the `Index` list
+  at runtime — simpler, and consistent with how the flow's other file source was already
+  built. (Live path, for reference: `/sites/PioneerPlanificatio/Shared Documents/General/
+  FAB/Archive/Archive active.xlsx`.)
+
+**Steps:**
+
+1. **Near the top of the flow**, alongside the initial `TableOrders` pull: add an Excel
+   Online (Business) *"List rows present in a table"* action against `Archive active.xlsx`,
+   table `TableArchiveFRM10_12` — name it e.g. `Get_Archive_Rows`. Check its
+   pagination/Top Count setting, same reasoning as the `5000` threshold elsewhere in this
+   flow. Initialize an array variable `UnresolvedUnits`, empty.
+2. **After** the main per-row Create/Update loop finishes: Compose `ThisRunUnitIds` =
+   `select(body('Filter_array'), item()?['Order'])` — reuses the existing Filter array
+   action that already drops blank-`Order` rows, no new query needed.
+3. **Get items** from `Order Items` where `Item Status eq 'Active'` (only active rows can go
+   missing meaningfully — already-`Delivered`/`Cancelled` rows, if any exist from before this
+   redesign, are handled by `archiving-plan.md`'s separate sweep, not this pass), Top Count
+   `5000`.
+4. **Apply to each** over that result — **name the loop explicitly** (e.g.
+   `Apply_to_each_ReconciliationCheck`), since a nested `filter()` expression needs to
+   reference it by name (`filter()`'s own inner `item()` would otherwise shadow the outer
+   loop's).
+   - Condition: `contains(outputs('ThisRunUnitIds'), items('Apply_to_each_ReconciliationCheck')?['Title'])`
+     - **Found** (still present this run) → no action, already handled by the main loop.
+     - **Missing** → Compose `MatchedArchiveRow` = `first(filter(body('Get_Archive_Rows')?['value'], equals(item()?['Order'], items('Apply_to_each_ReconciliationCheck')?['Title'])))`.
+       - `outputs('MatchedArchiveRow')?['Location']` = `AN` → **Delete item** on the matched
+         `Order Items` row.
+       - Else if `outputs('MatchedArchiveRow')?['Location']` = `LI` **and** `Delivery Date`
+         is non-blank → **Delete item**.
+       - **Else** (not found in the Archive at all, or found but neither of the above) →
+         **don't delete, don't guess** — append the Unit ID to `UnresolvedUnits` and leave
+         the row untouched. **User's clarification, 2026-08-31**: this isn't an error
+         condition, just means the Excel Archive hasn't caught up to this unit yet — a later
+         run will naturally re-check and resolve it once it has. `UnresolvedUnits` is a
+         passive log (visible in the flow run's history), not an alert — no notification
+         needed.
+
+**Known asymmetry, not addressed by this redesign**: a row that shows `Location = AN`/
+`LI`+`Delivery Date` **directly** in the current `TableOrders` pull (see `Item Status`
+derivation below) still only gets `Item Status` set, not deleted — this pass's new
+delete-on-confirmation behavior only applies to rows caught via the *reconciliation* path.
+Low priority since that direct-sighting case is already documented as structurally
+rare-to-never (`TableOrders.pq` filters such rows out of its own output before this flow
+would ever see them) — but worth revisiting for consistency if it turns out to matter.
 
 ### `Item Status` derivation (not a direct copy from any one column)
 

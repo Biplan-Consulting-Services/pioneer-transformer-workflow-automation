@@ -142,21 +142,29 @@ don't build a redundant "minimal" version of `Order Items` for Phase 1, use the 
 
 Without this, `Order`/`Order Items` grow forever and SharePoint's practical
 performance/usability degrades — user's concern, 2026-08-12: the lists getting
-"exhaustive." Also serves the earlier-noted Power BI historical-analysis need. Recommended
-mechanism: a **scheduled** Power Automate flow (not event-triggered) that copies
-delivered/cancelled rows into separate `Archived Orders`/`Archived Order Items` lists,
-**verifies the copy matches before deleting** the live row — mirroring an archive-refresh
-pattern Pioneer already trusts today — and **never writes to Excel**. Trigger logic reuses
-the already-designed `Item Status`/`Order Status` fields (same criteria the old Excel
-`ArchivedOrders` mechanism used: `Location = LI` + delivered, or `Location =
-AN`/cancelled).
+"exhaustive."
+
+**Redesigned 2026-08-31**: no separate SharePoint archive list — Excel's Archive workbook
+(`Archive active.xlsx`) stays the sole permanent historical record, so this workstream is
+purely about keeping the *live* lists bounded, not preserving a second copy. Mechanism: a
+**scheduled** Power Automate flow that finds `Order Items`/`Order` rows sitting at
+`Delivered`/`Cancelled` for at least a month, **reconfirms them against the Excel Archive**
+(same check Workstream 1's reconciliation pass does), and **deletes** the live row outright
+once confirmed — no copy/verify-then-delete into a new list, no Power BI repoint needed
+(Power BI reads the Excel Archive directly if it ever needs historical data). Trigger logic
+still reuses the already-designed `Item Status`/`Order Status` fields.
+
+**Relationship to Workstream 1's reconciliation pass**: that pass deletes immediately once
+a unit vanishes from `TableOrders` (the pre-cutover era, while Excel still drives
+completions) — this workstream is the post-cutover mechanism, once `Item Status` starts
+getting set some other way and there's no "vanished from TableOrders" event to react to.
 
 **Sequencing**: doesn't block the other two workstreams starting, and they don't block
 this — but build it soon after `Order Items` goes live, before the list actually gets big
 enough to matter, not deferred indefinitely.
 
 **Depends on**: `Item Status`/`Order Status` existing (workstream 1) as the trigger
-conditions — no new fields needed beyond what's already designed.
+conditions, and Workstream 1's Excel-Archive-pull pattern being reusable here.
 
 ### 4. Models SA fusion
 → `docs/models-sa-fusion-plan.md`
