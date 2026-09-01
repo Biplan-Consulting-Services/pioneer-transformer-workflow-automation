@@ -387,3 +387,65 @@ the `+30 unless BO is "OK"/blank` penalty cannot be computed. Either migrate `BO
 `Order Items` or ship the estimate without the penalty — needs a decision. The flow also
 needs `Order Date` and `Lead Time` from the parent order via a `Get item` on the
 `Order Number` lookup.
+
+## `BO` — what it actually is, and how to get it without a migration
+
+**`BO` is not a status flag. It holds a dollar amount** (the outstanding back-order value),
+with `"OK"` used as the "nothing outstanding" sentinel. Measured across all 980 data rows of
+`TableOrders` in `FRM10-12_2026-08-31_09h41m.xlsx` (column `BZ`):
+
+| `BO` value | Rows | Effect under `IF(OR([BO]="OK",[BO]=""),0,30)` |
+|---|---:|---|
+| `"OK"` | 54 | exempt |
+| blank | **0** | the `[BO]=""` branch is dead code |
+| `0` | 54 | **+30 days** — `0` is neither `"OK"` nor blank |
+| numeric > 0 | 864 | +30 days |
+| other text | 8 | +30 days |
+
+**926 of 980 rows (94.5%) receive the +30.** The penalty is the default case, not the
+exception.
+
+**Likely bug, 54 orders affected:** `BO = 0` incurring the penalty. A zero back-order value
+should mean no back-order outstanding. Fixing it would raise exemptions from 54 to 108.
+Flagged for a decision — do not silently replicate or silently fix during the port.
+
+### Source
+
+`BackOrders.pq` → `ImportFromIndex("BO Manager", "TableBO")`. The `Index` SharePoint list
+resolves `BO Manager` to
+`/sites/PioneerPlanificatio/Shared Documents/General/FAB/Achat/BOs/BO Manager.xlsx`
+(confirmed live 2026-08-31, 177 KB, modified that day). **It is already a SharePoint-hosted
+file** — the "it's an Excel table, it needs migrating first" framing is wrong.
+
+### Three options, none requiring work on `BO Manager`
+
+1. **Reuse the Step 3 upsert (recommended).** `BO` is *already* a column on `TableOrders`
+   (Power Query merges it in), and the Step 3 Excel→SharePoint transfer flow already reads
+   `TableOrders`. Add one `BO` column to `Order Items` plus one field mapping to an existing
+   flow. No migration, no new connector, no new data source. Gets `BO` queryable in
+   SharePoint as a side effect.
+2. **Read `BO Manager` live.** Power Automate's Excel Online (Business) connector against
+   `TableBO` via *List rows present in a table* — the same action Step 3 already uses on
+   `TableOrders`. No SharePoint list at all. Mind the row-limit/pagination setting and file
+   locking.
+3. **Hardcode `+30`.** Correct for 94.5% of rows, wrong by 30 days for the 54 exempt ones.
+   Acceptable stopgap only.
+
+## Start Dates — confirmed purpose (user, 2026-08-31)
+
+The empty Start Date columns are **intentional forward scaffolding**, not an oversight: they
+are there to receive data from **Monday.com** and to support a future split between
+*progress tracking* and *planning*. Planned counterparts (`Planned Tanking Date`,
+`Planned Delivery Date`) are to be added so the two concerns stop sharing columns.
+
+This corroborates the naming smell recorded above — `Tanking End Date` carries 975/1038
+values with 400 dated in the future, i.e. it is already doing double duty as a planned date.
+Splitting planned from actual resolves an existing conflation rather than only enabling a
+future feature.
+
+## Flow sequencing — confirmed (user, 2026-08-31)
+
+Compute the estimate in the create/update flow now; fold it into a general daily-update flow
+later. The measurements support this ordering: create/update-only is correct for 1017 of
+1038 rows, and the ~21 stalled rows are the only ones needing the daily pass. Shipping
+create/update first loses very little.
