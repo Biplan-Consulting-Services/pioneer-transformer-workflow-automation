@@ -228,7 +228,16 @@ afterwards.
 5 new columns are populated not blank; TextFields current on a sample; no 429s; the failed
 iterations match D0's predicted list and nothing else.
 
-### A6b. Fix the failing rows (20–30 min) — expected, not a surprise
+### A5c. Fix the `EC` guard — 10 min, and it removes A6b entirely
+
+**D0 found the root cause: three of the nine `EC` markers are lowercase `ec`, and
+`equals()` is case-sensitive.** Wrap both sides of the comparison in `toLower()` on all six
+mapped stages, both actions — the exact expressions are in D0's results below.
+
+Do this **before** the run. It is a 10-minute edit that converts A6b from 30 minutes of manual
+cell-fixing into nothing, and it makes the one irreversible run land clean.
+
+### A6b. Fix the failing rows (20–30 min) — only if A5c was skipped
 
 **Roughly 7–8 of ~1000 rows will fail**, always on a single column, always an `int()` conversion
 inside `Update item`. The loop keeps going and the rows still land — only that one column is
@@ -426,11 +435,75 @@ takes) for **non-blank, non-numeric** values in every `TableOrders` column that 
 - `Section Qty` — new tonight, unscanned, and A5 guards it precisely because of this class of bug
 - `Time (days)`, and anything else numeric in `TableOrdersColumnOrder.pq`
 
-Output a table of **Unit ID / column / offending value** and hand it to A. Known markers to
-expect: `EC`, `AT`, `RE`, `BO`, `TE`, `B1`–`B3`, plus the one-off typos this data is prone to
-(`indéterrminé`, `CONFRIMED`).
-
 Read-only — don't edit the workbook.
+
+### D0 — DONE 01:45. Results.
+
+Scanned `FRM10-12_2026-08-31_09h41m.xlsx` (`TableOrders` = `B5:CE985`, 82 columns, 980 data
+rows) by parsing the sheet XML directly. Method: in a numeric column, any cell carrying a
+shared-string or inline-string type is by definition non-numeric.
+
+**9 landmines. All in `Coiling Date`. All the `EC` marker. Every other int()-bound column is
+clean.**
+
+| Row | Unit ID | Column | Value |
+|---|---|---|---|
+| 246 | `21972-1/1` | Coiling Date | `EC` |
+| 270 | `21387-4/6` | Coiling Date | `EC` |
+| 284 | `21830-1/5` | Coiling Date | `EC` |
+| 298 | `21795-1/5` | Coiling Date | **`ec`** |
+| 334 | `21992-1/6` | Coiling Date | `EC` |
+| 372 | `21994-2/3` | Coiling Date | `EC` |
+| 414 | `21842-4/5` | Coiling Date | `EC` |
+| 429 | `21843-1/1` | Coiling Date | **`ec`** |
+| 440 | `21957-7/9` | Coiling Date | **`ec`** |
+
+### The actual root cause — case sensitivity
+
+**Three of the nine are lowercase `ec`.** The built guard is
+`equals(trim(item()?['{Stage} Date']), 'EC')`, and **Power Automate's `equals()` is
+case-sensitive**. Uppercase `EC` matches and is handled correctly; lowercase `ec` falls straight
+through to `int('ec')` and throws *"The value cannot be converted to the target type"*.
+
+That is the failure the ~7–8 bad rows have been coming from — not an unguarded column, a
+half-guarded one.
+
+**The fix — apply to all six mapped stages** (Coiling, Stacking, Assembly, Drying, Testing,
+Finishing; Tanking and Delivery are excluded per A5b), on both `CreateOrderItem` and
+`UpdateOrderItem`:
+
+```
+{Stage} Status =
+  if(equals(trim(item()?['{Stage} Date']), ''), null,
+     if(equals(toLower(trim(item()?['{Stage} Date'])), 'ec'), 'In Progress', 'Completed'))
+
+{Stage} End Date =
+  if(or(equals(trim(item()?['{Stage} Date']), ''),
+        equals(toLower(trim(item()?['{Stage} Date'])), 'ec')),
+     null, addDays('1899-12-30', int(item()?['{Stage} Date'])))
+```
+
+`toLower()` is the whole change. With it the run completes clean and **A6b's manual fix-up is
+not needed at all** — the three lowercase rows get the same `In Progress` treatment as the six
+uppercase ones, which is what they always meant.
+
+**Re-scan the fresh snapshot at A6.** This snapshot is from 08-31 09:41 and more units will have
+entered coiling since, so expect the count to grow — the *pattern* is what matters, not the
+exact nine.
+
+### Also confirmed by the same scan
+
+- **All five parity columns exist in `TableOrders`** — `Technical Notes`, `Info+`,
+  `Protector & Switchgear Item #`, `Configuration`, `Section Qty`. A5's mappings all have a real
+  source, and the backfill genuinely is free
+- **`Section Qty` is clean** — no non-numeric values, so its guard is belt-and-braces, not load-bearing
+- **82 table columns vs the viewer's 76** — the difference is exactly the 6 native-formula
+  columns (`Price`, `Estimated Delivery Date`, `Price CAD`, `Price USD`, `Navigation Order`,
+  `Navigation Model`). `TableOrdersColumnOrder.pq` reconciles perfectly
+- **`Unit #` is not a `TableOrders` column** — correctly so, it's parsed out of the `Order`
+  string. Not a gap
+
+Scanner kept at `scratchpad/scan.ps1` — re-runnable against the A6 snapshot with `-Root <extracted xlsx>`.
 
 ### D1. The uncommitted viewer workbook (10 min, first)
 
