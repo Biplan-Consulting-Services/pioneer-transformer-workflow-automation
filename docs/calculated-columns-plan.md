@@ -449,3 +449,64 @@ Compute the estimate in the create/update flow now; fold it into a general daily
 later. The measurements support this ordering: create/update-only is correct for 1017 of
 1038 rows, and the ~21 stalled rows are the only ones needing the daily pass. Shipping
 create/update first loses very little.
+
+## Shipped state — `Order` list, end of 2026-08-31
+
+All four columns live and in the **All Items** default view (`FX Rate` deliberately left out
+of the view as an internal helper; it still exists on the list). `Price CAD`/`Price USD`
+positioned immediately after `Price`; `Estimated Delivery Date (Projected)` after
+`Ing. Due Date`.
+
+Final formulas for the two price columns add an `ISBLANK([Price])` guard — without it an
+order with no price rendered as `$0.00`, which reads as "this costs nothing" rather than
+"unknown":
+```
+=IF(OR(ISBLANK([Order Date]),ISBLANK([Price])),"",IF(<canadian province test>,[Price],[Price]*[FX Rate]))
+=IF(OR(ISBLANK([Order Date]),ISBLANK([Price])),"",IF(<canadian province test>,[Price]/[FX Rate],[Price]))
+```
+
+Final verification: 441 items, **410 verified against an independent recomputation, 0
+mismatches, 0 error rows, 16 correctly blank**, and no null-price order renders a value.
+Spot checks: `WRG3025` price 6,000.00 → CAD 8,280.00 / USD 6,000.00; `WRG3023` price
+4,492.80 → CAD 6,200.06 / USD 4,492.80 (both non-Canadian, ×1.38).
+
+## How to actually sync `BO` — two mechanisms
+
+**The key point: you do not sync against `BO Manager` yourself in option 1.** FRM10-12's
+Power Query already does it — `BackOrders.pq` (`ImportFromIndex("BO Manager","TableBO")`) is
+merged onto `TableOrders` as the `BO` column, joined on `Order`. By the time any flow reads
+`TableOrders`, `BO` is already present.
+
+### Option 1 — ride the existing Step 3 upsert (least work)
+1. Create `BO` on `Order Items` — **Single line of text** (holds `"OK"`/`"BO"`, never a number).
+2. Add one field mapping in the Step 3 Excel→SharePoint flow: `TableOrders[BO]` → `Order Items[BO]`.
+3. Re-run the upsert.
+
+Cost: one column, one mapping line. **Downside: it bakes in a dependency on FRM10-12** —
+values are only as fresh as the last Power Query refresh *and* the last upsert run. That is
+the workbook this migration exists to retire. (Also note this repo's standing rule: never a
+generic Refresh All on FRM10-12.)
+
+### Option 2 — read `BO Manager` directly from Power Automate (recommended)
+1. Create the same `BO` text column on `Order Items`.
+2. Excel Online (Business) → **List rows present in a table**:
+   - Location: SharePoint Site `PioneerPlanificatio`
+   - Library: `Documents`
+   - File: `/General/FAB/Achat/BOs/BO Manager.xlsx`
+   - Table: `TableBO`
+3. Join key: `TableBO[Order]` ↔ `Order Items[Unit ID]` (`Title`) — the same key
+   `BackOrders.pq` joins on, and the same unit-ID format `Order Items.Title` already holds.
+4. Write `BO` only when the value differs (self-trigger guard, as with every other flow here).
+
+**Recommended** despite being slightly more work: it drops the FRM10-12 dependency entirely,
+which is the direction of this whole migration. Option 1 re-creates the coupling being
+removed.
+
+Caveats for option 2: turn **pagination on** (the connector defaults to 256 rows); the source
+must be a real named Excel Table (`TableBO` is); a desktop-Excel lock on the file can fail the
+connector. **`TableBO`'s exact column names are unverified** — confirm them in the file before
+building; only the join column (`Order`) and the value column (`BO`) are known from the
+Power Query.
+
+**Priority: low either way.** The `+30` affects 8 of 980 rows, and only those that have also
+reached a production milestone. Shipping the estimate without `BO` is a defensible interim.
