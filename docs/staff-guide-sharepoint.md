@@ -41,8 +41,10 @@ If you change a unit's Location, it jumps to its new group by itself.
 
 ## If you want the old layout
 
-Open the **Planning** view instead. Same columns as the workbook, in the same order you're
-used to. Nothing is missing — it's just the familiar layout, in the new place.
+Open the **Planning** view instead. It is the workbook's **collapsed** layout — the same
+columns, in the same order, that you see in FRM10-12 when the column groups are closed. If you
+need one of the detail columns you'd normally expand to reach, they are all still there in the
+**All Items** view.
 
 ## Please don't
 
@@ -51,6 +53,8 @@ wiped the next time it rebuilds, and it won't reach SharePoint. All real changes
 
 ## Something look wrong?
 
-**Come ask [NAME].** If a unit is missing, a column looks empty, or something just doesn't
-seem right — don't work around it and don't guess. Come and ask. It's a new system and finding
-the rough edges early is genuinely helpful.
+**Come ask Soleil Anker-Baril** — on Teams, or at soleil.anker@ermco-eci.com.
+
+If a unit is missing, a column looks empty, or something just doesn't seem right — don't work
+around it and don't guess. Come and ask. It's a new system and finding the rough edges early is
+genuinely helpful.

@@ -47,9 +47,10 @@ Si vous changez la Location d'une unité, elle saute d'elle-même dans son nouve
 
 ## Si vous préférez l'ancienne disposition
 
-Ouvrez plutôt l'affichage **Planning**. Les mêmes colonnes que dans le classeur, dans le même
-ordre que vous avez l'habitude. Rien ne manque — c'est la disposition familière, à la nouvelle
-place.
+Ouvrez plutôt l'affichage **Planning**. C'est la disposition **repliée** du classeur — les
+mêmes colonnes, dans le même ordre, que celles que vous voyez dans FRM10-12 quand les groupes
+de colonnes sont fermés. Si vous avez besoin d'une colonne de détail que vous ouvririez
+normalement, elles sont toutes encore là dans l'affichage **All Items**.
 
 ## S.V.P., ne pas faire
 
@@ -59,6 +60,8 @@ changements se font ici.
 
 ## Quelque chose cloche ?
 
-**Venez voir [NAME].** Si une unité manque, si une colonne est vide, ou si quelque chose a l'air
-croche — ne travaillez pas autour et ne devinez pas. Venez me voir. C'est un nouveau système, et
-trouver les défauts de jeunesse tout de suite aide vraiment.
+**Venez voir Soleil Anker-Baril** — sur Teams, ou à soleil.anker@ermco-eci.com.
+
+Si une unité manque, si une colonne est vide, ou si quelque chose a l'air croche — ne travaillez
+pas autour et ne devinez pas. Venez me voir. C'est un nouveau système, et trouver les défauts de
+jeunesse tout de suite aide vraiment.

@@ -332,13 +332,31 @@
   }
   .ask h2 { font-size: clamp(1.35rem, 3vw, 1.75rem); color: var(--copper-deep); }
   .ask p { color: var(--ink-2); max-width: 58ch; font-size: 0.97rem; }
-  .fillin {
-    font-family: var(--mono);
-    font-weight: 600;
-    color: var(--copper-deep);
-    border-bottom: 2px solid var(--copper);
-    padding: 0 3px;
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 20px;
+    margin-top: 6px;
+    padding-top: 17px;
+    border-top: 1px solid var(--copper);
   }
+  .contact .who {
+    font-family: var(--display);
+    font-stretch: 92%;
+    font-weight: 700;
+    font-size: 1.14rem;
+    letter-spacing: -0.008em;
+    color: var(--copper-deep);
+  }
+  .contact .how {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .contact a.how { border-bottom: 1px solid var(--copper); padding-bottom: 1px; }
+  .contact a.how:hover { color: var(--copper-deep); border-bottom-width: 2px; }
 
   .colophon {
     grid-column: wide;
@@ -676,7 +694,11 @@
     <h2>If something looks wrong, come and ask.</h2>
     <p>A unit missing, a column empty, anything that just doesn't seem right &mdash; don't work around it
       and don't guess. It is a new system and finding the rough edges early is genuinely useful.</p>
-    <p>Ask <span class="fillin">[NAME]</span>.</p>
+    <div class="contact">
+      <span class="who">Soleil Anker-Baril</span>
+      <span class="how">on Teams</span>
+      <a class="how" href="mailto:soleil.anker@ermco-eci.com">soleil.anker@ermco-eci.com</a>
+    </div>
   </div>
 
   <div class="colophon">
