@@ -282,6 +282,39 @@ companion `_TextField`, and which sync pattern it needs (Simple / Get-item / the
 chained case). Doubles as a reference for diagramming list relationships, not just for
 building the sync flows in `order-items-power-automate-flows.md`.
 
+## Deferred out of the 2026-09-01 cutover — decided, not forgotten
+
+Each of these was consciously cut from the overnight window, not overlooked. Full context in
+`cutover-runbook-2026-09-01.md`.
+
+- **Tanking/Delivery cleanup.** The original backfill wrote raw `TableOrders` planning dates into
+  `Tanking End Date`/`Delivery End Date` and stamped a fabricated `Status = Completed`. Fully
+  spec'd, with the safety discriminator already designed: a blank `{Stage} Start Date` means the
+  value came from the backfill; a populated one means a genuine live completion that must not be
+  touched. **Safe to run any time now** — the 2026-09-01 viewer re-source means clearing those
+  fields no longer blanks anything downstream. Before that change it would have.
+- **Surfacing planned vs actual separately in the workbook.** The viewer keeps its frozen
+  76-column layout, with `Tanking Date`/`Delivery Date` re-sourced from the `Planned` columns.
+  Exposing the actuals as their own columns is a real migration: `BO Manager.xlsx` reads
+  `Tanking Date` by name, and other worksheets may too — they need identifying first.
+- **`Order Items - BO sync`** — spec'd 2026-08-31. Affects 8 of ~1000 rows; the viewer takes `BO`
+  from `BO Manager.xlsx` directly, so it was never on the cutover's critical path.
+- **`Estimated Delivery Date` computation + daily sweep** — spec'd, unblocked. The viewer keeps
+  it as a native Excel formula, so nothing depended on it for cutover.
+- **Automating the viewer refresh.** Cutover shipped a documented daily *manual* refresh with a
+  named owner. Without a refresh, FRM09 and `BO Manager.xlsx` freeze at the last good data
+  **with no error** — see `FRM10-12/CLAUDE.md`. Automating this is the highest-value item on
+  this list.
+- **Qty-change handling for the fan-out.** The sales app now creates `Order Items` on Save, but
+  nothing reacts to an `Order`'s `Qty` changing afterwards. No mechanism existed before either —
+  `Regrouped Into` is schema-only and manual — so it's not a regression, but it is now a known
+  hole in an automated path rather than in a manual one.
+- **Export the sales Power App into `FRM10-12/power-apps/`.** It carries the fan-out logic as of
+  2026-09-01 and is otherwise undocumented and unbacked-up.
+- **The `Archived` column** is still structurally present in the live workbook's table
+  definition — depopulated, not deleted, despite `FRM10-12/CONTEXT.md` saying it was dropped.
+  Cosmetic, but it makes column-count audits confusing.
+
 ## Explicitly not planned yet (future phases)
 
 - **Phase 2+ of the business process**: `Electrical Design`/`Mechanical Design` execution,
