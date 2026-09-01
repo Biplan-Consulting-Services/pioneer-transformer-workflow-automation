@@ -1122,3 +1122,121 @@ instead of 1014 × 1038 keeps the run cheap.
 **Low.** The `+30` affects 8 of ~1000 rows, and only those that have also reached a
 production milestone. Shipping the Estimated Delivery Date work without `BO` is a defensible
 interim; this flow can follow.
+
+---
+
+# Estimated Delivery Date — computation spec (2026-08-31)
+
+Ports FRM10-12's `TableOrders[Estimated Delivery Date]` (`xl/tables/table1.xml`, column id
+80) onto `Order Items`. Not a calculated column: it needs `TODAY()`, fields from the parent
+`Order`, and `BO` — see `calculated-columns-plan.md` for why.
+
+## Where it lives
+
+**Inside the existing `Order Items - created or updated trigger` flow**, as an additional
+concern — per the 2026-08-13 naming decision that this flow is named after its trigger so
+extra work folds into it rather than spawning flows that re-trigger each other.
+
+**Plus a daily sweep** (spec at the end). The create/update trigger never fires for a stalled
+unit, which is exactly the case `TODAY()` exists to serve — measured at 21 of 1038 rows.
+
+## Target column
+
+`Order Items` → **`Estimated Delivery Date`**, *Date and Time* → **Date Only**.
+
+## Inputs
+
+| Input | Source |
+|---|---|
+| `DeliveryDate`, `ManualEstimatedDeliveryDate`, `FinishingDate`, `TestingDate`, `TankingDate`, `CoilingDate`, `StackingDate`, `AssemblyDate`, `DryingDate`, `TankDeliveryDate` | `Order Items` — trigger body |
+| `Order Date`, `Lead Time` | parent `Order` — one **Get item** on the `Order Number` lookup Id |
+| `BO` | `Order Items` (populated by the BO sync flow) |
+
+**`[Coiling Date]:[Drying Date]` is an Excel range, not two columns.** In `TableOrders` it
+spans positions 64–67: `Coiling Date`, **`Stacking Date`**, **`Assembly Date`**,
+`Drying Date`. All four must be included in the MAX, or the branch fires early and returns a
+date that is too soon. Order Items internal names: `CoilingDate`, `StackingDate`,
+`AssemblyDate`, `DryingDate`.
+
+## Branch cascade — evaluate strictly in this order
+
+| # | Condition | Result |
+|---|---|---|
+| 1 | `DeliveryDate` set | `DeliveryDate` |
+| 2 | `ManualEstimatedDeliveryDate` set | `ManualEstimatedDeliveryDate` |
+| 3 | `FinishingDate` set | max(today, `FinishingDate`) **+ 7** + penalty |
+| 4 | `TestingDate` set | max(today, `TestingDate`) **+ 10** + penalty |
+| 5 | `TankingDate` set | max(today, `TankingDate`) **+ 14** + penalty |
+| 6 | any of Coiling/Stacking/Assembly/Drying set | max(today, those four, `TankDeliveryDate`) **+ 21** + penalty |
+| 7 | `Order Date` empty | **blank** (see below) |
+| 8 | otherwise | `Order Date` **+ 90 + (LeadTime × 7)** |
+
+penalty = **30** unless `BO` is `"OK"` or blank, in which case **0**.
+
+Branch 7 is where Excel yields the strings `no order` / `défaut formule`. A Date column
+cannot hold those — **write null**. Do not write an empty string: per the 2026-08-14 lesson,
+writing an empty string into a SharePoint Date field breaks it.
+
+`LeadTime` blank → use **52**, mirroring the workbook's `XLOOKUP(..., 52)` default for a
+client missing from `ClientLeadTimes`. `Lead Time` already exists as a `Number` on `Order`.
+
+## Expressions
+
+Blank dates must not win a MAX. Floor them to a sentinel, exactly as Excel's MAX treats
+blanks as 0:
+
+    vFloor    = 1900-01-01T00:00:00Z
+    vC        = coalesce(triggerBody()?['CoilingDate'],  vFloor)
+    vS        = coalesce(triggerBody()?['StackingDate'], vFloor)
+    vA        = coalesce(triggerBody()?['AssemblyDate'], vFloor)
+    vD        = coalesce(triggerBody()?['DryingDate'],   vFloor)
+
+    vM1       = if(greater(ticks(vC),  ticks(vS)), vC,  vS)
+    vM2       = if(greater(ticks(vM1), ticks(vA)), vM1, vA)
+    vStageMax = if(greater(ticks(vM2), ticks(vD)), vM2, vD)
+    vHasStage = greater(ticks(vStageMax), ticks('1900-01-02T00:00:00Z'))
+
+max(today, x) — same pattern:
+
+    vToday  = formatDateTime(convertFromUtc(utcNow(),'Eastern Standard Time'),'yyyy-MM-dd')
+    maxWith = if(greater(ticks(vToday), ticks(x)), vToday, x)
+
+Penalty:
+
+    vPenalty = if(or(equals(triggerBody()?['BO'],'OK'), empty(triggerBody()?['BO'])), 0, 30)
+
+Result: `addDays(maxWith, add(<buffer>, vPenalty))`, then `formatDateTime(..., 'yyyy-MM-dd')`.
+
+**Use `convertFromUtc` for "today".** `utcNow()` after 19:00 Eastern is already tomorrow in
+UTC, which would shift every stalled unit's estimate a day early.
+
+## Two mandatory guards
+
+1. **Skip the write when unchanged.** Compare `formatDateTime(vComputed,'yyyy-MM-dd')`
+   against `formatDateTime(triggerBody()?['EstimatedDeliveryDate'],'yyyy-MM-dd')` and update
+   only on difference. Without this the flow re-triggers itself forever — the same failure
+   Flow A's TextField guard exists to prevent. Fold this into the existing combined update
+   condition rather than issuing a second `Update item`.
+2. **Never write an empty string to the Date field.** Null for the blank case. Use
+   `empty()`, not a comparison against `''` — a SharePoint Date field arrives as `null` in
+   the trigger body, and null is not equal to the empty string.
+
+## Companion — daily sweep
+
+Separate scheduled flow, once daily, after the BO sync.
+
+- `Get items` on `Order Items` filtered to `DeliveryDate eq null` **and**
+  `ManualEstimatedDeliveryDate eq null`
+- Keep only rows whose most advanced stage date is **in the past** — measured at **21 rows**
+  (Tanking 14, Testing 5, Coiling..Drying 2); median 5 days stale, max 75
+- Recompute with the same logic and apply the same skip-if-unchanged guard
+
+Only these rows need it. The 400 rows with a future-dated milestone never reach `TODAY()`,
+and the 385 delivered / 171 manual-override / 61 pre-milestone rows never use it at all.
+**Do not sweep all 1038 rows.**
+
+## Build order
+
+`BO` column + sync flow → `Estimated Delivery Date` column → cascade inside the create/update
+flow → daily sweep. Shipping before `BO` exists is fine: treat the penalty as 0 and it is
+wrong on at most 8 rows.

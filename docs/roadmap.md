@@ -412,11 +412,20 @@ staleness, not conflicting data**. There is nothing to reconcile and no system t
 `TableValidationLocationCodes`: `XT`→`Extérieur`, `FI`→`Finition`, `LI`→`Livraison`, 13
 entries, no unknown codes.)
 
-**This makes the migration considerably better than a like-for-like move.** The pulled
-columns exist only to give the purchaser context. Once `BO` lives on `Order Items`, that
-context is already on the same row — so they are replaced by a **filtered view on
-`Order Items`** (e.g. `BO = "BO"`, showing `Unit ID`, `Location`, `Status`, `Tanking Date`,
-and the back-order detail), which is live rather than as-of-last-refresh.
+**Constraint confirmed by user 2026-08-31: the purchaser needs *every* column currently in
+`BO Manager`** — the replacement must lose nothing.
+
+That rules out a plain `Order Items` view, which cannot show child-list rows. The shape that
+does satisfy it: build the replacement view **on `Back Order Parts`**, not on `Order Items`,
+with its Lookup to `Order Items` projecting the additional parent fields (`Unit ID`,
+`Location`, `Status`, `Tanking Date`, `BO`). SharePoint Lookup columns can surface extra
+columns from the parent item, so one grid carries parent context *and* part detail.
+
+This is arguably better than the workbook's own layout, which crams up to three parts across
+a single row: here each part is its own row with full context, there is no 3-slot cap, and
+the context is live rather than as-of-last-refresh. **Walk the purchaser through this view
+before retiring the workbook** — it is the one step where "loses nothing" has to be confirmed
+by the person who uses it rather than asserted.
 
 Retiring the workbook therefore eliminates, in one step: the pull, the `SelfRefColumns` /
 `Table_BO_SelfRef` machinery that exists only to survive it, the staleness, **and** the
