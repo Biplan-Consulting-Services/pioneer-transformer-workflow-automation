@@ -3,12 +3,18 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
-> **Active right now (2026-09-01): `cutover-plan-2026-09-02.md`.** Hard cutover to SharePoint
-> is scheduled for 2026-09-02, built the night of 2026-09-01. That runbook is the operative
-> plan — it sequences the remaining workstream 1 items, records the 2026-09-01 decisions
-> (5 `Models` fields onto `Order Items`; stage stamping out of the trigger flow with a
-> disabled fallback copy; TextField sync folded into the transfer flow), and lists what's
-> deliberately cut. Read it before the workstream sections below.
+> **Active right now: `cutover-runbook-2026-09-01.md`.** Presentation and hard cutover are at
+> **09:00 on 2026-09-01**, built overnight in a single window. That runbook is the operative
+> plan — it splits the work into five parallel tracks (Power Automate / SharePoint UI /
+> Power Apps / repo / docs) so separate sessions can be pointed straight at it, and it carries
+> the 2026-09-01 decisions: 7 new `Order Items` columns (5 for viewer parity plus
+> `Planned Tanking Date`/`Planned Delivery Date`); Order→Order Items fan-out on the sales
+> Power App's Save button; stage stamping out of the trigger flow with a disabled fallback
+> copy; TextField sync folded into the transfer flow; the viewer deployed **in place** at the
+> `Index` list's FRM10-12 path so FRM09 and BO Manager keep working.
+>
+> `cutover-plan-2026-09-02.md` is **superseded** — wrong premise, and it contains a mapping bug.
+> Don't work from it.
 
 ## Where things stand right now (2026-08-14, see 2026-08-21 update below) — read this first
 

@@ -1,3 +1,22 @@
+# SUPERSEDED — see `cutover-runbook-2026-09-01.md`
+
+> **Do not work from this document.** Written earlier on 2026-09-01 against a wrong premise: it
+> assumed a full build evening plus a cutover the following day. The presentation is at **09:00
+> on 2026-09-01**, giving a single overnight window.
+>
+> It also contains a **known bug**: Step 2d instructs hand-typing
+> `item()?['Protector & Switchgear Item #']`, which silently writes blanks — a display name
+> containing `#` arrives from the Excel connector XML-encoded, and the plain name returns
+> nothing without erroring.
+>
+> And it misses the biggest risk found in the 2026-09-01 audit: **FRM09 and BO Manager both
+> resolve FRM10-12 through a single `Index` list row**, so deploying the viewer anywhere but
+> that exact path leaves them silently frozen.
+>
+> Kept for history. The operative plan is **`cutover-runbook-2026-09-01.md`**.
+
+---
+
 # Cutover runbook — build night 2026-09-01, hard cutover 2026-09-02
 
 **Goal**: staff stop editing FRM10-12 and start working in SharePoint on 2026-09-02.
