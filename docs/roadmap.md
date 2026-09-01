@@ -3,6 +3,13 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
+> **Active right now (2026-09-01): `cutover-plan-2026-09-02.md`.** Hard cutover to SharePoint
+> is scheduled for 2026-09-02, built the night of 2026-09-01. That runbook is the operative
+> plan — it sequences the remaining workstream 1 items, records the 2026-09-01 decisions
+> (5 `Models` fields onto `Order Items`; stage stamping out of the trigger flow with a
+> disabled fallback copy; TextField sync folded into the transfer flow), and lists what's
+> deliberately cut. Read it before the workstream sections below.
+
 ## Where things stand right now (2026-08-14, see 2026-08-21 update below) — read this first
 
 **Update, 2026-08-21**: workstream 1 step 3's transfer flow is now functionally built and
