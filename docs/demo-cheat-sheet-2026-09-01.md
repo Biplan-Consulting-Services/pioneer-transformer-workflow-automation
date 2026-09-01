@@ -1,36 +1,73 @@
 # Demo cheat sheet — 09:00, 2026-09-01
 
-For reading at 08:55 on no sleep. Click-path first, then the things that could surprise you.
+**REWRITTEN 05:52 against what actually exists.** The first version assumed the cutover
+completed. It did not — both build sessions were cut off by a usage limit at ~02:31. Three of
+its six demo steps described things that were never built. This version only contains things
+you can actually click.
+
+For reading at 08:55 on no sleep.
 
 ---
 
-## The click-path, in order
+## Say this first, in your own words
 
-**1. Site home page**
-Start here, not in a list. It's the thing staff will actually land on. Point at the links in
-the left-hand nav — that's their way in from now on.
+> Nothing has switched over yet. Everyone keeps working in Excel exactly as they do today.
+> What I'm showing you is the new system built and working — I want your reaction before we
+> move anyone onto it.
 
-**2. Production Floor view** (`Order Items`)
-The centrepiece. Show it grouped by `Location` with the colour chips. Say the line: *this is
-the shop floor board — every unit, sorted by where it is right now.* Collapse a group to show
-it's interactive. Note that delivered and cancelled units drop off automatically.
+That framing is true, it costs you nothing, and it turns every "but it's not finished" into
+"good, we're asking you first." **Do not describe today as a cutover.** The live FRM10-12 is
+untouched and staff are unaffected — that is a feature, not an apology.
 
-**3. Edit a unit, live**
-Click a cell, change it, move on. No save, no refresh, no file lock. This is the whole pitch
-in five seconds — say out loud that several people can do this at the same time, which was
-impossible before.
+---
 
-**4. Planning view**
-For the sceptics in the room who like the workbook. Same columns, same order, new home.
+## The click-path, in order — ONLY these
 
-**5. Create an order in the sales Power App**
-Hit Save and show the unit rows appearing in `Order Items` on their own. This is the piece
-that didn't exist before tonight — previously nothing created Order Items for a new order at
-all.
+**1. `Production Floor` view** (`Order Items`) — the centrepiece
+Grouped by `Location` with colour chips. Say: *this is the shop floor board — every unit,
+sorted by where it is right now.* Collapse a group to show it's interactive. This runs on the
+real 1,038 rows, so it is not a mock-up.
 
-**6. The viewer workbook**
-Close on familiarity: the Excel file staff know, showing the same data, now read-only and
-rebuilding itself from SharePoint.
+**2. Edit a unit, live** — the whole pitch in five seconds
+Click a cell, change it, move on. No save, no refresh, no file lock. Say out loud that several
+people can do this simultaneously, which is impossible in the workbook today. **This is your
+strongest moment — spend time here, not on the tour.**
+
+**3. `Planning` view** — for the workbook loyalists
+Built from the Orders sheet's own outline level 1, so it is the collapsed column set they
+already work in, in the same order. Same columns, new home.
+
+**4. The staff guides** (EN + FR)
+Show that the floor gets written instructions in French, using the words already on their
+screens — `Bobinage`, `En cours`, `Reçu`. Signals this is planned, not improvised.
+
+---
+
+## DO NOT DEMO THESE — they do not exist yet
+
+- **The sales-app fan-out.** Never opened in Studio. The formula is written and reviewed, not
+  installed. If asked: *"written, not yet wired in — it's the next piece."*
+- **The viewer workbook.** Not deployed. Worse, a refresh right now would blank
+  `Tanking Date` and `Delivery Date`, because those columns were repointed to new fields that
+  the transfer run has not populated yet. **Do not open and refresh it in the room.**
+- **The site home page.** Started, not finished. Navigate to the views from the list itself.
+
+---
+
+## The two honest facts, if pressed
+
+1. **The 7 new columns are empty.** They were created at 02:20 and the run that fills them
+   never happened. They are 7 of ~68 columns — if nobody points at them, don't raise it.
+2. **`Planning` sorts by `Planned Delivery Date`, which is one of those empty columns**, so
+   that sort currently does nothing. Sort by another column live if it looks odd.
+
+---
+
+## What's next — have a date, not a vague answer
+
+The remaining work is one flow fix and one 45-minute transfer run, both understood and
+specified. Give a week, not a day, and don't commit to a date in the room without checking the
+usage limit that stopped tonight.
 
 ---
 
@@ -65,19 +102,21 @@ not because anything is broken:
 ## Likely questions
 
 **"What happens to FRM09 / the Winding workbook?"**
-Nothing. It keeps working exactly as before. It finds FRM10-12 through the `Index` list rather
-than a fixed path, and the new file was deployed to that same path — so it resolves to the new
-one automatically, with no change to FRM09 at all. Same answer for BO Manager.
+**Right now: absolutely nothing has changed.** FRM10-12 is untouched, so FRM09 is untouched.
 
-*(Worth knowing but don't volunteer it: this was the single biggest risk found in the audit.
-Deploying anywhere else would have left both of them silently reading a frozen file — no
-error, just data that quietly stops moving.)*
+When the switch does happen, it still won't change: FRM09 finds FRM10-12 through the `Index`
+list rather than a fixed path, and the replacement goes to that exact same path — so it
+resolves automatically with no edit to FRM09 at all. Same for BO Manager.
 
-**"Who refreshes it now?"**
-A named person, once each morning. Safe to do now in a way it never was before — the file is a
-full rebuild from SharePoint with no hand-typed data to lose, and the corruption incident in
-August came from people editing while a refresh ran, which can't happen once it's read-only.
-Automating it is on the list.
+*(Worth knowing, don't volunteer it: this was the single biggest risk the audit found.
+Deploying anywhere else would have left both silently reading a frozen file — no error, just
+data that quietly stops moving. Now designed out.)*
+
+**"Who will refresh it?"**
+Three owners, so it doesn't die when one person is away: you, Angelique, and an automated bot.
+Safe in a way it never was before — the file becomes a full rebuild from SharePoint with no
+hand-typed data to lose, and the August corruption came from people editing *while* a refresh
+ran, which can't happen once it's read-only to staff. **Future tense — none of this is live.**
 
 **"What about Power BI?"**
 Be careful here. The planning docs say Power BI reads the Excel Archive directly and needs no
@@ -86,11 +125,11 @@ live tenant.** If someone in the room owns a report that reads FRM10-12 directly
 knowing — invite them to say so rather than asserting nothing is affected.
 
 **"When does production tracking move to Monday.com?"**
-That's the plan from the August meeting, and tonight's work supports it: SharePoint's
-`Order Items` stays the authoritative database that reporting runs against, with Monday as the
-working layer on top. The SharePoint stage-stamping automation was switched off tonight in
-anticipation — and a disabled copy is parked, so if Monday doesn't work out it can be turned
-back on in one click.
+That's the plan from the August meeting, and this work supports it: SharePoint's `Order Items`
+stays the authoritative database that reporting runs against, with Monday as the working layer
+on top. **The SharePoint stage-stamping automation is still running as normal** — switching it
+off is part of the remaining work, not something already done. Say "when we move, we'll park a
+disabled copy so it's one click to come back" — future tense.
 
 **"What's next / when does the rest arrive?"**
 Phase 1 — the `Workflow Tasks` piece — automates the front of the order process and notifies
@@ -101,10 +140,15 @@ turn it is on an order. Fully specified, not yet built.
 
 ## If it breaks in the room
 
-- **The sales app misbehaves** → Power Apps keeps version history. Restore the previous version
-  immediately. Sales being able to create orders matters more than the fan-out demo.
-- **The viewer looks wrong** → the pre-overwrite snapshot is in `FRM10-12/live-workbook-data/`.
-  Say you'll restore it after the meeting; don't try to fix a workbook live in front of people.
-- **A view looks empty** → check the filter is `Item Status = Active` before assuming data loss.
-  Delivered and cancelled units are meant to disappear.
+**The good news: almost nothing can break, because almost nothing changed.** No flow ran, no
+data was written, the workbook is untouched and the sales app was never edited. The blast
+radius this morning is a SharePoint list and two views.
+
+- **A view looks empty** → check the filter is `Item Status = Active` before assuming data
+  loss. Delivered and cancelled units are meant to disappear.
+- **A column reads blank** → most likely one of the 7 created at 02:20 and not yet populated.
+  Say "that fills on the migration run" and move on.
+- **Someone asks to see the Excel side** → decline politely. *"It's mid-change, I don't want to
+  show you something half-done."* True, and better than a blank column on screen.
+- **Anything else** → say you'll look into it and move on. Don't debug in the room.
 - **Anything else** → say you'll look into it and move on. Don't debug in the room.
