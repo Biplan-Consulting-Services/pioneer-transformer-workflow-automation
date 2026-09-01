@@ -387,32 +387,51 @@ Reasons for a child list over flattening:
 - Per-part querying ("which POs are we waiting on, from which supplier") is natural on a
   child list and awkward across `BO1..BO3`.
 
-### 3. `Location`, `Status`, `Tanking Date` → **do not migrate — delete**
-These already exist on `Order Items`. `BO Manager` keeps its own hand-keyed copies (zero
-formula cells — all manually typed), and **they have drifted**:
+### 3. `Location`, `Status`, `Tanking Date` → **pulled context — replace with a view, don't migrate**
 
-| Field | Populated both sides | Agree | Genuinely disagree |
-|---|---:|---:|---:|
-| `Location` | 181 | 121 | **60 (33%)** |
-| `Status` | 181 | — | 138 raw (needs the same decode pass to separate encoding from drift) |
-| `Tanking Date` | 960 in `BO Manager` | — | not yet compared |
+**Corrected 2026-08-31 after user input.** An earlier version of this section called these
+"hand-keyed copies" that had "drifted", and framed reconciling them as a data-quality task.
+That was wrong.
 
-`Location` drift is *real*, not an encoding artifact: decoding `BO Manager`'s codes through
-`TableValidationLocationCodes` (`XT`→`Extérieur`, `FI`→`Finition`, `LI`→`Livraison`, 13
-entries, no unknown codes) still leaves 60 rows disagreeing — e.g. `21839-6/10` is
-`FI`/Finition in `BO Manager` but `Test` in `Order Items`; `21813-1/1` is `LI`/Livraison vs
-`Extérieur`. Drift runs in both directions.
+`BO Manager` **pulls this data from FRM10-12 via Power Query** so the person managing
+back-orders can see what to work on. Confirmed in the file: `xl/connections.xml` carries
+`Query - ImportFromIndex`, `Query - Index`, `Query - ReplaceAllErrors`,
+`Query - SelfRefColumns`, `Query - Table_BO_SelfRef` — the same `ImportFromIndex` mechanism
+FRM10-12 uses, plus a self-referencing query that preserves the hand-entered columns while
+the pulled ones refresh. (Zero formula cells in those columns is consistent with a Power
+Query load, not with manual typing — that was my misreading.)
 
-**So migrating these three means removing them from the BO workflow and pointing users at
-`Order Items`, not carrying them over.** Reconcile the 60 divergent rows first and decide
-which system was right — that is a data-quality task, not a schema task.
+So `TableBO` has two kinds of column:
+- **Pulled context** (`Order`, `Location`, `Status`, `Tanking Date`) — read-only, refreshed
+  from FRM10-12.
+- **Owned data** (`BO`, `BO1..BO3` groups) — hand-entered here and nowhere else.
+
+The 60-of-181 `Location` divergence measured against `Order Items` is therefore **refresh
+staleness, not conflicting data**. There is nothing to reconcile and no system that is
+"wrong" — the snapshot is simply older than the list. (Decoded through
+`TableValidationLocationCodes`: `XT`→`Extérieur`, `FI`→`Finition`, `LI`→`Livraison`, 13
+entries, no unknown codes.)
+
+**This makes the migration considerably better than a like-for-like move.** The pulled
+columns exist only to give the purchaser context. Once `BO` lives on `Order Items`, that
+context is already on the same row — so they are replaced by a **filtered view on
+`Order Items`** (e.g. `BO = "BO"`, showing `Unit ID`, `Location`, `Status`, `Tanking Date`,
+and the back-order detail), which is live rather than as-of-last-refresh.
+
+Retiring the workbook therefore eliminates, in one step: the pull, the `SelfRefColumns` /
+`Table_BO_SelfRef` machinery that exists only to survive it, the staleness, **and** the
+`Order Items - BO sync` flow.
 
 ### 4. Unmatched keys
 **14** `TableBO` keys have no matching `Order Items` row (1014 vs 1038, 1000 matched).
-Resolve before migrating rather than importing orphans.
+Expected to be a symptom of the same refresh lag rather than orphan data — re-check after a
+refresh, and only investigate keys that persist.
 
 ### Sequencing
 Nothing here blocks the Estimated Delivery Date work. Order: (a) ship the `BO` sync flow so
-`Order Items.BO` is populated and correct; (b) reconcile the `Location`/`Status` drift; (c)
-build `Back Order Parts` and move the detail; (d) retire the workbook and delete the sync
-flow. Steps (b) and (c) are independent.
+`Order Items.BO` is populated and correct; (b) build `Back Order Parts` and move the detail;
+(c) build the filtered `Order Items` view that replaces the pulled-context columns and
+confirm the purchaser can work from it; (d) retire the workbook and delete the sync flow.
+
+No drift-reconciliation step is needed — that item was a consequence of the misreading
+corrected above.
