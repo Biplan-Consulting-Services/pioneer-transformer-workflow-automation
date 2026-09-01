@@ -91,8 +91,13 @@
     row-gap: 0;
     padding: 0 0 96px;
   }
-  .page > * { grid-column: text; }
-  .wide     { grid-column: wide; }
+  .page > * { grid-column: wide; }
+
+  /* prose is capped; the plates (figure, table, list) run the full wide column */
+  section > .eyebrow,
+  section > h2,
+  section > p,
+  section > .prose { max-width: 680px; }
 
   /* ---------- type scale ---------- */
   h1, h2, h3 {
@@ -121,7 +126,7 @@
   }
 
   strong { font-weight: 600; color: var(--ink); }
-  .lead { font-size: 1.16rem; line-height: 1.55; color: var(--ink-2); max-width: 40ch; }
+  .lead { font-size: 1.16rem; line-height: 1.55; color: var(--ink-2); max-width: 47ch; }
 
   /* ---------- masthead: a rating plate ---------- */
   .masthead {
@@ -193,7 +198,7 @@
   .rule-top { border-top: 1px solid var(--rule); padding-top: 30px; }
 
   /* ---------- figure ---------- */
-  figure { margin: 34px 0 0; grid-column: wide; }
+  figure { margin: 34px 0 0; }
   .scroller { overflow-x: auto; padding-bottom: 6px; }
   .scroller svg { display: block; min-width: 720px; width: 100%; height: auto;
                   color: var(--ink); font-family: var(--body); }
@@ -239,7 +244,7 @@
   .d-micro { font-family: var(--mono); font-size: 9px; fill: var(--muted); }
 
   /* ---------- before / now table ---------- */
-  .compare { grid-column: wide; margin-top: 30px; width: 100%; border-collapse: collapse; }
+  .compare { margin-top: 30px; width: 100%; border-collapse: collapse; }
   .compare caption { text-align: left; }
   .compare thead th {
     font-family: var(--mono);
@@ -278,7 +283,7 @@
   .compare td.now strong { color: var(--copper); font-weight: 600; }
 
   /* ---------- live now ---------- */
-  .live { grid-column: wide; margin-top: 30px; display: grid; gap: 1px; background: var(--rule); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .live { margin-top: 30px; display: grid; gap: 1px; background: var(--rule); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
   .live > div { background: var(--ground); padding: 18px 0 19px; display: grid; grid-template-columns: 200px 1fr; gap: 8px 28px; align-items: baseline; }
   .live h3 { color: var(--ink); }
   .live p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
@@ -288,7 +293,7 @@
   }
 
   /* ---------- roadmap ---------- */
-  .road { grid-column: wide; margin: 34px 0 0; padding: 0; list-style: none; counter-reset: step; }
+  .road { margin: 34px 0 0; padding: 0; list-style: none; counter-reset: step; }
   .road > li {
     counter-increment: step;
     display: grid;
@@ -454,7 +459,7 @@
 
           <rect class="d-box" x="20" y="116" width="140" height="48"/>
           <text class="d-name" x="90" y="137" text-anchor="middle">SharePoint lists</text>
-          <text class="d-micro" x="90" y="152" text-anchor="middle">Order · Models · Clients</text>
+          <text class="d-micro" x="90" y="152" text-anchor="middle">Order &#183; Models &#183; Clients</text>
 
           <line class="d-line" x1="160" y1="68" x2="432" y2="68" marker-end="url(#ah)"/>
           <text class="d-label" x="296" y="58" text-anchor="middle">everything typed straight in</text>
@@ -471,7 +476,7 @@
 
           <rect class="d-box" x="850" y="64" width="140" height="80"/>
           <text class="d-eyebrow-s" x="920" y="88" text-anchor="middle">READS IT</text>
-          <text class="d-read" x="920" y="108" text-anchor="middle">FRM09 · BO Manager</text>
+          <text class="d-read" x="920" y="108" text-anchor="middle">FRM09 &#183; BO Manager</text>
           <text class="d-read" x="920" y="125" text-anchor="middle">Power BI</text>
 
           <line class="d-div" x1="20" y1="196" x2="990" y2="196"/>
@@ -512,7 +517,7 @@
 
           <rect class="d-box" x="850" y="314" width="140" height="80"/>
           <text class="d-eyebrow-s" x="920" y="338" text-anchor="middle">READS IT</text>
-          <text class="d-read" x="920" y="358" text-anchor="middle">FRM09 · BO Manager</text>
+          <text class="d-read" x="920" y="358" text-anchor="middle">FRM09 &#183; BO Manager</text>
           <text class="d-read" x="920" y="375" text-anchor="middle">Power BI</text>
         </svg>
       </div>
