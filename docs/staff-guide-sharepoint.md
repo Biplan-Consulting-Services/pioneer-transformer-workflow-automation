@@ -11,21 +11,21 @@ that rebuilds itself from SharePoint. Look at it all you like. Don't type in it.
 
 ## Finding your work
 
-Open the **Production Floor** view.
+Open the **Production Floor** view (*affichage*).
 
 It shows only what matters on the floor: the unit number, the order number, where the unit is
 right now, who's winding it, and when it's due. Everything else is hidden.
 
-Units are **grouped by Location** — that's the production step. Every unit sitting at the same
-step appears together under one heading, and you can collapse a group you don't care about.
-It reads like a board, not a spreadsheet.
+Units are **grouped by Location** — the production step: `Bobinage`, `Stacking`, `Assemblage`,
+`Four`, `Tanking`, `Test`, `Finition`, `Livraison`, and the others you already know. Every unit
+sitting at the same step appears together under one heading, and you can collapse a group you
+don't care about. It reads like a board, not a spreadsheet.
 
 Each Location has its **own colour**, so you can see at a glance where the work is piling up.
 
 Within each group, the most urgent unit is at the top — sorted by due date.
 
-Only live work shows here. Units that are delivered or cancelled drop off the view
-automatically.
+Only live work shows here. Units marked delivered or cancelled drop off the view automatically.
 
 ## Updating a unit
 
