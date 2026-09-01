@@ -15,7 +15,8 @@ tant que vous voulez. N'écrivez pas dedans.
 
 Ouvrez l'affichage (*view*) **Production Floor**.
 
-Il montre seulement ce qui compte sur le plancher : le numéro d'unité, le numéro de commande, où
+Il montre seulement ce qui compte quand vous suivez une commande : le numéro d'unité, le numéro
+de commande, où
 l'unité est rendue, qui la bobine, et quand elle est due. Tout le reste est masqué.
 
 Les unités sont **regroupées par Location** — l'étape de production : `Bobinage`, `Stacking`,

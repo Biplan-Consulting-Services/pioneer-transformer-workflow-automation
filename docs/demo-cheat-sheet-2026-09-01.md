@@ -24,7 +24,7 @@ untouched and staff are unaffected — that is a feature, not an apology.
 ## The click-path, in order — ONLY these
 
 **1. `Production Floor` view** (`Order Items`) — the centrepiece
-Grouped by `Location` with colour chips. Say: *this is the shop floor board — every unit,
+Grouped by `Location` with colour chips. Say: *this is the live production board — every unit,
 sorted by where it is right now.* Collapse a group to show it's interactive. This runs on the
 real 1,038 rows, so it is not a mock-up.
 
@@ -38,7 +38,7 @@ Built from the Orders sheet's own outline level 1, so it is the collapsed column
 already work in, in the same order. Same columns, new home.
 
 **4. The staff guides** (EN + FR)
-Show that the floor gets written instructions in French, using the words already on their
+Show that the guide exists in French as well as English, using the words already on their
 screens — `Bobinage`, `En cours`, `Reçu`. Signals this is planned, not improvised.
 
 ---

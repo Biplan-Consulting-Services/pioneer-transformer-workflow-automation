@@ -416,7 +416,7 @@
 
     <h1><span class="off">Production tracking has moved</span>Off the workbook</h1>
 
-    <p class="lead">Everything you track on the floor now lives in SharePoint, where more than
+    <p class="lead">Everything you track on an order now lives in SharePoint, where more than
       one person can touch it at a time.</p>
 
     <dl class="plate">
@@ -456,7 +456,7 @@
     <figure>
       <div class="scroller">
         <svg viewBox="0 0 1000 448" role="img"
-             aria-label="Before: floor staff typed straight into FRM10-12.xlsx, which was the source of truth, with SharePoint lists feeding into it by Power Query. After: floor staff and the sales app write into the SharePoint Order Items list, which is now the source of truth, and FRM10-12.xlsx rebuilds from it as a read-only mirror. In both cases FRM09, BO Manager and Power BI read from FRM10-12 at the same address.">
+             aria-label="Before: planning and management typed straight into FRM10-12.xlsx, which was the source of truth, with SharePoint lists feeding into it by Power Query. After: planning and management and the sales app write into the SharePoint Order Items list, which is now the source of truth, and FRM10-12.xlsx rebuilds from it as a read-only mirror. In both cases FRM09, BO Manager and Power BI read from FRM10-12 at the same address.">
           <defs>
             <marker id="ah" viewBox="0 0 10 10" refX="9.2" refY="5"
                     markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -473,7 +473,8 @@
           <text class="d-panel-sub" x="97" y="22">the workbook held everything</text>
 
           <rect class="d-box" x="20" y="44" width="140" height="48"/>
-          <text class="d-name" x="90" y="73" text-anchor="middle">Floor staff</text>
+          <text class="d-name" x="90" y="63" text-anchor="middle">Planning &amp;</text>
+          <text class="d-name" x="90" y="79" text-anchor="middle">management</text>
 
           <rect class="d-box" x="20" y="116" width="140" height="48"/>
           <text class="d-name" x="90" y="137" text-anchor="middle">SharePoint lists</text>
@@ -504,7 +505,8 @@
           <text class="d-panel-sub" x="88" y="238">a live list sits in front of it</text>
 
           <rect class="d-box" x="20" y="294" width="140" height="48"/>
-          <text class="d-name" x="90" y="323" text-anchor="middle">Floor staff</text>
+          <text class="d-name" x="90" y="313" text-anchor="middle">Planning &amp;</text>
+          <text class="d-name" x="90" y="329" text-anchor="middle">management</text>
 
           <rect class="d-box" x="20" y="366" width="140" height="48"/>
           <text class="d-name" x="90" y="395" text-anchor="middle">Sales app</text>
@@ -540,8 +542,8 @@
         </svg>
       </div>
       <figcaption>The workbook and everything downstream of it stay exactly where they were. What
-        changed is where people write: the arrows from the floor used to run all the way into the
-        file, and now they stop one box short.</figcaption>
+        changed is where people write: those write-arrows used to run all the way into the file,
+        and now they stop one box short.</figcaption>
     </figure>
   </section>
 
@@ -585,8 +587,9 @@
         <tr>
           <th scope="row">The layout you know</th>
           <td class="was" data-when="Until yesterday">The workbook's columns were the only layout there was.</td>
-          <td class="now" data-when="From this morning">The <strong>Planning</strong> view &mdash; the same
-            columns in the same order, in the new place.</td>
+          <td class="now" data-when="From this morning">The <strong>Planning</strong> view &mdash; the
+            workbook's collapsed layout, same columns in the same order. The detail columns you would
+            expand to reach are all in <strong>All Items</strong>.</td>
         </tr>
         <tr>
           <th scope="row">A new order</th>
@@ -622,7 +625,8 @@
       </div>
       <div>
         <h3><span class="chip" style="--c: var(--stage-2)"></span>Planning view</h3>
-        <p>The workbook's columns, in the workbook's order, for anyone who wants the familiar layout.</p>
+        <p>The workbook's collapsed layout &mdash; the column set you already work in, same order. The
+          detail columns live in All Items.</p>
       </div>
       <div>
         <h3><span class="chip" style="--c: var(--stage-3)"></span>The site home page</h3>

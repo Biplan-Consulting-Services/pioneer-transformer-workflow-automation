@@ -13,7 +13,8 @@ that rebuilds itself from SharePoint. Look at it all you like. Don't type in it.
 
 Open the **Production Floor** view (*affichage*).
 
-It shows only what matters on the floor: the unit number, the order number, where the unit is
+It shows only what matters when you are tracking an order: the unit number, the order number,
+where the unit is
 right now, who's winding it, and when it's due. Everything else is hidden.
 
 Units are **grouped by Location** — the production step: `Bobinage`, `Stacking`, `Assemblage`,
