@@ -1,8 +1,10 @@
 # Models SA Fusion Plan
 
 **Status:** decided, designed, schema/data migration completed, and `ColumnMap.pq`/
-`TableOrders.pq` repointed — all 2026-08-13. Remaining: retire `Models SA`, build the
-order-item-generation logic (see "Migration scope" steps 4-5, not started).
+`TableOrders.pq` repointed — all 2026-08-13. **Step 5 (order-item-generation logic) DONE
+2026-09-01** for app-created orders — see "Step 5 — done" below. Remaining: retire
+`Models SA` (step 4), and carry the same resolution logic into the transfer flow and the
+`Work Order` fan-out.
 
 ## The decision
 
@@ -263,11 +265,40 @@ data, not just one stale row) before concluding it was a genuine bad link, not a
 artifact. **User corrected the `Latest Model Revision` links directly in SharePoint and
 confirmed the data resolves correctly on refresh.**
 
+### Step 5 of "Migration scope" — order-item generation — **done 2026-09-01**
+
+Built into the **sales app's Save button** on build night, and tested live: an SA order with
+`Qty = 2` produces 4 `Order Items` rows, the SA pair carrying the SA design.
+
+```
+Set(
+    SelectedSAModel,
+    LookUp(Models, 'SA Model' = true && 'Parent Model'.Id = SelectedModel.ID)
+);
+```
+…then the SA units' `Model` / `Model Revision` read off `SelectedSAModel` and
+`SelectedSAModel.'Latest Model Revision'`. Main units keep the main model.
+
+Three things worth keeping:
+
+- **Resolved by the `Parent Model` FK, not the `" SA"` suffix**, exactly as this plan
+  specified. Vindicated by `MSA-HYQU-0071` (`Model_Code` = `4276269`, no suffix — the
+  data-entry omission recorded in the mapping table above): a suffix match misses it silently.
+- **No SA twin → blank, not a fallback to the main model.** Pointing an SA unit at the main
+  design fabricates spec data — the same failure this plan already hit once, when crossed
+  `Latest Model Revision` links made `21611-1/1 SA` show `4261871 SA`'s specs. A blank lookup
+  is visible; a wrong one is not.
+- **Known gap this creates**: the app creates a new `Models` row for a new model but **no SA
+  twin**, so a new model + SA ticked yields SA units with no model, needing manual assignment.
+  Auto-creating the SA twin at model-creation time is the real fix. Not built.
+
+Full write-up: `fanout-powerfx-c2.md` § C1b.
+
 ### After that
 
-Steps 3-5 of "Migration scope" above (repoint `ColumnMap.pq`/`TableOrders.pq`, retire
-`Models SA`, build order-item-generation logic) — not started, come back to these once the
-15+2 new `Models`/`Model Revisions` rows exist live.
+"Migration scope" step 4 (retire `Models SA`) — not started. And step 5's logic still needs
+carrying into the **transfer flow** and `phase1-plan.md`'s **`Work Order` fan-out**; only the
+sales app has it today, so any order item created by those paths still resolves no SA model.
 
 ## Relationship to other work
 

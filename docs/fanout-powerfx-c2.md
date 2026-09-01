@@ -6,6 +6,117 @@ Written by session `claude-02` assisting the user; Track D is owned by
 
 ---
 
+## AS BUILT — 2026-09-01 06:19, reconciled against the live app
+
+**Read this before the sections below.** Everything from `## C2` down was written from schema
+exports, *not* the live app. It was walked into Power Apps Studio on build night and four things
+came out differently. The app is the truth; this section records the deltas.
+
+### 1. It is C2 (`Patch`). The `SubmitForm` in `OnSelect` is a decoy.
+
+The Save button's `OnSelect` **does** contain `SubmitForm(Form2)` — but **Form2 is the Model
+Revision form**, not the Order (`Set(SelectedModelRevision, Form2.LastSubmit)` on the next line).
+The Order is created by an explicit `Patch(Order, Defaults(Order), {...})` further down.
+
+**The C2-alt decision table below is too coarse and will mislead you.** "Does `OnSelect` contain
+a `SubmitForm`?" is the wrong test. The right test is **"what statement creates the `Order`
+record?"** Anyone applying the table literally would have put the fan-out on `Form2.OnSuccess`,
+firing it on every Model Revision save, against the wrong record, silently.
+
+### 2. The Order Patch had to be wrapped
+
+It was a bare `Patch(...)` with its result discarded. Now `Set(varNewOrder, Patch(Order, ...))`.
+The variable is **`varNewOrder`**, not `newOrder` — matches the app's `var`-prefix convention.
+
+### 3. Short lookup shape, not `SPListExpandedReference`
+
+The app's own working lookups use `{Id: ..., Value: ...}`. The `'@odata.type'` form written below
+is unnecessary against this site. Short form shipped and works.
+
+### 4. No create-only guard needed
+
+There is **no Order form** — the Order is patched from loose controls with `Defaults(Order)`
+hardcoded, so the Save button is create-only by construction. The `If(FormMode = FormMode.New,
+...)` wrapper the runbook and the C2/C2-alt sections both demand is dead weight here.
+
+---
+
+## C1b — which `Models` row an SA unit points at
+
+**This is the one C1 missed.** C1 settled the SA row *grain* (how many rows); it never addressed
+*which model* those rows carry. The first build of C2 pointed SA units at the **main** model —
+caught by the user in testing, 2026-09-01 ~06:00.
+
+Two independent sources, no inference:
+
+- **`FRM10-12_2026-08-31_09h41m.xlsx`, sheet `Orders`**: 43 of 43 SA rows carry
+  `Modèle = <main model code> & " SA"`. Zero exceptions.
+  (`21408-1/1` → `TMP9`, `21408-1/1 SA` → `TMP9 SA`.)
+- **`models-sa-fusion-plan.md`** (migration completed 2026-08-13, live): `Models SA` was fused
+  into `Models`. SA designs are ordinary `Models` rows with `SA Model = Yes` and a
+  self-referencing **`Parent Model`** lookup at the main model. Every one already has its
+  `Latest Model Revision` populated (fusion step 5).
+
+**Resolve by the `Parent Model` FK, never by the `" SA"` suffix.** The fusion plan says so
+explicitly, and proves why: `MSA-HYQU-0071`'s `Model_Code` is `4276269` with **no `" SA"`
+suffix** — a confirmed data-entry omission. A suffix match silently misses it. The suffix is a
+naming convention that mostly holds, not a key.
+
+Inside `If(varNewOrder.SA, ...)`, before the `ForAll`:
+
+```
+Set(
+    SelectedSAModel,
+    LookUp(
+        Models,
+        'SA Model' = true && 'Parent Model'.Id = SelectedModel.ID
+    )
+);
+```
+
+Then, **in the SA loop only** — the main loop keeps the main model unchanged:
+
+```
+Model: If(
+    !IsBlank(SelectedSAModel),
+    { Id: SelectedSAModel.ID, Value: SelectedSAModel.Model_Code }
+),
+'Model Revision': If(
+    !IsBlank(SelectedSAModel),
+    {
+        Id:    SelectedSAModel.'Latest Model Revision'.Id,
+        Value: SelectedSAModel.'Latest Model Revision'.Value
+    }
+)
+```
+
+### Why blank, and not a fallback to the main model
+
+The no-`else` `If` yields **blank** when a model has no SA twin — which happens on every
+`varNewModel` save, since the app creates a main `Models` row and no SA counterpart.
+
+That is deliberate. Pointing an SA unit at the main design **fabricates spec data**, and this
+exact failure class already cost real time: the crossed `Latest Model Revision` links found on
+2026-08-13, where `21611-1/1 SA` displayed `4261871 SA`'s `Form`/`Copper (LV)`/`Wire (HV)`/`kVA`.
+It took a systemic check to establish it was a bad link rather than a cache artifact. **A blank
+lookup is loud; a wrong lookup is silent.** Same principle as the runbook's A5b refusal to let
+the transfer flow fabricate `Completed`.
+
+Consequence to design around, not to paper over: **a brand-new model + SA ticked produces SA
+units with no model.** They need a model assigned afterwards. Making the app create the SA twin
+at model-creation time is the real fix and is not built.
+
+### This closes `models-sa-fusion-plan.md` "Migration scope" step 5
+
+> *"Build the order-item-generation logic that resolves the correct `Models` row (main vs. SA)
+> for each unit — this is new logic, not just a repoint."*
+
+Open since 2026-08-13; the last not-started item in that plan. It now lives in the sales app's
+Save button. Note the scope limit: this implements it for **app-created** orders only. The
+transfer flow and `phase1-plan.md`'s `Work Order` fan-out still need the same resolution logic.
+
+---
+
 ## C1 — `Order.SA` grain: RESOLVED, per-unit
 
 The runbook left this open ("does `Qty = 5` + `SA = true` mean five SA rows or one?") and told
@@ -138,6 +249,12 @@ If(newOrder.SA,
 ---
 
 ## C2-alt — if the Save button is `SubmitForm`, not `Patch`
+
+> **SUPERSEDED 2026-09-01 — see AS BUILT §1.** This table's test is wrong: Pioneer's Save
+> button contains a `SubmitForm` that belongs to the *Model Revision* form, and an `Order`
+> `Patch` further down. Ask **"what creates the Order record?"**, not "is there a
+> `SubmitForm` anywhere?". Kept below because the `OnSuccess`/`LastSubmit` reasoning is still
+> correct for an app whose Order *is* a form.
 
 **Check this first, it decides where the code goes.** Select the Save button and read `OnSelect`:
 
