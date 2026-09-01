@@ -1,5 +1,51 @@
 # Pioneer Transformer — build night 2026-09-01, presentation 09:00
 
+> ## ⚠️ WHAT ACTUALLY HAPPENED — read before using this document
+>
+> **The cutover did NOT happen. `A6` never ran.** Both build sessions were cut off by a Claude
+> usage limit at **~02:31** and came back after the 05:30 hard stop. This runbook is the plan
+> as written; it is **not** a record of what was executed.
+>
+> **Nothing is broken and nothing needs undoing.** No flow ran, so `Order Items` holds exactly
+> what it held before the night started — nothing written, nothing fabricated. The live
+> FRM10-12 is untouched, the viewer was never deployed, the sales app was never edited, and the
+> trigger flow is still ON in its normal state. Staff are unaffected.
+>
+> ### Landed and safe to keep
+> - **B1** — all 7 new columns live on `Order Items` (empty; the run that fills them never ran)
+> - **B2** — `Production Floor` and `Planning` views live and working on the real 1,038 rows
+> - **D2 / D3** — ColumnMap remapped and synced into the viewer workbook, committed
+> - **D0** — the `int()` failure root cause (case-sensitive `EC` guard); scanner in scratchpad
+> - **D5b** — refresh owners named
+> - **E** — staff guides EN + FR, visual companion, demo cheat sheet
+> - **A0** — quota ruled out as the cause of the old failures
+> - **A5b (`UpdateOrderItem` only)** — the 4 fabricating Tanking/Delivery mappings removed
+>
+> ### Not done
+> - **A5b on `CreateOrderItem`** — still carries all 4 bad mappings
+> - **A5c** — `toLower()` fix not applied
+> - **A5, A6, A7, A8** — no transfer run, no reconciliation
+> - **C2 / C3** — fan-out formula written but never opened in Studio
+> - **B3 / B4** — site home page unfinished, permissions unchecked
+> - **D4 / D5** — viewer not verified, not deployed
+>
+> ### ☠️ The one live landmine
+> **Do not refresh the viewer workbook until after a successful `A6`.** D2 repointed
+> `Tanking Date` / `Delivery Date` at `Planned Tanking Date` / `Planned Delivery Date`, which
+> exist but are empty. A refresh now blanks both columns on every row. This is expected, not a
+> bug, and must not be "fixed" by reverting the re-source.
+>
+> ### Correct resume order
+> 1. Re-confirm the 4 Tanking/Delivery keys are gone from `UpdateOrderItem` (saved, JSON not
+>    re-read — the designer froze)
+> 2. Strip the same 4 from `CreateOrderItem`
+> 3. `A5c` `toLower()`, both actions, six stages
+> 4. `A5` — map the 7 columns. `Planned Delivery Date`'s internal name is truncated at 32
+>    chars (`Planned_x0020_Delivery_x0020_Dat`); use the dynamic-content picker
+> 5. Re-scan a fresh snapshot, then `A6`, then refresh the viewer, then `D4`/`D5`
+>
+> Full detail in `Clients/Pioneer Transformer/BUILD-NIGHT-STATUS.md`.
+
 ## Context
 
 Staff move off editing FRM10-12 and onto SharePoint. You present at 09:00, must be on site
