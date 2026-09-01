@@ -388,48 +388,48 @@ the `+30 unless BO is "OK"/blank` penalty cannot be computed. Either migrate `BO
 needs `Order Date` and `Lead Time` from the parent order via a `Get item` on the
 `Order Number` lookup.
 
-## `BO` — what it actually is, and how to get it without a migration
+## `BO` — corrected 2026-08-31 (an earlier version of this section was wrong)
 
-**`BO` is not a status flag. It holds a dollar amount** (the outstanding back-order value),
-with `"OK"` used as the "nothing outstanding" sentinel. Measured across all 980 data rows of
-`TableOrders` in `FRM10-12_2026-08-31_09h41m.xlsx` (column `BZ`):
+**Retraction.** This doc briefly claimed `BO` held dollar amounts and that the `+30` applied
+to 926 of 980 rows (94.5%). **That was wrong**, caused by a cell-parsing bug: empty cells in
+the sheet XML are self-closing (`<c r="BZ6" s="1"/>`), and the extraction regex used
+`<c r="BZ(\d+)"([^>]*)>(.*?)</c>`, which on a self-closing cell ran past it and captured the
+*next* column's value. `BO` (`BZ`) was therefore being read as `Price Value` (`CA`). Any
+parser for these sheets must handle both `<c .../>` and `<c ...>...</c>`.
 
-| `BO` value | Rows | Effect under `IF(OR([BO]="OK",[BO]=""),0,30)` |
-|---|---:|---|
-| `"OK"` | 54 | exempt |
-| blank | **0** | the `[BO]=""` branch is dead code |
-| `0` | 54 | **+30 days** — `0` is neither `"OK"` nor blank |
-| numeric > 0 | 864 | +30 days |
-| other text | 8 | +30 days |
+**Actual `BO` values** (column `BZ`, rows 6–985, 980 data rows, correctly parsed):
 
-**926 of 980 rows (94.5%) receive the +30.** The penalty is the default case, not the
-exception.
+| `BO` value | Rows | Meaning (confirmed by user) | Effect |
+|---|---:|---|---|
+| blank | 918 | no back-ordered parts needed | exempt |
+| `"OK"` | 54 | transformer has everything it needs to be produced | exempt |
+| `"BO"` | 8 | back-ordered parts outstanding | **+30 days** |
 
-**Likely bug, 54 orders affected:** `BO = 0` incurring the penalty. A zero back-order value
-should mean no back-order outstanding. Fixing it would raise exemptions from 54 to 108.
-Flagged for a decision — do not silently replicate or silently fix during the port.
+There are **no numeric values and no `0`** in this column in the live workbook. The user
+recalled a `FALSE`/`0` state meaning "no back-order parts"; in this copy that state is
+represented by blank, which the formula already exempts.
 
-### Source
+**So the `+30` applies to 8 of 980 rows (0.8%)** — a genuine exception, exactly as the
+formula's shape implies. `IF(OR([BO]="OK",[BO]=""),0,30)` is **faithful and correct as
+written**; the "`BO = 0` is a bug" concern raised earlier does not exist and needs no
+decision.
 
-`BackOrders.pq` → `ImportFromIndex("BO Manager", "TableBO")`. The `Index` SharePoint list
-resolves `BO Manager` to
-`/sites/PioneerPlanificatio/Shared Documents/General/FAB/Achat/BOs/BO Manager.xlsx`
-(confirmed live 2026-08-31, 177 KB, modified that day). **It is already a SharePoint-hosted
-file** — the "it's an Excel table, it needs migrating first" framing is wrong.
+**Do not confuse with `Location = "BO"`.** Column `AI` (`Location`) separately uses `BO` as a
+location code on 45 rows. Two unrelated meanings of the same two letters in the same table.
 
-### Three options, none requiring work on `BO Manager`
+### Consequence for the build
 
-1. **Reuse the Step 3 upsert (recommended).** `BO` is *already* a column on `TableOrders`
-   (Power Query merges it in), and the Step 3 Excel→SharePoint transfer flow already reads
-   `TableOrders`. Add one `BO` column to `Order Items` plus one field mapping to an existing
-   flow. No migration, no new connector, no new data source. Gets `BO` queryable in
-   SharePoint as a side effect.
-2. **Read `BO Manager` live.** Power Automate's Excel Online (Business) connector against
-   `TableBO` via *List rows present in a table* — the same action Step 3 already uses on
-   `TableOrders`. No SharePoint list at all. Mind the row-limit/pagination setting and file
-   locking.
-3. **Hardcode `+30`.** Correct for 94.5% of rows, wrong by 30 days for the 54 exempt ones.
-   Acceptable stopgap only.
+`BO` drops to low priority. Shipping the estimate without it is wrong by 30 days on at most
+8 rows, and only on those that have also reached a production milestone (the `+30` appears
+only in the four milestone branches). Options, unchanged in mechanism but no longer urgent:
+
+1. **Reuse the Step 3 upsert (recommended when convenient).** `BO` is already a column on
+   `TableOrders`, which that flow already reads. One `BO` column on `Order Items` (**Single
+   line of text** — it holds `"OK"`/`"BO"`, not numbers) plus one field mapping.
+2. **Read `BO Manager` live.** Excel Online (Business) → `TableBO` at
+   `/sites/PioneerPlanificatio/Shared Documents/General/FAB/Achat/BOs/BO Manager.xlsx`
+   (confirmed live 2026-08-31, 177 KB). No list migration.
+3. **Ship without it.** Wrong on ≤8 rows. Reasonable given the measured impact.
 
 ## Start Dates — confirmed purpose (user, 2026-08-31)
 
