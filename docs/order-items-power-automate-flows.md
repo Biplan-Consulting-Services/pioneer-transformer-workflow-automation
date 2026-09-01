@@ -1029,3 +1029,96 @@ flow** — build this as its own small flow, separate from the transfer flow and
 Spot-check a handful of `Order` rows across different `Client`s/`Model`s after the run —
 confirm each TextField matches what the live `Clients`/`Models`/`Model Revisions` record
 actually shows for that Lookup's target, not just that the field isn't blank.
+
+---
+
+# Flow — `Order Items - BO sync` (spec, 2026-08-31)
+
+Mirrors the back-order state from `BO Manager.xlsx` onto `Order Items.BO`. Chosen over
+riding the Step 3 upsert because that would make SharePoint's `BO` only as fresh as the last
+FRM10-12 Power Query refresh, re-creating a dependency on the workbook this migration exists
+to retire.
+
+## Source — verified by reading the file, 2026-08-31
+
+`/sites/PioneerPlanificatio/Shared Documents/General/FAB/Achat/BOs/BO Manager.xlsx`
+(174 KB). Registered in the `Index` list as `BO Manager`; `BackOrders.pq` reads it as
+`ImportFromIndex("BO Manager","TableBO")`.
+
+- **Table `TableBO`**, sheet1, ref `B5:X1019` → header row 5, **1014 data rows**, 23 columns:
+  `Order`, `Location`, `Status`, `Tanking Date`, `BO`, then `BO1..BO3` detail groups
+  (`Part Numbre`, `Description`, `PO Intern`, `Date`, `Fournisseur Interne`, `OK`).
+- Only two are needed: **`Order`** (key) and **`BO`** (value).
+- A second table `BO_Choices` (`B1:B4`) exists but is not the value domain — ignore it.
+
+**Join key verified exact.** `TableBO[Order]` values are `21408-1/1`, `21408-1/1 SA`,
+`21386-2/2`, `21912-3/10` … — identical in format to `Order Items[Unit ID]` (`Title`),
+including the ` SA` suffix for auxiliary rows. No parsing or normalisation needed.
+
+**Value domain verified.** Across the 1014 rows: `"BO"` 8, `"OK"` 61, blank 945. Three
+states, no numbers. (`"BO"` = back-ordered parts outstanding → the `+30` applies;
+`"OK"` = has everything needed; blank = no back-ordered parts. Both non-`BO` states are
+exempt.)
+
+## Target column
+
+`Order Items` → **`BO`**, *Single line of text*.
+
+Not a Choice column: this is a mirror of an externally-edited file, and a value appearing in
+the workbook that isn't in the choice set would make the flow's write fail. Text absorbs
+that; a data check can catch drift separately.
+
+## Trigger — scheduled, not create-or-modify
+
+**Recurrence, once daily** (suggest early morning, before production planning).
+
+A create-or-modify trigger on `Order Items` is *wrong here* and must not be used: the thing
+that changes is the Excel file, and nothing in SharePoint fires when it does. This is the
+opposite case from the Estimated Delivery Date work, which does belong in the create/update
+flow.
+
+## Steps
+
+1. **Excel Online (Business) → List rows present in a table**
+   - Location: SharePoint Site — `PioneerPlanificatio`
+   - Document Library: `Documents`
+   - File: `/General/FAB/Achat/BOs/BO Manager.xlsx`
+   - Table: `TableBO`
+   - **Settings → Pagination ON, threshold ≥ 2000.** Mandatory: the connector defaults to
+     256 rows and this table has 1014. Without it the sync silently truncates.
+2. **Get items** — `Order Items`, `$select=ID,Title,BO`, Top 5000, pagination on.
+3. **Filter array `ExcelSet`** — Excel rows where `BO` is not empty (~69 rows).
+4. **Filter array `SharePointSet`** — items from step 2 where `BO` is not empty.
+5. **Apply to each** over `ExcelSet` — find the matching SharePoint item by
+   `Title == Order`. **If none, skip and log** (see Unmatched keys below).
+   Condition: matched item's `BO` **≠** Excel `BO` → **Update item**. Otherwise do nothing.
+6. **Apply to each** over `SharePointSet` — if the `Title` is not present in `ExcelSet`,
+   **clear** `BO` (set to empty). This is what handles a back-order being resolved.
+
+## Why the change-guard is mandatory, not hygiene
+
+Writing to `Order Items` fires `Order Items - created or updated trigger`, which does the
+TextField sync and the production-sequence auto-stamp (and will do the Estimated Delivery
+Date calculation). **An unguarded sync would fire ~1014 spurious runs of that flow every
+day.** With the "update only when the value actually differs" guard, steady state is ~0
+writes and ~0 downstream runs — the same guard pattern Flow A already uses.
+
+Steps 3 and 4 exist for the same reason: comparing only the ~69 non-blank rows on each side
+instead of 1014 × 1038 keeps the run cheap.
+
+## Caveats
+
+- **File lock**: a desktop-Excel lock on `BO Manager.xlsx` can fail the connector. Online
+  co-authoring is fine. Add a retry / failure notification.
+- **Table shape**: the connector binds to the *named table* `TableBO`, not a range — rows
+  added outside the table's ref will be invisible. `TableBO` currently ends at row 1019.
+- **Unmatched keys**: `TableBO` has 1014 rows vs `Order Items` 1038, and FRM10-12's
+  `TableOrders` carries 980 — the three sets do not coincide. Count unmatched keys and
+  surface them rather than failing silently; a persistent unmatched key means a unit ID
+  drifted between the two systems.
+
+## Priority
+
+**Low.** The `+30` affects 8 of ~1000 rows, and only those that have also reached a
+production milestone. Shipping the Estimated Delivery Date work without `BO` is a defensible
+interim; this flow can follow.
