@@ -354,3 +354,65 @@ building the sync flows in `order-items-power-automate-flows.md`.
   picked up: (1) find and fix whatever's letting duplicate `(Model, ECO)` pairs get created
   in the first place, (2) decide whether a uniqueness constraint or dedup check belongs in
   the flow itself vs. relying on manual cleanup like today's.
+
+## Future workstream — retire `BO Manager.xlsx` into SharePoint
+
+**Added 2026-08-31 at user's request.** Goal: `BO Manager.xlsx` stops being a separate
+hand-maintained workbook; its data lives in SharePoint alongside `Order Items`. This also
+deletes the `Order Items - BO sync` flow (see
+`order-items-power-automate-flows.md`) — that flow exists only to bridge the gap this
+workstream closes.
+
+**Do not treat this as one migration.** `TableBO`'s 23 columns split into three groups with
+three different correct destinations, and one of them should not be migrated at all.
+
+### 1. `BO` summary → `Order Items.BO`
+Single text column, three states (`"BO"` 8, `"OK"` 61, blank 945 of 1014 rows). Already
+specced as the sync target; becomes native once the workbook is retired.
+
+### 2. `BO1`/`BO2`/`BO3` detail → new **`Back Order Parts`** child list
+**Not 18 flattened columns on `Order Items`.** The workbook stores a repeating group in three
+fixed slots, each `Part Numbre` / `Description` / `PO Intern` / `Date` /
+`Fournisseur Interne` / `OK`. Correct SharePoint shape is a child list, one row per
+back-ordered part, with a Lookup to `Order Items`.
+
+Current usage (measured 2026-08-31): **36** units have a 1st part, **16** a 2nd, **4** a 3rd
+— roughly 56 part rows total. `BO1 OK` is a hand-ticked Yes/No (TRUE on 26 rows), not a
+formula.
+
+Reasons for a child list over flattening:
+- The 3-slot cap is an Excel artifact, not a business rule. A child list removes it.
+- `Order Items` is already **89 columns**; 18 more for a sparse repeating group used by ~36
+  units is the wrong direction.
+- Per-part querying ("which POs are we waiting on, from which supplier") is natural on a
+  child list and awkward across `BO1..BO3`.
+
+### 3. `Location`, `Status`, `Tanking Date` → **do not migrate — delete**
+These already exist on `Order Items`. `BO Manager` keeps its own hand-keyed copies (zero
+formula cells — all manually typed), and **they have drifted**:
+
+| Field | Populated both sides | Agree | Genuinely disagree |
+|---|---:|---:|---:|
+| `Location` | 181 | 121 | **60 (33%)** |
+| `Status` | 181 | — | 138 raw (needs the same decode pass to separate encoding from drift) |
+| `Tanking Date` | 960 in `BO Manager` | — | not yet compared |
+
+`Location` drift is *real*, not an encoding artifact: decoding `BO Manager`'s codes through
+`TableValidationLocationCodes` (`XT`→`Extérieur`, `FI`→`Finition`, `LI`→`Livraison`, 13
+entries, no unknown codes) still leaves 60 rows disagreeing — e.g. `21839-6/10` is
+`FI`/Finition in `BO Manager` but `Test` in `Order Items`; `21813-1/1` is `LI`/Livraison vs
+`Extérieur`. Drift runs in both directions.
+
+**So migrating these three means removing them from the BO workflow and pointing users at
+`Order Items`, not carrying them over.** Reconcile the 60 divergent rows first and decide
+which system was right — that is a data-quality task, not a schema task.
+
+### 4. Unmatched keys
+**14** `TableBO` keys have no matching `Order Items` row (1014 vs 1038, 1000 matched).
+Resolve before migrating rather than importing orphans.
+
+### Sequencing
+Nothing here blocks the Estimated Delivery Date work. Order: (a) ship the `BO` sync flow so
+`Order Items.BO` is populated and correct; (b) reconcile the `Location`/`Status` drift; (c)
+build `Back Order Parts` and move the detail; (d) retire the workbook and delete the sync
+flow. Steps (b) and (c) are independent.
