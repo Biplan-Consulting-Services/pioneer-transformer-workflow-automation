@@ -582,9 +582,30 @@ anywhere else leaves them reading a file that has silently stopped changing.
 operator keeps **Edit** — a Power Query refresh has to save, so read-only-for-everyone would
 break the very thing that keeps FRM09 alive.
 
-### D5b. The daily refresh (decided: manual, documented)
+### D5b. The daily refresh — owners named 2026-09-01
 
 Without this, in-place deployment still ends with FRM09 frozen — just at fresher data.
+
+**Three owners, decided by the user:**
+- **The user** (Soleil)
+- **Angelique** — in charge of planning, so the person who most directly feels stale data
+- **An automated refresh bot**
+
+That's better than the runbook originally assumed, because it removes the single point of
+failure: a manual daily refresh with one owner fails the first day that person is away, and
+FRM09 goes stale silently — no error, just data that stops moving.
+
+**Two things the bot specifically needs:**
+1. **Write access.** A Power Query refresh has to save, so the bot cannot sit behind the
+   read-only permission that staff get. Its account is one of the Edit exceptions from D5.
+2. **A no-co-authoring guarantee.** The 2026-08-28 corruption came from a refresh running while
+   people had the workbook open for editing. That risk is much lower once the file is read-only
+   to staff — read-only viewers don't co-author — but a bot refreshing on a schedule is exactly
+   the unattended case that incident warns about. It should verify nobody holds the file open
+   before refreshing, and fail loudly rather than force it.
+
+**Still verify a human can do it too.** The bot is the mechanism; the two people are the
+fallback for when it breaks, which is the failure mode that actually strands FRM09.
 
 - **Named owner.** Not "someone" — a person, written down
 - **Each morning**: open the viewer, run the refresh, confirm it completes, close it
