@@ -1,0 +1,682 @@
+<title>Off the Workbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    /* galvanized steel ground, copper accent — the two materials of the product */
+    --ground:      #E4E8EA;
+    --surface:     #F7F9FA;
+    --surface-2:   #D8DFE2;
+    --ink:         #10161A;
+    --ink-2:       #33414A;
+    --muted:       #64737C;
+    --rule:        #BCC6CB;
+    --rule-strong: #93A1A9;
+    --copper:      #A34A25;
+    --copper-deep: #863A1B;
+    --copper-wash: #EFDDD3;
+
+    --stage-1: #4A6B84;
+    --stage-2: #5E7A5B;
+    --stage-3: #8A6A3E;
+    --stage-4: #6B5A7E;
+
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --body:    "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono:    "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #11161A;
+      --surface:     #191F24;
+      --surface-2:   #232B31;
+      --ink:         #E3E9EC;
+      --ink-2:       #B6C1C7;
+      --muted:       #869399;
+      --rule:        #2B343A;
+      --rule-strong: #4A575F;
+      --copper:      #DB8151;
+      --copper-deep: #E8996E;
+      --copper-wash: #2C1F18;
+
+      --stage-1: #7FA3BF;
+      --stage-2: #8CAF88;
+      --stage-3: #C0A06E;
+      --stage-4: #A493B8;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #11161A;
+    --surface:     #191F24;
+    --surface-2:   #232B31;
+    --ink:         #E3E9EC;
+    --ink-2:       #B6C1C7;
+    --muted:       #869399;
+    --rule:        #2B343A;
+    --rule-strong: #4A575F;
+    --copper:      #DB8151;
+    --copper-deep: #E8996E;
+    --copper-wash: #2C1F18;
+
+    --stage-1: #7FA3BF;
+    --stage-2: #8CAF88;
+    --stage-3: #C0A06E;
+    --stage-4: #A493B8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(20px, 1fr)
+      [wide-start] minmax(0, 190px)
+      [text-start] minmax(0, 680px) [text-end]
+      minmax(0, 190px) [wide-end]
+      minmax(20px, 1fr) [full-end];
+    row-gap: 0;
+    padding: 0 0 96px;
+  }
+  .page > * { grid-column: text; }
+  .wide     { grid-column: wide; }
+
+  /* ---------- type scale ---------- */
+  h1, h2, h3 {
+    font-family: var(--display);
+    font-stretch: 92%;
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.08;
+    letter-spacing: -0.014em;
+  }
+  h1 { font-weight: 800; font-size: clamp(2.9rem, 8vw, 4.6rem); letter-spacing: -0.03em; }
+  h2 { font-weight: 700; font-size: clamp(1.55rem, 3.6vw, 2.1rem); }
+  h3 { font-weight: 700; font-size: 1.06rem; font-stretch: 96%; letter-spacing: -0.005em; }
+
+  p { margin: 0; }
+  .prose > p + p { margin-top: 1.05em; }
+  .prose { max-width: 63ch; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.685rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  strong { font-weight: 600; color: var(--ink); }
+  .lead { font-size: 1.16rem; line-height: 1.55; color: var(--ink-2); max-width: 40ch; }
+
+  /* ---------- masthead: a rating plate ---------- */
+  .masthead {
+    grid-column: wide;
+    padding: 76px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+  .stamp {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .stamp .co {
+    font-family: var(--display);
+    font-stretch: 84%;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .stamp .when { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.06em; }
+
+  h1 .off { display: block; color: var(--muted); font-weight: 500; font-size: clamp(0.66rem, 1.5vw, 0.79rem); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 0.5em; font-family: var(--mono); }
+
+  /* the nameplate */
+  .plate {
+    border: 2px solid var(--ink);
+    background: var(--surface);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  }
+  .plate div {
+    padding: 15px 18px 17px;
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .plate div:last-child { border-right: 0; }
+  .plate dt {
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .plate dd {
+    margin: 0;
+    font-family: var(--display);
+    font-stretch: 90%;
+    font-weight: 600;
+    font-size: 0.99rem;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .plate dd em { font-style: normal; color: var(--copper); }
+
+  /* ---------- section rhythm ---------- */
+  section { padding-top: 78px; }
+  section > .eyebrow { display: block; margin-bottom: 12px; }
+  section > h2 + p, section > h2 + .prose { margin-top: 18px; }
+
+  .rule-top { border-top: 1px solid var(--rule); padding-top: 30px; }
+
+  /* ---------- figure ---------- */
+  figure { margin: 34px 0 0; grid-column: wide; }
+  .scroller { overflow-x: auto; padding-bottom: 6px; }
+  .scroller svg { display: block; min-width: 720px; width: 100%; height: auto;
+                  color: var(--ink); font-family: var(--body); }
+  figcaption {
+    margin-top: 16px;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 68ch;
+  }
+
+  /* ---------- diagram ---------- */
+  .d-box    { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1; }
+  .d-mirror { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1; stroke-dasharray: 5 3; }
+  .d-hub    { fill: var(--surface); stroke: currentColor; stroke-width: 2.4; }
+  .d-hub-c  { fill: var(--copper-wash); stroke: var(--copper); stroke-width: 2.4; }
+
+  .d-line   { stroke: currentColor; stroke-width: 1.4; fill: none; }
+  .d-line-c { stroke: var(--copper); stroke-width: 1.6; fill: none; }
+  .d-div    { stroke: var(--rule); stroke-width: 1; }
+  .d-head   { fill: currentColor; }
+  .d-head-c { fill: var(--copper); }
+
+  .d-panel     { font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 1.9px; fill: var(--muted); }
+  .d-panel-c   { fill: var(--copper); }
+  .d-panel-sub { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.4px; fill: var(--rule-strong); }
+
+  .d-eyebrow   { font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: 1.7px; fill: var(--muted); }
+  .d-eyebrow-c { fill: var(--copper); }
+  .d-eyebrow-s { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 1.4px; fill: var(--muted); }
+
+  .d-title   { font-family: var(--display); font-stretch: 92%; font-size: 20px; font-weight: 700; fill: var(--ink); }
+  .d-title-c { fill: var(--copper-deep); }
+  .d-mname   { font-family: var(--display); font-stretch: 92%; font-size: 15px; font-weight: 700; fill: var(--ink); }
+
+  .d-name  { font-size: 13px; font-weight: 500; fill: var(--ink); }
+  .d-sub   { font-size: 11.5px; fill: var(--muted); }
+  .d-sub-c { fill: var(--copper-deep); }
+  .d-read  { font-size: 11.5px; fill: var(--ink); }
+  .d-label { font-size: 11px; fill: var(--muted); }
+  .d-label-c { font-size: 11px; fill: var(--copper); }
+  .d-tiny  { font-size: 10px; fill: var(--muted); }
+  .d-micro { font-family: var(--mono); font-size: 9px; fill: var(--muted); }
+
+  /* ---------- before / now table ---------- */
+  .compare { grid-column: wide; margin-top: 30px; width: 100%; border-collapse: collapse; }
+  .compare caption { text-align: left; }
+  .compare thead th {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 16px 9px 0;
+    border-bottom: 2px solid var(--ink);
+  }
+  .compare thead th.now { color: var(--copper); }
+  .compare tbody th {
+    text-align: left;
+    font-family: var(--display);
+    font-stretch: 94%;
+    font-weight: 700;
+    font-size: 0.94rem;
+    color: var(--ink);
+    padding: 17px 22px 17px 0;
+    width: 21%;
+    vertical-align: top;
+    border-bottom: 1px solid var(--rule);
+  }
+  .compare td {
+    padding: 17px 22px 17px 0;
+    vertical-align: top;
+    font-size: 0.925rem;
+    line-height: 1.5;
+    border-bottom: 1px solid var(--rule);
+    width: 39.5%;
+  }
+  .compare td.was { color: var(--muted); }
+  .compare td.now { color: var(--ink-2); padding-right: 0; }
+  .compare td.now strong { color: var(--copper); font-weight: 600; }
+
+  /* ---------- live now ---------- */
+  .live { grid-column: wide; margin-top: 30px; display: grid; gap: 1px; background: var(--rule); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .live > div { background: var(--ground); padding: 18px 0 19px; display: grid; grid-template-columns: 200px 1fr; gap: 8px 28px; align-items: baseline; }
+  .live h3 { color: var(--ink); }
+  .live p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  .live .chip {
+    display: inline-block; width: 9px; height: 9px; margin-right: 9px;
+    vertical-align: 1px; background: var(--c, var(--copper));
+  }
+
+  /* ---------- roadmap ---------- */
+  .road { grid-column: wide; margin: 34px 0 0; padding: 0; list-style: none; counter-reset: step; }
+  .road > li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 4px 22px;
+    padding: 26px 0 28px;
+    border-top: 1px solid var(--rule);
+  }
+  .road > li:first-child { border-top: 2px solid var(--ink); }
+  .road > li::before {
+    content: counter(step, decimal-leading-zero);
+    grid-row: 1 / span 3;
+    font-family: var(--mono);
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: var(--rule-strong);
+    font-variant-numeric: tabular-nums;
+    padding-top: 2px;
+  }
+  .road .when { font-family: var(--mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .road h3 { margin-top: 3px; }
+  .road p { margin-top: 9px; color: var(--ink-2); font-size: 0.94rem; line-height: 1.55; max-width: 60ch; }
+  .road > li.next::before { color: var(--copper); }
+  .road > li.next .when { color: var(--copper); }
+
+  /* ---------- closing ---------- */
+  .ask {
+    grid-column: wide;
+    margin-top: 72px;
+    border: 2px solid var(--copper);
+    background: var(--copper-wash);
+    padding: 30px 34px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .ask h2 { font-size: clamp(1.35rem, 3vw, 1.75rem); color: var(--copper-deep); }
+  .ask p { color: var(--ink-2); max-width: 58ch; font-size: 0.97rem; }
+  .fillin {
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--copper-deep);
+    border-bottom: 2px solid var(--copper);
+    padding: 0 3px;
+  }
+
+  .colophon {
+    grid-column: wide;
+    margin-top: 54px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  a { color: var(--copper); }
+  :focus-visible { outline: 2px solid var(--copper); outline-offset: 3px; }
+
+  @media (max-width: 760px) {
+    body { font-size: 16px; }
+    .masthead { padding-top: 52px; }
+    .plate div { border-right: 0; border-bottom: 1px solid var(--rule); }
+    .plate div:last-child { border-bottom: 0; }
+
+    .compare thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .compare tbody tr { display: block; padding: 20px 0 4px; border-bottom: 1px solid var(--rule); }
+    .compare tbody tr:first-child { border-top: 2px solid var(--ink); }
+    .compare tbody th { display: block; width: auto; padding: 0 0 10px; border: 0; font-size: 1.02rem; }
+    .compare td { display: block; width: auto; padding: 0 0 14px; border: 0; }
+    .compare td::before {
+      content: attr(data-when);
+      display: block;
+      font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 4px;
+    }
+    .compare td.now::before { color: var(--copper); }
+
+    .live > div { grid-template-columns: 1fr; gap: 6px; }
+    .road > li { grid-template-columns: 40px 1fr; gap: 4px 16px; }
+    .ask { padding: 24px 22px 26px; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .road > li { transition: border-color 160ms ease; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="stamp">
+      <span class="co">Pioneer Transformer</span>
+      <span class="when">Cutover &middot; 1 September 2026</span>
+    </div>
+
+    <h1><span class="off">Production tracking has moved</span>Off the workbook</h1>
+
+    <p class="lead">Everything you track on the floor now lives in SharePoint, where more than
+      one person can touch it at a time.</p>
+
+    <dl class="plate">
+      <div>
+        <dt>What moved</dt>
+        <dd>Per-unit production tracking</dd>
+      </div>
+      <div>
+        <dt>Now lives in</dt>
+        <dd><em>Order&nbsp;Items</em>, a live list</dd>
+      </div>
+      <div>
+        <dt>FRM10-12</dt>
+        <dd>Read-only mirror, same address</dd>
+      </div>
+      <div>
+        <dt>Unchanged</dt>
+        <dd>FRM09 &middot; BO Manager &middot; Power BI</dd>
+      </div>
+    </dl>
+  </header>
+
+  <section>
+    <span class="eyebrow">What changed</span>
+    <h2>The file stopped being the system</h2>
+    <div class="prose">
+      <p>Until this morning, FRM10-12 <em>was</em> the database. Location, Status, Tank, Frame,
+        Core Status, Coil Winder, the tanking and delivery dates &mdash; all of it was typed
+        straight into the workbook and existed nowhere else. One person at a time, and a bad
+        refresh could take the day's work with it.</p>
+      <p>The data has moved out into a SharePoint list. The workbook is still there, still looks
+        the same, still sits at the same address on the server &mdash; but it now rebuilds itself
+        from SharePoint instead of holding the only copy. That last detail is what keeps FRM09,
+        BO Manager and the Power BI reports working with no change at all.</p>
+    </div>
+
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 448" role="img"
+             aria-label="Before: floor staff typed straight into FRM10-12.xlsx, which was the source of truth, with SharePoint lists feeding into it by Power Query. After: floor staff and the sales app write into the SharePoint Order Items list, which is now the source of truth, and FRM10-12.xlsx rebuilds from it as a read-only mirror. In both cases FRM09, BO Manager and Power BI read from FRM10-12 at the same address.">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9.2" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="d-head" d="M 0 0.6 L 10 5 L 0 9.4 z"/>
+            </marker>
+            <marker id="ahc" viewBox="0 0 10 10" refX="9.2" refY="5"
+                    markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="d-head-c" d="M 0 0.6 L 10 5 L 0 9.4 z"/>
+            </marker>
+          </defs>
+
+          <!-- ================= BEFORE ================= -->
+          <text class="d-panel" x="20" y="22">BEFORE</text>
+          <text class="d-panel-sub" x="97" y="22">the workbook held everything</text>
+
+          <rect class="d-box" x="20" y="44" width="140" height="48"/>
+          <text class="d-name" x="90" y="73" text-anchor="middle">Floor staff</text>
+
+          <rect class="d-box" x="20" y="116" width="140" height="48"/>
+          <text class="d-name" x="90" y="137" text-anchor="middle">SharePoint lists</text>
+          <text class="d-micro" x="90" y="152" text-anchor="middle">Order · Models · Clients</text>
+
+          <line class="d-line" x1="160" y1="68" x2="432" y2="68" marker-end="url(#ah)"/>
+          <text class="d-label" x="296" y="58" text-anchor="middle">everything typed straight in</text>
+
+          <line class="d-line" x1="160" y1="140" x2="432" y2="140" marker-end="url(#ah)"/>
+          <text class="d-label" x="296" y="130" text-anchor="middle">Power Query pulls in, on refresh</text>
+
+          <rect class="d-hub" x="440" y="52" width="360" height="104"/>
+          <text class="d-eyebrow" x="620" y="79" text-anchor="middle">SOURCE OF TRUTH</text>
+          <text class="d-title" x="620" y="108" text-anchor="middle">FRM10-12.xlsx</text>
+          <text class="d-sub" x="620" y="130" text-anchor="middle">one file, one person at a time</text>
+
+          <line class="d-line" x1="800" y1="104" x2="842" y2="104" marker-end="url(#ah)"/>
+
+          <rect class="d-box" x="850" y="64" width="140" height="80"/>
+          <text class="d-eyebrow-s" x="920" y="88" text-anchor="middle">READS IT</text>
+          <text class="d-read" x="920" y="108" text-anchor="middle">FRM09 · BO Manager</text>
+          <text class="d-read" x="920" y="125" text-anchor="middle">Power BI</text>
+
+          <line class="d-div" x1="20" y1="196" x2="990" y2="196"/>
+
+          <!-- ================= AFTER ================= -->
+          <text class="d-panel d-panel-c" x="20" y="238">AFTER</text>
+          <text class="d-panel-sub" x="88" y="238">a live list sits in front of it</text>
+
+          <rect class="d-box" x="20" y="294" width="140" height="48"/>
+          <text class="d-name" x="90" y="323" text-anchor="middle">Floor staff</text>
+
+          <rect class="d-box" x="20" y="366" width="140" height="48"/>
+          <text class="d-name" x="90" y="395" text-anchor="middle">Sales app</text>
+
+          <line class="d-line-c" x1="160" y1="318" x2="292" y2="318" marker-end="url(#ahc)"/>
+          <text class="d-label-c" x="226" y="299" text-anchor="middle">edit live,</text>
+          <text class="d-label-c" x="226" y="311" text-anchor="middle">everyone at once</text>
+
+          <line class="d-line-c" x1="160" y1="390" x2="292" y2="390" marker-end="url(#ahc)"/>
+          <text class="d-label-c" x="226" y="371" text-anchor="middle">Save creates</text>
+          <text class="d-label-c" x="226" y="383" text-anchor="middle">every unit row</text>
+
+          <rect class="d-hub-c" x="300" y="302" width="240" height="104"/>
+          <text class="d-eyebrow d-eyebrow-c" x="420" y="329" text-anchor="middle">SOURCE OF TRUTH</text>
+          <text class="d-title d-title-c" x="420" y="358" text-anchor="middle">Order Items</text>
+          <text class="d-sub d-sub-c" x="420" y="380" text-anchor="middle">one live row per unit</text>
+
+          <line class="d-line" x1="540" y1="354" x2="632" y2="354" marker-end="url(#ah)"/>
+          <text class="d-label" x="586" y="335" text-anchor="middle">rebuilds</text>
+          <text class="d-label" x="586" y="347" text-anchor="middle">from the list</text>
+
+          <rect class="d-mirror" x="640" y="320" width="160" height="68"/>
+          <text class="d-eyebrow-s" x="720" y="341" text-anchor="middle">READ-ONLY MIRROR</text>
+          <text class="d-mname" x="720" y="361" text-anchor="middle">FRM10-12.xlsx</text>
+          <text class="d-tiny" x="720" y="377" text-anchor="middle">same file, same address</text>
+
+          <line class="d-line" x1="800" y1="354" x2="842" y2="354" marker-end="url(#ah)"/>
+
+          <rect class="d-box" x="850" y="314" width="140" height="80"/>
+          <text class="d-eyebrow-s" x="920" y="338" text-anchor="middle">READS IT</text>
+          <text class="d-read" x="920" y="358" text-anchor="middle">FRM09 · BO Manager</text>
+          <text class="d-read" x="920" y="375" text-anchor="middle">Power BI</text>
+        </svg>
+      </div>
+      <figcaption>The workbook and everything downstream of it stay exactly where they were. What
+        changed is where people write: the arrows from the floor used to run all the way into the
+        file, and now they stop one box short.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <span class="eyebrow">Day to day</span>
+    <h2>What actually changes for you</h2>
+
+    <table class="compare">
+      <thead>
+        <tr>
+          <th scope="col">&nbsp;</th>
+          <th scope="col">Until yesterday</th>
+          <th scope="col" class="now">From this morning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Finding your work</th>
+          <td class="was" data-when="Until yesterday">Scroll the workbook and filter it down by hand.</td>
+          <td class="now" data-when="From this morning">The <strong>Production Floor</strong> view &mdash;
+            grouped by Location, each step its own colour, the most urgent unit at the top of every group.</td>
+        </tr>
+        <tr>
+          <th scope="row">Updating a unit</th>
+          <td class="was" data-when="Until yesterday">Open the file, find the row, type, save, hope.</td>
+          <td class="now" data-when="From this morning">Click the cell. Type. Move on. <strong>No save
+            button and no refresh</strong> &mdash; it writes as you go.</td>
+        </tr>
+        <tr>
+          <th scope="row">Working at the same time</th>
+          <td class="was" data-when="Until yesterday">One person at a time. &ldquo;Someone else has it open.&rdquo;</td>
+          <td class="now" data-when="From this morning"><strong>Everyone at once.</strong> Your change appears
+            on everyone else's screen straight away.</td>
+        </tr>
+        <tr>
+          <th scope="row">Losing a day's typing</th>
+          <td class="was" data-when="Until yesterday">A crash or a mistimed refresh could take it. It happened in August.</td>
+          <td class="now" data-when="From this morning">Every edit is saved as it is made, and the list keeps
+            its own version history.</td>
+        </tr>
+        <tr>
+          <th scope="row">The layout you know</th>
+          <td class="was" data-when="Until yesterday">The workbook's columns were the only layout there was.</td>
+          <td class="now" data-when="From this morning">The <strong>Planning</strong> view &mdash; the same
+            columns in the same order, in the new place.</td>
+        </tr>
+        <tr>
+          <th scope="row">A new order</th>
+          <td class="was" data-when="Until yesterday">Nothing created the unit rows. They only appeared inside
+            the workbook, after a refresh.</td>
+          <td class="now" data-when="From this morning">Sales hits Save and <strong>the unit rows create
+            themselves</strong>, ready to track.</td>
+        </tr>
+        <tr>
+          <th scope="row">The Excel file</th>
+          <td class="was" data-when="Until yesterday">Where the data lived.</td>
+          <td class="now" data-when="From this morning">A mirror. Look at it all you like &mdash;
+            <strong>don't type in it</strong>. Anything typed there is wiped on the next rebuild and never
+            reaches SharePoint.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <span class="eyebrow">Live now</span>
+    <h2>What's running this morning</h2>
+
+    <div class="live">
+      <div>
+        <h3><span class="chip" style="--c: var(--copper)"></span>Order Items</h3>
+        <p>One row per unit, live in SharePoint. This is the database everything else now reads from.</p>
+      </div>
+      <div>
+        <h3><span class="chip" style="--c: var(--stage-1)"></span>Production Floor view</h3>
+        <p>Grouped by Location &mdash; Bobinage, Assemblage, Four, Finition, Livraison and the rest.
+          Delivered and cancelled units drop off on their own.</p>
+      </div>
+      <div>
+        <h3><span class="chip" style="--c: var(--stage-2)"></span>Planning view</h3>
+        <p>The workbook's columns, in the workbook's order, for anyone who wants the familiar layout.</p>
+      </div>
+      <div>
+        <h3><span class="chip" style="--c: var(--stage-3)"></span>The site home page</h3>
+        <p>One place to start, with links to both views and a short how-to guide in French and English.</p>
+      </div>
+      <div>
+        <h3><span class="chip" style="--c: var(--stage-4)"></span>Order fan-out</h3>
+        <p>New in this release. Saving an order in the sales app creates every unit row, including the
+          SA units, with no one typing them.</p>
+      </div>
+      <div>
+        <h3><span class="chip" style="--c: var(--rule-strong)"></span>FRM10-12 as a mirror</h3>
+        <p>Rebuilt from SharePoint, read-only, at the same address as before &mdash; so FRM09, BO Manager
+          and the Power BI reports carry on untouched.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">What's coming</span>
+    <h2>The rest of it, in order</h2>
+    <p class="prose" style="margin-top:18px">Today moves production tracking. Four things follow it,
+      and they are sequenced because each one leans on the one before.</p>
+
+    <ol class="road">
+      <li class="next">
+        <span class="when">This week</span>
+        <h3>The cleanup pass</h3>
+        <p>Some units that have already been delivered or cancelled are still showing as active, and a
+          handful of dates carried over wrong from the old workbook. A reconciliation pass finds them
+          against the archive and retires them. Nothing anyone needs to do by hand.</p>
+      </li>
+      <li>
+        <span class="when">Next build &mdash; fully specified</span>
+        <h3>Workflow Tasks</h3>
+        <p>Automates the front of the order process &mdash; customer PO, order entry, the electrical and
+          mechanical preliminary reviews running in parallel, planning schedule, work order, and confirming
+          the planned dates with the client. Each step notifies whoever's turn it is, by email and Teams.
+          This is the answer to the other standing complaint: nobody can see whose turn it is on an order.</p>
+      </li>
+      <li>
+        <span class="when">Agreed August &mdash; pending access</span>
+        <h3>Monday.com as the working layer</h3>
+        <p>The production team moves onto Monday day to day, with the stage-advance logic living there.
+          <strong>Order Items stays the database</strong> underneath it &mdash; it is what reporting runs
+          against and what the rest of the workflow cross-references. The SharePoint stage-stamping
+          automation was switched off tonight in anticipation, and a disabled copy is parked, so it can be
+          turned back on in one click if Monday doesn't work out.</p>
+      </li>
+      <li>
+        <span class="when">Designed, not built</span>
+        <h3>Drawings and NC records</h3>
+        <p>A document library that routes each engineering drawing to the production step that needs it &mdash;
+          replacing the file server, the multiple printed copies and the colour-coded folders, with the goal
+          of a shop-floor tablet pulling up the right drawing when a task starts. Alongside it, somewhere to
+          put non-conformance photos and notes against a specific unit and step. There is nothing like that
+          today.</p>
+      </li>
+      <li>
+        <span class="when">Ongoing</span>
+        <h3>Archiving</h3>
+        <p>Completed and cancelled orders move out to the Excel archive on a schedule, so the live lists
+          stay fast as the years add up rather than growing forever.</p>
+      </li>
+    </ol>
+  </section>
+
+  <div class="ask">
+    <h2>If something looks wrong, come and ask.</h2>
+    <p>A unit missing, a column empty, anything that just doesn't seem right &mdash; don't work around it
+      and don't guess. It is a new system and finding the rough edges early is genuinely useful.</p>
+    <p>Ask <span class="fillin">[NAME]</span>.</p>
+  </div>
+
+  <div class="colophon">
+    <span>Pioneer Transformer &middot; production tracking cutover</span>
+    <span>1 September 2026</span>
+  </div>
+
+</div>
