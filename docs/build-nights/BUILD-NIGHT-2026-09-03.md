@@ -378,6 +378,44 @@ only the rows still *showing* a Sep 1 `Modified` — the stuck trigger instances
 overwriting that field for three days. **Sizing a run by `Modified`-in-window is unsound on
 this list.**
 
+### 🔴 `BO Tracking` — `Collapse="TRUE"` IS LOAD-BEARING (2026-09-04 ~11:4x, user)
+Final live definition after the user's manual rework:
+```
+<GroupBy Collapse="TRUE" GroupLimit="100"><FieldRef Name="BO" /></GroupBy>
+<OrderBy><FieldRef Name="Bo_x0020_Sort_x0020_Date" /></OrderBy>
+```
+`RowLimit` 100, `Paged` **true**, **no `Where` clause** (all 1052 rows). Renders as three
+collapsed headers: `Unassigned (979)` · `BO (10)` · `OK (63)` = 1052, nothing hidden.
+
+**⚠️ Do NOT un-collapse this view.** The `GroupBy` has no `Ascending` attribute, so it defaults
+to ascending, which sorts the 979-row blank group FIRST. That is safe *only* because the groups
+are collapsed — headers render regardless of `RowLimit`. **Expand them and the original bug
+returns immediately:** the blank group consumes the entire 100-row budget and the `BO` and `OK`
+groups disappear off the page cut. It looks like data loss and is not.
+
+"Expand the groups so I can see everything" is a reasonable thing for someone to try. It is the
+one change that breaks this view.
+
+**The bug that was fixed here, for anyone hitting it on another view:** `GroupBy` **overrides**
+`OrderBy` on the same column, so a sort direction set in `OrderBy` is silently ignored — the
+direction must go on the `GroupBy` FieldRef. Combined with `Paged="false"` (the classic editor's
+*"Limit the total number of items returned"* radio, as opposed to *"Display items in batches"*),
+a dominant group truncates every other group out of the view with no error and no next-page
+link. **Any grouped view where one group dominates will do this.**
+
+### `Bo Sort Date` — calculated column (user, 2026-09-04)
+`Bo_x0020_Sort_x0020_Date`, Date Only, sentinel **2999-12-31** when `Planned Tanking Date` is
+blank. Verified: all **139** blank-date rows carry the sentinel, zero nulls, zero variants, and
+it equals `Planned Tanking Date` on all 913 rows that have one.
+
+Exists because **SharePoint sorts null as the earliest possible date**, so unplanned units sorted
+above ones due next week — backwards from what a blank means (not planned, not urgent). It
+recalculates on write, so Track A's backfill filling `Planned Tanking Date` needs no follow-up.
+
+**The first calculated column on `Order Items`.** `calculated-columns-plan.md` concluded none of
+FRM10-12's native-formula columns could be plain calculated columns; that holds — this is a
+simple same-row formula with no chaining, which is the kind that does work.
+
 ### Other live facts
 - **Date display bug is FIXED** — by flipping the **site timezone to UTC**, not by the proposed
   17-column `DisplayFormat` change. Sep 1 decision 6 is closed but still marked open there.
@@ -1767,3 +1805,55 @@ person than the corrected number alone.
 ⚠️ **🟠 D harvested these boards into `Workflow-Automation/docs/build-nights/` and pushed.
 That copy predates this correction.** The originals here remain the live record; re-harvest
 before relying on the repo copy for the Monday-blocker section.
+
+**2026-09-04 ~11:4x | 🟢 B |** User reworked `BO Tracking` by hand and it verifies clean.
+Recorded the `Collapse="TRUE"` dependency as load-bearing, plus the underlying
+GroupBy-overrides-OrderBy + Paged=false interaction, since it will recur on any grouped view
+with a dominant group. Also documented the new `Bo Sort Date` calculated column and why null
+dates needed a sentinel. **Worth adding the grouped-view gotcha to the bilingual views guide —
+🟠 D's B.6 does not cover it.**
+
+**2026-09-04 11:5x | 🟠 D | Grouped-view gotcha written into both language versions (user request
+via 🟢 B). One item needs a browser and I could not do it — see the flag.**
+
+**Section 7 added to `views-guide-sharepoint.md` and `-fr.md`**, pushing the contact section to 8
+and adding "is the view grouped?" as a third self-check there. Covers the whole mechanism:
+- The rows are not deleted — the view **stopped early** before reaching them.
+- One dominant group fills the view and pushes the smaller groups off the end. **Not a rare edge
+  case: `Production Floor` grouped by `Location` has 827 units with no Location** — the same
+  shape that bit the user on `BO Tracking` this morning.
+- Fix is two settings: groups **Collapsed**, and Item Limit on **"Display items in batches"**
+  rather than **"Limit the total number of items returned"**.
+- **`GroupBy` overrides the Sort section for the grouped column** — setting a sort direction
+  there looks like it should work and silently does nothing.
+- **A blank date counts as the earliest date**, so a date sort puts unplanned items on top.
+
+> ### 🙋 USER ACTION — three French UI labels need one look before this guide is published
+> **I could not verify them and did not pretend to.** The FR section 7 names
+> **« Regrouper par »**, **« Réduits »** and **« Limite d'éléments »**. Those came from reasoning,
+> **not from reading the interface** — I have no browser. 🟢 B flagged the same risk and was right
+> to: staff will hunt for those exact words, and a guide naming a button that does not exist is
+> worse than no guide, because it costs trust in the parts that *are* correct.
+>
+> There is a **removable note block at the top of the FR file** saying exactly this. Delete it
+> once the labels are checked against the classic view-settings page in French.
+>
+> Everything else in FR section 7 is verified and label-independent — the mechanism, the 827
+> figure, the sort-does-nothing behaviour, the blank-date-sorts-first behaviour. I also wrote the
+> second setting **descriptively** rather than as an exact quotation, to shrink the exposure to
+> two labels rather than four.
+
+**Runbook (for us, not staff) — two additions:**
+1. **`BO Tracking`'s `Collapse="TRUE"` is now LOAD-BEARING.** Its `GroupBy` has **no `Ascending`
+   attribute**, so it defaults to ascending and puts the **979-row blank `BO` group first**.
+   Safe collapsed; **un-collapsing re-breaks it instantly.** Recorded with the `Production Floor`
+   parallel so the next person sees it as a class of bug, not one view's quirk.
+2. **`Bo Sort Date`** — the user's new calculated column, `2999-12-31` sentinel for blank
+   `Planned Tanking Date` so unplanned units sort **last**. 🟢 B verified: 139 blank rows, all
+   sentinel, no variants.
+   ⚠️ **I added a hazard note B did not raise:** it is the **first non-writable column on
+   `Order Items`**. Anything that enumerates-and-writes fields — the transfer flow's
+   `CreateOrderItem`/`UpdateOrderItem`, any REST `MERGE` built from a field list — **must exclude
+   it.** A write to a calculated field fails, and per KEY FACTS a failing action in that flow
+   reports up as `Failed` while other rows still land, so it would be misdiagnosed as something
+   else entirely. **🔵 A: this affects A.3/A.5 when the mappings get built.**

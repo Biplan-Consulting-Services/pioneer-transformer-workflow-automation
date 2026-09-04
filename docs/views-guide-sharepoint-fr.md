@@ -3,6 +3,24 @@
 *Version anglaise : `views-guide-sharepoint.md`. Les deux ont la même structure, section par
 section.*
 
+> ### ⚠️ AVANT PUBLICATION — vérifier trois libellés d'interface (section 7)
+> **À retirer une fois vérifié. Note interne, pas pour le personnel.**
+>
+> La section 7 nomme des éléments de la page de paramètres d'affichage en français :
+> **« Regrouper par »**, **« Réduits »**, **« Limite d'éléments »**. Ces libellés ne sont **pas
+> vérifiés** — je n'ai pas d'accès navigateur et je ne les ai donc pas lus dans l'interface. Ils
+> viennent d'une supposition raisonnée, pas d'une lecture.
+>
+> **Pourquoi ça compte plus que d'habitude :** le personnel va chercher ces mots exacts dans
+> l'écran. Un guide qui nomme un bouton qui n'existe pas est pire que pas de guide du tout — il
+> fait douter du reste, y compris des parties justes.
+>
+> Le reste de la section 7 (le mécanisme, les 827 unités, le tri qui n'a aucun effet, la date
+> vide qui compte comme la plus ancienne) est **vérifié** et ne dépend d'aucun libellé.
+>
+> À vérifier sur la page de paramètres de l'affichage classique, en français. Le deuxième réglage
+> est déjà formulé de façon descriptive plutôt qu'en citation exacte, pour limiter le risque.
+
 > **Où on en est aujourd'hui (2026-09-04).** On est en **fonctionnement parallèle** :
 > **FRM10-12 reste actif et vous continuez de l'utiliser comme d'habitude.** Rien ne change dans
 > votre travail quotidien pour l'instant. SharePoint se remplit en parallèle pour être prêt le
@@ -112,17 +130,50 @@ l'affichage**.
 vous voulez qu'il reste à vous, ou si vous n'êtes pas sûr, **venez me voir** et on le crée
 ensemble. C'est deux minutes.
 
-## 7. Quelque chose cloche ?
+## 7. Si votre affichage est regroupé et que des groupes ont l'air vides
+
+**Rien n'a été effacé.** Les lignes sont encore là — c'est l'affichage qui a arrêté de charger
+avant de les atteindre.
+
+Ça arrive quand un groupe est beaucoup plus gros que tous les autres. Si la plupart des unités
+n'ont pas de `Location`, ce groupe-là peut remplir l'affichage au complet à lui seul, et les plus
+petits groupes se font pousser en dehors, là où vous ne les voyez pas. Ça a l'air exactement
+comme des données disparues. Ça n'en est pas.
+
+Et ce n'est pas un cas rare : **`Production Floor` regroupé par `Location` a 827 unités sans
+Location.** N'importe quel regroupement où une valeur domine a la même allure.
+
+Deux réglages l'évitent :
+
+- Dans **Regrouper par** : mettre l'affichage des regroupements à **Réduits**. Un groupe réduit
+  montre quand même son titre et son nombre, donc vous voyez tous les groupes et vous cliquez
+  dans celui que vous voulez.
+- Dans **Limite d'éléments** : choisir **d'afficher les éléments par lots**, et *non* de limiter
+  le nombre total d'éléments retournés. Ce dernier fait arrêter l'affichage à la limite, sans
+  aucun moyen de voir le reste.
+
+Deux choses sur les regroupements qui surprennent à peu près tout le monde :
+
+- **Si vous regroupez par une colonne, changer le tri de cette colonne dans la section Tri ne
+  fait rien.** L'ordre des groupes se décide dans la section **Regrouper par**. Le mettre dans
+  Tri a l'air de devoir marcher et n'a aucun effet.
+- **Une date vide compte comme la date la plus ancienne.** Donc trier par une date met les
+  unités non planifiées en haut, pas en bas. Si ce n'est pas ce que vous voulez, demandez — on
+  vous fait un tri qui met les vides à la fin.
+
+## 8. Quelque chose cloche ?
 
 **Venez voir Soleil Anker-Baril** — sur Teams, ou à soleil.anker@ermco-eci.com.
 
-Avant de venir, ces deux réflexes règlent la grande majorité des cas :
+Avant de venir, ces trois réflexes règlent la grande majorité des cas :
 
 1. **Vérifiez sur quel affichage vous êtes** (en haut de la liste). C'est la cause numéro un de
    « il manque des unités ».
 2. **Cherchez une icône d'entonnoir** dans les en-têtes — un filtre laissé par accident.
+3. **L'affichage est-il regroupé ?** Si oui, voir la section 7 — des groupes complets peuvent
+   tomber en dehors de l'affichage sans que rien ne l'indique.
 
-Si ce n'est ni l'un ni l'autre : si une unité manque, si une colonne est vide alors qu'elle
+Si ce n'est aucun des trois : si une unité manque, si une colonne est vide alors qu'elle
 devrait avoir une valeur, ou si quelque chose a l'air croche — **ne travaillez pas autour et ne
 devinez pas.** Venez me voir. C'est un système neuf et trouver les défauts de jeunesse tout de
 suite aide vraiment.

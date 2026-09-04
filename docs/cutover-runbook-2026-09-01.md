@@ -497,6 +497,38 @@ Verify both *after* A6's run, not before — they depend on TextField accuracy.
 >
 > The `NumberOfLines=6` Note-column problem (KEY FACTS) was fixed on **Planning**. Any view
 > carrying a Note column has the same ~315px-row bug; `BO Tracking` (23 cols) is worth a look.
+>
+> ### ☠️ `BO Tracking`'s `Collapse="TRUE"` is LOAD-BEARING. Added 2026-09-04.
+> Its `GroupBy` carries **no `Ascending` attribute**, so it defaults to ascending, which puts
+> **blank values first** — and the blank `BO` group is **979 rows**. Collapsed, that is harmless:
+> every group shows its header and count. **Un-collapse it and the view breaks instantly** — the
+> blank group eats the whole row budget and every other group falls off the end with no
+> next-page link. It looks exactly like data loss.
+>
+> This is not theoretical: **it bit the user on `BO Tracking` on 2026-09-04 and cost real time.**
+>
+> **`Production Floor` grouped by `Location` has the identical shape — 827 units with no
+> Location.** Any view grouping on a column where one value dominates is one setting away from
+> the same failure. The two settings that prevent it: groups **Collapsed**, and Item Limit set to
+> **"Display items in batches"** rather than **"Limit the total number of items returned"**.
+>
+> Third trap, worth knowing before anyone tries to "fix" the order: **`GroupBy` overrides the
+> `OrderBy`/Sort section for the grouped column.** Setting a sort direction there has no effect —
+> the direction comes from the `GroupBy` section alone. So the obvious fix silently does nothing.
+>
+> Staff-facing version of all of this is `views-guide-sharepoint*.md` section 7.
+>
+> ### New: `Bo Sort Date` — the first calculated column on `Order Items`. Added 2026-09-04.
+> Added by the user. A calculated column that substitutes a **`2999-12-31` sentinel** for a blank
+> `Planned Tanking Date`, so a sort puts unplanned units **last** instead of first (a blank date
+> sorts as the *earliest* date, which is the trap above). Verified by 🟢 B: **139 blank rows, all
+> carrying the sentinel, no variants.**
+>
+> ⚠️ **It is a calculated column, so it is the first thing on this list that is NOT writable.**
+> Anything that enumerates and writes `Order Items` fields — the transfer flow's `CreateOrderItem`
+> / `UpdateOrderItem`, any REST `MERGE` built from a field list — must **exclude** it. A write
+> attempt against a calculated field fails, and per KEY FACTS a failing action in that flow
+> reports up as `Failed` while other rows still land, so it would be diagnosed as something else.
 
 ### B3. Site home page + Quick Launch (45 min)
 

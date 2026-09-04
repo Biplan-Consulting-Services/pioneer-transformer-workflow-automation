@@ -104,16 +104,47 @@ by default**: it shows up in everyone's menu. That's no disaster, but if you'd r
 yourself, or you're not sure, **come and find me** and we'll set it up together. It takes two
 minutes.
 
-## 7. Something look wrong?
+## 7. If you group your view and some groups look empty
+
+**Nothing has been deleted.** The rows are still there — the view just stopped early, before it
+reached them.
+
+This happens when one group is much bigger than all the others. If most units have no `Location`
+set, that one group can fill the entire view on its own, and the smaller groups get pushed off
+the end where you can't see them. It looks exactly like missing data. It isn't.
+
+It is not a rare edge case: **`Production Floor` grouped by `Location` has 827 units with no
+Location set.** Any grouping where one value dominates has the same shape.
+
+Two settings prevent it:
+
+- **Group By → "By default, show groupings: Collapsed."** A collapsed group still shows its
+  header and its count, so you can see every group and click into the one you want.
+- **Item Limit → "Display items in batches of the specified size."** *Not* "Limit the total
+  number of items returned" — that one makes the view stop at the limit with no way to see the
+  rest.
+
+Two things about grouping that surprise almost everyone:
+
+- **If you group by a column, changing that column's sort in the Sort section does nothing.**
+  The order of the groups is set in the **Group By** section instead. Setting it in Sort looks
+  like it should work and silently has no effect.
+- **A blank date counts as the *earliest* date.** So sorting by a date puts the unplanned items
+  at the top, not the bottom. If that's not what you want, ask — we'll set up a sort that puts
+  blanks last.
+
+## 8. Something look wrong?
 
 **Come ask Soleil Anker-Baril** — on Teams, or at soleil.anker@ermco-eci.com.
 
-Before you do, these two checks resolve the large majority of cases:
+Before you do, these three checks resolve the large majority of cases:
 
 1. **Check which view you're on** (top of the list). It's the number-one cause of "units are
    missing".
 2. **Look for a funnel icon** in the headers — a filter someone left on by accident.
+3. **Is the view grouped?** If so, see section 7 — whole groups can drop off the end of a view
+   without any warning that they have.
 
-If it's neither: if a unit is missing, a column is empty when it shouldn't be, or something just
+If it's none of those: if a unit is missing, a column is empty when it shouldn't be, or something just
 doesn't seem right — **don't work around it and don't guess.** Come and ask. It's a new system
 and finding the rough edges early is genuinely helpful.
