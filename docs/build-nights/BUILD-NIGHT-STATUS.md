@@ -274,15 +274,41 @@ nothing is uncommitted. Whoever picks Track C up next — read this, then the sp
    **🔵 A can start immediately regardless** — A0, A1, A2, A3, A4, A5b and A5c are all unblocked.
    Only A5 needs B1. — *open*
 
-6. ~~**🟢 B — date columns display a day early. Apply the Date Only fix?**~~ **RESOLVED — and
-   NOT the way this entry proposes. Corrected 2026-09-03 by 🟠 D.** The symptom is fixed: it was
-   solved by flipping the **SharePoint site timezone to UTC**, which is a one-setting change,
-   not by the 17-column `DisplayFormat` edit described below. **Do not apply the fix below** —
-   the display is already correct, and re-applying a 17-field schema change to fix a symptom
-   that no longer exists is pure risk. This entry stayed marked "open" for two days after the
-   fact and was recorded in no repo; that is what D.6 exists to stop.
+6. **🟢 B — date columns display a day early. — 🔴 STILL OPEN. Re-corrected 2026-09-04.**
    *(Note: this file has **two** decisions numbered 6 — this one and the 🔵 A fabricated-values
-   one above. "Decision 6" elsewhere on the 2026-09-03 board means THIS one, the date display.)*
+   one above. "Decision 6" elsewhere means THIS one, the date display.)*
+
+   > **⚠️ My own 2026-09-03 correction to this entry was WRONG, and worse than wrong — it was
+   > inverted guidance.** It said the bug was "RESOLVED … by flipping the SharePoint site
+   > timezone to UTC" and instructed **"Do not apply the fix below."** Setting the 17 columns to
+   > Date Only is now **step 1 of the required fix**, so that sentence told the next person not
+   > to do the very thing they need to do. Corrected by 🟠 D, from 🟢 B's finding.
+   >
+   > **The UTC flip is a workaround, and the user has ruled it out** (2026-09-04): the site and
+   > all columns should be **Eastern** — Montreal office, Granby factory. Site is currently
+   > `(UTC) Coordinated Universal Time`, Id 93, bias 0, verified by REST.
+   >
+   > **The part nobody had spotted: a Date Only column on an Eastern site stores *local*
+   > midnight as UTC.** On this same list, `Original Tanking Date` holds `T05:00:00Z` (EST
+   > midnight) and `Manual Estimated Delivery Date` holds `T04:00:00Z` (EDT midnight), while
+   > the 17 mis-configured columns hold `T00:00:00Z` — **UTC** midnight. So the 17 sit 4–5 hours
+   > *earlier* than Eastern midnight and land on the **previous day** on an Eastern site
+   > **whatever display format is applied.**
+   >
+   > That kills both obvious fixes: **site → Eastern alone re-breaks all 17**, and **Date Only
+   > alone does not rescue them** — it hides the time while still showing the wrong date.
+   > **The stored data is wrong for an Eastern site, not merely displayed wrong.**
+   >
+   > **Required sequence, and the order is load-bearing:** (1) 17 columns → Date Only, (2) site →
+   > Eastern (Id 10), (3) rewrite the values — which **rides along with the transfer-flow
+   > backfill already required**, (4) verify a unit against FRM10-12. **Running the backfill
+   > before steps 1–2 writes UTC-midnight all over again.**
+   >
+   > **Full writeup, caveats and the untried routes:**
+   > `Workflow-Automation/docs/roadmap.md`, "Site timezone + the 17 date columns" section —
+   > which is the authority, not this entry.
+
+   Original entry, kept for the reasoning only:
    Original entry, kept for the reasoning only:
    **— date columns display a day early. Apply the Date Only fix? — was open, 02:26.**
    17 columns (8 stage Start + 8 stage End + `Tank Delivery Date`) are "Date and Time". All

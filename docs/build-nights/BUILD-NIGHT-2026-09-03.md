@@ -445,8 +445,15 @@ schema/field changes **sequentially**, and in batches small enough to avoid the 
 tooling's evaluate timeout — 5-7 per call worked. Same applies to field creation.
 
 ### Other live facts
-- **Date display bug is FIXED** — by flipping the **site timezone to UTC**, not by the proposed
-  17-column `DisplayFormat` change. Sep 1 decision 6 is closed but still marked open there.
+- 🔴 **DECISION 6 IS NOT CLOSED — CORRECTED 2026-09-04.** This board previously said the date
+  display bug was "FIXED" by flipping the **site timezone to UTC**. That is a **workaround, and
+  the user has ruled it out**: the site and all columns should be **Eastern** (Montreal office,
+  Granby factory). Site is currently `(UTC) Coordinated Universal Time`, Id 93, bias 0 —
+  verified by REST 2026-09-04. Flipping back to Eastern **alone re-breaks all 17 columns**, and
+  Date Only does not rescue them: the stored instants are wrong for an Eastern site, not just
+  displayed wrong. Required sequence in `Workflow-Automation/docs/roadmap.md`.
+  ⚠️ **🟠 D's D.6 propagated the "resolved by the flip" wording into the repo docs — that now
+  needs re-correcting too.**
   Recorded in no repo.
 - 🔴 **`Overview` DOES NOT EXIST.** The Sep 1 transcript says Track B built it at 06:37; it is not on the list now — renamed or deleted since. **But three OTHER undocumented views exist:** `Angelique réunion du lundi`, `Angelique bobinage`, `JF - Test`. Departments are already building their own views, which is the strongest argument for the bilingual views guide (B.6). Full live list: `All Items` (default), `Production Floor`, `Planning`, those three, and now `BO Tracking`.
 - **Price cannot be retrofitted onto Order Items' lookup** — projected fields are create-time
@@ -1936,3 +1943,58 @@ hand-written JSON before trying SharePoint's built-in *Format this column → Co
 formatting* UI, and it cost two view freezes on a list being demoed tomorrow. It is already
 captured usefully in `roadmap.md` — the untried routes are listed **with the built-in UI first**,
 which is the fix rather than just the confession.
+
+**2026-09-04 ~13:1x | 🟢 B |** Corrected decision 6, and it needs correcting in two more places.
+The UTC flip is a workaround the user has ruled out (Montreal/Granby = Eastern). Established
+from this list's own data that **Date Only on an Eastern site stores *local* midnight as UTC** —
+`Original Tanking Date` = `T05:00:00Z` (EST), `Manual Estimated Delivery Date` = `T04:00:00Z`
+(EDT) — whereas the 17 broken columns store `T00:00:00Z`. They are therefore 4–5h earlier than
+Eastern midnight and land on the previous day on an Eastern site **whatever display format is
+set**. Three-part sequence written into `roadmap.md`; part 3 rides along with the backfill
+already planned, so it is not a separate migration.
+⚠️ Also stale as a result: this board's earlier entry at ~line 1154 and whatever 🟠 D wrote into
+the repo docs under D.6.
+
+**2026-09-04 13:2x | 🟠 D | Decision 6 re-corrected in the repo record. My 2026-09-03 fix was
+INVERTED GUIDANCE, which is worse than a stale status.**
+
+**Found and fixed the one place D.6 propagated the "resolved by the timezone flip" wording:
+`BUILD-NIGHT-STATUS.md` decision 6 (the date one).** Grepped every repo doc for
+`UTC` / `decision 6` / `DisplayFormat`; the only other hits are two pre-existing lines in
+`order-items-power-automate-flows.md` that already correctly specify **Eastern** for the stage
+stamps. So this was contained to one entry — but the wrong one to be contained in.
+
+**Why it was worse than a stale claim.** My correction did not just say "resolved" — it
+instructed **"Do not apply the fix below."** Setting the 17 columns to Date Only is now **step 1
+of the required fix.** So it told the next person not to do the exact thing they need to do, in
+the doc they would check first. That is the same failure shape as the runbook's A6b "fix in
+SharePoint, not in Excel" that I corrected last night: **a status going stale is recoverable, an
+instruction going stale is not.** Both came from recording a workaround as a resolution.
+
+The entry now points at `roadmap.md`'s timezone section as the authority, and I quoted my own
+wrong sentence rather than deleting it, so the failure is visible.
+
+---
+
+### 🔴 CONSOLIDATED SEQUENCE FOR TOMORROW — three separate findings now converge on the backfill
+
+Each track found one piece of this; nobody has stated the whole order in one place, and **two of
+the steps silently undo each other if run out of order.**
+
+| # | Step | Why it must be here |
+|---|---|---|
+| 1 | **17 columns → Date Only** | Schema first. 🟢 B |
+| 2 | **Site timezone → Eastern (Id 10)** | Doing this *before* 1 re-breaks all 17. 🟢 B |
+| 3 | **Build the A.3/A.5 mappings** (5 columns + roll-up `BO`) | The Sep 1 run went with **2 of 7**. 🔵 A, §6 paste-ready |
+| 4 | **Run the backfill** | Rewrites the 17 columns to Eastern midnight **and** fills the 72 missing rows. **Running it before 1–2 writes UTC-midnight all over again.** |
+| 5 | **Re-diff `TableOrders` ↔ `Order Items`** | Whatever survives is the *real* matching bug. On current evidence there may be none. 🔵 A |
+| 6 | **Refresh the viewer** — Office Script button on `Orders`, **never** Refresh All | Fixes D.1's blanked `Tanking Date` (63/967 → ~913). Script already pasted. 🟠 D |
+
+**Two hazards for step 3, from different tracks:**
+- **Exclude `Bo Sort Date`.** It is **calculated, therefore not writable**, and a failed write in
+  that flow reports up as `Failed` while other rows still land — so it would be misdiagnosed.
+- **Preserve the fan-out's inline `Order_Number_TextField` write.** It is the only reason three
+  days of a dead trigger flow has not shown blank Order Numbers on `Production Floor`.
+
+**And do not un-collapse `BO Tracking`** at any point — its `GroupBy` has no `Ascending`
+attribute, so the 979-row blank group goes first and the view freezes. Demo is tomorrow.
