@@ -39,6 +39,61 @@ first, then follow the links into whichever workstream you're picking up.
 > `Index` list's FRM10-12 path so FRM09 and BO Manager keep working. Its own header carries the
 > per-section corrections.
 
+## Outstanding work — verified 2026-09-04, read this first
+
+Supersedes the 2026-08-14/08-21 status below for *current* state; that section is still the best
+description of **why** each workstream exists. Every figure here was measured against the live
+tenant or the repos on 2026-09-04, not carried forward from the Sep 1 board, which was wrong in
+the same direction about several items — most importantly it records the A6 transfer run as
+never having happened. **It ran.**
+
+### The single biggest data problem
+**Every `Tanking Status = Completed` value on `Order Items` is fabricated.** 975 tanking + 400
+delivery = **1,375 wrong status values**, and by the documented discriminator (a blank
+`{Stage} Start Date` means the value came from the backfill) **zero are genuine** — 975 of 975
+and 400 of 400 have no Start Date. **939 sit on units still `Active`**, so staff see
+"Tanking: Completed" on units that have not been tanked.
+
+A5b fixed the *flow* so it stops fabricating. Nobody cleaned the *data*. The Sep 1 board
+estimated ~927/333; measured 2026-09-04 it is 975/400.
+
+### Outstanding work
+
+| # | Change | Track | Status | Blocked on / note |
+|---|---|---|---|---|
+| 1 | **Clean 1,375 fabricated Tanking/Delivery statuses** | 🔵 A | not started | Designer. Spec'd, discriminator proven |
+| 2 | **72 workbook rows with no `Order Items` row** | 🔵 A | not started | Run backfill → re-diff. **Do not hunt a matching bug** |
+| 3 | **Map A5's remaining 5 columns** — all still 0-populated | 🔵 A | 2 of 7 | Designer |
+| 4 | **A4 — fold TextField sync into the transfer flow** | 🔵 A | not started | Designer |
+| 5 | **Re-enable the trigger flow** (after backfill) | 🔵 A | off since Sep 1 | Items 3/4 first |
+| 6 | **`Location` empty on 841 of 1,016 active units** | 🔵 A | never backfilled | Makes Production Floor near-useless |
+| 7 | **B2-verify** — Production Floor + Planning vs real data | 🟢 B | never done | Item 6 first |
+| 8 | **A7 reconciliation pass** — ~71 orphan rows waiting | 🔵 A | deferred 2026-08-21 | Deferral reasoning has expired |
+| 9 | **A6b** — hand-fix rows failing on one column | 🔵 A | 5 genuine, not 35 | 30 of 35 fix themselves on re-run |
+| 10 | **Export the sales Power App** — `power-apps/` is still `.gitkeep` | 🟠 D | not done | Tenant is the only rollback for a live fan-out |
+| 11 | **D4 viewer parity check** | 🟠 D | not done | Needs a viewer refresh |
+| 12 | **B4 live permissions test** on a staff account | 🟢 B | config verified only | ~30 seconds on a floor machine |
+| 13 | **Timezone + 17 date columns** — site back to Eastern | 🔵 A / 🟢 B | **reopened 2026-09-04** | Own section below. Order is critical |
+| 14 | **A2 / A3** — park fallback, strip stage stamping | 🔵 A | not started | Not blocking anything |
+| 15 | **A5c** `toLower()` on six stages | 🔵 A | not started | Track A recommended skipping |
+| 16 | **D5 + A8** — deploy viewer, disable transfer flow | 🟠 D / 🔵 A | **cut by the user** | The Monday cutover decision |
+
+**Items 1, 2, 3, 4, 6 and 13 all need the same thing: a working Power Automate designer.** That
+single blocker gates most of what is left, including everything that would make Production Floor
+usable. It is worth more attention than any individual row above.
+
+### Closed since build night 1
+A0 · A5b (the flow, not the data) · **A6 — the transfer run DID happen** · B0–B3 · C1–C3 ·
+D0–D3 · D5b · E1–E3 · **step-8 predicate narrowed** to ISO-date + English-boolean ·
+**viewer Office Script patched** · all three repos pushed, 0 unpushed · BO Tracking view ·
+`Direction - Prix (demo)` · bilingual views guide · view definitions exported
+
+### Two observations
+- **The TextField backlog is draining on its own** — `Order_Number_TextField` nulls went 72 → 52
+  and the ID TextFields 86 → 66 between 2026-09-04 ~01:00 and ~12:40. The ~29 flow instances
+  stuck in `Running` since Sep 2 are still working through it, so item 5 may partly self-resolve.
+- **Decision 6 is reopened**, not closed — see the timezone section.
+
 ## Where things stand right now (2026-08-14, see 2026-08-21 update below) — read this first
 
 **Update, 2026-08-21**: workstream 1 step 3's transfer flow is now functionally built and
