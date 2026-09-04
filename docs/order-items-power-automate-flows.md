@@ -1,8 +1,35 @@
 # Order Items — Power Automate Flows to Build
 
+> ## ⚠️ Step 3 was BUILT and it RAN. Corrected 2026-09-04 by 🟠 D, from 🔵 A's forensics.
+> This document is written as though the transfer flow is still unbuilt. It isn't.
+>
+> **`Order Items - Excel Transfer Flow` ran once: 2026-09-01 06:42 EDT, 40m29s, final status
+> `Failed`.** The `Failed` is the **known false alarm** — the action failure propagates up
+> through Switch → Apply to each while the rows still land. That "failed" run wrote **913**
+> `Planned Tanking Date` values, 335 `Planned Delivery Date`, and took `Location` from 175 to
+> 211. **Never judge a run of this flow by its status; re-count instead.**
+>
+> **It did NOT process the whole table.** `21965-3/4` has no Sep 1 version at all — an absence of
+> a version, not an inference from timestamps.
+>
+> **Do not size that run by "rows whose `Modified` falls in the run window".** The trigger flow
+> has been overwriting `Modified` ever since; that method yields ~297 and is wrong by a factor of
+> three.
+>
+> **The trigger flow (`Create or Update Trigger`) is currently `Off`** — turned off for A6, and
+> the step that turns it back on never ran. **29+ instances from Sep 2 are still in flight**,
+> each 1d 17h+ elapsed. Before re-enabling, check they actually drain; re-enabling polling into a
+> jam may add to it.
+>
+> Full detail, with how each claim was verified, in `transfer-flow-forensics-2026-09-04.md`.
+> The specs below are still the right specs — treat them as the record of what was built, not a
+> to-do list.
+
 Build-ready specs for the flows tracked in `order-items-build-plan.md`'s build sequence
 (steps 2b, 2c, 3). Not blocked by the PnP consent issue — Power Automate's first-party
 SharePoint connector is available now, buildable directly at make.powerautomate.com.
+*(And per the 2026-09-03 correction, PnP being blocked never meant schema changes had to be
+hand-clicked either: site-context REST does them fine — 19 field creates in ~2 minutes.)*
 
 **Scope note (2026-08-13)**: the TextField auto-sync work (2b) turned out to span every
 Lookup column across the whole system, not just `Order Items`/`Model Revisions` — see
@@ -25,7 +52,12 @@ standalone reference rather than duplicated here.
       2026-08-14**, in its own parallel branch alongside 2b's TextField sync branch
 - [x] 2c-extra. N/A status handling + advance-to-Pending logic — **built & tested
       2026-08-14**, full production cycle (all 8 stages) confirmed working end-to-end
-- [ ] 3. Excel → SharePoint transfer flow (re-runnable) — spec fully drafted and resolved
+- [x] 3. Excel → SharePoint transfer flow (re-runnable) — **BUILT, and RAN once on 2026-09-01
+      06:42 EDT (40m29s, reported `Failed`, wrote ≥913 rows — see the correction at the top of
+      this file).** Still incomplete: **A5 was mapped at only 2 of 7 columns** when it ran, which
+      is why `Technical Notes` and `Info+` are still 0 live. The remaining mappings are specified
+      in `transfer-flow-forensics-2026-09-04.md` §6 but **not yet built**. Spec fully drafted and
+      resolved
       2026-08-17. Full field-by-field mapping below, verified against the live workbook's
       raw `TableOrders` data (not guessed) — see "How this was verified" at the end of the
       step. All design questions raised during drafting (archive reconciliation, the

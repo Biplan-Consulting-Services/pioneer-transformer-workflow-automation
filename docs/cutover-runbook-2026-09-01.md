@@ -266,18 +266,35 @@ Keep the trigger flow itself alive: it still serves manual edits staff make from
 
 Add to both `CreateOrderItem` and `UpdateOrderItem`:
 
+> **⚠️ This table is wrong in three places, and `transfer-flow-forensics-2026-09-04.md` §6
+> supersedes it.** Corrected 2026-09-04 by 🟠 D from 🔵 A's verified capture — source keys read
+> from a real `List rows present in a table` output, target internals read from
+> `_api/web/lists/getbytitle('Order Items')/fields`. **Nothing retyped from a display name.**
+> Use §6's expressions verbatim; the three errors are called out inline below.
+
 | Column | How |
 |---|---|
-| `Technical Notes` | Plain — no special characters |
-| `Configuration` | Plain |
-| `Section Qty` | `int()`/`float()` **with a blank + non-numeric guard** — check for `EC`, `AT`, `RE`, `BO`, `TE`, `B1`–`B3` first. An unguarded `int()` is exactly what failed at iteration 114 on the stage dates |
-| `Protector & Switchgear Item #` | **Dynamic-content picker only.** Never hand-type |
-| `Info+` | **Inspect a test-run JSON first** to see what key the `+` produces, then use the picker |
+| `Technical Notes` | ~~Plain — no special characters~~ **← WRONG.** All 7 non-blank values are **raw SharePoint HTML** that already round-tripped out of SharePoint once. Target is a `Note` field. Flagged, not fixed — stripping the HTML is a data decision, not a mapping one |
+| `Configuration` | ~~Plain~~ **← WRONG, it needs a guard.** 9 of its 510 non-blank values are Excel **time** cells that render `00:00:00`. See §6 for the guard expression |
+| `Section Qty` | `int()`/`float()` **with a blank + non-numeric guard** — check for `EC`, `AT`, `RE`, `BO`, `TE`, `B1`–`B3` first. An unguarded `int()` is exactly what failed at iteration 114 on the stage dates. *(Verified genuinely clean — 119/119 parse — but keep the guard.)* |
+| `Protector & Switchgear Item #` | **Dynamic-content picker only.** Never hand-type. Key escapes the `#` but **not** the `&`: `Protector & Switchgear Item _x0023_`. No collision with `Protector & Switchgear PO` (`ProtectorSwitchgearPO`) |
+| `Info+` | ~~**Inspect a test-run JSON first**~~ **← no longer needed, it was done.** The key needs **no escaping** — it is literally `Info+` |
 | `Planned Tanking Date` | Raw `TableOrders[Tanking Date]`, same serial→date conversion as everywhere else |
 | `Planned Delivery Date` | Raw `TableOrders[Delivery Date]`, same conversion |
+| `BO` | *(added)* Passes through **exactly as stored**. Per the user it is derived-by-default but **manually overridable, and 7 units deliberately differ from the derived value.** Do **not** compute it and do **not** add a derive-and-compare guard — either silently reverts those 7 |
 
 Spot-check the four text columns in raw `TableOrders` for `indéterrminé` / `CONFRIMED` / `EC`
 before trusting them.
+
+> **Expected counts, to verify a run against rather than eyeball** (from
+> `FRM10-12_2026-09-01_13h43m.xlsx`, 1039 rows): `Info+` 97 · `Technical Notes` 7 ·
+> `Protector & Switchgear Item #` **0** · `Configuration` 510 (501 after the guard) ·
+> `Section Qty` 119 · `BO` 626.
+>
+> **`Protector & Switchgear Item #` is 100% blank at source.** A6's acceptance test "the 5 new
+> columns are populated, not blank" is **impossible** for that one and will look like a failure
+> when it is the correct result. Verify it by confirming the mapping exists — **never by
+> counting.**
 
 ### A5b. Verify the Tanking/Delivery exception is actually built — **do this before the run**
 
@@ -331,12 +348,27 @@ cell-fixing into nothing, and it makes the one irreversible run land clean.
 inside `Update item`. The loop keeps going and the rows still land — only that one column is
 left unwritten. This is known behaviour, not a sign the run went wrong.
 
-**This is the last transfer run that will ever happen** — the flow gets disabled at A8, and
+> **⚠️ BOTH PARAGRAPHS BELOW ARE NOW WRONG. Corrected 2026-09-04 by 🟠 D, flagged by 🔵 A.**
+> They rest on one assumption — that Sep 1 was the last run ever and FRM10-12 was about to go
+> read-only. **A8 never ran and D5 was cut**, so the flow is not disabled and the workbook is not
+> read-only. We are in a **parallel run**, and both instructions invert:
+>
+> - **"This is the last transfer run that will ever happen"** — it wasn't. The flow can and will
+>   run again.
+> - **"Fix in SharePoint, not in Excel"** — **backwards now.** FRM10-12 is still the live source
+>   staff type into. A SharePoint-side hand-fix gets **overwritten by the next run**, because the
+>   run reads Excel and writes SharePoint. Under a parallel run, **fix it in Excel**, where staff
+>   work and where the next run will read it from.
+>
+> This flips back the day the cutover actually completes. Until then, treat the original text
+> below as describing the intended end state, not today.
+
+~~**This is the last transfer run that will ever happen**~~ — the flow gets disabled at A8, and
 FRM10-12 becomes read-only. So whatever value ends up in those cells tonight is what SharePoint
 holds permanently. Worth fixing properly rather than leaving null.
 
-**Fix in SharePoint, not in Excel.** The source workbook is about to become a read-only mirror,
-so correcting it there buys nothing and would need a second run to propagate.
+~~**Fix in SharePoint, not in Excel.**~~ The source workbook is about to become a read-only
+mirror, so correcting it there buys nothing and would need a second run to propagate.
 
 Procedure:
 1. Cross-check the failed iterations against D0's list. If they match, no run-history crawl is
