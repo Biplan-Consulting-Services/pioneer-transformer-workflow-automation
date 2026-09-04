@@ -308,6 +308,64 @@ companion `_TextField`, and which sync pattern it needs (Simple / Get-item / the
 chained case). Doubles as a reference for diagramming list relationships, not just for
 building the sync flows in `order-items-power-automate-flows.md`.
 
+## 🔴 Site timezone + the 17 date columns — the UTC flip is a workaround, not a fix
+
+**Status: NOT resolved.** Recorded elsewhere as "decision 6, closed by the timezone flip." It is
+worked around, and the workaround is one the user has ruled out.
+
+**User requirement (2026-09-04): the site and all columns should be Eastern** — Montreal office,
+Granby factory. The site is currently `(UTC) Coordinated Universal Time` (Id 93, bias 0),
+verified by REST.
+
+### What is actually wrong
+17 columns on `Order Items` — all 8 stage `Start Date`, all 8 stage `End Date`, and
+`Tank Delivery Date` — are configured **Date and Time**, and their values are stored at
+`T00:00:00Z`, i.e. **UTC** midnight. On an Eastern site that instant is 7:00 PM the *previous*
+day, so every one of those dates reads a day early. Flipping the site to UTC hid that.
+
+### ⚠️ Why the obvious fixes do not work
+**A Date Only column on an Eastern site stores *local* midnight as UTC.** Provable from the two
+correctly-configured columns on this same list:
+
+| Column | Format | Stored |
+|---|---|---|
+| `Original Tanking Date` | Date Only | `2026-01-21T05:00:00Z` ← EST midnight |
+| `Manual Estimated Delivery Date` | Date Only | `2026-08-15T04:00:00Z` ← EDT midnight |
+| `Coiling End Date` (one of the 17) | Date **and Time** | `2026-04-14T00:00:00Z` ← **UTC** midnight |
+
+The 17 columns are stored **4–5 hours earlier than Eastern midnight**, so on an Eastern site they
+fall on the previous day **whatever display format is applied**. Therefore:
+
+- Setting the site back to Eastern **alone** re-breaks all 17 columns.
+- Setting the 17 columns to Date Only **alone** does not fix them — it hides the time while still
+  showing the wrong date.
+
+**The stored data is wrong for an Eastern site, not merely displayed wrong.**
+
+### Required sequence — order is critical
+1. **Set the 17 columns to Date Only.** Schema first.
+2. **Set the site timezone to Eastern** — Id 10, *(UTC-05:00) Eastern Time (US & Canada)*.
+3. **Rewrite the existing values** to Eastern midnight. **This rides along with the transfer-flow
+   backfill already required** — those values come from the flow reading FRM10-12, which holds
+   plain Excel dates with no timezone, so a re-run after steps 1–2 writes them correctly. Not a
+   separate migration.
+4. **Verify** end to end: pick a unit, compare its stage dates against FRM10-12.
+
+**Running the backfill before steps 1 and 2 writes UTC-midnight values all over again.**
+
+### Two caveats
+- **Site timezone is site-wide.** It affects every list and library on
+  `/sites/PioneerPlanificatio`, including `Created`/`Modified` stamps — not just `Order Items`.
+- **Rows the backfill does not touch keep their bad values** — the ~14 app-created units and the
+  ~71 orphan rows with no `TableOrders` row. Separate pass, or accept that their stage dates are
+  mostly empty anyway.
+
+### Why this matters beyond display
+`order-items-power-automate-flows.md:273-275` specifies **Eastern** for the stage auto-stamp
+flow: *"Pioneer's shop floor runs on Eastern time, so every stamp expression [must convert]."*
+While the site is UTC, any genuinely time-stamped value renders 4–5 hours off local — a
+correctness problem for shift times, not only a cosmetic one for dates.
+
 ## Deferred out of the 2026-09-01 cutover — decided, not forgotten
 
 Each of these was consciously cut from the overnight window, not overlooked. Full context in
