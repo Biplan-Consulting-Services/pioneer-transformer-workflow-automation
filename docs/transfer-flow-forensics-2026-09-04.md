@@ -262,6 +262,35 @@ Both blocked by the designer failing to render `Apply to each` — reproducible 
 designer and the classic (`?v3=false`) designer alike, almost certainly the cost of drawing
 `CreateOrderItem` + `UpdateOrderItem` with ~90 field mappings each.
 
+### ⚠️ The designer is blocked, but RUN HISTORY IS NOT — use it to inspect this flow
+
+**Confirmed 2026-09-04.** The run detail page **paginates iterations one at a time** — it shows
+`Show [1] of 256` and renders a single iteration's actions. The editor renders **all ~90 field
+mappings on both write actions at once**, which is what pegs the page. So:
+
+| Surface | Works on this flow? |
+|---|---|
+| Editor canvas (`Apply to each` expanded) | ❌ hangs, both designers |
+| **Run history → run detail → iteration** | ✅ **renders fine** |
+| Run detail → action → *Show raw inputs* / outputs | ✅ full JSON body |
+
+**This makes run history a usable inspection surface whenever editing is blocked.** It is how the
+Date-Only-vs-Date-and-Time question was settled without a test run: open a small run (the Aug 21
+tests are ~10 min, not 40), expand `Apply to each` → `CheckOrderMatch` → `Switch` → the taken
+case → the write action, then *Show raw inputs* for the literal payload.
+
+**Prefer a small/old test run over the big one** — the Sep 1 run has ~1000 iterations; the Aug 21
+test runs are far lighter and carry the same expressions.
+
+**What run history can and cannot tell you.** The **outputs** body is SharePoint's response after
+the write, so it reveals the *stored* value and the column's type as SharePoint reports it. The
+**inputs** body is what the action sent. Don't cite an outputs body as evidence of what the flow
+sent, or vice versa — the two answer different questions.
+
+Also: running an instant flow uses the **Run button on the flow's detail page**, not the canvas —
+so a *run* is possible even while *editing* is blocked. That distinction was initially missed and
+it matters, because it means a date-correcting backfill is not gated behind this blocker.
+
 ## 8. Other doc corrections this forces
 
 **PnP being blocked does not mean schema changes are blocked.** Track B created 19 columns via

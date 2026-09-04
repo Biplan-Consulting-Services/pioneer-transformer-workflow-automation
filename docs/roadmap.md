@@ -499,10 +499,17 @@ TankDeliveryDate     "2026-01-07T00:00:00Z"
 OriginalTankingDate  "2026-01-21"             <- BARE DATE, no time component
 ```
 
-**The connector serialises `Original Tanking Date` as a bare date and every stage column as a
-full UTC instant, in the same payload.** That is the column's type as SharePoint reported it *in
-August* — so those columns genuinely were Date Only vs Date-and-Time at write time. **No longer
-inferred from the Sep 1 export.**
+**Stated strictly, because this is an OUTPUT body — SharePoint's response *after* the write, i.e.
+SharePoint serialising the STORED value according to column type. It is not a record of what the
+connector sent.** The claim it supports is:
+
+> In August, **SharePoint reported** `Original Tanking Date` as a bare date and the stage columns
+> as full instants — which means those columns genuinely **were** Date Only vs Date-and-Time
+> **at write time**.
+
+**That closes the one inferred link** (a Sep-1 format label applied to August writes). Do **not**
+cite this as evidence of how the connector serialises outbound values — that was not observed.
+Precision credit: 🟢 B.
 
 Cross-check: a bare `2026-01-21` on an Eastern site stores as `05:00:00Z` (EST midnight), which
 is exactly the 15 winter-dated values measured in that column. Consistent both ways.

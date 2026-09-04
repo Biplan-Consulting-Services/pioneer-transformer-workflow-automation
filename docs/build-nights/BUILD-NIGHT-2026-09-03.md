@@ -2496,10 +2496,17 @@ CoilingDate ... TankDeliveryDate   "2026-04-14T00:00:00Z"   full instants
 OriginalTankingDate                "2026-01-21"             BARE DATE
 ```
 
-The connector serialises the **Date Only** column as a bare date and the **Date-and-Time**
-columns as full UTC instants **in the same response.** That is the column type as SharePoint
-reported it **in August** — which removes the one weak link 🟢 B had flagged, that the August
-column types were inferred from a Sep 1 export. Cross-check both ways: a bare `2026-01-21` on an
+🔴 **Wording corrected 16:2x — mine, and it overclaimed.** I first wrote *"the connector
+serialises the Date Only column as a bare date..."*. **That is not what was observed.** This is
+the **output** body: SharePoint's response *after* the write, serialising the **stored** value by
+column type. It says nothing about what the connector **sent**. 🟢 B caught the same slip in
+🔵 A's phrasing and it applies equally to mine.
+
+**The strict claim, which is all that is needed:** in August, **SharePoint REPORTED**
+`Original Tanking Date` as a bare date and the stage columns as full instants — so those columns
+genuinely **were** Date Only vs Date-and-Time **at write time.** That removes the one weak link
+🟢 B had flagged, that the August column types were inferred from a Sep 1 export.
+**Do not cite it as evidence of outbound connector behaviour.** Cross-check both ways: a bare `2026-01-21` on an
 Eastern site stores `05:00:00Z`, exactly matching the 15 winter-dated values already measured.
 
 **So the fix is the run, and the revised sequence stands unchanged.** Step 3's re-count is now
@@ -2532,3 +2539,33 @@ account picker** — that is an identity decision for the user, not a technical 
 never Refresh All. 🔵 A has confirmed it is the live workbook, it is mine, and it is step 1. **🔵 A
 has written no data and run nothing; the run is waiting on you.** The optional one-minute paste
 of the patched script into the live workbook still stands (saves ~64,920 cell-writes).
+
+**2026-09-04 16:3x | 🟠 D | 🟢 B's wording correction applies to MY text too, not just 🔵 A's.
+Fixed. Also flagging that it is already baked into a pushed commit message.**
+
+🟢 B caught that "the connector serialises X as a bare date" overclaims: the **output** body is
+SharePoint's response *after* the write, serialising the **stored** value by column type — it is
+**not** a record of what the connector **sent**. Fair, and **I repeated the same slip in my own
+16:0x post**, which I have now corrected in place above rather than quietly reworded.
+
+**The strict claim, which is all the argument needs:** in August, **SharePoint REPORTED**
+`Original Tanking Date` as a bare date and the stage columns as full instants — so those columns
+genuinely **were** Date Only vs Date-and-Time **at write time.** Same conclusion, and it still
+closes the inferred link. **Nobody should cite it as evidence of outbound connector behaviour.**
+
+⚠️ **It is also in commit `eb5a834`'s message, which is pushed.** I am not rewriting pushed
+history to fix a phrasing error, so that message overclaims and will stay that way; the
+correction rides in the following commit's message instead. Recording it here so a future reader
+who greps the log and finds the wrong phrasing knows it was caught, and where.
+
+**Why this is worth the ink rather than a silent edit:** the docs are now being used as evidence.
+🔵 A settled a real question from a run body, and the next person will reasonably reach for the
+same technique. If the record says "the connector sends bare dates", someone will design a
+mapping around outbound behaviour that has **never been observed** — and per the runbook's own
+warning, a wrong date write in this flow fails **silently**, with nothing in the run history.
+The distinction between *what was sent* and *what was stored and echoed back* is exactly the kind
+of thing that survives in a doc long after everyone has forgotten which body they read.
+
+**Nothing else changes.** The sequence stands, the fix is still the run, step 3's re-count is
+still confirmation rather than a test, and **the live FRM10-12 refresh is still step 1 and still
+needs the user.** 🔵 A has run nothing and written no tenant data.
