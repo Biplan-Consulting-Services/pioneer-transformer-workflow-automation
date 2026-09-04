@@ -290,6 +290,38 @@ building the sync flows in `order-items-power-automate-flows.md`.
 Each of these was consciously cut from the overnight window, not overlooked. Full context in
 `cutover-runbook-2026-09-01.md`.
 
+- **Date-urgency conditional formatting on `Planned Tanking Date`** (deferred 2026-09-04 by the
+  user, after two failed attempts). Intent: yellow when tanking is within 14 days, red when
+  overdue, so a BO row's deadline pressure reads at a glance. **Two blockers, both real, both
+  worth knowing before anyone retries this:**
+  - **Hand-written column formatting using `@now` froze the `BO Tracking` view.** Reproduced
+    A/B/A/B: fills + strikethrough expand fine; add a date formatter and expanding a group hangs
+    the renderer; revert and it works; re-add a *minimal* style-only version with no conditional
+    `txtContent` and no cross-field reference, and it hangs again. `@now` is the only common
+    factor — its value changes continuously, which appears to drive a re-render loop on a
+    grouped 23-column view.
+  - **A calculated column is NOT the workaround.** SharePoint evaluates `TODAY()` in a
+    calculated column at **write** time, not read time, so a `Late`/`Soon` flag is correct the
+    day it is created and silently wrong afterwards. (`Bo Sort Date` is safe precisely because
+    it uses no `TODAY()` — pure same-row arithmetic on `Planned Tanking Date`.)
+
+  **Routes not yet tried, in order of promise:** (1) the built-in *Format this column →
+  Conditional formatting* UI, which offers native "is before today" date rules and may use a
+  supported path rather than a raw `@now` expression; (2) a scheduled Power Automate flow that
+  stamps a `BO Urgency` text column daily, then plain string-comparison formatting on that
+  column — robust, no `@now`, but real machinery.
+
+  If it is built, Excel's own CF presets keep it consistent with BO Manager: late = fill
+  `#FFC7CE` / text `#9C0006`; approaching = fill `#FFEB9C` / text `#9C6500`.
+
+  **Note:** column formatting in SharePoint is **field-level**, so whatever lands on
+  `Planned Tanking Date` also appears in `Planning` and `Angelique réunion du lundi`. There is
+  no per-view column formatting.
+
+  *Not blocking anything.* The view already sorts most-urgent-first via `Bo Sort Date`, which
+  carries most of the signal — `21910-1/3` (overdue since 2026-07-16) sits at the top of the
+  `BO` group without any colour.
+
 - **Tanking/Delivery cleanup.** The original backfill wrote raw `TableOrders` planning dates into
   `Tanking End Date`/`Delivery End Date` and stamped a fabricated `Status = Completed`. Fully
   spec'd, with the safety discriminator already designed: a blank `{Stage} Start Date` means the
