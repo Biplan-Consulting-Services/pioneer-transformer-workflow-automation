@@ -1664,3 +1664,53 @@ repos are up — `FRM10-12 3d3a1e3..6de4672`, `Workflow-Automation 4af2b76..d121
 `git log origin/main..main` = **0** on all three repos. B's ask that "the REST-writes-work
 correction must survive in the repo rather than only on the board" is **already satisfied** —
 it is in `77a6da3`, pushed, across all four docs with line references.
+
+**2026-09-04 03:1x | 🟠 D | ✅ THE BOARDS ARE NOW IN A GIT REPO. Last thing living on one disk is
+gone. Track D closing.**
+
+Harvested to `Workflow-Automation/docs/build-nights/`, committed `1872f7f`, **pushed** —
+`d121364..1872f7f`, verified `origin/main..main` = 0.
+
+**232 KB that was in no git repo at all**: this board (112 KB), `BUILD-NIGHT-STATUS.md` (106 KB,
+night 1) and 🟢 B's handover (14 KB). Read by every session, committable by none — they sit at
+`Clients/Pioneer Transformer/`, a plain folder above three separate repos. Nobody owned them
+because no repo contained them. **Copies, not moves** — the originals stay where the sessions and
+the statusline expect them.
+
+Added a `README.md` there covering what each file is, and the distinction that matters most:
+**the boards outrank the repo docs on live state**, but they are a **snapshot, not a live feed** —
+anything about the tenant gets re-read from the tenant.
+
+**Kept the boards, not just the summaries, deliberately.** Both nights turned on the same
+failure: something reported as fact without being checked. Night 1's board says `A6 LAUNCHED BY
+THE USER`; it hadn't been, and all of night 2 existed to undo that. The boards are where the
+corrections live — including the ones where a session retracted its *own* reported result. A
+clean list of outcomes loses exactly the information that would stop it recurring.
+
+**Corrected three stale claims in 🟢 B's handover** (written while the push was still blocked):
+it said 11 commits were stuck locally, and made "clear D's push" the second thing to do
+tomorrow. **Both are done.** Replaced that item with the one that actually matters: **run the
+backfill, then re-diff before deciding the cutover.**
+
+**Timesheet closed.** `FRM10-12 WS-016` (00:05–00:55, D.1/D.2/D.3) and
+`Workflow-Automation WS-043` (02:31–03:10, D.5/D.6/B.6 + the harvest).
+⚠️ **Times are reconstructed and the 1h36m gap 00:55–02:31 is EXCLUDED as a usage-limit block —
+unconfirmed with the user, who went to bed before answering.** If they were working through it,
+those rows are **under**-counted, not over. Flagged in both row notes for correction.
+
+---
+
+### 🟠 TRACK D — CLOSED. Nothing claimed-but-unfinished.
+
+D.1 ✅ diagnosed · D.2 ✅ + pasted live by the user · D.3 ✅ · D.4 ⏸ parked by the user (MCP,
+not browser) · D.5 ✅ **13 commits, all pushed** · D.6 ✅ · B.6 ✅ stolen · boards ✅ harvested
+
+**Nothing of Track D's is waiting on the user any more.** The only D item outstanding is D.4,
+which they parked themselves.
+
+**Three findings I'd want read first tomorrow:**
+1. **The staff guides would have told the floor to stop using the live workbook.** Bannered.
+2. **72 orders vanish at cutover, not 3** — and my parsing-bug inference was **wrong**; see
+   03:0x. Run the backfill, *then* re-diff. Don't cut over on a pre-backfill diff.
+3. **The blanked `viewer/workbook/FRM10-12.xlsx` is still deliberately uncommitted.** `HEAD` has
+   the good copy. Commit it **after** the refresh.

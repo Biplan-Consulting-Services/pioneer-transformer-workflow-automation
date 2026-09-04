@@ -62,16 +62,16 @@ a real need, and it happened unaided.
 
 ## Monday cutover blocker 🔴
 
-**Three real, active orders exist in FRM10-12 with no `Order Items` row at all:**
-`P20001-1/1` (CONED), `P1_001-1/1`, `P20004-1/2` — the last with a Tanking Date of **2026-09-28**,
-three weeks out, so unambiguously in flight.
+**72 unit rows exist in FRM10-12 with no `Order Items` row at all.** Harmless today because
+staff still read FRM10-12. **The moment `Order Items` becomes the source of truth, all 72
+vanish from every view.**
 
-Found two independent ways: 🟠 D from the viewer/TableBO gap and purge rules, 🟢 B from a live
-REST match. Same three units.
-
-Harmless today because staff still read FRM10-12. **The moment `Order Items` becomes the source
-of truth they vanish from every view.** Two are `P`-prefixed and one contains an underscore, so
-a Unit ID matching edge case in the transfer flow is the first place to look.
+*How this number moved during the night, because the earlier figure is still quoted elsewhere:*
+🟠 D found **three** (`P20001-1/1`, `P1_001-1/1`, `P20004-1/2`) from the viewer/TableBO gap, and
+🟢 B confirmed the same three by live REST match. Both were looking only at BO-valued units, so
+both saw a **subset**. 🔵 A then ran the full diff and found 72. **The three are inside the 72.**
+Neither earlier finding was wrong — both were partial views, and neither vantage point could
+have seen the rest.
 
 **🔵 A correction (02:3x): it is 72 rows, not 3, and it is probably NOT a parsing bug.** Full
 title-level diff — all 1039 workbook `Order` values against all 1052 live titles, intersection
@@ -93,8 +93,6 @@ no Sep 1 version). **So the backfill probably fixes all 72 by itself.**
 then re-diff. Whatever survives is the real bug, and those 6 `P`-prefixed rows are where to
 look. On current evidence there may be no bug at all.
 
-**Deliberately not hand-created.** Creating the rows by hand would hide the flow bug and it
-would recur on the next order with an odd number.
 
 Separately, 🔵 A found orphan rows in `Order Items` with no `TableOrders` row — the *opposite*
 direction, and the two sets cannot overlap.
@@ -233,3 +231,23 @@ a plausible, wrong "297 rows" against an actual ≥913.
 
 **Unresolved, needs the user:** two timesheet gaps (00:30→00:58 and 00:58→02:31) were never
 confirmed, so **no rows were opened or closed by Track A** rather than guess at times.
+
+---
+
+## Edit log on this file
+
+- **02:32 🟢 B** — written.
+- **02:3x 🔵 A** — corrected the orphan count (71, not "~40"; do **not** subtract the 14 app
+  rows), escalated the Monday blocker from 3 rows to 72 with the contiguous-block evidence,
+  flagged the two unrelated 72s, added "Track A — pick up exactly here".
+- **02:4x 🟠 D** — marked the push resolved and verified it (`git log origin/main..main` = 0 on
+  all three repos).
+- **02:5x 🟢 B** — rewrote the Monday-blocker lede, which still opened "Three real, active
+  orders" and only corrected to 72 four paragraphs down. A skim-read would have taken away the
+  wrong number. Removed a superseded "don't hand-create" rationale that A had already replaced
+  with a better one.
+
+**Three sessions each corrected the others' numbers tonight, and each corrected their own.**
+That is the reason to trust these figures more than the ones in the Sep 1 docs — not because
+anyone was careful, but because everything load-bearing was checked by someone who did not
+write it.
