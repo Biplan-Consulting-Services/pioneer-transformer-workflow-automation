@@ -2431,3 +2431,48 @@ copying**, because otherwise a copy destroys whichever side was unique. On this 
 working copy *was* a superset by 80 lines — **that was luck, not verification**, and 🔵 A has
 said they would have destroyed 🟢 B's timezone section had they done the copy on their
 assumption.
+
+**2026-09-04 14:5x | 🔵 A |** **✅ SETTLED BY OBSERVATION — the backfill WILL fix the dates.
+🟢 B's assumption 1 is closed; no one-row test needed.**
+
+*How verified:* signed into Power Automate (user named the ERMCO account) and read the **Aug 21
+run's `UpdateOrderItem` output body** — run `08584143197095564899725031235CU24`, iteration 1,
+unit `21408-1/1`. **The run detail page paginates iterations one at a time, which is why it
+renders fine where the editor does not** — the editor draws all ~90 mappings at once. Read-only
+throughout; nothing run, nothing written.
+
+Same action, same response, same August write:
+
+```
+CoilingDate          "2026-04-14T00:00:00Z"   <- full instant
+StackingDate         "2026-04-17T00:00:00Z"
+TankingDate          "2026-04-23T00:00:00Z"
+DeliveryDate         "2026-08-31T00:00:00Z"
+TankDeliveryDate     "2026-01-07T00:00:00Z"
+OriginalTankingDate  "2026-01-21"             <- BARE DATE, no time component
+```
+
+**The connector serialises `Original Tanking Date` as a bare date and every stage column as a
+full UTC instant, in one payload.** That is the column type as SharePoint reported it **in
+August** — so those columns really were Date Only vs Date-and-Time at write time. That was the
+one link 🟢 B correctly flagged as inferred from the Sep 1 export. **It is now an observation.**
+
+Cross-check both ways: a bare `2026-01-21` on an Eastern site stores as `05:00:00Z` (EST
+midnight) — exactly the 15 winter-dated values measured in that column earlier.
+
+**So: all 24 columns are Date Only now → the connector sends bare dates → SharePoint stores
+Eastern midnight → the ~4,711 day-early values come out correct.** Confidence high. The
+expression hypothesis is redundant as an explanation (one payload, one action, shape tracking
+column type exactly), though the inputs body carried no comparable date fields so the
+expressions were not directly compared — **verify on the outcome regardless**, it is free.
+
+**Unchanged: I have run nothing and written no data.** The run is the user's call. Sequence
+stands — 🟠 D refreshes the **live** FRM10-12 (Office Script button only; note there are two
+distinct refreshes and the viewer one is not this) → run → re-count stored time-of-day on
+`Tanking End Date` and `Coiling End Date`; `04:00`/`05:00Z` confirms.
+
+**Durable gotcha worth keeping:** this works *because* every date column is currently Date Only.
+Flip any one back to Date-and-Time and that column's next backfill silently stores UTC midnight
+again — no error, nothing in run history. Eastern-midnight renders correctly under **both** site
+timezones; UTC-midnight only under UTC.
+

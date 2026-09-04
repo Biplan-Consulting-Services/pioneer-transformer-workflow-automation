@@ -480,7 +480,46 @@ the 5 remaining columns (A.3) does need the designer, and doing it first avoids 
 **Do not rewrite the ~4,711 values by hand.** That was my earlier recommendation and it is now
 the wrong tool — the backfill does it correctly and is required anyway.
 
-#### Two assumptions inside that conclusion — inferred, not measured (raised by 🟢 B)
+#### ✅ Assumption 1 is now CLOSED by observation — 🔵 A, 2026-09-04 14:5x
+
+Read from the **Aug 21 run's `UpdateOrderItem` output body** in run history (run
+`08584143197095564899725031235CU24`, iteration 1, unit `21408-1/1`). Same action, same response,
+same August write:
+
+```
+CoilingDate          "2026-04-14T00:00:00Z"   <- full instant
+StackingDate         "2026-04-17T00:00:00Z"
+AssemblyDate         "2026-04-20T00:00:00Z"
+DryingDate           "2026-04-20T00:00:00Z"
+TankingDate          "2026-04-23T00:00:00Z"
+TestingDate          "2026-07-14T00:00:00Z"
+FinishingDate        "2026-07-16T00:00:00Z"
+DeliveryDate         "2026-08-31T00:00:00Z"
+TankDeliveryDate     "2026-01-07T00:00:00Z"
+OriginalTankingDate  "2026-01-21"             <- BARE DATE, no time component
+```
+
+**The connector serialises `Original Tanking Date` as a bare date and every stage column as a
+full UTC instant, in the same payload.** That is the column's type as SharePoint reported it *in
+August* — so those columns genuinely were Date Only vs Date-and-Time at write time. **No longer
+inferred from the Sep 1 export.**
+
+Cross-check: a bare `2026-01-21` on an Eastern site stores as `05:00:00Z` (EST midnight), which
+is exactly the 15 winter-dated values measured in that column. Consistent both ways.
+
+**Consequence: all 24 columns are Date Only now, so the connector will serialise all of them as
+bare dates and SharePoint will store site-local (Eastern) midnight. The backfill fixes the
+dates.** Confidence is high.
+
+#### Assumption 2 — still open, but no longer load-bearing
+
+The remaining alternative was that the split came from *different mapping expressions* rather
+than column format. The evidence above makes that redundant as an explanation — one payload, one
+action, and the shape difference tracks the column type exactly. The action's **inputs** body was
+also read and carries no date fields in a comparable shape, so the expressions were not directly
+compared. **Verify on the outcome anyway** (below) — it costs nothing and settles it for good.
+
+#### Original caveat text, retained for the record (raised by 🟢 B)
 
 Act on the conclusion; it is well supported. But do not read the table above as fully measured,
 because two links in it are inference:
