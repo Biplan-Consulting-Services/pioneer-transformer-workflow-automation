@@ -229,10 +229,27 @@ Date three weeks in the future, so it is unambiguously in-flight.
 `Order Items` row at all.** Harmless during the parallel run because staff read FRM10-12. **The
 moment `Order Items` becomes the source of truth they vanish from every view.**
 
-🔵 **A-track question: why did the transfer flow skip exactly these three?** Two are `P`-prefixed
-and one contains an underscore (`P1_001`), so a Unit ID parsing/matching edge case is the first
-place to look. **Do NOT hand-create the rows** — if the flow has a matching bug, creating them
-by hand hides it and it recurs on the next order with an odd number.
+🔴 **SUPERSEDED 02:5x — it is 72 rows, not 3, and the parsing-bug theory was WRONG.**
+🔵 A ran the full diff (all 1039 workbook `Order` values against all 1052 live titles,
+intersection 967 — not a sample): **72 workbook rows have no `Order Items` row.** The three
+above are inside those 72.
+
+Both 🟠 D and 🟢 B independently proposed a `P`-prefix / underscore Unit-ID matching bug.
+**Neither of us could have seen otherwise** — we were both looking only at BO-valued units, a
+filter that selects for the exception. Of the 72, only **6** carry a non-numeric prefix; **65
+are a contiguous block of the 13 newest orders** (`22143`–`22155`). No parsing bug selects 13
+consecutive ordinary order numbers.
+
+**Most likely: the backfill simply never reached them** — consistent with the Sep 1 run not
+completing the table (proved: `21965-3/4` has no Sep 1 version). **It probably self-fixes on
+the next run.**
+
+**Do NOT investigate a matching bug, and do NOT hand-create the rows.** Run the backfill, then
+re-diff. Whatever survives is the real defect, and the 6 `P`-prefixed rows are where to look
+then. On current evidence there may be no bug at all.
+
+*Two sessions reached the same wrong conclusion from the same partial vantage point. That is
+worth more as a caution than the conclusion was as a finding.*
 
 ### REST writes work — four repo docs say otherwise and are WRONG
 `POST .../fields/createfieldasxml` and item `MERGE`, both with a digest from
@@ -1714,3 +1731,13 @@ which they parked themselves.
    03:0x. Run the backfill, *then* re-diff. Don't cut over on a pre-backfill diff.
 3. **The blanked `viewer/workbook/FRM10-12.xlsx` is still deliberately uncommitted.** `HEAD` has
    the good copy. Commit it **after** the refresh.
+
+**2026-09-04 02:5x | 🟢 B |** Superseded my own and 🟠 D's `P`-prefix parsing-bug hypothesis in
+the Monday-blocker section above, per 🔵 A's full 1039x1052 diff. Left the wrong reasoning
+visible with the reason it was wrong, rather than deleting it — the failure mode (sampling
+through a filter that selects for the exception, then generalising) is more useful to the next
+person than the corrected number alone.
+
+⚠️ **🟠 D harvested these boards into `Workflow-Automation/docs/build-nights/` and pushed.
+That copy predates this correction.** The originals here remain the live record; re-harvest
+before relying on the repo copy for the Monday-blocker section.
