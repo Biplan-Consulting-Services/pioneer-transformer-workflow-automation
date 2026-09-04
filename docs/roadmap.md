@@ -105,8 +105,11 @@ Excel→SharePoint transfer flow → extend `ColumnMap.pq`/`TableOrders.pq` so E
 read-only mirror → staff cutover.
 
 **PnP PowerShell scripting is blocked** (`ermcopower` tenant hasn't consented the PnP
-Management Shell app, and the same wall applies to any PowerShell-based automation, not just
-PnP) — schema was built manually via `docs/order-items-manual-build-checklist.md` instead
+Management Shell app~~, and the same wall applies to any PowerShell-based automation, not just
+PnP~~ — **the struck clause is false, corrected 2026-09-03: site-context REST is unaffected and
+does schema changes fine; 19 field creates + 73 item updates all returned 2xx on 2026-09-03.
+Test a GET on `_api/web/lists/getbytitle('Order Items')/fields` before assuming manual**)
+— schema was built manually via `docs/order-items-manual-build-checklist.md` instead
 (**done, 2026-08-13**), same as how `Order`/`Models`/`Model Revisions` were originally
 built. Power Automate is NOT affected by that block (first-party connector) — the
 remaining flows (TextField sync, production-date auto-stamp, the transfer flow) are being

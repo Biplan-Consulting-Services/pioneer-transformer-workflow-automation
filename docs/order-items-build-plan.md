@@ -140,9 +140,18 @@ specific to PnP PowerShell — a third-party, multi-tenant Azure AD app that nee
 tenant admin consent before *anyone* in this tenant can use it at all. It does **not** extend
 to **Power Automate cloud flows**, which use Microsoft's own first-party SharePoint
 connector — already trusted under the existing Microsoft 365 license, no IT consent needed,
-buildable directly in the browser today. So: **creating/modifying list schema (columns,
-lists themselves)** stays manual for now (no scripting path). **Working with data once the
-schema exists** — the one-time backfill's row creation, any future auto-sync flow (e.g.
+buildable directly in the browser today. So: ~~**creating/modifying list schema (columns,
+lists themselves)** stays manual for now (no scripting path).~~
+
+> **⚠️ Second scope correction, 2026-09-03 — the struck text above is also too broad.**
+> Schema changes are **not** limited to the UI either. **Site-context REST works**, proven
+> against the live `Order Items` list on 2026-09-03: **19 field creates + 73 item updates, all
+> 2xx**. The narrow, accurate statement is: **PnP PowerShell** is blocked; **site-context REST**
+> and **Power Automate** are not. Test a GET against
+> `_api/web/lists/getbytitle('Order Items')/fields` before assuming a schema change must be
+> hand-clicked.
+
+**Working with data once the schema exists** — the one-time backfill's row creation, any future auto-sync flow (e.g.
 keeping a Lookup's companion text field in sync), and all of Phase 1's `Workflow Tasks`
 automation — is fully available via Power Automate, unaffected by this block. Don't treat
 the whole migration as stuck on IT; only the schema-build step is.

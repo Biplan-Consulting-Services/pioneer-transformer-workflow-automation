@@ -1,19 +1,61 @@
 # Pioneer Transformer — build night 2026-09-01, presentation 09:00
 
-> ## ⚠️ WHAT ACTUALLY HAPPENED — read before using this document
+> ## 🛑 THIS HEADER WAS WRONG. Corrected 2026-09-03 by 🟠 D — read this first
 >
-> **The cutover did NOT happen. `A6` never ran.** Both build sessions were cut off by a Claude
-> usage limit at **~02:31** and came back after the 05:30 hard stop. This runbook is the plan
-> as written; it is **not** a record of what was executed.
+> **The block below claims `A6` never ran and the sales app was never edited. Both are false,
+> and both were false for two days.** Verified live against the tenant on 2026-09-03 22:30 by
+> REST (read-only GETs), by 🟢 B:
+>
+> | | Sep 1 export (what the block below assumes) | **Live 2026-09-03** |
+> |---|---|---|
+> | Items | 1038 | **1052** |
+> | `Planned Tanking Date` populated | 0 | **913** |
+> | `Planned Delivery Date` populated | 0 | **335** |
+> | `Location` populated | 175 | **211** |
+> | `Technical Notes` / `Info+` | 0 | **0** |
+>
+> **`A6` DID run.** `Technical Notes` and `Info+` still at zero is the signature of a run made
+> with **A5 mapped at 2 of 7** — exactly the state the flow was left in. Nobody recorded it
+> because the session that would have was killed mid-sentence by a spend limit.
+>
+> **The sales app WAS edited and is live.** Its fan-out creates `Order Items` rows in production
+> right now — `P10003-1/2`, `P10003-2/2` (2026-09-03 15:00), `P00005-1/1` (13:21),
+> `22157-8/10`…`10/10` (Sep 2) were all created by real users, not by a flow.
+>
+> **So `Order Items` has TWO WRITERS that do not know about each other** — the app's fan-out and
+> the transfer flow. Anything below that assumes a single writer, or an untouched list, is
+> planning text and not a description of the system.
+>
+> **What the block below still gets right:** the cutover as a whole did not complete, **D5 was
+> cut so the viewer is genuinely NOT deployed**, the live FRM10-12 is untouched, and staff are
+> unaffected. This is a **parallel run** — staff still fill in FRM10-12 while the app also
+> creates Order Items.
+>
+> **Do not undo anything on the strength of the text below.** In particular, never "fix" a blank
+> `Tanking Date` by reverting the 2026-09-01 re-source: the Planned columns are populated now,
+> so a refresh is the fix. Current state lives in `../../BUILD-NIGHT-2026-09-03.md` (KEY FACTS),
+> which supersedes this header.
+>
+> ---
+>
+> ## ⚠️ ORIGINAL HEADER — SUPERSEDED, kept for the record
+>
+> **The cutover did NOT happen. `A6` never ran.** ← **FALSE, see above.** Both build sessions
+> were cut off by a Claude usage limit at **~02:31** and came back after the 05:30 hard stop.
+> This runbook is the plan as written; it is **not** a record of what was executed.
 >
 > **Nothing is broken and nothing needs undoing.** No flow ran, so `Order Items` holds exactly
-> what it held before the night started — nothing written, nothing fabricated. The live
-> FRM10-12 is untouched, the viewer was never deployed, the sales app was never edited, and the
+> what it held before the night started — nothing written, nothing fabricated. ← **FALSE, see
+> above: the flow ran and wrote 913/335/211.** The live
+> FRM10-12 is untouched, the viewer was never deployed, the sales app was never edited ←
+> **FALSE, the app is live and creating rows**, and the
 > trigger flow is still ON in its normal state. Staff are unaffected.
 >
 > ### Landed and safe to keep
-> - **B1** — all 7 new columns live on `Order Items` (empty; the run that fills them never ran)
+> - **B1** — all 7 new columns live on `Order Items` (~~empty; the run that fills them never
+>   ran~~ — **not empty: 913 / 335 / 211 populated, see above**)
 > - **B2** — `Production Floor` and `Planning` views live and working on the real 1,038 rows
+>   (**now 1052 rows, and there is a third and fourth view — see the `Overview` note below**)
 > - **D2 / D3** — ColumnMap remapped and synced into the viewer workbook, committed
 > - **D0** — the `int()` failure root cause (case-sensitive `EC` guard); scanner in scratchpad
 > - **D5b** — refresh owners named
@@ -341,7 +383,9 @@ No flows, no quota. Nothing here can break data. **Start immediately — B1 gate
 
 ### B1. The 7 columns (25 min) — *do this first, announce when done*
 
-On `Order Items`, via the UI (PnP PowerShell is still blocked on this tenant):
+On `Order Items` (PnP PowerShell is still blocked on this tenant — but **site-context REST is
+not**, corrected 2026-09-03: it did 19 field creates + 73 item updates, all 2xx. Test a GET on
+`_api/web/lists/getbytitle('Order Items')/fields` before doing this by hand):
 
 | Column | Type | Why |
 |---|---|---|
@@ -377,6 +421,27 @@ encoding problem is Power Automate's alone.
 like the workbook staff already know.
 
 Verify both *after* A6's run, not before — they depend on TextField accuracy.
+
+> ### ⚠️ There are FOUR views live, not two. Added 2026-09-03 by 🟠 D.
+> This section plans `Production Floor` and `Planning`. Two more exist on the live site and are
+> documented **nowhere** — not in this runbook, not in either staff guide, not in
+> `infrastructure-overview.md`:
+>
+> - **`Overview`** — built **06:37 on 2026-09-01**, right at the end of the night. Appears in no
+>   runbook, board, or guide.
+> - a fourth view, counted in the same 2026-09-03 live check.
+>
+> **I have not documented what these views contain, deliberately** — I have not read their
+> definitions, and inventing a description of a live staff-facing view is worse than admitting
+> the gap. Board task **0.5** (export the 4 view definitions) is what closes this; until it runs,
+> treat "the views" as an **unknown set of four**, not the two below.
+>
+> Two consequences worth having in writing:
+> - Both staff guides tell staff to open `Production Floor` and mention no others. If `Overview`
+>   is the more useful landing view, staff are being pointed at the wrong one.
+> - The `NumberOfLines=6` Note-column problem (KEY FACTS) was fixed on the **Planning** view. If
+>   `Overview` carries a Note column, it has the same ~315px-row / 2-rows-per-screen bug and
+>   nobody has looked.
 
 ### B3. Site home page + Quick Launch (45 min)
 

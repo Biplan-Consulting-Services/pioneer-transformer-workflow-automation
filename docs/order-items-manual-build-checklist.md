@@ -1,14 +1,28 @@
 # Order Items — Manual Build Checklist
 
+> ## ✅ SCHEMA CHANGES CAN BE SCRIPTED. Corrected 2026-09-03.
+> **The paragraph below is wrong where it says *any* automation is blocked.** `AADSTS700016` is
+> specific to the **PnP Management Shell**, a third-party multi-tenant Azure AD app that needs
+> tenant admin consent. It is **not** a general block on scripting.
+>
+> **Site-context REST works, and has been used for real schema changes.** Proven 2026-09-03 by
+> 🟢 B: **19 field creates + 73 item updates, all 2xx**, against the live `Order Items` list.
+>
+> So: **before resigning yourself to an hour of clicking, test a GET against**
+> `_api/web/lists/getbytitle('Order Items')/fields`. If it returns, you can script the change.
+> Hand-building remains a valid fallback, not the only option. Four docs told the next person
+> otherwise for three weeks — this one, `order-items-build-plan.md`, `roadmap.md` and
+> `cutover-runbook-2026-09-01.md`; all four are corrected as of 2026-09-03.
+
 **Why this doc exists:** the original plan was a PnP PowerShell script to build this list.
 That route is blocked — the `ermcopower` tenant hasn't granted admin consent for the PnP
 Management Shell Azure AD app (`AADSTS700016`), and this user doesn't hold a role
 (Global Admin / Privileged Role Admin / Application Admin / Cloud Application Admin) that
-can grant it. Since *any* PowerShell-based automation (PnP or otherwise) hits the same
-tenant-consent wall on first use, this build goes through the SharePoint list UI by hand
+can grant it. ~~Since *any* PowerShell-based automation (PnP or otherwise) hits the same
+tenant-consent wall on first use,~~ **← false, see the correction above: site-context REST is
+not affected.** This build went through the SharePoint list UI by hand
 instead — same way `Order`/`Models`/`Model Revisions` were originally built. If IT ever
-grants that consent, scripting the *next* migration step (backfill, companion columns
-elsewhere) becomes an option again — this doc doesn't need to change either way.
+grants that consent, PnP becomes an option again too.
 
 Field names, types, and choice values below are the confirmed schema from
 `infrastructure-overview.md`'s "Order Items list schema (draft v1)" section, plus decisions
