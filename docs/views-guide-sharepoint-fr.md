@@ -43,20 +43,27 @@ affichage. Rechangez-le, c'est tout.
 
 ## 3. Les affichages qui existent
 
-Il y en a **quatre** :
+Les quatre que vous utiliserez au quotidien :
 
-| Affichage | À quoi il sert |
-|---|---|
-| **Production Floor** | L'affichage principal du plancher : où chaque unité est rendue. Regroupé par `Location`, avec une couleur par étape. |
-| **Planning** | La disposition **repliée** du classeur — les mêmes colonnes, dans le même ordre que dans FRM10-12 quand les groupes de colonnes sont fermés. |
-| **BO Tracking** | Le suivi des pièces en rupture (*back order*) : quelles unités attendent une pièce, laquelle, et de quel fournisseur. |
-| **Overview** | Vue d'ensemble. |
-| **All Items** | Tout, sans filtre ni regroupement. Le filet de sécurité — si une unité vous semble manquante ailleurs, elle est ici. |
+| Affichage | Colonnes | À quoi il sert |
+|---|---|---|
+| **Production Floor** | 6 | L'affichage principal du plancher : où chaque unité est rendue. Regroupé par `Location`, avec une couleur par étape. Trié par date de livraison estimée. Seulement les unités actives. |
+| **Planning** | 24 | La disposition **repliée** du classeur — les mêmes colonnes, dans le même ordre que dans FRM10-12 quand les groupes de colonnes sont fermés. Trié par date de livraison prévue. Seulement les unités actives. |
+| **BO Tracking** | 23 | Le suivi des pièces en rupture (*back order*) : seulement les unités qui ont un BO, regroupées par BO, triées par date d'encuvage prévue. |
+| **All Items** | 74 | Tout, sans filtre ni regroupement. C'est l'affichage par défaut, et le filet de sécurité — si une unité vous semble manquante ailleurs, elle est ici. |
 
-> ⚠️ **À compléter** — le contenu exact de **Overview** (quelles colonnes, quel regroupement)
-> n'est pas encore documenté, et je préfère laisser un trou visible plutôt que de deviner et
-> écrire quelque chose de faux dans un guide destiné au personnel. À remplir quand les
-> définitions des affichages auront été exportées (tâche 0.5).
+### Vous allez en voir d'autres, et c'est normal
+
+Dans le menu, il y a aussi des affichages que des collègues se sont créés — par exemple
+**`Angelique reunion du lundi`**. Celui-là est presque identique à `Planning` : les mêmes 24
+colonnes, le même filtre, le même tri. Quelqu'un est parti de `Planning`, a fait « Enregistrer
+l'affichage sous », et l'a ajusté pour sa réunion du lundi.
+
+**C'est exactement l'idée de la section 1.** Ces affichages-là ne sont pas des copies des
+données — c'est la même liste, regardée avec d'autres lunettes. Ouvrir celui d'un collègue ne
+dérange personne et ne change rien.
+
+Si vous voulez le vôtre, voir la section 6.
 
 ## 4. Les regroupements
 
@@ -97,8 +104,11 @@ Trier et filtrer par les en-têtes (section 5) est sans danger et n'est pas vis�
 consigne. Ce qu'il faut éviter, c'est **Modifier l'affichage courant** et **Enregistrer
 l'affichage**.
 
-Si vous avez besoin d'une disposition à vous, demandez — on peut créer un affichage personnel qui
-n'affecte personne d'autre.
+**Si vous voulez votre propre disposition, c'est tout à fait permis** — c'est comme ça que
+`Angelique reunion du lundi` a été fait. Le seul piège, c'est qu'un affichage créé comme ça est
+**public par défaut** : il apparaît dans le menu de tout le monde. Ce n'est pas grave, mais si
+vous voulez qu'il reste à vous, ou si vous n'êtes pas sûr, **venez me voir** et on le crée
+ensemble. C'est deux minutes.
 
 ## 7. Quelque chose cloche ?
 

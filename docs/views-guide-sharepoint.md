@@ -40,20 +40,26 @@ look the way you expect, that's usually why: you're still on a different view. J
 
 ## 3. The views that exist
 
-There are **four**:
+The four you'll use day to day:
 
-| View | What it's for |
-|---|---|
-| **Production Floor** | The main shop-floor view: where every unit is right now. Grouped by `Location`, with a colour per step. |
-| **Planning** | The workbook's **collapsed** layout — the same columns, in the same order you see in FRM10-12 when the column groups are closed. |
-| **BO Tracking** | Back-order tracking: which units are waiting on a part, which part, and from which supplier. |
-| **Overview** | An overview. |
-| **All Items** | Everything, unfiltered and ungrouped. The safety net — if a unit seems to be missing elsewhere, it's here. |
+| View | Columns | What it's for |
+|---|---|---|
+| **Production Floor** | 6 | The main shop-floor view: where every unit is right now. Grouped by `Location`, with a colour per step. Sorted by estimated delivery date. Active units only. |
+| **Planning** | 24 | The workbook's **collapsed** layout — the same columns, in the same order you see in FRM10-12 when the column groups are closed. Sorted by planned delivery date. Active units only. |
+| **BO Tracking** | 23 | Back-order tracking: only units that have a BO, grouped by BO, sorted by planned tanking date. |
+| **All Items** | 74 | Everything, unfiltered and ungrouped. It's the default view, and the safety net — if a unit seems to be missing elsewhere, it's here. |
 
-> ⚠️ **To be completed** — the exact contents of **Overview** (which columns, what grouping) are
-> not documented yet, and I'd rather leave a visible gap than guess and put something wrong into
-> a guide staff will rely on. To be filled in once the view definitions have been exported
-> (task 0.5).
+### You'll see others, and that's fine
+
+The menu also has views colleagues have made for themselves — for example
+**`Angelique reunion du lundi`**. That one is nearly identical to `Planning`: the same 24
+columns, the same filter, the same sort. Someone started from `Planning`, used "Save view as",
+and adjusted it for their Monday meeting.
+
+**That's section 1 in action.** Those views aren't copies of the data — it's the same list seen
+through different glasses. Opening a colleague's view disturbs nobody and changes nothing.
+
+If you'd like one of your own, see section 6.
 
 ## 4. Grouping
 
@@ -91,7 +97,11 @@ just for you.
 Sorting and filtering from the column headers (section 5) is safe and is not what this is about.
 What to avoid is **Edit current view** and **Save view**.
 
-If you need a layout of your own, ask — we can make you a personal view that affects nobody else.
+**If you want a layout of your own, that's completely fine** — it's how
+`Angelique reunion du lundi` came about. The one catch is that a view made that way is **public
+by default**: it shows up in everyone's menu. That's no disaster, but if you'd rather keep it to
+yourself, or you're not sure, **come and find me** and we'll set it up together. It takes two
+minutes.
 
 ## 7. Something look wrong?
 

@@ -55,7 +55,7 @@
 > - **B1** — all 7 new columns live on `Order Items` (~~empty; the run that fills them never
 >   ran~~ — **not empty: 913 / 335 / 211 populated, see above**)
 > - **B2** — `Production Floor` and `Planning` views live and working on the real 1,038 rows
->   (**now 1052 rows, and there is a third and fourth view — see the `Overview` note below**)
+>   (**now 1052 rows, and there are SEVEN views, not two — see the views note below**)
 > - **D2 / D3** — ColumnMap remapped and synced into the viewer workbook, committed
 > - **D0** — the `int()` failure root cause (case-sensitive `EC` guard); scanner in scratchpad
 > - **D5b** — refresh owners named
@@ -422,26 +422,40 @@ like the workbook staff already know.
 
 Verify both *after* A6's run, not before — they depend on TextField accuracy.
 
-> ### ⚠️ There are FOUR views live, not two. Added 2026-09-03 by 🟠 D.
-> This section plans `Production Floor` and `Planning`. Two more exist on the live site and are
-> documented **nowhere** — not in this runbook, not in either staff guide, not in
-> `infrastructure-overview.md`:
+> ### ⚠️ There are SEVEN views live on `Order Items`, not two. Added 2026-09-03 by 🟠 D,
+> ### corrected 2026-09-04 from the live definitions.
+> This section plans `Production Floor` and `Planning`. Read from the live view definitions:
 >
-> - **`Overview`** — built **06:37 on 2026-09-01**, right at the end of the night. Appears in no
->   runbook, board, or guide.
-> - a fourth view, counted in the same 2026-09-03 live check.
+> | View | Cols | Filter / shape |
+> |---|---|---|
+> | `All Items` **[default]** | 74 | no filter |
+> | `Production Floor` | 6 | Active · grouped by `Location` · sorted Manual Est. Delivery Date |
+> | `Planning` | 24 | Active · sorted Planned Delivery Date |
+> | `Angelique reunion du lundi` | 24 | Active · sorted Planned Delivery Date |
+> | `Angelique bobinage` | 9 | no filter |
+> | `JF - Test` | 6 | SA Job = No · grouped by Model |
+> | `BO Tracking` | 23 | BO not null · grouped by `BO` · sorted Planned Tanking Date |
 >
-> **I have not documented what these views contain, deliberately** — I have not read their
-> definitions, and inventing a description of a live staff-facing view is worse than admitting
-> the gap. Board task **0.5** (export the 4 view definitions) is what closes this; until it runs,
-> treat "the views" as an **unknown set of four**, not the two below.
+> Plus `Direction - Prix (demo)` (11 cols, sorted Order Date desc) on the **`Order`** list.
 >
-> Two consequences worth having in writing:
-> - Both staff guides tell staff to open `Production Floor` and mention no others. If `Overview`
->   is the more useful landing view, staff are being pointed at the wrong one.
-> - The `NumberOfLines=6` Note-column problem (KEY FACTS) was fixed on the **Planning** view. If
->   `Overview` carries a Note column, it has the same ~315px-row / 2-rows-per-screen bug and
->   nobody has looked.
+> **`Overview` does not exist.** An earlier version of this note said it did, on the strength of
+> one line in a Sep 1 transcript. It was renamed or deleted since, and SharePoint does not retain
+> deleted view definitions, so it is unrecoverable. `Planning` is the outline-level-1 view that
+> line was describing. **Do not go looking for it, and do not document it.**
+>
+> Three consequences worth having in writing:
+> - Both staff guides tell staff to open `Production Floor` and mention no others. The bilingual
+>   `views-guide-sharepoint*.md` pair covers all four staff-facing views.
+> - **`Angelique reunion du lundi` is a near-clone of `Planning`** — identical columns, filter
+>   and sort. Someone used "Save view as" without a guide, which is fine, and is now the worked
+>   example in the views guide.
+> - **`JF - Test` is a personal experiment that landed as a PUBLIC view.** Nobody's fault — new
+>   views default to public. It is deliberately **not named in the staff guide**: it is the
+>   reason the personal-vs-public section exists, but naming a colleague's stray view in a doc
+>   the whole floor reads makes people afraid to touch anything.
+>
+> The `NumberOfLines=6` Note-column problem (KEY FACTS) was fixed on **Planning**. Any view
+> carrying a Note column has the same ~315px-row bug; `BO Tracking` (23 cols) is worth a look.
 
 ### B3. Site home page + Quick Launch (45 min)
 
