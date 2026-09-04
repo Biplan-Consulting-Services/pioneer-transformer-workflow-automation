@@ -6,6 +6,24 @@ was verified so it can be re-run rather than trusted.
 Corrects `order-items-power-automate-flows.md` and `cutover-runbook-2026-09-01.md`, **both of
 which are written as though the Sep 1 transfer run never happened. It did.**
 
+## Read this first
+
+1. **The Sep 1 run happened** — 06:42 EDT, 40m29s, status `Failed`, and it wrote ≥913 rows.
+   `Failed` is the known false alarm. Two repo docs say the run never occurred; they are wrong.
+2. **The manual cleanup is 5 rows, not 35.** Of the 35 rows with a workbook Tanking Date and a
+   blank list value, **30 were never touched by the Sep 1 run at all** and are fixed *by
+   re-running*. Only **5** are genuine per-column failures needing a hand-fix. Do not plan a
+   35-row manual pass. (§4)
+3. **Never size a run by `Modified`-in-window on this list.** The trigger flow's stuck instances
+   have been rewriting `Modified` for three days, so that method undercounts badly — it produced
+   a plausible-looking "297 rows" that is off by a factor of three. (§1)
+4. **The runbook's "fix in SharePoint, not in Excel" is now wrong** under a parallel run — a
+   SharePoint-side fix is overwritten by the next run. (§4)
+5. **The reconciliation pass has ≥40 real orphan rows waiting.** Its August deferral reasoning
+   has expired. (§5)
+6. **A.3/A.4/A.5 are specified but NOT built** — the designer cannot render this flow. The
+   mappings in §6 are paste-ready. (§7)
+
 ## 1. The Sep 1 run
 
 **`Order Items - Excel Transfer Flow` ran once: 2026-09-01 06:42 EDT (10:42Z), 40m29s, final
