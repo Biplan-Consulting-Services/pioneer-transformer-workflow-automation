@@ -1,5 +1,29 @@
 # Working in SharePoint — a short guide
 
+> # 🛑 DO NOT HAND THIS OUT YET — as of 2026-09-04 it is not true
+>
+> **This guide describes the state *after* the cutover. The cutover has not happened.**
+>
+> It was written on 2026-09-01 for a cutover that was cut short: step **D5**, which would have
+> put the read-only mirror in place, never ran. As of **2026-09-04** we are in a **parallel
+> run**:
+>
+> - **FRM10-12 is still live, and staff must keep using it.** It is not a mirror, it is not
+>   read-only, and nothing typed into it gets wiped.
+> - `Order Items` in SharePoint is filling up alongside it — the order-creation app now creates
+>   rows there too — but it is **not** the system of record yet.
+>
+> **The two instructions below that would cause real harm if followed today** are "**Don't type
+> in it**" and "**Don't edit the Excel file any more … anything typed into it will be wiped**".
+> Both are exactly backwards right now. Following them would stop staff updating the only
+> workbook that is actually live.
+>
+> **Everything else in this guide is good and stays**, and the whole thing becomes correct on
+> the day the cutover completes. Until then: **do not paste this onto the home page and do not
+> circulate it.** For what to tell staff *today*, see `views-guide-sharepoint.md`.
+>
+> *(Flagged 2026-09-03. See `../../BUILD-NIGHT-2026-09-03.md` KEY FACTS.)*
+
 ## What changed
 
 Production tracking has moved out of the FRM10-12 Excel file and into SharePoint. You now

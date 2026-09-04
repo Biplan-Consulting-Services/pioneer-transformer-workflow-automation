@@ -1,5 +1,31 @@
 # Travailler dans SharePoint — petit guide
 
+> # 🛑 NE PAS DISTRIBUER — en date du 2026-09-04, ce guide n'est pas encore vrai
+>
+> **Ce guide décrit la situation *après* la bascule. La bascule n'a pas eu lieu.**
+>
+> Il a été écrit le 2026-09-01 pour une bascule qui a été interrompue : l'étape **D5**, celle qui
+> aurait mis en place la copie en lecture seule, n'a jamais été faite. En date du **2026-09-04**,
+> on est en **fonctionnement parallèle** :
+>
+> - **FRM10-12 est toujours actif, et le personnel doit continuer de l'utiliser.** Ce n'est pas
+>   un miroir, ce n'est pas en lecture seule, et rien de ce qui est tapé dedans ne s'efface.
+> - La liste `Order Items` dans SharePoint se remplit en parallèle — l'application de création de
+>   commandes y crée maintenant des lignes elle aussi — mais ce **n'est pas encore** la référence
+>   officielle.
+>
+> **Les deux consignes ci-dessous qui feraient des dégâts si on les suivait aujourd'hui** sont
+> « **N'écrivez pas dedans** » et « **N'écrivez plus dans le fichier Excel… tout ce qui est tapé
+> dedans va être effacé** ». Les deux sont exactement à l'envers en ce moment. Les suivre ferait
+> arrêter le personnel de mettre à jour le seul classeur qui est réellement actif.
+>
+> **Tout le reste du guide est bon et reste tel quel**, et le guide au complet deviendra correct
+> le jour où la bascule sera terminée. D'ici là : **ne pas le coller sur la page d'accueil et ne
+> pas le faire circuler.** Pour ce qu'il faut dire au personnel *aujourd'hui*, voir
+> `views-guide-sharepoint-fr.md`.
+>
+> *(Signalé le 2026-09-03. Voir `../../BUILD-NIGHT-2026-09-03.md`, section KEY FACTS.)*
+
 ## Ce qui change
 
 Le suivi de production sort du fichier Excel FRM10-12 et s'en vient dans SharePoint. Vous mettez
