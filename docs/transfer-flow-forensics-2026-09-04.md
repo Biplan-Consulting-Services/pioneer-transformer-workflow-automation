@@ -164,8 +164,42 @@ from `TableOrders` and a create/update-only flow never sees the transition.
 22032-1/20,2/20,3/20,5/20,6/20 (5)
 ```
 
-**This is a floor, not a total** — derived from the no-Tanking-Date subset only, so orphans that
-do carry a Tanking Date are not counted. A full title-level diff would give the real number.
+**Superseded by §5a — the real figure is 71, not 40.** The list above came from the
+no-Tanking-Date subset only. It is kept because the individual Unit IDs in it are confirmed;
+the *count* is not the total.
+
+## 5a. The full title-level diff — both directions
+
+Full set diff, all 1039 workbook `Order` values against all 1052 live `Order Items` titles.
+Intersection **967**. Not a sample.
+
+| Direction | Count | Meaning |
+|---|---|---|
+| In `TableOrders`, **no** `Order Items` row | **72** | orders that vanish when Order Items becomes source of truth |
+| In `Order Items`, **not** in `TableOrders` | 85 → **71** excluding the 14 app-created | stranded rows (§5) |
+
+**These two populations are disjoint by construction** — opposite directions of one diff, so no
+row can be in both. Worth stating because it was asked twice.
+
+### The 72 missing rows are NOT a Unit-ID parsing bug
+
+Grouped by order: `22143`(6) `22144`(4) `22145`(2) `22146`(5) `22147`(5) `22148`(4) `22149`(4)
+`22150`(8) `22151`(8) `22152`(10) `22153`(4) `22154`(4) `22155`(1) — **65 rows across 13
+consecutive order numbers** — plus `20877R1-1/1` and six `P`-prefixed rows (`P1_001-1/1`,
+`P1_002-1/1`, `P20001-1/1`, `P20002-1/1`, `P20004-1/2`, `P20004-2/2`).
+
+A Track D investigation from the BO side found 3 of those 6 `P`-prefixed rows and reasonably
+inferred a `P`-prefix/underscore matching bug. **The shape of the full 72 does not support
+that** — only 6 of 72 have a non-numeric prefix, and a parsing bug would not select 13
+consecutive ordinary order numbers.
+
+**The likely cause is that the backfill has simply never reached them.** This fits everything
+else here: the Sep 1 run did not complete the table (§1), and `22143`–`22155` are the newest
+orders in the workbook.
+
+**So the backfill probably fixes all 72 on its own.** Re-diff after the run before concluding
+any matching bug exists — on this evidence there may be none. Whatever survives the run is the
+real bug, and the 6 `P`-prefixed rows are where to look first.
 
 The pass was drafted 2026-08-21 and deprioritised the same day because it "only matters once
 cancelled/delivered units are actually vanishing from `TableOrders` between runs." **They now
