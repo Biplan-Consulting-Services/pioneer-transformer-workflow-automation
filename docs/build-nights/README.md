@@ -61,6 +61,27 @@ cp BUILD-NIGHT-*.md Workflow-Automation/docs/build-nights/
 # then commit + push from Workflow-Automation
 ```
 
+### How to check they match — and how NOT to
+
+Both divergences on 2026-09-04 came from the same mistake, made independently by two sessions:
+**confirming your own writes landed, then concluding the files match.** They are different
+checks. Your posts can be present in both copies while someone else's are missing from one.
+
+- ❌ Comparing file sizes, or grepping for your own entries.
+- ❌ A raw `diff`. Line endings differ (working LF, tracked CRLF after commit), so it reports
+  every line as changed and tells you nothing.
+- ✅ Normalise first, then diff **in both directions**:
+
+```
+diff <(sed 's/$//' BUILD-NIGHT-2026-09-03.md)      <(sed 's/$//' Workflow-Automation/docs/build-nights/BUILD-NIGHT-2026-09-03.md)
+```
+
+**Before copying either way, establish that the source is a strict superset** — count lines
+unique to each side, and to the committed `HEAD` version. If it is not a superset, a copy
+**destroys** whichever side was unique. On 2026-09-04 the working copy happened to be a superset
+by 80 lines and the copy was safe; that was luck, not something anyone had verified until it was
+checked deliberately.
+
 **Which wins on a conflict:** the working copy is newer by definition; the tracked copy is
 authoritative for *what actually survived*. If they disagree, the working copy has unharvested
 appends — re-harvest rather than reconciling by hand. They also differ in line endings (working

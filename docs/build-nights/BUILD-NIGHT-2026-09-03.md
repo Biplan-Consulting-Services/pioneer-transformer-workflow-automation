@@ -2356,7 +2356,7 @@ had the refresh **last**; it belongs **first**. Corrected:
 | ~~2~~ | ~~Site → Eastern~~ | ✅ **ALREADY DONE** — flipped to Id 10 at ~13:39 today. |
 | **1** | **Refresh live FRM10-12** — Office Script button on `Orders`, **never** Refresh All | 🙋 **NEEDS THE USER.** This is the first step and it gates everything after it. |
 | **2** | **Run the transfer flow** | **Does NOT need the designer** — it is an instant flow, run from the Run button on its detail page. So the designer blocker does **not** block the date fix. |
-| **3** | **Verify by re-counting stored time-of-day**, not by run status | A `Failed` status is the known false alarm. |
+| **3** | **Verify by re-counting stored time-of-day** on `Tanking End Date` and `Coiling End Date` — **not** by run status | A `Failed` status is the known false alarm. Expect `04:00Z`/`05:00Z`; any `00:00:00Z` left means the write did not localise. 🔵 A |
 | 4 | Map A5's remaining 5 columns + `BO` + **3b's conditional null** | Designer. Doing it *before* step 2 avoids a second 40-minute run — but is **not a prerequisite.** |
 | 5 | Re-diff `TableOrders` ↔ `Order Items` | The 72. Whatever survives is the real bug. |
 | 6 | Refresh the **viewer** workbook | D.1's fix. **Distinct from step 1** — see below. |
@@ -2385,3 +2385,49 @@ live workbook's Automate tab too, same as you did for the viewer. Not a blocker 
 correct **only because all 24 columns are Date Only right now.** If anyone ever flips a date
 column back to Date-and-Time, **that column's next backfill silently reverts to UTC midnight and
 reads a day early** — with no error. Adding it to the runbook's schema section.
+
+**2026-09-04 14:4x | 🟠 D | Verify step now names its two columns. 🔵 A blocked on an ACCOUNT
+PICKER — needs the user, and it is the same shared-account trap that has bitten this workspace
+before.**
+
+**Sequence step 3 made actionable.** It said "verify by re-counting stored time-of-day", which is
+the right test but not a runnable one. 🔵 A named the columns: re-count on **`Tanking End Date`**
+and **`Coiling End Date`**. Expect `04:00Z`/`05:00Z` (EDT/EST per date); **any `00:00:00Z`
+remaining means the write did not localise.** That is the outcome-based test that settles the one
+question still open below, without needing to read the flow at all.
+
+> ### 🙋 USER ACTION — 🔵 A is stopped on an account picker, not on the designer
+> A tried to settle the last open question from the Sep 1 run's **action inputs**, which live on
+> the run page rather than the canvas — so the designer blocker did **not** apply. Power Automate
+> redirected to an **account picker** and A stopped, because it offers
+> **`soleilanker@ermco-eci.com`** and **`sankerbaril@biplan.ca`** and **choosing an identity on
+> your behalf is not theirs to do.** Correct call.
+>
+> **This is the same class of problem as the `gh` active-account trap in this workspace** — one
+> ambiguous identity shared across work and personal contexts, where the failure surfaces as
+> something that names neither auth nor accounts. Worth knowing it now has a second instance.
+>
+> Either sign in yourself and hand A the run page, or say which account it should be.
+
+**What stays open, and why it does not block anything:** whether the UTC-vs-Eastern split is
+driven by **column format** or by **different mapping expressions** per column. 🔵 A's August
+evidence points hard at column format — Date Only columns got the DST-correct `04:00`/`05:00`
+split while Date-and-Time columns in the *same rows and same runs* got `00:00:00Z` — but the
+action inputs would make it conclusive.
+
+**It does not need to be settled first.** Either way, all 24 columns are Date Only **now**, so
+the backfill writes Eastern midnight; and step 3's re-count tells you whether it worked. **Verify
+on outcome, not on mechanism** — that is 🔵 A's own framing and it is the right one here, because
+the outcome test is cheap and available while the mechanism test is blocked on an identity
+decision.
+
+**Procedural note added to `build-nights/README.md`, because today produced two divergences from
+one shared mistake.** Both 🔵 A and I confirmed *our own posts had landed* and concluded the files
+matched. **Those are different checks** — your entries can be in both copies while someone
+else's are missing from one. The README now spells out what does not work (file sizes, grepping
+your own entries, a raw `diff` — line endings make it report everything as changed) and what
+does: normalise, diff **both directions**, and **establish the source is a strict superset before
+copying**, because otherwise a copy destroys whichever side was unique. On this occasion the
+working copy *was* a superset by 80 lines — **that was luck, not verification**, and 🔵 A has
+said they would have destroyed 🟢 B's timezone section had they done the copy on their
+assumption.
