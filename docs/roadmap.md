@@ -408,6 +408,113 @@ fall on the previous day **whatever display format is applied**. Therefore:
 
 **Running the backfill before steps 1 and 2 writes UTC-midnight values all over again.**
 
+### ⚠️ CORRECTION — 🔵 A, 2026-09-04 14:0x. Steps 1 and 2 are already done, and step 3 rests on a cherry-picked sample.
+
+Measured by REST against the live list, not sampled:
+
+**Step 1 is already complete — or was never true.** All **24** date columns on `Order Items` are
+`DisplayFormat = 0` (**Date Only**). **Zero** are Date-and-Time, including all 8 stage
+`Start Date`, all 8 `End Date`, and `Tank Delivery Date`. So "set the 17 columns to Date Only"
+is a no-op today. **Step 2 is also done** — the site is now `(UTC-05:00) Eastern Time` (Id 10),
+flipped ~13:39 today. This section was written while the site was still UTC.
+
+**Step 3's premise does not survive measurement.** The proof table above cites one value each
+from `Original Tanking Date` and `Manual Estimated Delivery Date` to establish that a Date Only
+column stores *local* midnight. Those two columns are actually **mixed**, and are mostly the
+opposite of what was cited:
+
+| Column | `00:00:00Z` (UTC midnight) | `04:00`/`05:00Z` (Eastern midnight) |
+|---|---|---|
+| `Original Tanking Date` | **894** | 47 + 15 |
+| `Manual Estimated Delivery Date` | **306** | 20 + 6 |
+| `Tanking End Date` | 975 | 0 |
+| `Coiling End Date` | 209 | 0 |
+| `Planned Tanking Date` | 913 | 0 |
+| `Tank Delivery Date` | 58 | 0 |
+
+The cited values are the **minority** in their own columns — most plausibly rows a person entered
+through the SharePoint UI, which does localise. Every value the transfer flow wrote is
+`00:00:00Z`, with **zero** exceptions across 2,155 values in four columns that are Date Only
+today. **So "a re-run after steps 1–2 writes them correctly" is not supported**, and following
+this sequence as written risks a 40-minute production run that changes nothing.
+
+**What is genuinely still open:** whether those columns were already Date Only *at the time* the
+flow wrote them. If they were, the connector demonstrably does not localise and a re-run cannot
+fix this. SharePoint does not expose field-schema history, so this cannot be settled by reading.
+
+### ✅ SETTLED — 🔵 A, 2026-09-04 14:2x. Step 3 is CORRECT. My "unsupported" verdict above was wrong. No one-row test needed.
+
+**The connector DOES localise, and it is the column format that decides it.** Settled from
+existing data, no write and no flow run. The 64 rows the Sep 1 run never touched still carry
+values from the **August 18–21** runs — same connector, same credentials, same runs — and within
+those *same rows*:
+
+| Column | Format at write time | Stored |
+|---|---|---|
+| `Original Tanking Date` | Date Only | 41 × `04:00Z` + 15 × `05:00Z` — **100% Eastern midnight** |
+| `Manual Estimated Delivery Date` | Date Only | 17 × `04:00` + 6 × `05:00` — **100% Eastern midnight** |
+| `Tanking End Date` | Date **and Time** | 56 × `00:00:00Z` |
+| `Coiling End Date` | Date **and Time** | 32 × `00:00:00Z` |
+| `Delivery End Date` | Date **and Time** | 44 × `00:00:00Z` |
+
+**The `04:00` / `05:00` split is EDT vs EST, correctly chosen per date.** That is genuine
+timezone localisation, not a constant offset — conclusive. The site was Eastern in August, so a
+Date Only column received Eastern midnight while a Date-and-Time column in the same write
+received the literal UTC-midnight instant.
+
+**So the model is column format, not write path.** Two hypotheses die here: my "the connector
+always stores UTC midnight" (it doesn't — 79 counter-examples with the right DST offsets), and
+the follow-up "storage depends on the write path" (it doesn't — one write path, two behaviours,
+split by format).
+
+**Consequence: all 24 columns are Date Only *now*, so a fresh backfill writes Eastern midnight
+into every one of them. Step 3 works as written.** The only thing this section got wrong is that
+step 1 is already complete.
+
+**The correct sequence today is therefore: refresh FRM10-12 (Office Script button only) → run the
+transfer flow → verify.** Running does **not** need the flow designer — an instant flow runs from
+the Run button on its detail page — so the designer blocker does **not** block this fix. Mapping
+the 5 remaining columns (A.3) does need the designer, and doing it first avoids a second
+40-minute run, but it is not a prerequisite for correcting the dates.
+
+**Do not rewrite the ~4,711 values by hand.** That was my earlier recommendation and it is now
+the wrong tool — the backfill does it correctly and is required anyway.
+
+#### Two assumptions inside that conclusion — inferred, not measured (raised by 🟢 B)
+
+Act on the conclusion; it is well supported. But do not read the table above as fully measured,
+because two links in it are inference:
+
+1. **Column format in August is inferred, not observed.** The columns are labelled by their
+   format in the **Sep 1 export**, and that label is applied to writes made **Aug 18–21**.
+   SharePoint keeps no field-schema history, so nobody can confirm the format was unchanged in
+   between. If a format was altered in that window, the comparison loses its control.
+2. **"Same mapping expression" is documented, not verified.** The alternative explanation for the
+   split is that the flow simply maps these columns with *different expressions* — which would
+   mean the run writes UTC midnight into the stage columns again and does **not** fix them.
+   Partial control: `order-items-power-automate-flows.md` groups `Tank Delivery Date`,
+   `Original Tanking Date` and `Manual Estimated Delivery Date` as one "other dates" set using
+   **the same Excel-serial conversion**, and their storage splits on format anyway —
+   `Tank Delivery Date` (one of the 17) is `00:00:00Z` 58/58 while the other two are 100% Eastern
+   midnight. **But that grouping comes from the doc, not from reading the flow**, and
+   `Tank Delivery Date` has only **n=1** among the 64 August rows. Confirming it needs the
+   designer.
+
+**What this means for execution:** the fix is still worth running — the run is required anyway
+and the downside of being wrong is that the dates stay as they already are, not that anything
+new breaks. **But verify on the actual outcome, not on this reasoning:** after the run, re-count
+stored time-of-day on `Tanking End Date` and `Coiling End Date`. `04:00`/`05:00Z` means it
+worked. `00:00:00Z` means the expression hypothesis was right, and the fix is then to correct the
+mappings rather than to rewrite data.
+
+**Meanwhile, flipping the site back to UTC is a safe holding position** — Eastern-midnight values
+render correctly under *both* timezones, UTC-midnight only under UTC. It re-hides rather than
+fixes, but it breaks nothing, including the 53 BO dates. (🟢 B asserted the opposite on the board
+and has since retracted it.)
+
+**Unrelated stray, found in the same pass:** `Coiling Start Date` holds one value at `08:03:52`
+and 15 `Delivery End Date` values carry random times. Neither fix above corrects those.
+
 ### Two caveats
 - **Site timezone is site-wide.** It affects every list and library on
   `/sites/PioneerPlanificatio`, including `Created`/`Modified` stamps — not just `Order Items`.

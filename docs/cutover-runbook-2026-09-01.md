@@ -539,6 +539,35 @@ Verify both *after* A6's run, not before — they depend on TextField accuracy.
 > time, so an urgency flag is right the day it is made and **silently wrong** after. Full
 > writeup, untried routes and the matching hex values: `roadmap.md`, deferred-items section.
 >
+> ### ☠️ `DisplayFormat = Date Only` is LOAD-BEARING on every date column. Added 2026-09-04.
+> The transfer flow's date writes are correct **only because all 24 date columns on `Order Items`
+> are currently Date Only** (`DisplayFormat = 0`, zero Date-and-Time — measured by REST
+> 2026-09-04).
+>
+> **The connector localises, and the COLUMN FORMAT is what decides it.** Proven from the 64 rows
+> the Sep 1 run never touched, which still hold values from the August 18–21 runs — same
+> connector, same credentials, same runs, and within the *same rows*:
+>
+> | Column | Format at write time | Stored |
+> |---|---|---|
+> | `Original Tanking Date` | Date Only | 41 × `04:00Z` + 15 × `05:00Z` — **100% Eastern midnight** |
+> | `Manual Estimated Delivery Date` | Date Only | 17 × `04:00` + 6 × `05:00` — **100% Eastern midnight** |
+> | `Tanking End Date` | Date **and Time** | 56 × `00:00:00Z` — UTC midnight |
+> | `Coiling End Date` | Date **and Time** | 32 × `00:00:00Z` |
+> | `Delivery End Date` | Date **and Time** | 44 × `00:00:00Z` |
+>
+> **The `04:00`/`05:00` split is EDT vs EST, chosen correctly per date** — a constant offset
+> would not track DST, so this is genuine localisation, not a fixed skew.
+>
+> **⚠️ So if anyone ever flips a date column back to Date-and-Time, that column's next backfill
+> silently reverts to storing UTC midnight and every value in it reads a DAY EARLY** — with no
+> error, no failed action, and nothing in the run history to show it. On an Eastern site,
+> UTC-midnight renders as 7:00 PM the previous day.
+>
+> **Corollary worth keeping:** Eastern-midnight values render correctly under **both** UTC and
+> Eastern site settings; UTC-midnight values only under UTC. That asymmetry is what makes Date
+> Only the durable configuration and a site flip back to UTC only a temporary retreat.
+>
 > ### New: `Bo Sort Date` — the first calculated column on `Order Items`. Added 2026-09-04.
 > Added by the user. A calculated column that substitutes a **`2999-12-31` sentinel** for a blank
 > `Planned Tanking Date`, so a sort puts unplanned units **last** instead of first (a blank date
