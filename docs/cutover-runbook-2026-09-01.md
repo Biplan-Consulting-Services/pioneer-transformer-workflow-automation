@@ -464,7 +464,7 @@ Verify both *after* A6's run, not before — they depend on TextField accuracy.
 > | `Production Floor` | 6 | Active · grouped by `Location` · sorted Manual Est. Delivery Date |
 > | `Planning` | 24 | Active · sorted Planned Delivery Date |
 > | `Angelique reunion du lundi` | 24 | Active · sorted Planned Delivery Date |
-> | `Angelique bobinage` | 9 | no filter |
+> | `Angelique bobinage` | 9 | **no filter — see below** |
 > | `JF - Test` | 6 | SA Job = No · grouped by Model |
 > | `BO Tracking` | 23 | BO not null · grouped by `BO` · sorted Planned Tanking Date |
 >
@@ -478,9 +478,18 @@ Verify both *after* A6's run, not before — they depend on TextField accuracy.
 > Three consequences worth having in writing:
 > - Both staff guides tell staff to open `Production Floor` and mention no others. The bilingual
 >   `views-guide-sharepoint*.md` pair covers all four staff-facing views.
-> - **`Angelique reunion du lundi` is a near-clone of `Planning`** — identical columns, filter
->   and sort. Someone used "Save view as" without a guide, which is fine, and is now the worked
->   example in the views guide.
+> - **`Angelique reunion du lundi` is an EXACT copy of `Planning`, never customised.** Verified
+>   programmatically: 24 fields each, same order, zero fields in either that aren't in the other;
+>   the CAML differs only in element order (`Where` before `OrderBy`), which is the same query.
+>   Someone used "Save view as" and stopped there. It is the worked example in the views guide,
+>   worded as "a colleague has already made their own copy" — **not** as "made a copy and tweaked
+>   it", which would be a checkable false claim.
+>   *Worth a Friday question, not a doc note:* an uncustomised copy may mean she saved it meaning
+>   to change it and never got there. That's a "does she need a hand" conversation.
+> - **`Angelique bobinage` has NO filter at all** — no `ItemStatus = Active`, so it shows
+>   Delivered and Cancelled units alongside live ones. Nine columns, winding-focused. **It is the
+>   only staff-facing view without the Active filter.** May well be deliberate; recorded so the
+>   next person doesn't rediscover it as a bug.
 > - **`JF - Test` is a personal experiment that landed as a PUBLIC view.** Nobody's fault — new
 >   views default to public. It is deliberately **not named in the staff guide**: it is the
 >   reason the personal-vs-public section exists, but naming a colleague's stray view in a doc

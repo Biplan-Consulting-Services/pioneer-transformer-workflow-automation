@@ -55,15 +55,17 @@ Les quatre que vous utiliserez au quotidien :
 ### Vous allez en voir d'autres, et c'est normal
 
 Dans le menu, il y a aussi des affichages que des collègues se sont créés — par exemple
-**`Angelique reunion du lundi`**. Celui-là est presque identique à `Planning` : les mêmes 24
-colonnes, le même filtre, le même tri. Quelqu'un est parti de `Planning`, a fait « Enregistrer
-l'affichage sous », et l'a ajusté pour sa réunion du lundi.
+**`Angelique reunion du lundi`**. Quelqu'un s'est déjà fait **sa propre copie de `Planning`**
+pour sa réunion du lundi : partir d'un affichage existant, faire « Enregistrer l'affichage
+sous », et lui donner un nom à soi.
 
-**C'est exactement l'idée de la section 1.** Ces affichages-là ne sont pas des copies des
+**C'est exactement l'idée de la section 1.** Ces affichages-là ne sont **pas** des copies des
 données — c'est la même liste, regardée avec d'autres lunettes. Ouvrir celui d'un collègue ne
 dérange personne et ne change rien.
 
-Si vous voulez le vôtre, voir la section 6.
+Et c'est justement là que vous pouvez ensuite ajuster : enlever des colonnes, changer le tri,
+regrouper autrement — **dans votre copie**, sans toucher à l'affichage d'origine. Voir la
+section 6.
 
 ## 4. Les regroupements
 

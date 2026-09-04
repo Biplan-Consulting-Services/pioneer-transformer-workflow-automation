@@ -52,14 +52,15 @@ The four you'll use day to day:
 ### You'll see others, and that's fine
 
 The menu also has views colleagues have made for themselves — for example
-**`Angelique reunion du lundi`**. That one is nearly identical to `Planning`: the same 24
-columns, the same filter, the same sort. Someone started from `Planning`, used "Save view as",
-and adjusted it for their Monday meeting.
+**`Angelique reunion du lundi`**. Someone has already made **their own copy of `Planning`** for
+their Monday meeting: start from an existing view, use "Save view as", and give it a name of
+your own.
 
-**That's section 1 in action.** Those views aren't copies of the data — it's the same list seen
-through different glasses. Opening a colleague's view disturbs nobody and changes nothing.
+**That's section 1 in action.** Those views are **not** copies of the data — it's the same list
+seen through different glasses. Opening a colleague's view disturbs nobody and changes nothing.
 
-If you'd like one of your own, see section 6.
+And that's the point at which you can start adjusting: drop columns, change the sort, group it
+differently — **in your copy**, without touching the original. See section 6.
 
 ## 4. Grouping
 
