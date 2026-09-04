@@ -518,6 +518,27 @@ Verify both *after* A6's run, not before — they depend on TextField accuracy.
 >
 > Staff-facing version of all of this is `views-guide-sharepoint*.md` section 7.
 >
+> ### ⚠️ Column formatting is FIELD-level, not view-level. Added 2026-09-04.
+> There is **no per-view column formatting** in SharePoint. Whatever formatter lands on a field
+> appears in **every view that shows that field.** So a formatter on `Planned Tanking Date` shows
+> up in `Planning` and `Angelique reunion du lundi` too, not just the view it was built for —
+> and three of the seven views carry that field.
+>
+> Consequence worth stating because it is counter-intuitive: **you cannot scope a formatting
+> experiment to one view.** A change made while looking at `BO Tracking` is a change to every
+> view carrying that column, including the two nobody was looking at.
+>
+> Live formatter state, verified by REST on 2026-09-04 (not assumed): `BO` carries the
+> orange/green fills · 15 part columns carry the strikethrough · the three `OK` columns are
+> **deliberately plain** · **`Planned Tanking Date` has NO formatter.** That matches BO Manager's
+> three real CF rules exactly.
+>
+> **Date-urgency formatting on `Planned Tanking Date` is DEFERRED, and one route is dangerous** —
+> hand-written formatting using `@now` **freezes** this view (reproduced A/B/A/B), and a
+> calculated column is not the workaround because SharePoint evaluates `TODAY()` at **write**
+> time, so an urgency flag is right the day it is made and **silently wrong** after. Full
+> writeup, untried routes and the matching hex values: `roadmap.md`, deferred-items section.
+>
 > ### New: `Bo Sort Date` — the first calculated column on `Order Items`. Added 2026-09-04.
 > Added by the user. A calculated column that substitutes a **`2999-12-31` sentinel** for a blank
 > `Planned Tanking Date`, so a sort puts unplanned units **last** instead of first (a blank date

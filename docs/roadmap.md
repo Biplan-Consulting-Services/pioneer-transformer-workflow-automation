@@ -3,18 +3,41 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
-> **Active right now: `cutover-runbook-2026-09-01.md`.** Presentation and hard cutover are at
-> **09:00 on 2026-09-01**, built overnight in a single window. That runbook is the operative
-> plan — it splits the work into five parallel tracks (Power Automate / SharePoint UI /
-> Power Apps / repo / docs) so separate sessions can be pointed straight at it, and it carries
-> the 2026-09-01 decisions: 7 new `Order Items` columns (5 for viewer parity plus
-> `Planned Tanking Date`/`Planned Delivery Date`); Order→Order Items fan-out on the sales
-> Power App's Save button; stage stamping out of the trigger flow with a disabled fallback
-> copy; TextField sync folded into the transfer flow; the viewer deployed **in place** at the
-> `Index` list's FRM10-12 path so FRM09 and BO Manager keep working.
+> ## ⚠️ STATE AS OF 2026-09-04 — the block below is a PLAN, not a status report
+> **The 2026-09-01 cutover did not complete, and this is a PARALLEL RUN.** Read
+> `build-nights/BUILD-NIGHT-2026-09-03.md` (KEY FACTS) for verified live state; it supersedes
+> this header.
+>
+> Three claims in the block below are **false today**:
+> - **"the viewer deployed in place"** — **it was not.** Step **D5** was cut; the viewer exists in
+>   the repo only, and the `Index` row still resolves to the **live** FRM10-12. Do not "restore" a
+>   deployment on the strength of this doc.
+> - **"Presentation and hard cutover at 09:00 on 2026-09-01"** — the presentation happened; the
+>   **hard cutover did not.** Staff are still filling in FRM10-12.
+> - **"stage stamping out of the trigger flow"** — the trigger flow is currently **`Off`**, with
+>   instances from 2026-09-02 still in flight.
+>
+> What *did* land: the 7 new columns exist and are partly populated (`Planned Tanking Date` 913,
+> `Planned Delivery Date` 335); the fan-out **is** live on the sales app's Save and is creating
+> production rows right now; the transfer flow ran once on 2026-09-01 with only **2 of 7**
+> mappings in place.
+>
+> **So `Order Items` has two writers that don't know about each other** — the app's fan-out and
+> the transfer flow. And **72 workbook rows have no `Order Items` row at all**, so they would
+> vanish from every view at cutover; run the backfill and re-diff before deciding that date.
 >
 > `cutover-plan-2026-09-02.md` is **superseded** — wrong premise, and it contains a mapping bug.
 > Don't work from it.
+
+> **The 2026-09-01 plan, kept for its decisions:** `cutover-runbook-2026-09-01.md` splits the work
+> into five parallel tracks (Power Automate / SharePoint UI / Power Apps / repo / docs) so separate
+> sessions can be pointed straight at it, and it carries the 2026-09-01 decisions: 7 new
+> `Order Items` columns (5 for viewer parity plus
+> `Planned Tanking Date`/`Planned Delivery Date`); Order→Order Items fan-out on the sales
+> Power App's Save button; stage stamping out of the trigger flow with a disabled fallback
+> copy; TextField sync folded into the transfer flow; the viewer deployed **in place** at the
+> `Index` list's FRM10-12 path so FRM09 and BO Manager keep working. Its own header carries the
+> per-section corrections.
 
 ## Where things stand right now (2026-08-14, see 2026-08-21 update below) — read this first
 

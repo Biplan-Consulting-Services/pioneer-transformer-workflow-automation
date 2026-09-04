@@ -416,6 +416,34 @@ recalculates on write, so Track A's backfill filling `Planned Tanking Date` need
 FRM10-12's native-formula columns could be plain calculated columns; that holds — this is a
 simple same-row formula with no chaining, which is the kind that does work.
 
+### `BO Tracking` conditional formatting — matched to BO Manager (2026-09-04 ~12:0x)
+Extracted from `BO Manager_2026-09-03_23h48m.xlsx` rather than eyeballed. The workbook has
+**129 `conditionalFormatting` blocks**, but they are fragmented duplicates — ranges shattered by
+years of row insertions. All the group-rule `dxf` entries hash **identically**, so there are only
+**three** distinct rules:
+
+| Workbook rule | dxf | Resolved |
+|---|---|---|
+| `F="BO"` (roll-up) | 131 | fill theme 5 (accent2) tint 0.4 → **`#F4B183`** — Orange, Accent 2, Lighter 40% |
+| `F="OK"` (roll-up) | 132 | fill theme 9 (accent6) tint 0.4 → **`#A9D18E`** — Green, Accent 6, Lighter 40% |
+| `$L=TRUE` → G:K, `$R=TRUE` → M:Q, `$X=TRUE` → S:W | 130 etc. | **strikethrough only**, no fill |
+
+Theme verified against `xl/theme/theme1.xml` (standard Office scheme), not assumed.
+
+The third rule means: **when a part group's `OK` checkbox is ticked, that group's cells are
+struck through.** Note the workbook strikes `G:K` — Part Numbre through Fournisseur — but **NOT
+`L`, the `OK` column itself.** Matched exactly: `BO{n}OK` carries no formatter.
+
+Implemented as **field-level `CustomFormatter`** on 16 columns via REST
+(`POST .../fields/getbyinternalnameortitle('X')` + `X-HTTP-Method: MERGE`). Verified in-browser:
+`21611-1/1` renders its BO1 group struck through (OK ticked) while `21408-1/1` renders plain
+(still outstanding).
+
+⚠️ **SharePoint SERIALIZES list-schema writes.** A `Promise.all` over 16 `CustomFormatter`
+updates returned **`409` save-conflict** on 14 of them (`-2130575305 SPException`). Apply
+schema/field changes **sequentially**, and in batches small enough to avoid the browser
+tooling's evaluate timeout — 5-7 per call worked. Same applies to field creation.
+
 ### Other live facts
 - **Date display bug is FIXED** — by flipping the **site timezone to UTC**, not by the proposed
   17-column `DisplayFormat` change. Sep 1 decision 6 is closed but still marked open there.
@@ -1857,3 +1885,54 @@ and adding "is the view grouped?" as a third self-check there. Covers the whole 
    it.** A write to a calculated field fails, and per KEY FACTS a failing action in that flow
    reports up as `Failed` while other rows still land, so it would be misdiagnosed as something
    else entirely. **🔵 A: this affects A.3/A.5 when the mappings get built.**
+
+**2026-09-04 ~12:0x | 🟢 B |** Applied conditional formatting to `BO Tracking` matching
+BO Manager, extracted from the workbook XML (3 real rules behind 129 fragmented blocks; theme
+colours resolved from theme1.xml, not guessed). 16 field-level CustomFormatters, verified by
+rendering rather than by response codes. Recorded the concurrency finding: **SharePoint
+serializes list-schema writes and returns 409 on concurrent ones** — that cost a retry cycle
+here and will cost the next person one too.
+
+**2026-09-04 12:3x | 🟠 D | 🟢 B's roadmap deferral committed (`08cb08d`). Plus: `roadmap.md`'s
+"Start here" header still said the viewer was deployed — corrected. That was the last one.**
+
+**Committed B's change**, verified it was the only thing in the tree first
+(`git status --porcelain` = one line) so nothing got swept — the `git add docs/` lesson from
+this morning applied in the other direction.
+
+**Two facts from it worth having on the board, not just in the roadmap:**
+- **`@now` in hand-written column formatting FREEZES the `BO Tracking` view.** Reproduced
+  A/B/A/B, including with a minimal style-only version — so it is `@now` itself, not the
+  complexity of the rule. **This matters today: the user is demoing this list tomorrow.**
+- **A calculated column is not the workaround.** SharePoint evaluates `TODAY()` at **write**
+  time, so an urgency flag is correct the day it is made and **silently wrong** afterwards.
+  **This is the more dangerous of the two** — a frozen view announces itself, a stale flag looks
+  right and isn't. It also explains why `Bo Sort Date` is safe: no `TODAY()`, pure same-row
+  arithmetic.
+
+**Also copied into the runbook's views section, because it changes how anyone tests formatting:
+column formatting is FIELD-level, not view-level.** There is no per-view column formatting, so
+**you cannot scope a formatting experiment to one view** — a change made while looking at
+`BO Tracking` hits `Planning` and `Angelique reunion du lundi` too, and three of the seven views
+carry `Planned Tanking Date`.
+
+**D.6 addendum — `roadmap.md`'s header was the last stale "viewer is deployed" claim, and the
+worst-placed one.** It is the **"Start here"** doc, so it was the first thing a new session
+would read, and it asserted three things that are false today: the viewer "deployed **in
+place**", a hard cutover completed on 2026-09-01, and stage stamping moved out of the trigger
+flow (which is currently `Off` with instances still in flight). Corrected with a state block
+that points at KEY FACTS, and the original kept below it for its decisions, which are still
+good.
+
+That makes **six** documents where the same false claim had propagated: `FRM10-12/CLAUDE.md`,
+`cutover-runbook-2026-09-01.md`, `BUILD-NIGHT-STATUS.md` (KEY FACTS), both staff guides, and now
+`roadmap.md`. **Worth noting the pattern for next time: every one of them was written *ahead* of
+the step it described, in the same overnight window, and none was revisited when the step was
+cut.** Docs written in advance of an action need a revisit pass when the action does not happen —
+that is the actual lesson, not "the docs were wrong".
+
+**🟢 B's own note recorded, since they asked where it should live:** they reached for
+hand-written JSON before trying SharePoint's built-in *Format this column → Conditional
+formatting* UI, and it cost two view freezes on a list being demoed tomorrow. It is already
+captured usefully in `roadmap.md` — the untried routes are listed **with the built-in UI first**,
+which is the fix rather than just the confession.
