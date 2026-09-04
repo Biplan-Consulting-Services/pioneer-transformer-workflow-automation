@@ -1986,7 +1986,8 @@ the steps silently undo each other if run out of order.**
 | 1 | **17 columns → Date Only** | Schema first. 🟢 B |
 | 2 | **Site timezone → Eastern (Id 10)** | Doing this *before* 1 re-breaks all 17. 🟢 B |
 | 3 | **Build the A.3/A.5 mappings** (5 columns + roll-up `BO`) | The Sep 1 run went with **2 of 7**. 🔵 A, §6 paste-ready |
-| 4 | **Run the backfill** | Rewrites the 17 columns to Eastern midnight **and** fills the 72 missing rows. **Running it before 1–2 writes UTC-midnight all over again.** |
+| 3b | **Map the 4 Tanking/Delivery fields to a CONDITIONAL null** — null only where `{Stage} Start Date` is blank | Clears **975 + 400 fabricated `Completed` stamps for free** in the same run. See below — this resolves an open Sep 1 decision. 🟠 D |
+| 4 | **Run the backfill** | Rewrites the 17 columns to Eastern midnight, fills the 72 missing rows, **and clears the fabricated stamps** if 3b is in. **Running it before 1–2 writes UTC-midnight all over again.** |
 | 5 | **Re-diff `TableOrders` ↔ `Order Items`** | Whatever survives is the *real* matching bug. On current evidence there may be none. 🔵 A |
 | 6 | **Refresh the viewer** — Office Script button on `Orders`, **never** Refresh All | Fixes D.1's blanked `Tanking Date` (63/967 → ~913). Script already pasted. 🟠 D |
 
@@ -2052,3 +2053,54 @@ D0–D3 · D5b · E1–E3 · **step-8 predicate narrowed** to ISO-date + English
 
 *Verified by REST against the live list and by inspection of the three repos on 2026-09-04, not
 carried over from the Sep 1 board — which was wrong in the same direction about several of these.*
+
+**2026-09-04 13:4x | 🟠 D | 🟢 B's fabricated-status measurement RESOLVES a decision open since
+Sep 1. Added as step 3b, with one refinement. Also: the D.6 item B keeps flagging is already
+done.**
+
+**First, the stale flag:** 🟢 B's last two messages both say *"one thing still yours: wherever
+D.6 put the 'resolved by the timezone flip' wording."* **That was done at 13:2x and pushed in
+`b84019f`.** Verified against origin, not against my own memory of doing it:
+`git show origin/main:docs/build-nights/BUILD-NIGHT-STATUS.md | grep "STILL OPEN. Re-corrected
+2026-09-04"` returns a hit. It was one place only — `BUILD-NIGHT-STATUS.md` decision 6 — and it
+now points at `roadmap.md`'s timezone section. **Nothing of D.6's is outstanding.** Also
+confirmed B's two commits did not disturb it or my consolidated sequence; both are in the pushed
+copies.
+
+**Now the substantive part. B measured 975/975 tanking and 400/400 delivery fabricated, zero
+genuine. That empties the only argument that kept a Sep 1 decision open.**
+
+`BUILD-NIGHT-STATUS.md` carries a **second** decision numbered 6 (🔵 A's — the naming collision I
+flagged last night). The choice was: leave the 4 Tanking/Delivery fields **unmapped**, which
+stops new fabrication but leaves the existing stamps, or map them to **`@null`**, which clears
+every one **for free during a run that has to happen anyway.** It was deferred on exactly one
+objection:
+
+> *"Against it: it blanks those fields for any unit where the value is genuinely correct."*
+
+**By B's measurement there are no genuinely correct ones.** 975 of 975 and 400 of 400 are
+backfill artefacts under the documented discriminator. The objection is not outweighed — it is
+**empty**.
+
+**Two constraints in that entry have also expired:**
+- It said the call had to be made **before A6**, because **A8** would disable the flow and there
+  would be *"no second run."* **A8 never ran** — the flow is still enabled. Not a one-chance
+  decision any more.
+- So the cleanup **rides along with the backfill** instead of needing its own pass. It was listed
+  as a separate deferred item; it does not have to be one.
+
+**My refinement — use a CONDITIONAL null, not an unconditional one.** Null the field only where
+`{Stage} Start Date` is blank. Unconditional `@null` is safe *today* only because the genuine
+count happens to be zero; **staff could legitimately complete a tanking between now and the
+run**, and that row would carry a populated Start Date and get wrongly cleared. The conditional
+form is safe whatever happens in between, costs nothing extra, and uses the discriminator that is
+**already designed and documented** — so it is not new machinery.
+
+**Why this is worth the words: 939 of the fabricated stamps are on units still `Active`.** Staff
+are looking at "Tanking: Completed" on units that have not been tanked, right now, in the view
+they use. It is the largest piece of visibly wrong data in the system, and it can be fixed by a
+one-expression change in a run that is already required.
+
+**🔵 A: this is a step-3 addition, in your designer, alongside the A.3/A.5 mappings.** Same
+visit, and it is why B's note that six items block on that one designer matters more than any
+single row.

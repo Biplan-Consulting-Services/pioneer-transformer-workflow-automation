@@ -464,6 +464,33 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
   value came from the backfill; a populated one means a genuine live completion that must not be
   touched. **Safe to run any time now** — the 2026-09-01 viewer re-source means clearing those
   fields no longer blanks anything downstream. Before that change it would have.
+
+  > **⚠️ Bigger and more urgent than this entry implies. Updated 2026-09-04.** Measured live:
+  > **975** units carry a fabricated `Tanking Status = Completed`, **400** a fabricated
+  > `Delivery Status = Completed` — and by the discriminator above it is **975 of 975 and 400 of
+  > 400, with zero genuine.** The Sep 1 estimate was ~927/333. **939 of them are on units still
+  > `Active`**, so staff are currently looking at "Tanking: Completed" on units that have not
+  > been tanked. A5b stopped the flow fabricating *new* ones; nobody cleaned the existing data.
+  >
+  > **This resolves a decision left open on 2026-09-01** (`BUILD-NIGHT-STATUS.md`, the 🔵 A
+  > decision also numbered 6). The choice was: leave the 4 fields *unmapped* — which stops new
+  > fabrication but leaves the old values — or map them to `@null`, which clears every one of
+  > them **for free during a run that has to happen anyway.** It was left deferred on exactly one
+  > objection: *"it blanks those fields for any unit where the value is genuinely correct."*
+  > **That objection is now measured to be empty — there are no genuinely correct ones.**
+  >
+  > Two things have also changed since that entry was written:
+  > - It said the choice had to be made **before A6** because **A8** would disable the flow and
+  >   there would be no second run. **A8 never ran.** The flow is still enabled, so this is no
+  >   longer a one-chance decision.
+  > - The cleanup therefore **rides along with the backfill** rather than needing its own pass.
+  >
+  > **Recommended, and this is the refinement worth keeping:** make the null **conditional on the
+  > discriminator**, not unconditional — null the field only where `{Stage} Start Date` is blank.
+  > Unconditional `@null` is safe *today* precisely because the genuine count is zero, but staff
+  > could legitimately complete a tanking between now and the run, and that row would have a
+  > populated Start Date. The conditional form is safe whatever happens in between, and it uses
+  > the discriminator that is already designed and documented. Costs nothing extra.
 - **Surfacing planned vs actual separately in the workbook.** The viewer keeps its frozen
   76-column layout, with `Tanking Date`/`Delivery Date` re-sourced from the `Planned` columns.
   Exposing the actuals as their own columns is a real migration: `BO Manager.xlsx` reads
