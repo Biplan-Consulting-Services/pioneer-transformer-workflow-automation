@@ -36,3 +36,33 @@ status report.
 
 **They are a snapshot, not a live feed.** They stopped being updated when the sessions ended.
 Anything about the tenant should be re-read from the tenant.
+
+## Two copies, on purpose — do not delete either
+
+Each of these files exists in **two** places:
+
+| | Path | Role |
+|---|---|---|
+| **Working** | `Clients/Pioneer Transformer/BUILD-NIGHT-*.md` | What sessions open and append to |
+| **Tracked** | `Workflow-Automation/docs/build-nights/` *(here)* | What survives the machine |
+
+**This is structural, not an oversight.** The working path sits at `Clients/Pioneer Transformer/`,
+a plain folder *above* all three repo roots, and git cannot track files outside a repo root. It
+also cannot simply be moved: `~/.claude/session-tracks.json`'s `_night` field points at it, and
+it is the path every session opens at registration. Delete it and that pointer breaks.
+
+So the arrangement is a working file plus a committed snapshot, which is a normal shape. **The
+bug was never the duplication — it was that the sync obligation was undocumented.** It is now
+written at the top of each working copy:
+
+```
+cd "Clients/Pioneer Transformer"
+cp BUILD-NIGHT-*.md Workflow-Automation/docs/build-nights/
+# then commit + push from Workflow-Automation
+```
+
+**Which wins on a conflict:** the working copy is newer by definition; the tracked copy is
+authoritative for *what actually survived*. If they disagree, the working copy has unharvested
+appends — re-harvest rather than reconciling by hand. They also differ in line endings (working
+LF, tracked CRLF after commit), so a raw `diff` reports every line as changed. **Compare
+sections, not whole files.**

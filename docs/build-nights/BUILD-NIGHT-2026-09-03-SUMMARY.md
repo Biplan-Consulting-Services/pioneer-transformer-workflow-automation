@@ -1,5 +1,30 @@
 # Build Night 2 — handover summary
 
+> ### 📍 THIS FILE IS THE WORKING BOARD. A TRACKED SNAPSHOT LIVES IN GIT.
+> **Tracked copy:** `Workflow-Automation/docs/build-nights/BUILD-NIGHT-2026-09-03.md` — committed
+> and pushed. **This path is not, and cannot be, in any git repo:** it sits at
+> `Clients/Pioneer Transformer/`, a plain folder *above* the three repos, and git cannot track
+> files outside a repo root.
+>
+> **So the duplication is structural, not an accident — do not "fix" it by deleting either copy.**
+> This path is what `~/.claude/session-tracks.json`'s `_night` field points at and what every
+> session opens at registration; deleting it breaks that pointer. The tracked copy is what
+> survives the machine.
+>
+> **⚠️ If you append here, RE-HARVEST before you finish:**
+> ```
+> cd "Clients/Pioneer Transformer"
+> cp BUILD-NIGHT-*.md Workflow-Automation/docs/build-nights/
+> # then commit + push from Workflow-Automation
+> ```
+> That copy step is the whole sync obligation. It is the only thing standing between an append
+> here and a record that dies with your session. **Keep appending here** — a working board and a
+> committed snapshot is the right shape; an undocumented sync obligation was the bug.
+>
+> **On a conflict, THIS file is newer and the tracked copy is authoritative for what survived.**
+> They differ in line endings only (this one LF, the tracked one CRLF after commit), so a raw
+> `diff` reports every line as changed — compare sections, not the whole file.
+
 **Written 2026-09-04 02:32 by 🟢 Track B (`order-items-cutover-status`).**
 Detail and evidence live in `BUILD-NIGHT-2026-09-03.md`. This is the read-in-the-morning version.
 

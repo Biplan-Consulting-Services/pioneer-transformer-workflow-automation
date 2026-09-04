@@ -1,4 +1,10 @@
 # BUILD NIGHT STATUS — 2026-09-01, presentation 09:00
+> ### 📍 ARCHIVED — DO NOT APPEND. A TRACKED SNAPSHOT LIVES IN GIT.
+> `Workflow-Automation/docs/build-nights/BUILD-NIGHT-STATUS.md`, committed and pushed
+> 2026-09-04. This path cannot be tracked — it is above all three repo roots — so the
+> duplication is structural. **Do not delete either copy.** Night 2 corrected several
+> entries here in place (decision 6, and the two KEY FACTS conditional on the cut D5 step);
+> if you edit this file again, re-copy it to the tracked path and commit.
 
 **Shared status board. Every session reads this before starting and updates it after each step.**
 
