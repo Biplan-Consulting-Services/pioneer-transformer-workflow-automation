@@ -539,6 +539,24 @@ Verify both *after* A6's run, not before — they depend on TextField accuracy.
 > time, so an urgency flag is right the day it is made and **silently wrong** after. Full
 > writeup, untried routes and the matching hex values: `roadmap.md`, deferred-items section.
 >
+> ### 🔑 RUN HISTORY IS USABLE EVEN WHEN THE DESIGNER IS BLOCKED. Added 2026-09-04.
+> The flow editor hangs on this flow because it draws **all ~90 field mappings at once**. The
+> **run detail page paginates iterations one at a time** ("Show 1 of 256"), so it renders fine.
+>
+> **So "the designer is blocked" does not mean the flow is opaque.** To find out what the flow
+> actually **sent or received** for any given field, open a run → an iteration → the action's
+> **inputs** or **outputs** body. That route stayed open all along.
+>
+> It is how the date question was settled conclusively rather than by inference: the Aug 21
+> `UpdateOrderItem` **output body** shows `OriginalTankingDate` as a bare `"2026-01-21"` next to
+> `CoilingDate` as `"2026-04-14T00:00:00Z"` — one payload, one action, the serialisation shape
+> tracking the column type exactly, as SharePoint reported it *in August*.
+>
+> **Worth trying before declaring anything else designer-blocked.** Reading a value the flow
+> handled needs run history, not the canvas. Only *changing* a mapping needs the canvas.
+> ⚠️ Separately, the run page can still hit a **tenant account picker** — see the board; that is
+> an identity decision for the user, not a technical block.
+>
 > ### ☠️ `DisplayFormat = Date Only` is LOAD-BEARING on every date column. Added 2026-09-04.
 > The transfer flow's date writes are correct **only because all 24 date columns on `Order Items`
 > are currently Date Only** (`DisplayFormat = 0`, zero Date-and-Time — measured by REST

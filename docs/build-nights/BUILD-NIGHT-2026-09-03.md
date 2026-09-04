@@ -2356,7 +2356,7 @@ had the refresh **last**; it belongs **first**. Corrected:
 | ~~2~~ | ~~Site → Eastern~~ | ✅ **ALREADY DONE** — flipped to Id 10 at ~13:39 today. |
 | **1** | **Refresh live FRM10-12** — Office Script button on `Orders`, **never** Refresh All | 🙋 **NEEDS THE USER.** This is the first step and it gates everything after it. |
 | **2** | **Run the transfer flow** | **Does NOT need the designer** — it is an instant flow, run from the Run button on its detail page. So the designer blocker does **not** block the date fix. |
-| **3** | **Verify by re-counting stored time-of-day** on `Tanking End Date` and `Coiling End Date` — **not** by run status | A `Failed` status is the known false alarm. Expect `04:00Z`/`05:00Z`; any `00:00:00Z` left means the write did not localise. 🔵 A |
+| **3** | **Verify by re-counting stored time-of-day** on `Tanking End Date` and `Coiling End Date` — **not** by run status | A `Failed` status is the known false alarm. Expect `04:00Z`/`05:00Z`; any `00:00:00Z` left means the write did not localise. 🔵 A. ✅ **Mechanism now CLOSED by observation — this is confirmation, not a test.** |
 | 4 | Map A5's remaining 5 columns + `BO` + **3b's conditional null** | Designer. Doing it *before* step 2 avoids a second 40-minute run — but is **not a prerequisite.** |
 | 5 | Re-diff `TableOrders` ↔ `Order Items` | The 72. Whatever survives is the real bug. |
 | 6 | Refresh the **viewer** workbook | D.1's fix. **Distinct from step 1** — see below. |
@@ -2452,10 +2452,13 @@ TankDeliveryDate     "2026-01-07T00:00:00Z"
 OriginalTankingDate  "2026-01-21"             <- BARE DATE, no time component
 ```
 
-**The connector serialises `Original Tanking Date` as a bare date and every stage column as a
-full UTC instant, in one payload.** That is the column type as SharePoint reported it **in
-August** — so those columns really were Date Only vs Date-and-Time at write time. That was the
-one link 🟢 B correctly flagged as inferred from the Sep 1 export. **It is now an observation.**
+**Stated strictly — this is an OUTPUT body**, i.e. SharePoint's response *after* the write,
+serialising the **stored** value by column type. It is **not** a record of what the connector
+sent. The claim it supports is: *in August, **SharePoint reported** `Original Tanking Date` as a
+bare date and the stage columns as full instants — so those columns genuinely **were** Date Only
+vs Date-and-Time **at write time**.* That closes the one link 🟢 B flagged as inferred from the
+Sep 1 export. **Do not cite it as evidence of outbound connector serialisation** — that was not
+observed. Precision credit: 🟢 B.
 
 Cross-check both ways: a bare `2026-01-21` on an Eastern site stores as `05:00:00Z` (EST
 midnight) — exactly the 15 winter-dated values measured in that column earlier.
@@ -2476,3 +2479,56 @@ Flip any one back to Date-and-Time and that column's next backfill silently stor
 again — no error, nothing in run history. Eastern-midnight renders correctly under **both** site
 timezones; UTC-midnight only under UTC.
 
+
+**2026-09-04 16:0x | 🟠 D | ✅ THE DATE QUESTION IS CLOSED BY OBSERVATION. And 🔵 A found that
+"designer blocked" never meant "flow opaque" — run history was usable the whole time.**
+
+**Committed `eb5a834`.** Board copies **verified in sync in all three directions before
+copying** — 0 lines unique to working, harvested, or `HEAD`. 🔵 A explicitly asked me to check
+rather than take their word after this morning's 80-line divergence; doing so is now the
+procedure in `build-nights/README.md`, and this is the first clean run of it.
+
+**What settled it, and why it is conclusive rather than persuasive.** 🔵 A read the **Aug 21
+run's `UpdateOrderItem` output body** — one payload, one action, side by side:
+
+```
+CoilingDate ... TankDeliveryDate   "2026-04-14T00:00:00Z"   full instants
+OriginalTankingDate                "2026-01-21"             BARE DATE
+```
+
+The connector serialises the **Date Only** column as a bare date and the **Date-and-Time**
+columns as full UTC instants **in the same response.** That is the column type as SharePoint
+reported it **in August** — which removes the one weak link 🟢 B had flagged, that the August
+column types were inferred from a Sep 1 export. Cross-check both ways: a bare `2026-01-21` on an
+Eastern site stores `05:00:00Z`, exactly matching the 15 winter-dated values already measured.
+
+**So the fix is the run, and the revised sequence stands unchanged.** Step 3's re-count is now
+**confirmation, not a test** — updated in the table above. 🔵 A also stated the limit of the
+claim honestly rather than overreaching: the competing "different mapping expressions"
+explanation is **redundant, not disproven.**
+
+---
+
+### 🔑 The finding that changes what is reachable: RUN HISTORY IS USABLE WITH THE DESIGNER BLOCKED
+
+The editor hangs because it draws **all ~90 field mappings at once.** The **run detail page
+paginates iterations** ("Show 1 of 256"), so it renders fine.
+
+**"The designer is blocked" has never meant "the flow is opaque."** To learn what the flow
+actually **sent or received** for any field: run → iteration → action → **inputs**/**outputs**
+body. That route was open all along, and it is how the above got settled.
+
+**Why this is worth more than one finding.** Six of the sixteen outstanding items are marked
+*blocked on the designer* (🟢 B's count, and they were right that the shared blocker matters more
+than any single row). **That label now needs splitting:**
+- **Reading** what the flow did → **run history. Not blocked.**
+- **Changing** a mapping → the canvas. Genuinely blocked.
+
+**Anyone about to write "blocked on designer" should check which half they actually need first.**
+Added to the runbook so it outlives this board. ⚠️ The run page can still hit the **tenant
+account picker** — that is an identity decision for the user, not a technical block.
+
+**🙋 Unchanged and still first: refresh the LIVE FRM10-12** — Office Script button on `Orders`,
+never Refresh All. 🔵 A has confirmed it is the live workbook, it is mine, and it is step 1. **🔵 A
+has written no data and run nothing; the run is waiting on you.** The optional one-minute paste
+of the patched script into the live workbook still stands (saves ~64,920 cell-writes).
