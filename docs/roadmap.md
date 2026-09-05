@@ -75,17 +75,28 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 12 | **B4 live permissions test** on a staff account | 🟢 B | config verified only | ~30 seconds on a floor machine |
 | 13 | **Timezone + 17 date columns** — site back to Eastern | 🔵 A / 🟢 B | **reopened 2026-09-04** | Own section below. Order is critical |
 | 14 | **A2 / A3** — park fallback, strip stage stamping | 🔵 A | not started | Not blocking anything |
-| 15 | **A5c** `toLower()` on six stages | 🔵 A | not started | Track A recommended skipping |
+| 15 | 🔴 **A5c** `toLower()` on six stages — **24 expressions** | 🔵 A | **CONFIRMED MISSING 2026-09-05** | **Do not skip.** The earlier "recommended skipping" was wrong. This is the iteration-497 failure — see the forensics doc §9 |
 | 16 | **D5 + A8** — deploy viewer, disable transfer flow | 🟠 D / 🔵 A | **cut by the user** | The Monday cutover decision |
-| 17 | **Centralise parents into `Order Items`** — sync `Order`/`Models`/`Model Revisions` down as `Order - X` / `Model - X` / `Mod. Rev. - X` | 🔵 A | **new 2026-09-05** | Picker workbook built (113 columns) — awaiting your selections. Needs a change-guard on every write |
+| 17 | **Centralise parents into `Order Items`** | 🔵 A | **picker returned 2026-09-05** | 57 Yes / 60 No of 117. Naming revised: `Model`/`Model Revision` are **not** prefixed — they overwrite the existing lookups. SA units **re-resolve**, never copy. Change-guard on every write |
 | 18 | **Split the composite `Status`** into `Step Status` + `Status Date` | 🔵 A | **new 2026-09-05** | Code table found; see `infrastructure-overview.md` |
 | 19 | **`Current Step` — the third status axis** | 🔵 A | **decided, not built** | Depends on Phase 1 + item 17. **Do not overload `Item Status`** — see `infrastructure-overview.md` |
-| 20 | **Estimated Delivery Date** — calculated column + nightly refresh flow | 🔵 A | **new 2026-09-05** | Formula extracted; `TODAY()` freezes at write time, hence the ~21-row nightly touch |
-| 21 | **One-time BO Manager → `Order Items` transfer** in the transfer flow | 🔵 A | not started | Key is `TableBO.Order`. **Remove the mapping after the run** or it clobbers SharePoint-native BO edits |
+| 20 | **Estimated Delivery Date** — calculated column + nightly refresh flow | 🔵 A | **`TODAY()` verified 2026-09-05** | SharePoint accepts it, so the column is buildable. Still freezes at write time → nightly refresh at **01:00 Eastern**. Branch 7's lead time comes from **FRM13 via `Clients`**, never `Order.Lead Time` |
+| 21 | **One-time BO Manager → `Order Items` transfer** in the transfer flow | 🔵 A | not started | Key is `TableBO.Order`. **Remove the mapping after the run** — along with the 5 `Order` companion writes, which also become clobber once SharePoint is the reference |
+| 22 | **FRM13 `LeedTime` → `Clients.Lead Time`, synced to `Order Items`** | 🔵 A | **new 2026-09-05** | 17 clients + `GENERIC VALUE` 26 wks as the column default. `Order.Lead Time` is **not** this value (306 of 342 disagree). Enable the sync **after** item 14/A3 |
+| 23 | **Remove the 14 spec columns duplicated on `Models`** | 🔵 A | **new 2026-09-05** | Revision is authoritative. **Backfill 3 of them into `Model Revisions` first, writing only where blank** — `Core Type` 285 vs 103, `Oil Type` 334 vs 266, `Model Type` 390 vs 336. Grep the `.pq` queries before deleting |
+| 24 | **`Models` → SA twin propagation** | 🔵 A | **new 2026-09-05** | A model change must reach its SA twin. Self-referential edge — change-guard, plus skip when `SA Model` is already true |
+| 25 | **`Model Revisions.Family` fill pass from FRM10-12** | 🔵 A | **new 2026-09-05** | Blank on **329 of 391**. Check the Choice allows fill-in first, or anything outside `A`/`B1`/`B2`/`C` is rejected |
 
 **Items 1, 2, 3, 4, 6 and 13 all need the same thing: a working Power Automate designer.** That
 single blocker gates most of what is left, including everything that would make Production Floor
 usable. It is worth more attention than any individual row above.
+
+> **⚠️ Reading the flow no longer needs the designer — writing to it still does.** Exporting the
+> flow as a `.zip` yields a `definition.json` carrying every mapping, expression and connector
+> parameter. That is how items 15 and 3 were settled on 2026-09-05 without a single production
+> write. A copy lives in `workflow-data/`, pretty-printed with sorted keys so the next export
+> diffs against it. **Export before every designer session** — it is also the only rollback for
+> the flow definition, and a dropdown mis-click has wiped every mapping before.
 
 ### Closed since build night 1
 A0 · A5b (the flow, not the data) · **A6 — the transfer run DID happen** · B0–B3 · C1–C3 ·

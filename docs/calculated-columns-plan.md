@@ -510,3 +510,72 @@ Power Query.
 
 **Priority: low either way.** The `+30` affects 8 of 980 rows, and only those that have also
 reached a production milestone. Shipping the estimate without `BO` is a defensible interim.
+
+---
+
+# Settled 2026-09-05 — `TODAY()`, the refresh window, and where the lead time really lives
+
+## `TODAY()` is accepted. The freeze is the real problem.
+
+Tested live: a calculated column on `Order Items` using `TODAY()` **is accepted by SharePoint**, so
+the long-standing volatile-function restriction does not kill the design. Branches 1, 2 and 7 —
+which never call `TODAY()` — work as a pure calculated column.
+
+What remains is that a calculated column recomputes **only when the item is written**. A
+`TODAY()`-based value therefore freezes at the last write and drifts one day further out of date
+every day after. A correct-looking value today is not evidence: that row was written today.
+
+⚠️ **A second-order trap worth testing before building on it.** `TODAY()` in a SharePoint
+calculated column is widely UTC-based rather than site-local. A **01:00 Eastern** refresh happens to
+neutralise that — 05:00/06:00Z stamps the correct Eastern date and freezes it for the day. But any
+row edited between roughly **20:00 and midnight Eastern** recomputes with UTC already on tomorrow
+and reads **a day ahead** until the next pass. That is the same symptom the whole timezone
+workstream exists to fix, arriving by a different route. **Check the existing test column on
+`Order Items` after 8pm Eastern**: if it shows tomorrow's date, this is real.
+
+## The nightly refresh — 01:00 Eastern, and the two costs to design around
+
+Decided: a nightly pass that touches rows so SharePoint re-evaluates the formula. The flow computes
+nothing; writing any field back to the row is enough.
+
+Two costs, neither a reason not to do it:
+
+1. **It re-fires the `Order Items` trigger flow, once per touched row.** Put a **trigger condition**
+   on that flow so a touch-only update never creates a run — trigger conditions are evaluated
+   *before* the run is created, so they cost nothing, unlike a first-action Condition which still
+   consumes a run.
+2. **Version bloat.** Touching all 1,052 rows nightly is ~384,000 versions a year on a list whose
+   rows already carry 17+. **Cap version history first.**
+
+Filtering to only rows whose value can actually change (`Item Status = Active`, `Delivery End Date`
+and `Manual Estimated Delivery Date` both null, milestone already in the past) cuts the work by
+roughly 50×. That is an optimisation, not a correctness requirement.
+
+## Branch 7's lead time — FRM13, not `Order.Lead Time`
+
+Branch 7 is `Order Date + 90 + LeadTime × 7`. The lead time comes from **FRM13**
+(`PRO1.FRM13 - Desplan - Auto.xlsx`, `Pioneer Planification/General/FAB/Suivi/Dessin`; working copy
+at `FRM10-12/linked-workbooks/`), sheet `DelaisApproParClients`, table **`LeedTime`** — 17 clients
+plus a **`GENERIC VALUE` row of 26 SEM**, alongside the critical part and supplier driving each.
+FRM10-12 queries it in as `ClientLeadTimes`.
+
+🔴 **`Order.Lead Time` is NOT that value and must not feed branch 7.** Of the 342 orders whose
+client appears in `LeedTime`, **306 disagree and 36 agree**. And the values layer by *date*, not by
+order — HYDRO QUEBEC's 240 orders split `26` (144, 2024-02 → 2026-04), `20` (84, 82 of them 2026)
+and `28` (12, **all** 2026-08). Each is a snapshot of what the number was thought to be at order
+entry, never backfilled; FRM13's current 28 only appears from this August.
+
+**Design:** put `LeedTime` on the `Clients` list, with `GENERIC VALUE`'s 26 as the **column
+default** rather than a fake client row — `Clients` holds 98 names of which only 42 appear on
+orders, and a sentinel row would pollute every picker and filter. Sync **`Lead Time`** down to
+`Order Items`; leave `Pièce critique` / `Fournisseur` on `Clients` as reference one lookup away.
+Because the values are drift rather than overrides, the sync **corrects** 228 of HQ's 240 orders.
+
+Two clients need pairing by hand — `CITY OF RED DEER` ↔ `RED DEER` and `HYDRO OTTAWA` ↔
+`OTTAWA HYDRO`; the other 15 match on name. And **eyeball the 82 HQ orders sitting at `20` in 2026
+before the first run**: if any was a faster date actually promised to a customer, the sync rewrites
+it.
+
+Retire the Excel formula's `XLOOKUP(..., default 52)` at the same time — it contradicts FRM13's own
+generic value of 26, so the two paths currently differ by six months on any client missing from the
+table.

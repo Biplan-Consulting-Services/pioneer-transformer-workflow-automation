@@ -709,3 +709,124 @@ Anything parsing these must know which column it is reading. Worth stating in th
       (currently per-unit, provisionally) is the first known candidate to revisit, but treat
       this as a general standing check — any field placed on a hunch during this initial
       migration is a candidate for descoping once actual usage patterns are visible.
+
+---
+
+## Parent → `Order Items` sync — the design, settled 2026-09-05
+
+The picker workbook (`sharepoint-lists/Order Items parent column picker 2026-09-05.xlsx`, 117
+candidate columns) came back **57 Yes / 60 No**: `Order` 23/22 · `Models` 8/29 ·
+`Model Revisions` 25/6 · `Clients` 1/3.
+
+### The rule the selections encode
+
+**Every physical spec column is taken from `Model Revisions` and excluded from `Models`.** The
+revision is the authoritative spec; the model is the family. Worth stating as the standing rule,
+because it also drives the dedup below.
+
+### Naming — and the one place it does NOT apply
+
+Columns synced down are named `Order - X` / `Mod. Rev. - X`. Internal names will be escaped and
+**truncated at 32 characters** (`Order - Client` → `Order_x0020__x002d__x0020_Client`, already at
+the limit), so anything writing an expression against one **must read the internal name from
+`_api/…/fields` and never retype it**.
+
+⚠️ **`Model` and `Model Revision` are the exception — they are NOT prefixed.** They overwrite the
+existing `Order Items` lookups, by decision: a model corrected on the `Order` (wrong transformer, or
+the client changed their mind) must reach every unit of that order. That makes this an overwrite
+rather than a new column, which is why the SA rule below is load-bearing rather than advisory.
+
+### 🔴 SA units re-resolve; they are never copied
+
+Measured against the 2026-09-05 exports:
+
+| Test | Result |
+|---|---|
+| Orders holding both an SA and a non-SA unit, model known on both | **34** |
+| …where the SA unit carries a **different** model | **32** |
+| …where they match | 2 |
+| Orders where **non-SA** siblings disagree on model | **0** |
+
+Model Revision splits identically. So "all items of an order share a model" is exactly right for
+the normal units and exactly wrong for the SA ones.
+
+**The rule:**
+
+- `SA Job` **false** → write `Order.Model` straight through.
+- `SA Job` **true** → write the twin: the `Models` row where `SA Model` is true **and**
+  `Parent Model` equals the new model's `Model_Code`.
+
+That link is sound — it resolves on **15 of 15** SA models (`Models.SA Model` is a Boolean, 15 true
+/ 375 false; `Parent Model` holds the base model's `Model_Code`, e.g. `MSA-HYQU-0092` →
+`TMP9` → `M-HYQU-0092`).
+
+**Two limits the flow must handle:**
+
+1. Only **15 of 390** models have a twin. An order moving to any of the other 375 leaves the SA unit
+   with nothing to point at — **stop and flag for engineering**, never write a wrong model or a blank.
+2. **5 of the 42 SA units already sit on plain `M-` models**, not `MSA-` — order `22110` runs
+   `M-HYQU-0094` against an SA unit on `M-GEPO-0013`, a different client's design. Those cannot be
+   detected by prefix and have no twin to re-resolve to. **Review them before the flow runs.**
+
+### Three flags called SA, meaning three different things
+
+| Column | Means |
+|---|---|
+| `Order.SA` | this order **should have** SA units accompanying the normal ones |
+| `Order Items.SA Job` | **this unit is** the SA one |
+| `Models.SA Model` | **this model is** the sister design — and is how the right model gets found |
+
+`Order.SA` is deliberately **not** synced down: it would sit beside `SA Job` and read as a duplicate
+of it while meaning something else. (45 orders carry it against 43 SA units — the gap is orders
+flagged whose SA unit does not exist yet, which is what the flag is for.)
+
+### What does not travel
+
+- **Client** — the existing `Client` lookup is the only one. No `Order - Client`,
+  `Model - Client`, `Mod. Rev. - Client` or `Client - Client_ID`. `Client_ID_TextField` gets a
+  **one-time backfill**, not a sync.
+- **`Clients.Lead Time` is the single exception** to "don't sync Clients" — see the revised trap 1
+  above and `calculated-columns-plan.md`.
+- **`Mod. Rev. - Duplicate Order`** is created but stays empty for now. Future engineering-completion
+  logic will stamp it with the order number that produced a reference design. Measured 2026-09-05:
+  **0 of 391 populated**, so syncing it today is a no-op rather than a risk.
+  `Order.Reference Design Available` is a **separate** concept (Choice, 443 blank / 2 `No`) and is
+  not yet in use.
+
+### `Models` still carries 14 spec columns that belong to `Model Revisions`
+
+Twelve share a name — `Cable`, `Copper (LV)`, `Core Type`, `Form`, `JS #`, `Model Type`,
+`Oil Amount`, `Oil Type`, `Overcoil`, `Phases`, `Spec_ID`, `Wire (HV)` — plus `kVA and kV`/`kVA` and
+`Description`/`Model Description`. The revision wins, so the `Models` copies should go. **But not
+straight away:**
+
+| Column | `Models` | `Model Revisions` |
+|---|---|---|
+| `Core Type` | **285** | 103 |
+| `Oil Type` | **334** | 266 |
+| `Model Type` | **390** | 336 |
+
+Deleting those drops 182 / 68 / 54 values that exist nowhere else. **Backfill into
+`Model Revisions` first, writing only where the revision's value is blank** — it has been the source
+of truth for weeks, so a populated cell is a deliberate edit and must survive.
+
+Two more before deleting anything: `Form` **disagrees on 102 rows** against 75 agreeing, and
+`Description` vs `Model Description` agrees on **zero of 295** — those two are probably not the same
+field at all. And grep FRM10-12's `.pq` queries for every column name first: Power Query binds by
+name and breaks silently.
+
+### Sequencing
+
+Build after **A3** (stripping 2c stage-stamping out of the trigger flow). Before that, every synced
+write re-fires a ~100-action flow per row. A **change-guard on every write** is mandatory, not
+optional — it is what stops one `Models` edit rewriting all 91 units that use it, and what keeps the
+new `Models` → SA-twin edge (roadmap item 24) from looping.
+
+### Already on `Order`: `Order Step`
+
+Worth knowing before designing `Current Step` (roadmap item 19): `Order` already carries an
+**`Order Step` Choice with 14 values** — `Order Creation`, `Engineering Preliminary Review`,
+`Electrical Design`, `Planning Schedule`, `P.O. (Preliminary)`, `P.O. (Update)`,
+`Thermal Constraints`, `Elec. Design Validation`, `Mechanical Design 1`, `Customer Drawings`,
+`Mechanical Design 2`, `Update Delivery Date`, `P.O. Final`, `Production`. That is the order-scoped
+half of the two-level design already built; do not invent a second vocabulary for it.

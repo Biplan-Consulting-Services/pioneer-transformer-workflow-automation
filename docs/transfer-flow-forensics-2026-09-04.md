@@ -298,3 +298,105 @@ site-context REST (`POST .../fields/createfieldasxml` with a digest from `_api/c
 19 for 19, in about two minutes. `order-items-manual-build-checklist.md`,
 `order-items-build-plan.md`, `roadmap.md` and the cutover runbook all imply an hour of clicking.
 `AADSTS700016` is about a third-party multi-tenant AAD app, not schema changes.
+
+---
+
+## 9. The flow definition, read from the export — 2026-09-05
+
+Everything in §7 that was "unverified — do not skip" is now answered, and answered **without
+touching production**. The flow was exported as a `.zip`; `Microsoft.Flow/flows/<id>/definition.json`
+carries the whole definition. Both files are in `workflow-data/`.
+
+**This section supersedes §7 for anything it covers, and supersedes every "fixed on Aug 18" claim
+anywhere in this repo.**
+
+### 🔴 9.1 The `toLower()` guard was never applied — this is iteration 497
+
+`cutover-runbook-2026-09-01.md` §D0 diagnosed the failure at **01:45 on Sep 1**, five hours before
+the run, and wrote the fix down as an instruction — *"The fix — apply to all six mapped stages"*.
+Nothing records it as carried out, and the export proves it was not.
+
+| | Count |
+|---|---|
+| `toLower(` in the entire definition | **4** |
+| …and all four are on | `Tanking` / `Delivery` — the two stages that are **not mapped** |
+| Uppercase `'EC'` literals | **24** |
+| Mapped stages carrying `toLower()` | **0 of 6** |
+
+The live text on all six is still case-sensitive:
+
+```
+CoilingStatus  @if(equals(trim(item()?['Coiling Date']), ''), null,
+                  if(equals(trim(item()?['Coiling Date']), 'EC'), 'In Progress', 'Completed'))
+CoilingDate    @if(or(equals(trim(item()?['Coiling Date']), ''),
+                      equals(trim(item()?['Coiling Date']), 'EC')),
+                  null, addDays('1899-12-30', int(item()?['Coiling Date'])))
+```
+
+**Why this is iteration 497 rather than a guess.** `Switch` branches on
+`length(outputs('Get_Order_items')?['body/value'])`:
+
+| Case | Action |
+|---|---|
+| `No_Items_Found` | `CreateOrderItem` |
+| `One_Item_Found` | `UpdateOrderItem` |
+| default | `DuplicateOrderItem` |
+
+The stage-date mappings live **inside** those two actions, so a row hitting `int('ec')` throws
+there and surfaces as `Action 'Switch' failed` — exactly the reported error. D0 found **9 rows
+carrying the marker, 3 of them lowercase `ec`**. Re-run without the fix and it fails identically.
+
+**The fix is 24 expressions** — 6 stages × `{Stage}Status` and `{Stage}Date`, on **both** write
+actions: `equals(trim(X), 'EC')` → `equals(toLower(trim(X)), 'ec')`. It outranks the five parity
+columns of §6: those are cosmetic and on no staff view; this one decides whether the run completes.
+
+### ✅ 9.2 The Excel source is correct after the move
+
+| | |
+|---|---|
+| Live `inputs/parameters/table` | `{72371618-48E3-4FA4-B667-3B76BFA2D42A}` |
+| Live file | `/General/FAB/Revue/Formulaires/FRM10-12.xlsx` |
+| Stale, in `metadata` only | `/General/FAB/Revue/FRM10-12.xlsx`, table `{5C992B17-…}` |
+| `paginationPolicy/minimumItemCount` | **5000** |
+
+The old path and table id survive as connector cache and are harmless — read
+`inputs/parameters`, never `metadata`.
+
+### ✅ 9.3 The mappings survived the re-point, but were never symmetric
+
+| Action | `item/` fields |
+|---|---|
+| `UpdateOrderItem` | **58** |
+| `CreateOrderItem` | **50** |
+| `UpdateOrder` | 5 |
+| `Update_item` (Model Revisions) | 2 |
+
+The 8-field gap is **exactly** the `{Stage}StartDate` set, and on `UpdateOrderItem` all eight are
+`@null`. So the asymmetry is cosmetic — one action explicitly nulls them, the other omits them,
+same stored result. **This is what preserves the blank-`{Stage} Start Date` marker** the
+Tanking/Delivery remediation keys on (§ the roadmap's "single biggest data problem"). Nulling costs
+nothing: **1 of 1052 rows** carries any Start Date, `Coiling Start Date = 2026-09-02T08:03:52Z`,
+which is a trigger-flow stamp rather than anything a human typed.
+
+### ✅ 9.4 §6's five columns are confirmed still absent
+
+Absent from **both** write actions: `Info+`, `Technical Notes`, `Configuration`, `Section Qty`,
+`Protector & Switchgear Item #`, `Order_Number_TextField` and `BO`. §6's mapping table stands.
+
+### ✅ 9.5 The two side-writes, exactly as documented
+
+- **`UpdateOrder`** writes precisely the five companion columns — `EngineeringRequired`, `LDs`,
+  `ClientDateStatus/Value`, `SalesNotes`, `OrderStatus/Value`. **Decision 2026-09-05:** they stay
+  for this run so the values land, then **both these and the BO mapping are removed** — after the
+  cutoff the SharePoint list is the reference, and leaving them in makes every future run overwrite
+  SharePoint-native edits with stale Excel values.
+- **`Update_item`** writes `Family/Value` and `ModelName` to `Model Revisions`. So the flow *does*
+  write `Family`, which makes the Choice's fill-in setting a live failure mode independent of §9.1.
+
+### 9.6 Correction — `Model Revisions.Family` is not junk
+
+An earlier claim in this session put ~28% of `Family` at legacy numeric junk (`91`, `1234`,
+`46264`) and made it the iteration-497 suspect. **Measured against the 2026-09-05 export that is
+wrong.** The live column holds `C` 34 · `B1` 19 · `A` 7 · `B2` 2 and **329 blank — no numeric
+values at all**. The column is clean and sparse, not dirty. What it needs is the fill pass
+(roadmap item 25), not a cleanup.

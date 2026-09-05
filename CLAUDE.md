@@ -43,6 +43,21 @@ had — hence a dedicated place to plan it before touching production.
   deleted. Docs reference this folder generically (`sharepoint-lists/*.csv`), not by exact
   filename, so this convention can keep evolving without breaking doc links.
 
+  ⚠️ **Two things about these exports that will silently give you wrong answers** (learned
+  2026-09-05, after an analysis returned "0 differences" from a file that had been parsed as its
+  own schema):
+  1. A SharePoint *Export to CSV* writes a single enormous `ListSchema={...}` **record first**, then
+     the real header row. Skip the first *record* (not the first line — the schema contains
+     newlines) or a CSV reader takes the schema as your column names.
+  2. **Lookup columns do not serialise.** `Order Items.Model`, `.Model Revision` and `.Order Number`
+     come back blank — 2 to 4 populated out of 1052. The `_TextField` mirrors carry the real values
+     (986/1052). Use those for any analysis, and remember they are only as fresh as the last
+     TextField sync run.
+
+  The export also follows **the currently selected view**, not the list. The first Order Items
+  export of 2026-09-05 was the BO Tracking view — 3 rows, 23 columns — and looked like a real
+  export until counted. Switch to All Items first, and sanity-check the row count.
+
 ## Related repos
 - `../FRM09/` — Winding department workbook; depends on FRM10-12's `TableOrders` via its own
   Power Query, not on this repo's list exports directly.
