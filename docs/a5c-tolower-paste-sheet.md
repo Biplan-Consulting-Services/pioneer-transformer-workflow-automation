@@ -5,9 +5,15 @@ definition.json` by transforming the live expression text. **Nothing here was re
 "after" is the "before" with `equals(trim(X), 'EC')` rewritten to
 `equals(toLower(trim(X)), 'ec')`, so a transcription slip cannot silently write nothing.
 
-**Why this matters:** the guard is case-sensitive and three rows hold lowercase `ec`, which
-falls through to `int('ec')` and throws. That surfaces as `Action 'Switch' failed` — the
-iteration-497 failure. See `transfer-flow-forensics-2026-09-04.md` §9.1.
+**Why this matters:** the guard is case-sensitive, so a lowercase `ec` falls through to
+`int('ec')` and throws, surfacing as `Action 'Switch' failed`. Scanned against the 2026-09-04 23:08
+refresh — the one the next run will read — **6 rows will throw**, up from 3 four days earlier. All
+six are in `Coiling Date`; every other `int()`-bound column is clean. See
+`transfer-flow-forensics-2026-09-04.md` §9.1 and §9.7.
+
+Apply it to all six stages anyway. The markers are staff typing `ec` into a live column, not a
+fixed legacy set — hand-fixing today's six would be wrong again next week, and nothing stops the
+same typing appearing in `Stacking` or `Drying`.
 
 Do **both** actions. Skipping one leaves half the rows failing.
 

@@ -310,7 +310,7 @@ carries the whole definition. Both files are in `workflow-data/`.
 **This section supersedes §7 for anything it covers, and supersedes every "fixed on Aug 18" claim
 anywhere in this repo.**
 
-### 🔴 9.1 The `toLower()` guard was never applied — this is iteration 497
+### 🔴 9.1 The `toLower()` guard was never applied
 
 `cutover-runbook-2026-09-01.md` §D0 diagnosed the failure at **01:45 on Sep 1**, five hours before
 the run, and wrote the fix down as an instruction — *"The fix — apply to all six mapped stages"*.
@@ -333,7 +333,7 @@ CoilingDate    @if(or(equals(trim(item()?['Coiling Date']), ''),
                   null, addDays('1899-12-30', int(item()?['Coiling Date'])))
 ```
 
-**Why this is iteration 497 rather than a guess.** `Switch` branches on
+**Why the failure surfaces as a `Switch` error.** `Switch` branches on
 `length(outputs('Get_Order_items')?['body/value'])`:
 
 | Case | Action |
@@ -343,8 +343,15 @@ CoilingDate    @if(or(equals(trim(item()?['Coiling Date']), ''),
 | default | `DuplicateOrderItem` |
 
 The stage-date mappings live **inside** those two actions, so a row hitting `int('ec')` throws
-there and surfaces as `Action 'Switch' failed` — exactly the reported error. D0 found **9 rows
-carrying the marker, 3 of them lowercase `ec`**. Re-run without the fix and it fails identically.
+there and surfaces as `Action 'Switch' failed` — the same error the Sep 1 run reported.
+
+⚠️ **What is proven, and what is not.** Proven: the guard is case-sensitive, lowercase `ec` exists
+in the source, `int('ec')` throws, and that throw presents as `Action 'Switch' failed`. **Not**
+proven: that iteration **497 specifically** was one of those rows. The workbook has been refreshed
+four times since Sep 1 and Power Query rebuilds `TableOrders`, so row order then and now are not
+comparable — in the 09-04 snapshot the first `ec` row sits at position ~63, not 497. One page of
+run history (Sep 1 run → iteration 497 → `Switch` → raw inputs) would settle it. **It changes
+nothing about the fix**, which is required either way.
 
 **The fix is 24 expressions** — 6 stages × `{Stage}Status` and `{Stage}Date`, on **both** write
 actions: `equals(trim(X), 'EC')` → `equals(toLower(trim(X)), 'ec')`. It outranks the five parity
@@ -400,3 +407,42 @@ An earlier claim in this session put ~28% of `Family` at legacy numeric junk (`9
 wrong.** The live column holds `C` 34 · `B1` 19 · `A` 7 · `B2` 2 and **329 blank — no numeric
 values at all**. The column is clean and sparse, not dirty. What it needs is the fill pass
 (roadmap item 25), not a cleanup.
+
+### 9.7 Re-scan of the workbook the next run will read — 2026-09-04 23:08
+
+D0 scanned the 08-31 snapshot, found 9 marker rows (3 lowercase) and predicted the count would
+grow. Re-scanned `live-workbook-data/FRM10-12_2026-09-04_23h08m.xlsx`, `TableOrders` `B5:CE1024`,
+1,019 data rows — the refresh the flow will actually read:
+
+| | 08-31 (D0) | **09-04** |
+|---|---|---|
+| Marker rows in the six mapped stages | 9 | **10** |
+| …lowercase `ec`, i.e. **will throw** | 3 | **6** |
+| …uppercase `EC`, guarded today | 6 | 4 |
+
+**Every marker is in `Coiling Date`.** The other five mapped stages are clean, and so is every
+other `int()`-bound column — `Tanking Date`, `Delivery Date`, `Section Qty`, `Time (days)`,
+`Tank Delivery Date`, `Original Tanking Date`, `Manual Estimated Delivery Date`. So `Section Qty`'s
+guard really is belt-and-braces rather than load-bearing, as A5 assumed.
+
+The six rows that will fail, by workbook position (**not** iteration number — see the warning in
+§9.1):
+
+| Position | Unit |
+|---|---|
+| ~63 | `21821-1/1` |
+| ~174 | `21795-3/5` |
+| ~192 | `21995-1/2` |
+| ~235 | `21833-1/6` |
+| ~253 | `21387-5/6` |
+| ~284 | `21957-7/9` |
+
+**The lowercase count doubled in four days**, which is the point: this is staff typing `ec` into a
+live column, not a fixed set of legacy rows. Hand-fixing the six would work today and be wrong
+again next week. Apply `toLower()` to all six stages even though only `Coiling Date` carries
+markers right now — nothing stops the same typing appearing in `Stacking` or `Drying` tomorrow.
+
+Scanner kept at `scratchpad/ec_scan.py`; point it at any newer snapshot. Note that it treats real
+`datetime` cells as fine — the Excel connector hands those to the flow as serial numbers, which is
+what `addDays('1899-12-30', int(...))` is built for. Only a genuine *string* in a date column is a
+landmine.

@@ -75,7 +75,7 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 12 | **B4 live permissions test** on a staff account | 🟢 B | config verified only | ~30 seconds on a floor machine |
 | 13 | **Timezone + 17 date columns** — site back to Eastern | 🔵 A / 🟢 B | **reopened 2026-09-04** | Own section below. Order is critical |
 | 14 | **A2 / A3** — park fallback, strip stage stamping | 🔵 A | not started | Not blocking anything |
-| 15 | 🔴 **A5c** `toLower()` on six stages — **24 expressions** | 🔵 A | **CONFIRMED MISSING 2026-09-05** | **Do not skip.** The earlier "recommended skipping" was wrong. This is the iteration-497 failure — see the forensics doc §9 |
+| 15 | 🔴 **A5c** `toLower()` on six stages — **24 expressions** | 🔵 A | **CONFIRMED MISSING 2026-09-05** | **Do not skip.** The earlier "recommended skipping" was wrong. **6 rows will throw on the next run** and the count doubled in 4 days. Paste sheet: `a5c-tolower-paste-sheet.md`. Forensics §9.1, §9.7 |
 | 16 | **D5 + A8** — deploy viewer, disable transfer flow | 🟠 D / 🔵 A | **cut by the user** | The Monday cutover decision |
 | 17 | **Centralise parents into `Order Items`** | 🔵 A | **picker returned 2026-09-05** | 57 Yes / 60 No of 117. Naming revised: `Model`/`Model Revision` are **not** prefixed — they overwrite the existing lookups. SA units **re-resolve**, never copy. Change-guard on every write |
 | 18 | **Split the composite `Status`** into `Step Status` + `Status Date` | 🔵 A | **new 2026-09-05** | Code table found; see `infrastructure-overview.md` |
