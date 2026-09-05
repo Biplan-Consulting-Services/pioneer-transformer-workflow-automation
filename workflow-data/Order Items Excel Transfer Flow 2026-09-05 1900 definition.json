@@ -1,0 +1,811 @@
+{
+  "id": "/providers/Microsoft.Flow/flows/4260a403-41e6-65b6-8e87-76b72fb9c26e",
+  "name": "4260a403-41e6-65b6-8e87-76b72fb9c26e",
+  "properties": {
+    "apiId": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+    "connectionReferences": {
+      "shared_excelonlinebusiness-1": {
+        "apiName": "excelonlinebusiness",
+        "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false,
+        "source": "Invoker",
+        "tier": "NotSpecified"
+      },
+      "shared_sharepointonline": {
+        "apiName": "sharepointonline",
+        "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false,
+        "source": "Invoker",
+        "tier": "NotSpecified"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "actions": {
+        "Apply_to_each": {
+          "actions": {
+            "CheckMatchCountModels": {
+              "actions": {
+                "ResolvedModelCode": {
+                  "inputs": "@first(outputs('GetModels1')?['body/value'])?['ModelName']",
+                  "metadata": {
+                    "operationMetadataId": "bd60a84f-5005-4584-8a5a-013443558700"
+                  },
+                  "runAfter": {
+                    "ResolvedModelRevisionID": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose"
+                },
+                "ResolvedModelRevisionID": {
+                  "inputs": "@first(outputs('GetModels1')?['body/value'])?['ModelRevision/Id']",
+                  "metadata": {
+                    "operationMetadataId": "7e34f86d-3038-4e78-a85b-bb2dcb7a101a"
+                  },
+                  "runAfter": {},
+                  "type": "Compose"
+                },
+                "Update_item": {
+                  "inputs": {
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline",
+                      "operationId": "PatchItem"
+                    },
+                    "parameters": {
+                      "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                      "id": "@outputs('ResolvedModelRevisionID')",
+                      "item/Family/Value": "@item()?['Family']",
+                      "item/ModelName": "@outputs('ResolvedModelCode')",
+                      "table": "e2ff8703-b590-4648-b181-9b47cf3883ba"
+                    }
+                  },
+                  "metadata": {
+                    "operationMetadataId": "3d731aa6-9ad4-40d4-9e91-790b01ad7168"
+                  },
+                  "runAfter": {
+                    "ResolvedModelCode": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "OpenApiConnection"
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(outputs('GetModels1')?['body/value'])",
+                      1
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "a8ec857b-4395-4718-a875-0e5d872aa295"
+              },
+              "runAfter": {
+                "GetModels1": [
+                  "Succeeded"
+                ]
+              },
+              "type": "If"
+            },
+            "CheckOrderMatch": {
+              "actions": {
+                "ClientIDToWrite": {
+                  "inputs": "@outputs('GetResolvedOrder')?['body/Client/Id']",
+                  "metadata": {
+                    "operationMetadataId": "0c3cdd74-c229-4ab8-a514-09f1ccfc6e50"
+                  },
+                  "runAfter": {
+                    "GetResolvedOrder": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Compose"
+                },
+                "Condition": {
+                  "actions": {
+                    "Set_variable": {
+                      "inputs": {
+                        "name": "ModelIDToWrite",
+                        "value": "@outputs('GetResolvedOrder')?['body/Model/Id']"
+                      },
+                      "metadata": {
+                        "operationMetadataId": "e70030a4-7529-40cf-b7f6-074eaaa5d097"
+                      },
+                      "runAfter": {},
+                      "type": "SetVariable"
+                    },
+                    "Set_variable_1": {
+                      "inputs": {
+                        "name": "ModelRevisionIDToWrite",
+                        "value": "@outputs('GetResolvedOrder')?['body/ModelRevision/Id']"
+                      },
+                      "metadata": {
+                        "operationMetadataId": "ef54ca4d-bbb9-42a7-a165-77d692ef1ac1"
+                      },
+                      "runAfter": {
+                        "Set_variable": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "SetVariable"
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Condition_1": {
+                        "actions": {
+                          "SAModelUnmatched": {
+                            "inputs": "@true",
+                            "metadata": {
+                              "operationMetadataId": "26f8eb93-1734-4ef8-9ee7-56cf298a30b6"
+                            },
+                            "runAfter": {},
+                            "type": "Compose"
+                          }
+                        },
+                        "else": {
+                          "actions": {
+                            "Set_variable_2": {
+                              "inputs": {
+                                "name": "ModelIDToWrite",
+                                "value": "@first(outputs('GetModels')?['body/value'])?['ID']"
+                              },
+                              "metadata": {
+                                "operationMetadataId": "079439d0-9ae0-4c74-8b29-69faddb7eefd"
+                              },
+                              "runAfter": {},
+                              "type": "SetVariable"
+                            },
+                            "Set_variable_3": {
+                              "inputs": {
+                                "name": "ModelRevisionIDToWrite",
+                                "value": "@first(outputs('GetModels')?['body/value'])['ModelRevision/Id']"
+                              },
+                              "metadata": {
+                                "operationMetadataId": "de9e3060-4922-45c7-be6a-ff6a2f18da32"
+                              },
+                              "runAfter": {
+                                "Set_variable_2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "SetVariable"
+                            }
+                          }
+                        },
+                        "expression": {
+                          "and": [
+                            {
+                              "equals": [
+                                "@length(outputs('GetModels')?['body/value'])",
+                                0
+                              ]
+                            }
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "7e355abb-dac8-4f4e-9628-581a3b70186d"
+                        },
+                        "runAfter": {
+                          "GetModels": [
+                            "Succeeded"
+                          ]
+                        },
+                        "type": "If"
+                      },
+                      "GetModels": {
+                        "inputs": {
+                          "authentication": {
+                            "type": "Raw",
+                            "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "connectionName": "shared_sharepointonline",
+                            "operationId": "GetItems"
+                          },
+                          "parameters": {
+                            "$filter": "ParentModelId eq @{outputs('GetResolvedOrder')?['body/Model/Id']} and SAModel eq 1",
+                            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                            "table": "b43a5140-0f9d-4ac1-9019-43b897074224"
+                          }
+                        },
+                        "metadata": {
+                          "operationMetadataId": "a393d8c1-aecc-4044-abaf-51435e484051"
+                        },
+                        "runAfter": {},
+                        "type": "OpenApiConnection"
+                      }
+                    }
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@outputs('IsSA')",
+                          "@false"
+                        ]
+                      }
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "c4257068-a68f-4274-94ef-49092376c690"
+                  },
+                  "runAfter": {
+                    "ClientIDToWrite": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "If"
+                },
+                "GetResolvedOrder": {
+                  "inputs": {
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline",
+                      "operationId": "GetItem"
+                    },
+                    "parameters": {
+                      "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                      "id": "@outputs('ResolvedOrderId')",
+                      "table": "6fe35dfe-2b7d-455a-abe3-056abb386733"
+                    }
+                  },
+                  "metadata": {
+                    "operationMetadataId": "01716b75-6102-49bc-8bfc-bae59ddc0b73"
+                  },
+                  "runAfter": {
+                    "ResolvedOrderId": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "OpenApiConnection"
+                },
+                "Get_Order_items": {
+                  "inputs": {
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline",
+                      "operationId": "GetItems"
+                    },
+                    "parameters": {
+                      "$filter": "Title eq '@{outputs('RawOrder')}'",
+                      "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                      "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
+                    }
+                  },
+                  "metadata": {
+                    "operationMetadataId": "18f573e3-3e33-4301-b677-d4307736d538"
+                  },
+                  "runAfter": {
+                    "Condition": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "OpenApiConnection"
+                },
+                "ResolvedOrderId": {
+                  "inputs": "@first(outputs('Get_Orders')?['body/value'])?['ID']",
+                  "metadata": {
+                    "operationMetadataId": "33528f74-ede3-400e-8edd-8fd1b9c664a4"
+                  },
+                  "runAfter": {},
+                  "type": "Compose"
+                },
+                "Switch": {
+                  "cases": {
+                    "No_Items_Found": {
+                      "actions": {
+                        "CreateOrderItem": {
+                          "inputs": {
+                            "authentication": {
+                              "type": "Raw",
+                              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "connectionName": "shared_sharepointonline",
+                              "operationId": "PostItem"
+                            },
+                            "parameters": {
+                              "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                              "item/AssemblyDate": "@if(or(equals(trim(item()?['Assembly Date']), ''), equals(trim(item()?['Assembly Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Assembly Date'])))",
+                              "item/AssemblyStatus/Value": "@if(equals(trim(item()?['Assembly Date']), ''), null, if(equals(trim(item()?['Assembly Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/CSA": "@not(equals(item()?['CSA'], ''))",
+                              "item/Client/Id": "@outputs('ClientIDToWrite')",
+                              "item/CoilWinder": "@item()?['Coil Winder']",
+                              "item/CoilingDate": "@if(or(equals(trim(item()?['Coiling Date']), ''), equals(trim(item()?['Coiling Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Coiling Date'])))",
+                              "item/CoilingStatus/Value": "@if(equals(trim(item()?['Coiling Date']), ''), null, if(equals(trim(item()?['Coiling Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/CoreStatus/Value": "@item()?['Core Status']",
+                              "item/DB": "@not(equals(item()?['DB'], ''))",
+                              "item/DryingDate": "@if(or(equals(trim(item()?['Drying Date']), ''), equals(trim(item()?['Drying Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Drying Date'])))",
+                              "item/DryingStatus/Value": "@if(equals(trim(item()?['Drying Date']), ''), null, if(equals(trim(item()?['Drying Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/FinishingDate": "@if(or(equals(trim(item()?['Finishing Date']), ''), equals(trim(item()?['Finishing Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Finishing Date'])))",
+                              "item/FinishingStatus/Value": "@if(equals(trim(item()?['Finishing Date']), ''), null, if(equals(trim(item()?['Finishing Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/Frame/Value": "@item()?['Frame']",
+                              "item/ISOCoil": "@not(equals(item()?['ISO Coil'], ''))",
+                              "item/ISOStack": "@not(equals(item()?['ISO Stack'], ''))",
+                              "item/Impulse": "@not(equals(item()?['Impulse'], ''))",
+                              "item/ItemStatus/Value": "@outputs('ItemStatus')",
+                              "item/LeadAssembly": "@not(equals(item()?['Lead Assembly'], ''))",
+                              "item/Location/Value": "@outputs('MappedLocation')",
+                              "item/ManualEstimatedDeliveryDate": "@if(equals(trim(item()?['Manual Estimated Delivery Date']), ''), null, addDays('1899-12-30', int(item()?['Manual Estimated Delivery Date'])))",
+                              "item/Model/Id": "@variables('ModelIDToWrite')",
+                              "item/ModelRevision/Id": "@variables('ModelRevisionIDToWrite')",
+                              "item/OilAnalysis": "@not(equals(item()?['Oil Analysis'], ''))",
+                              "item/OrderNumber/Id": "@outputs('ResolvedOrderId')",
+                              "item/OriginalTankingDate": "@if(equals(trim(item()?['Original Tanking Date']), ''), null, addDays('1899-12-30', int(item()?['Original Tanking Date'])))",
+                              "item/PartialD": "@not(equals(item()?['Partial D'], ''))",
+                              "item/Planned_x0020_Delivery_x0020_Dat": "@if(or(equals(trim(item()?['Delivery Date']), ''), equals(toLower(trim(item()?['Delivery Date'])), 'ec')), null, addDays('1899-12-30', int(item()?['Delivery Date'])))",
+                              "item/Planned_x0020_Tanking_x0020_Date": "@if(or(equals(trim(item()?['Tanking Date']), ''), equals(toLower(trim(item()?['Tanking Date'])), 'ec')), null, addDays('1899-12-30', int(item()?['Tanking Date'])))",
+                              "item/ProductionLine/Value": "@item()?['Production Line']",
+                              "item/ProtectorStatus/Value": "@item()?['Protector Status']",
+                              "item/ProtectorSwitchgearPO": "@item()?['Protector & Switchgear PO']",
+                              "item/Qty": "@int(last(outputs('UnitFraction')))",
+                              "item/SAJob": "@outputs('IsSA')",
+                              "item/SFRA": "@not(equals(item()?['SFRA'], ''))",
+                              "item/StackingDate": "@if(or(equals(trim(item()?['Stacking Date']), ''), equals(trim(item()?['Stacking Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Stacking Date'])))",
+                              "item/StackingStatus/Value": "@if(equals(trim(item()?['Stacking Date']), ''), null, if(equals(trim(item()?['Stacking Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/Status": "@item()?['Status']",
+                              "item/Tank": "@not(equals(item()?['Tank'], ''))",
+                              "item/TankDeliveryDate": "@if(equals(trim(item()?['Tank Delivery Date']), ''), null, addDays('1899-12-30', int(item()?['Tank Delivery Date'])))",
+                              "item/TankingDateChangeJustification": "@item()?['Tanking date change justification']",
+                              "item/TemperatureRise": "@not(equals(item()?['Temperature Rise'], ''))",
+                              "item/TestingDate": "@if(or(equals(trim(item()?['Testing Date']), ''), equals(trim(item()?['Testing Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Testing Date'])))",
+                              "item/TestingStatus/Value": "@if(equals(trim(item()?['Testing Date']), ''), null, if(equals(trim(item()?['Testing Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/Time_x0028_days_x0029_": "@if(equals(item()?['Time (days)'], ''), null, int(item()?['Time (days)']))",
+                              "item/Title": "@outputs('RawOrder')",
+                              "item/TrimestrialCustomer/Value": "@item()?['Trimestrial Customer']",
+                              "item/Unit_x0023_": "@int(first(outputs('UnitFraction')))",
+                              "item/Winder": "@item()?['Winder']",
+                              "item/Witness_x002f_Other": "@item()?['Witness/Other']",
+                              "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
+                            }
+                          },
+                          "metadata": {
+                            "operationMetadataId": "781bec42-fb09-4549-a73c-437e2d5d8512"
+                          },
+                          "runAfter": {},
+                          "type": "OpenApiConnection"
+                        }
+                      },
+                      "case": 0
+                    },
+                    "One_Item_Found": {
+                      "actions": {
+                        "UpdateOrderItem": {
+                          "inputs": {
+                            "authentication": {
+                              "type": "Raw",
+                              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "connectionName": "shared_sharepointonline",
+                              "operationId": "PatchItem"
+                            },
+                            "parameters": {
+                              "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                              "id": "@first(outputs('Get_Order_items')?['body/value'])?['ID']",
+                              "item/AssemblyDate": "@if(or(equals(trim(item()?['Assembly Date']), ''), equals(trim(item()?['Assembly Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Assembly Date'])))",
+                              "item/AssemblyStartDate": "@null",
+                              "item/AssemblyStatus/Value": "@if(equals(trim(item()?['Assembly Date']), ''), null, if(equals(trim(item()?['Assembly Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/CSA": "@not(equals(item()?['CSA'], ''))",
+                              "item/Client/Id": "@outputs('ClientIDToWrite')",
+                              "item/CoilWinder": "@item()?['Coil Winder']",
+                              "item/CoilingDate": "@if(or(equals(trim(item()?['Coiling Date']), ''), equals(trim(item()?['Coiling Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Coiling Date'])))",
+                              "item/CoilingStartDate": "@null",
+                              "item/CoilingStatus/Value": "@if(equals(trim(item()?['Coiling Date']), ''), null, if(equals(trim(item()?['Coiling Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/CoreStatus/Value": "@item()?['Core Status']",
+                              "item/DB": "@not(equals(item()?['DB'], ''))",
+                              "item/DeliveryStartDate": "@null",
+                              "item/DryingDate": "@if(or(equals(trim(item()?['Drying Date']), ''), equals(trim(item()?['Drying Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Drying Date'])))",
+                              "item/DryingStartDate": "@null",
+                              "item/DryingStatus/Value": "@if(equals(trim(item()?['Drying Date']), ''), null, if(equals(trim(item()?['Drying Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/FinishingDate": "@if(or(equals(trim(item()?['Finishing Date']), ''), equals(trim(item()?['Finishing Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Finishing Date'])))",
+                              "item/FinishingStartDate": "@null",
+                              "item/FinishingStatus/Value": "@if(equals(trim(item()?['Finishing Date']), ''), null, if(equals(trim(item()?['Finishing Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/Frame/Value": "@item()?['Frame']",
+                              "item/ISOCoil": "@not(equals(item()?['ISO Coil'], ''))",
+                              "item/ISOStack": "@not(equals(item()?['ISO Stack'], ''))",
+                              "item/Impulse": "@not(equals(item()?['Impulse'], ''))",
+                              "item/ItemStatus/Value": "@outputs('ItemStatus')",
+                              "item/LeadAssembly": "@not(equals(item()?['Lead Assembly'], ''))",
+                              "item/Location/Value": "@outputs('MappedLocation')",
+                              "item/ManualEstimatedDeliveryDate": "@if(equals(trim(item()?['Manual Estimated Delivery Date']), ''), null, addDays('1899-12-30', int(item()?['Manual Estimated Delivery Date'])))",
+                              "item/Model/Id": "@variables('ModelIDToWrite')",
+                              "item/ModelRevision/Id": "@variables('ModelRevisionIDToWrite')",
+                              "item/OilAnalysis": "@not(equals(item()?['Oil Analysis'], ''))",
+                              "item/OrderNumber/Id": "@outputs('ResolvedOrderId')",
+                              "item/OriginalTankingDate": "@if(equals(trim(item()?['Original Tanking Date']), ''), null, addDays('1899-12-30', int(item()?['Original Tanking Date'])))",
+                              "item/PartialD": "@not(equals(item()?['Partial D'], ''))",
+                              "item/Planned_x0020_Delivery_x0020_Dat": "@if(or(equals(trim(item()?['Delivery Date']), ''), equals(toLower(trim(item()?['Delivery Date'])), 'ec')), null, addDays('1899-12-30', int(item()?['Delivery Date'])))",
+                              "item/Planned_x0020_Tanking_x0020_Date": "@if(or(equals(trim(item()?['Tanking Date']), ''), equals(toLower(trim(item()?['Tanking Date'])), 'ec')), null, addDays('1899-12-30', int(item()?['Tanking Date'])))",
+                              "item/ProductionLine/Value": "@item()?['Production Line']",
+                              "item/ProtectorStatus/Value": "@item()?['Protector Status']",
+                              "item/ProtectorSwitchgearPO": "@item()?['Protector & Switchgear PO']",
+                              "item/Qty": "@int(last(outputs('UnitFraction')))",
+                              "item/SAJob": "@outputs('IsSA')",
+                              "item/SFRA": "@not(equals(item()?['SFRA'], ''))",
+                              "item/StackingDate": "@if(or(equals(trim(item()?['Stacking Date']), ''), equals(trim(item()?['Stacking Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Stacking Date'])))",
+                              "item/StackingStartDate": "@null",
+                              "item/StackingStatus/Value": "@if(equals(trim(item()?['Stacking Date']), ''), null, if(equals(trim(item()?['Stacking Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/Status": "@item()?['Status']",
+                              "item/Tank": "@not(equals(item()?['Tank'], ''))",
+                              "item/TankDeliveryDate": "@if(equals(trim(item()?['Tank Delivery Date']), ''), null, addDays('1899-12-30', int(item()?['Tank Delivery Date'])))",
+                              "item/TankingDateChangeJustification": "@item()?['Tanking date change justification']",
+                              "item/TankingStartDate": "@null",
+                              "item/TemperatureRise": "@not(equals(item()?['Temperature Rise'], ''))",
+                              "item/TestingDate": "@if(or(equals(trim(item()?['Testing Date']), ''), equals(trim(item()?['Testing Date']), 'EC')), null, addDays('1899-12-30', int(item()?['Testing Date'])))",
+                              "item/TestingStartDate": "@null",
+                              "item/TestingStatus/Value": "@if(equals(trim(item()?['Testing Date']), ''), null, if(equals(trim(item()?['Testing Date']), 'EC'), 'In Progress', 'Completed'))",
+                              "item/Time_x0028_days_x0029_": "@if(equals(item()?['Time (days)'], ''), null, int(item()?['Time (days)']))",
+                              "item/Title": "@outputs('RawOrder')",
+                              "item/TrimestrialCustomer/Value": "@item()?['Trimestrial Customer']",
+                              "item/Unit_x0023_": "@int(first(outputs('UnitFraction')))",
+                              "item/Winder": "@item()?['Winder']",
+                              "item/Witness_x002f_Other": "@item()?['Witness/Other']",
+                              "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
+                            }
+                          },
+                          "metadata": {
+                            "operationMetadataId": "b35d2cc8-a6b1-4dfc-b3dc-c49e15bec47c"
+                          },
+                          "runAfter": {},
+                          "type": "OpenApiConnection"
+                        }
+                      },
+                      "case": 1
+                    }
+                  },
+                  "default": {
+                    "actions": {
+                      "DuplicateOrderItem": {
+                        "inputs": "@outputs('RawOrder')",
+                        "metadata": {
+                          "operationMetadataId": "71c56ecf-1827-4c9b-b127-9110243917b7"
+                        },
+                        "runAfter": {},
+                        "type": "Compose"
+                      }
+                    }
+                  },
+                  "expression": "@length(outputs('Get_Order_items')?['body/value'])",
+                  "metadata": {
+                    "operationMetadataId": "4c406144-f16b-41b3-8970-080107fece41"
+                  },
+                  "runAfter": {
+                    "Get_Order_items": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "Switch"
+                },
+                "UpdateOrder": {
+                  "inputs": {
+                    "authentication": {
+                      "type": "Raw",
+                      "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "connectionName": "shared_sharepointonline",
+                      "operationId": "PatchItem"
+                    },
+                    "parameters": {
+                      "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                      "id": "@outputs('ResolvedOrderId')",
+                      "item/ClientDateStatus/Value": "@if(or(equals(trim(toUpper(item()?['Client Date Status'])), 'CONFIRMED'), equals(trim(toUpper(item()?['Client Date Status'])), 'CONFRIMED')), 'Confirmed', if(equals(trim(toUpper(item()?['Client Date Status'])), 'PENDING'), 'Pending', null))",
+                      "item/EngineeringRequired": "@if(equals(trim(item()?['Engineering Required']), 'Y'), true, if(equals(trim(item()?['Engineering Required']), 'N'), false, null))",
+                      "item/LDs": "@if(equals(trim(item()?['LDs']), 'Y'), true, if(equals(trim(item()?['LDs']), 'N'), false, null))",
+                      "item/OrderStatus/Value": "Active",
+                      "item/SalesNotes": "@item()?['Sales Notes']",
+                      "table": "6fe35dfe-2b7d-455a-abe3-056abb386733"
+                    }
+                  },
+                  "metadata": {
+                    "operationMetadataId": "b1d2930f-78f5-4a89-ae59-31dc7ea712e7"
+                  },
+                  "runAfter": {
+                    "Condition": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "OpenApiConnection"
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@length(outputs('Get_Orders')?['body/value'])",
+                      1
+                    ]
+                  }
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "bb4d2cea-c36d-48f3-8d15-eab2ca50429d"
+              },
+              "runAfter": {
+                "Get_Orders": [
+                  "Succeeded"
+                ]
+              },
+              "type": "If"
+            },
+            "GetModels1": {
+              "inputs": {
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline",
+                  "operationId": "GetItems"
+                },
+                "parameters": {
+                  "$filter": "ModelName eq '@{item()?['PO Item _x0023_']}'",
+                  "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                  "table": "b43a5140-0f9d-4ac1-9019-43b897074224"
+                }
+              },
+              "metadata": {
+                "operationMetadataId": "b7c52a9b-49c7-462f-bd34-6ea6ddaf611e"
+              },
+              "runAfter": {
+                "ItemStatus": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection"
+            },
+            "Get_Orders": {
+              "inputs": {
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline",
+                  "operationId": "GetItems"
+                },
+                "parameters": {
+                  "$filter": "Order_x0020_Number1 eq '@{outputs('OrderNumberText')}'",
+                  "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                  "table": "6fe35dfe-2b7d-455a-abe3-056abb386733"
+                }
+              },
+              "metadata": {
+                "operationMetadataId": "faf83ff7-749d-4ad0-96cf-20806708f51f"
+              },
+              "runAfter": {
+                "ItemStatus": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection"
+            },
+            "IsSA": {
+              "inputs": "@endsWith(outputs('RawOrder'), ' SA')",
+              "metadata": {
+                "operationMetadataId": "afe24bbe-3a8d-49de-a563-02c69dae838b"
+              },
+              "runAfter": {
+                "RawOrder": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose"
+            },
+            "ItemStatus": {
+              "inputs": "@if(equals(item()?['Location'], 'AN'), 'Cancelled',\r\nif(and(equals(outputs('MappedLocation'), 'Livraison'), not(equals(item()?['Delivery Date'], ''))), 'Delivered',\r\n'Active'))",
+              "metadata": {
+                "operationMetadataId": "faf8847b-6a8c-4f1e-9f69-2a8cad90d42f"
+              },
+              "runAfter": {
+                "MappedLocation": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose"
+            },
+            "MappedLocation": {
+              "inputs": "@if(equals(item()?['Location'], 'IS'), 'Isolation',\r\nif(equals(item()?['Location'], 'BO'), 'Bobinage',\r\nif(equals(item()?['Location'], 'ST'), 'Stacking',\r\nif(equals(item()?['Location'], 'AS'), 'Assemblage',\r\nif(equals(item()?['Location'], 'FO'), 'Four',\r\nif(equals(item()?['Location'], 'TA'), 'Tanking',\r\nif(equals(item()?['Location'], 'TE'), 'Test',\r\nif(equals(item()?['Location'], 'FI'), 'Finition',\r\nif(equals(item()?['Location'], 'LI'), 'Livraison',\r\nif(equals(item()?['Location'], 'ENT'), 'Entrepôt',\r\nif(equals(item()?['Location'], 'XT'), 'Extérieur',\r\nif(equals(item()?['Location'], 'RE'), 'Réparation',\r\nnull))))))))))))",
+              "metadata": {
+                "operationMetadataId": "703b8206-95ba-445d-addd-e59b818abbcd"
+              },
+              "runAfter": {
+                "UnitFraction": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose"
+            },
+            "OrderNumberText": {
+              "inputs": "@first(split(outputs('RawOrder'), '-'))",
+              "metadata": {
+                "operationMetadataId": "0d912c13-70c1-4628-b68c-64e1d2f27b54"
+              },
+              "runAfter": {
+                "IsSA": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose"
+            },
+            "RawOrder": {
+              "inputs": "@trim(item()?['Order'])",
+              "metadata": {
+                "operationMetadataId": "c0b13840-80c4-4b13-9974-543a250b6a0e"
+              },
+              "runAfter": {},
+              "type": "Compose"
+            },
+            "UnitFraction": {
+              "inputs": "@split(last(split(if(outputs('IsSA'), replace(outputs('RawOrder'), ' SA', ''), outputs('RawOrder')), '-')), '/')",
+              "metadata": {
+                "operationMetadataId": "aab9ec59-addd-4fe2-80a7-8e8936447b8f"
+              },
+              "runAfter": {
+                "OrderNumberText": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose"
+            }
+          },
+          "foreach": "@body('Filter_array')",
+          "metadata": {
+            "operationMetadataId": "b67999e8-dca7-416f-963a-d701750ac7c0"
+          },
+          "runAfter": {
+            "InitializeModelRevisionIDToWrite": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "Filter_array": {
+          "inputs": {
+            "from": "@outputs('List_rows_present_in_a_table')?['body/value']",
+            "where": "@not(equals(item()?['Order'],''))"
+          },
+          "metadata": {
+            "operationMetadataId": "90cc29b1-5277-4e0e-a306-edde23291272"
+          },
+          "runAfter": {
+            "List_rows_present_in_a_table": [
+              "Succeeded"
+            ]
+          },
+          "type": "Query"
+        },
+        "InitialiseModelIDToWrite": {
+          "inputs": {
+            "variables": [
+              {
+                "name": "ModelIDToWrite",
+                "type": "integer",
+                "value": "@null"
+              }
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fb51a72f-3c68-4187-9fdc-e4b8991bb347"
+          },
+          "runAfter": {
+            "Filter_array": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable"
+        },
+        "InitializeModelRevisionIDToWrite": {
+          "inputs": {
+            "variables": [
+              {
+                "name": "ModelRevisionIDToWrite",
+                "type": "integer",
+                "value": "@null"
+              }
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d066e25f-974e-4908-a0ef-c2eb385edd57"
+          },
+          "runAfter": {
+            "InitialiseModelIDToWrite": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable"
+        },
+        "List_rows_present_in_a_table": {
+          "inputs": {
+            "authentication": {
+              "type": "Raw",
+              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+              "connectionName": "shared_excelonlinebusiness-1",
+              "operationId": "GetItems"
+            },
+            "parameters": {
+              "drive": "b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64",
+              "file": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW",
+              "source": "sites/ermcopower.sharepoint.com,88b9ed6c-d686-4bbe-b445-4e753ad511f6,7f8472f6-8a89-4591-a116-98a1783e6bcc",
+              "table": "{72371618-48E3-4FA4-B667-3B76BFA2D42A}"
+            }
+          },
+          "metadata": {
+            "01DI2JQP22Z26NHHS4SNF3AQ7EFXBRVYT3": "/General/FAB/Revue/FRM10-12.xlsx",
+            "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW": "/General/FAB/Revue/Formulaires/FRM10-12.xlsx",
+            "operationMetadataId": "c978cbe3-ee63-4eef-9cbf-b3d0c8a26055",
+            "tableId": "{5C992B17-9EDB-42E2-898E-09902BAFBC08}"
+          },
+          "runAfter": {},
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 5000
+            }
+          },
+          "type": "OpenApiConnection"
+        }
+      },
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "inputs": {
+            "schema": {
+              "properties": {},
+              "required": [],
+              "type": "object"
+            }
+          },
+          "kind": "Button",
+          "metadata": {
+            "operationMetadataId": "033d3d25-1513-4052-a0f2-2e8685af6a9a"
+          },
+          "type": "Request"
+        }
+      }
+    },
+    "displayName": "Order Items - Excel Transfer Flow",
+    "flowFailureAlertSubscribed": false,
+    "isManaged": false
+  },
+  "type": "Microsoft.Flow/flows"
+}
