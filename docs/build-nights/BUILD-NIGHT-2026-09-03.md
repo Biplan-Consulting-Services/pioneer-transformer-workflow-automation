@@ -2569,3 +2569,48 @@ of thing that survives in a doc long after everyone has forgotten which body the
 **Nothing else changes.** The sequence stands, the fix is still the run, step 3's re-count is
 still confirmation rather than a test, and **the live FRM10-12 refresh is still step 1 and still
 needs the user.** 🔵 A has run nothing and written no tenant data.
+
+**2026-09-05 01:2x | 🟠 D | ✅ STEP 1 IS DONE — the live FRM10-12 WAS refreshed. Track D closing
+for the night.**
+
+**Not reported to me; found by reading the file.** A new snapshot appeared untracked:
+`live-workbook-data/FRM10-12_2026-09-04_23h08m.xlsx`. Its `Orders` sheet header carries the
+Office Script's own banner:
+
+> `Update done, finished at Fri Sep 04 2026 23:07:57 GMT-0400 (Eastern Daylight Time), 0:43 mins elapsed.`
+
+**So the refresh that was step 1 of the revised sequence has happened**, via the Office Script
+button as required, at **23:07:57 on 2026-09-04**. Committed the snapshot as the evidence.
+
+**What that unblocks: step 2, running the transfer flow.** Which per 🔵 A does **not** need the
+designer — instant flow, Run button on the detail page. So the next action in the sequence is
+available now and is not gated on the blocker that gates everything else.
+
+**Sequence state at close:**
+| | Step | State |
+|---|---|---|
+| 1 | Refresh live FRM10-12 | ✅ **DONE 2026-09-04 23:07:57** |
+| 2 | **Run the transfer flow** | ⬅️ **NEXT. Not designer-blocked.** |
+| 3 | Verify: re-count time-of-day on `Tanking End Date` + `Coiling End Date` | Expect `04:00Z`/`05:00Z`; any `00:00:00Z` means it did not localise |
+| 4 | Map A5's remaining 5 + `BO` + 3b's conditional null | Designer. Before step 2 avoids a second run, **not** a prerequisite |
+| 5 | Re-diff — the 72 | Whatever survives is the real bug |
+| 6 | Refresh the **viewer** workbook | D.1's fix. **Distinct from step 1** |
+
+### 🟠 Track D — closed for the night. Repo state verified, not assumed.
+**All three repos: 0 unpushed.** Board copies in sync, checked both directions with line endings
+normalised. No open timesheet rows.
+
+**Three files left uncommitted on purpose, all unchanged from my earlier reasoning:**
+`viewer/workbook/FRM10-12.xlsx` (the blanked copy — commit **after** step 6's refresh, `HEAD`
+holds the good one) · `office-scripts/Step8 Test Workbook.xlsx` (1 byte, Sep 1, not mine) ·
+FRM09's workbook +34 KB and its untracked backup (not mine, not tonight's scope).
+
+**One new file I did NOT commit because I do not know what it is:**
+`Workflow-Automation/sharepoint-lists/Order Items parent column picker 2026-09-05.xlsx`.
+Appeared today. **Tell me what it is and I will commit it with an honest message** — I am not
+writing a description of a file I have not been told the purpose of.
+
+**Still open and still needing a browser:** the three French UI labels in
+`views-guide-sharepoint-fr.md` section 7 (« Regrouper par », « Réduits », « Limite d'éléments »),
+flagged in a removable note at the top of that file. It is the only thing I have written that I
+could not verify myself.
