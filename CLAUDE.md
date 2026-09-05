@@ -51,6 +51,22 @@ had — hence a dedicated place to plan it before touching production.
   live SharePoint directly (never stale). This repo documents the system FRM10-12 is part of,
   stages the next list to migrate into it, and now holds the canonical shared-list export
   snapshots FRM10-12 used to duplicate (see `sharepoint-lists/` above).
+- **FRM13** (`PRO1.FRM13 - Desplan - Auto.xlsx`) — the Engineering/drawing tracker, live at
+  `Pioneer Planification/General/FAB/Suivi/Dessin`, with a working copy at
+  `../FRM10-12/linked-workbooks/`. It has **no repo of its own**, but it is a real upstream
+  dependency of this project, discovered 2026-09-05:
+  - Its `LeedTime` table (sheet `DelaisApproParClients`, `A6:H24`) is the **only** source of
+    client lead times — 17 clients plus a `GENERIC VALUE` row of **26 SEM (weeks)**, along with
+    the critical part and supplier driving each one. FRM10-12 queries it in as
+    `ClientLeadTimes`, and branch 7 of the Estimated Delivery formula depends on it.
+  - ⚠️ **`Order.Lead Time` is NOT this value.** Measured 2026-09-05: of the 342 orders whose
+    client appears in `LeedTime`, **306 disagree and 36 agree** — it is mostly the SharePoint
+    column default (26) with occasional hand edits, i.e. a per-order override. HYDRO QUEBEC
+    should be 28 weeks; 144 of its orders say 26 and 84 say 20. Do not feed it into branch 7.
+  - The Excel formula's `XLOOKUP(..., default 52)` also contradicts FRM13's own generic value
+    of 26. Whichever way that is settled, settle it in both places.
+  - It also carries its own `TableOrders` (per order, `B7:AN169`) — same name as FRM10-12's but
+    a different table with different columns. Don't conflate them.
 - These are separate git repos — the cross-links above are documentation only (relative
   folder paths under the same client directory), not a git/build dependency.
 
