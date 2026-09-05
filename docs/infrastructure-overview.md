@@ -715,7 +715,7 @@ Anything parsing these must know which column it is reading. Worth stating in th
 ## Parent → `Order Items` sync — the design, settled 2026-09-05
 
 The picker workbook (`sharepoint-lists/Order Items parent column picker 2026-09-05.xlsx`, 117
-candidate columns) came back **57 Yes / 60 No**: `Order` 23/22 · `Models` 8/29 ·
+candidate columns) came back **55 Yes / 62 No**: `Order` 23/22 · `Models` 6/31 ·
 `Model Revisions` 25/6 · `Clients` 1/3.
 
 ### The rule the selections encode

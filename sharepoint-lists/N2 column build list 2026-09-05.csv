@@ -1,0 +1,56 @@
+﻿Action,Source list,Source column,Source internal name,Type,Proposed Order Items name,Note
+CREATE,Model Revisions,Cable,Cable,Text,Mod. Rev. - Cable,
+CREATE,Model Revisions,Client_Model_Code,ModelName,Text,Mod. Rev. - Client_Model_Code,
+CREATE,Model Revisions,Copper (LV),Copper(LV),Text,Mod. Rev. - Copper (LV),
+CREATE,Model Revisions,Core Type,Core Type,Choice,Mod. Rev. - Core Type,
+CREATE,Model Revisions,Family,Family,Choice,Mod. Rev. - Family,
+CREATE,Model Revisions,Form,Form,Text,Mod. Rev. - Form,
+CREATE,Model Revisions,JS #,JS #,Text,Mod. Rev. - JS #,
+CREATE,Model Revisions,Model Description,Description,MultiChoice,Mod. Rev. - Model Description,Multi-select - stores as delimited text when synced.
+CREATE,Model Revisions,Model Type,Model Type,Choice,Mod. Rev. - Model Type,
+CREATE,Model Revisions,Model_Revion_ID,ModelID,Text,Mod. Rev. - Model_Revion_ID,
+CREATE,Model Revisions,Notes,Notes,Note,Mod. Rev. - Notes,Multi-line - force one line/ellipsis in views or 6-line rows wreck the layout.
+CREATE,Model Revisions,Oil Amount,OilAmount,Number,Mod. Rev. - Oil Amount,
+CREATE,Model Revisions,Oil Type,Oil Type,Choice,Mod. Rev. - Oil Type,
+CREATE,Model Revisions,Overcoil,Overcoil,Number,Mod. Rev. - Overcoil,
+CREATE,Model Revisions,Phases,Phases,Number,Mod. Rev. - Phases,
+CREATE,Model Revisions,Pioneer Model Code,Model,Lookup,Mod. Rev. - Pioneer Model Code,"LOOKUP - sync the display text, not the ID."
+CREATE,Model Revisions,Primary Voltage,PrimaryVoltage,Number,Mod. Rev. - Primary Voltage,
+CREATE,Model Revisions,Secondary Voltage,SecondaryVoltage,Number,Mod. Rev. - Secondary Voltage,
+CREATE,Model Revisions,Spec_Date,Spec_Date,DateTime,Mod. Rev. - Spec_Date,
+CREATE,Model Revisions,Spec_ID,SpecID,Text,Mod. Rev. - Spec_ID,
+CREATE,Model Revisions,Spec_Revision,Spec_Revision,Text,Mod. Rev. - Spec_Revision,
+CREATE,Model Revisions,Wire (HV),Wire(HV),Text,Mod. Rev. - Wire (HV),
+CREATE,Model Revisions,kVA,kVA and kV,Number,Mod. Rev. - kVA,
+CREATE,Models,Estimated Effort,Estimated Effort,Number,Model - Estimated Effort,
+CREATE,Models,Model_ID,ModelID,Text,Model - Model_ID,
+CREATE,Models,Modification_Status,ModificationStatus,Choice,Model - Modification_Status,
+CREATE,Models,Parent Model,ParentModel,Lookup,Model - Parent Model,"LOOKUP - sync the display text, not the ID."
+CREATE,Order,Client Date Status,ClientDateStatus,Choice,Order - Client Date Status,One of the 5 companion columns the transfer flow writes back into Order.
+CREATE,Order,Engineering Required,EngineeringRequired,Boolean,Order - Engineering Required,One of the 5 companion columns the transfer flow writes back into Order.
+CREATE,Order,Indexing,Indexing,Choice,Order - Indexing,
+CREATE,Order,Initial Promised Date,Initial Promised Dat,DateTime,Order - Initial Promised Date,
+CREATE,Order,LDs,LDs,Boolean,Order - LDs,One of the 5 companion columns the transfer flow writes back into Order.
+CREATE,Order,New model to be created,New model to b,Choice,Order - New model to be created,
+CREATE,Order,Note,Note,Note,Order - Note,Multi-line - force one line/ellipsis in views or 6-line rows wreck the layout.
+CREATE,Order,Order Date,Order Date,DateTime,Order - Order Date,
+CREATE,Order,Order Folder,Order Folder,URL,Order - Order Folder,
+CREATE,Order,Order Number,Order Number1,Text,Order - Order Number,
+CREATE,Order,Order Status,OrderStatus,Choice,Order - Order Status,One of the 5 companion columns the transfer flow writes back into Order.
+CREATE,Order,Order Step,Order Step,Choice,Order - Order Step,
+CREATE,Order,Order Type,Order Type1,Choice,Order - Order Type,
+CREATE,Order,PO,PO,Text,Order - PO,
+CREATE,Order,Price,Price,Currency,Order - Price,
+CREATE,Order,Province/State,Province/State,Text,Order - Province/State,
+CREATE,Order,Qty,Qty,Number,Order - Qty,ALREADY on Order Items - check for a clash before adding.
+CREATE,Order,Sales Notes,SalesNotes,Note,Order - Sales Notes,Multi-line - force one line/ellipsis in views or 6-line rows wreck the layout. One of the 5 companion columns the transfer flow writes back into Order.
+CREATE,Order,WET-WETP,WET-WETP,Choice,Order - WET-WETP,
+RENAME,Order,Model,Model,Lookup,Order - Model,"NOT prefixed — overwrites the existing Order Items.Model lookup. SA units RE-RESOLVE, never copy."
+RENAME,Order,Model Revision,ModelRevision,Lookup,Order - Model Revision,NOT prefixed — overwrites the existing Order Items.Model Revision lookup. Same SA rule.
+KEEP,Model Revisions,Duplicate Order,DuplicateOrder,Lookup,Mod. Rev. - Duplicate Order,"Create it, but it stays empty — 0 of 391 populated. Future engineering-completion logic fills it."
+KEEP,Models,Latest Model Revision,ModelRevision,Lookup,Model - Latest Model Revision,"Name it so it reads as 'the newest design', NOT 'this unit's revision'. They are different facts."
+REPLACE,Order,Lead Time,Lead Time,Number,Order - Lead Time,"Superseded: the client lead time comes from FRM13 via Clients.Lead Time, not Order.Lead Time (306 of 342 disagree)."
+BACKFILL,Clients,Client_ID,Client_ID,Text,Client - Client_ID,"One-time backfill into the existing Client_ID_TextField, not a synced column."
+DROP,Model Revisions,Client,Client,Lookup,Mod. Rev. - Client,Same decision.
+DROP,Models,Client,Client,Lookup,Model - Client,Same decision. Reachable through the Client lookup.
+DROP,Order,Client,Client,Lookup,Order - Client,Client stays client — the existing Order Items.Client lookup is the only one.
