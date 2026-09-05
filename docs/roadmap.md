@@ -67,8 +67,8 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 4 | **A4 — fold TextField sync into the transfer flow** | 🔵 A | not started | Designer |
 | 5 | **Re-enable the trigger flow** (after backfill) | 🔵 A | off since Sep 1 | Items 3/4 first |
 | 6 | ~~**`Location` empty on 841 of 1,016 active units**~~ **NOT A DEFECT** | 🔵 A | **closed 2026-09-05** | It is blank at source too — 863 of 1,019 — and blank on **exactly** the units that have not started production. Nothing to backfill. See `infrastructure-overview.md` |
-| 7 | **B2-verify** — Production Floor + Planning vs real data | 🟢 B | never done | No longer blocked by item 6. **Check the view's filter:** 98 of the 156 units carrying a `Location` are already delivered, so the floor view may be showing 156 where it should show 58 |
-| 8 | **A7 reconciliation pass** — **104** orphan rows, not 71 | 🔵 A | **re-measured 2026-09-05** | 36 correctly `Delivered`; **57 delivered but still `Active`** — those inflate every `Item Status = Active` view *today*; only **11** are genuinely unexplained. §10 |
+| 7 | **B2-verify** — Production Floor + Planning vs real data | 🟢 B | never done | No longer blocked by item 6. *(An earlier note here claiming the floor view over-reports was wrong — only the 36 units at `Livraison` are delivered, and those are already `Delivered`. Ordinary verification.)* |
+| 8 | **A7 reconciliation pass** — **104** orphan rows, not 71 | 🔵 A | **re-measured 2026-09-05** | 36 correctly `Delivered`; 57 `Active` whose delivery values are **fabricated**, not evidence of shipping (see item 1); **11** genuinely unexplained, 8 of them a single order. §10, §11 |
 | 9 | **A6b** — hand-fix rows failing on one column | 🔵 A | 5 genuine, not 35 | 30 of 35 fix themselves on re-run |
 | 10 | **Export the sales Power App** — `power-apps/` is still `.gitkeep` | 🟠 D | not done | Tenant is the only rollback for a live fan-out |
 | 11 | **D4 viewer parity check** | 🟠 D | not done | Needs a viewer refresh |

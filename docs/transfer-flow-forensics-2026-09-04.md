@@ -486,14 +486,13 @@ task into three buckets:
 | `Active`, but delivered in fact | **57** | 🔴 `Item Status` was never advanced. |
 | `Active`, genuinely unexplained | **11** | The real reconciliation work. |
 
-**The 57 matter today, not after the run.** They carry a `Delivery End Date` or
-`Delivery Status = Completed`, so they are finished units still sitting as `Active` — and
-`Item Status = Active` is the filter behind the Production Floor view, Planning, BO Tracking, the
-reconciliation pass and the archiving sweep. Of 1,016 `Active` rows, **57 are wrong**.
-
-That is the same shape as the `Location` finding in `infrastructure-overview.md`: 98 of the 156
-units carrying a `Location` are already delivered. Both point at one cause — **nothing advances
-`Item Status` when a unit ships** — and one fix closes both.
+⚠️ **Withdrawn — this was my error.** I wrote that these 57 were finished units still sitting as
+`Active`, because they carry a `Delivery End Date` and `Delivery Status = Completed`. But those are
+exactly the values roadmap item 1 identifies as fabricated, so citing them as proof of delivery is
+circular. Measured properly (§11), **no unit on the list has a stale `Item Status`**: all 36
+genuinely delivered units are already marked `Delivered`. The claim that these 57 inflate every
+`Item Status = Active` view is withdrawn, as is the conclusion that this and the `Location` finding
+shared one cause.
 
 ### The 11 that are genuinely unexplained
 
@@ -514,3 +513,60 @@ Two clusters, neither of them random:
 
 So the reconciliation pass has **one order and one unknown prefix** to resolve, plus a bulk status
 correction. That is a materially smaller job than "71 orphan rows waiting".
+
+---
+
+## 11. R14 stands — and `Location` is the cleanest discriminator
+
+I set out to show that roadmap item 1 (*"the single biggest data problem"* — 1,375 fabricated
+Tanking/Delivery statuses) was overstated, reasoning that the backfill wrote those statuses **from
+real workbook dates**, so provenance was being mistaken for incorrectness. The reasoning was wrong
+twice over, and both mistakes are worth keeping because they are easy to repeat.
+
+### Mistake 1 — "has a date" is not "has happened"
+
+The check I ran was *"does the workbook hold a `Tanking Date` for this unit?"* On that test 881 of
+882 checkable rows looked correct, and R14 looked like it would destroy ~1,180 good values.
+
+It fails because these dates are overwhelmingly **scheduled**:
+
+| Column | Real dates | In the past | In the future |
+|---|---|---|---|
+| `Tanking Date` | 972 | 69 | **903** — out to 2030-05-29 |
+| `Delivery Date` | 302 | 8 | **294** |
+
+A unit scheduled for tanking in 2030 has not been tanked.
+
+### Mistake 2 — "date in the past" is not the rule either
+
+My correction was to test whether the source date had passed. **Also wrong**, and the business rule
+is simpler: **`Location = LI` (Livraison) plus a date means delivered, whatever the date says.** A
+unit can be shipped against a delivery date still recorded in the future; the station it sits at is
+what settles it.
+
+The list bears this out exactly:
+
+| | Count |
+|---|---|
+| Units at `Location = Livraison` | **36** |
+| …of those, `Item Status = Delivered` | **36** |
+| …with a `Delivery End Date` | **36** |
+| …with `Delivery Status = Completed` | **36** |
+| Rows with `Delivery Status = Completed` and a **blank** `Location` | **237** |
+
+### What that settles
+
+**R14 is confirmed, by a third independent route.** Its own discriminator is a blank
+`{Stage} Start Date` — about how a value was written. The `Location` rule is about whether the unit
+physically got there. They agree: a `Completed` delivery on a unit that never reached `Livraison` is
+fabricated, and that is 364 of the 400.
+
+**And there is no stale-`Item Status` problem.** Every one of the 36 genuinely delivered units is
+already marked `Delivered`. Nothing to correct — see the withdrawal in §10.
+
+**Do not soften X1.** Clearing statuses keyed on a blank `{Stage} Start Date` remains right. If a
+second condition is wanted, `Location ≠ Livraison` is the natural one, and it spares the 36 that are
+real.
+
+*(The `LI` rule came from the user, not from this analysis. Neither of my two attempts would have
+found it — worth asking rather than deriving, when the question is what a value **means**.)*

@@ -875,15 +875,24 @@ A perfect split. `Location` is filled when a unit physically enters the shop and
 what a physical-location column should do. The 2026-08-12 decision that made `Location` *purely
 physical* is being honoured by the data.
 
-### What is actually worth checking
+### `Location` is also the completion signal
 
-Of the 156 units carrying a `Location`, **98 already have a `Delivery Date`** — finished units still
-holding whichever station they last passed through. Only **58** are genuinely on the floor.
+**`Location = LI` (Livraison) plus a date means the unit is delivered — whatever the date says.**
+That is the rule as the business uses it, and the list bears it out exactly: **36 units sit at
+`Livraison`, and all 36** are `Item Status = Delivered`, carry a `Delivery End Date`, and read
+`Delivery Status = Completed`. A clean 36/36.
 
-So if the Production Floor view looks wrong, the cause is not missing data, it is the **filter**: a
-view keyed on "`Location` is not empty" shows 156 when the answer is 58. Add `Item Status = Active`,
-or a null `Delivery End Date`, and it resolves. That is B2-verify's job (roadmap item 7), and it is
-no longer blocked on a backfill that was never needed.
+That makes `Location` the most reliable stage marker on the list, and it is why the code table
+matters: `LI` is the terminal station, not just another place.
+
+### A follow-on claim I made here was wrong — corrected same day
+
+I originally wrote that 98 of the 156 units carrying a `Location` were "already delivered", leaving
+58 genuinely on the floor, and that the Production Floor view therefore needed a tighter filter.
+**Wrong.** I tested whether a unit had a `Delivery Date` at all. Workbook dates here are
+overwhelmingly **scheduled** — `Tanking Date` runs out to 2030 — so a date's presence says nothing.
+By the `LI` rule the real figure is the 36 above, and **150 of the 156 are genuinely on the floor**.
+The view is about right and there is no filter bug. Roadmap item 7 is ordinary verification again.
 
 ### Method note
 
