@@ -764,9 +764,25 @@ That link is sound — it resolves on **15 of 15** SA models (`Models.SA Model` 
 
 1. Only **15 of 390** models have a twin. An order moving to any of the other 375 leaves the SA unit
    with nothing to point at — **stop and flag for engineering**, never write a wrong model or a blank.
-2. **5 of the 42 SA units already sit on plain `M-` models**, not `MSA-` — order `22110` runs
-   `M-HYQU-0094` against an SA unit on `M-GEPO-0013`, a different client's design. Those cannot be
-   detected by prefix and have no twin to re-resolve to. **Review them before the flow runs.**
+2. **5 of the 42 SA units already sit on plain `M-` models**, not `MSA-`. Those cannot be detected
+   by prefix and have no twin to re-resolve to. Listed 2026-09-05:
+
+   | Unit ID | Model | Revision | `Parent Model` |
+   |---|---|---|---|
+   | `22098-1/1 SA` | `M-HYQU-0095` | `MR-HYQU-0095-V1` | *(blank)* |
+   | `22099-1/1 SA` | `M-TOHY-0002` | `MR-TOHY-0002-V1` | *(blank)* |
+   | `22107-1/1 SA` | `M-HYQU-0095` | `MR-HYQU-0095-V1` | *(blank)* |
+   | `22108-1/1 SA` | `M-EXEL-0001` | `MR-EXEL-0001-V1` | *(blank)* |
+   | `22110-1/1 SA` | `M-GEPO-0013` | `MR-GEPO-0013-V1` | *(blank)* |
+
+   All five are recent orders and all five carry `SA Model = False` with a blank `Parent Model`, so
+   the twin almost certainly **has not been created in `Models` yet** and the unit was pointed at
+   the base design as a placeholder. ⚠️ **If that is what happened, these 5 units are already
+   carrying the wrong spec today** — the exact failure the sync rule exists to prevent, arrived at
+   by hand. Worth checking regardless of the sync.
+
+   Separately, **`21499-1/3 SA` has no model at all** — `Model_ID_TextField` is blank. That one
+   cannot be resolved by any rule and needs a human.
 
 ### Three flags called SA, meaning three different things
 
