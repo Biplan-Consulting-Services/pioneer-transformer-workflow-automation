@@ -497,6 +497,166 @@ derivation can't represent cancelling an order before any units exist).
   FRM10-12 — consistent with the rest of this migration's direction (SharePoint as the
   source, Excel/Power BI as consumers).
 
+## List relationship graph — read before designing any cross-list sync (mapped 2026-09-05)
+
+Every lookup below was read from `_api/…/fields` (`LookupList` + `LookupField`), not inferred from
+column names.
+
+| From | Lookup column | → Points at | Matches on |
+|---|---|---|---|
+| **Order Items** | `Order Number` | Order | `Order_x0020_Number1` |
+| **Order Items** | `Client` | Clients | `Title` |
+| **Order Items** | `Model` | Models | `ModelName` |
+| **Order Items** | `Model Revision` | Model Revisions | `ModelID` |
+| **Order Items** | `Regrouped Into` *(multi)* | Order Items *(self)* | `Title` |
+| Order | `Client` | Clients | `Title` |
+| Order | `Model` | Models | `ModelName` |
+| Order | `Model:kVA and kV` | Models | `kVA_x0020_and_x0020_kV` — **projected field, create-time only** |
+| Order | `Model Revision` | Model Revisions | `ModelID` |
+| Models | `Client` | Clients | `Title` |
+| Models | `Latest Model Revision` | Model Revisions | `ModelID` |
+| Models | `Parent Model` | Models *(self)* | `ModelName` — SA model → its main model |
+| Model Revisions | `Client` | Clients | `Title` |
+| Model Revisions | `Pioneer Model Code` | Models | `ModelID` |
+| Model Revisions | `Duplicate Order` | Order | `Order_x0020_Number1` |
+
+### The headline: every parent is ONE hop from `Order Items`
+
+`Order Items` already carries **direct** lookups to all four parents. The conceptual chain
+(`Clients` → `Models` → `Model Revisions` → `Order` → `Order Items`) is real, **but nothing has to
+walk it** — every sync is a single-step read. That makes the centralisation work substantially
+cheaper than the chain suggests.
+
+### Fan-out — what one parent edit costs (measured, 1,019 unit rows)
+
+| Parent | Distinct | Avg units | Worst case | Verdict |
+|---|---|---|---|---|
+| Order | 330 | 3.1 | 29 (`22106`) | **Safe** |
+| Models | 147 | 6.9 | 91 (`1002113-22`) | OK **with a change-guard** |
+| Model Revisions | 391 | ~2.6 | not measured | OK **with a change-guard** |
+| **Clients** | 37 | 27.5 | **698 — HYDRO QUEBEC is 68% of the list** | **Do not sync** |
+
+### Three traps
+
+1. **Do not sync the `Clients` list.** One edit to the HYDRO QUEBEC row fans out to **698**
+   `Order Items` updates plus a trigger-flow run each — more than the load that hit the capacity cap
+   on 2026-09-04. And the payoff is nil: `Clients` has only **two** real columns (`Title`,
+   `Client_ID`), `Order Items` already resolves the name through its own `Client` lookup, and
+   `Client_ID_TextField` already exists there.
+2. **The SA trap — `Order.Model` is not `Order Items.Model`.** For SA units, `Order Items.Model`
+   deliberately points at the **SA twin** (resolved via `Models.Parent Model`) while `Order.Model`
+   points at the main model. That difference was built on purpose and caught in testing 2026-09-01.
+   Syncing `Order - Model` down would overwrite it and silently fabricate spec data. **Use the
+   direct `Order Items` lookup for anything model-related.**
+3. **`Models` ↔ `Model Revisions` is a cycle** — `Models.Latest Model Revision` → Model Revisions,
+   and `Model Revisions.Pioneer Model Code` → Models. Neither writes to the other today so nothing
+   loops, but a future sync writing back up the chain is where an infinite loop would start.
+   Change-guards on every write are what keep it safe.
+
+**Picker workbook:** `sharepoint-lists/Order Items parent column picker 2026-09-05.xlsx` — 117
+candidate columns across the four lists, with a `Relationships` sheet carrying the table above.
+
+## Process/progress status — the third axis (decided 2026-09-05)
+
+**Extends the 2026-08-12 `Location` / `Item Status` split above, using the same principle:
+*don't overload "where is it" with "what happened to it"* — and now, nor with *"how far along
+is it"*.**
+
+Once the Phase 1 workflow exists, process status should be **automatically maintained from a unit's
+total progress** rather than hand-typed. The question raised was whether that belongs in
+`Item Status`, replacing the generic `Active`.
+
+**Decision: no. It gets its own column.** There are three orthogonal questions and each needs one:
+
+| Question | Column | Values |
+|---|---|---|
+| Where is the transformer physically? | `Location` | Isolation, Bobinage, … Extérieur (12) |
+| Does this row still count? | `Item Status` | Active / Delivered / Cancelled / Regrouped |
+| **How far through the process is it?** | **`Current Step`** *(new, not yet built)* | the workflow steps |
+
+### Why `Item Status` must not absorb it
+
+**`Active` is load-bearing as a filter, not just a label.** Verified 2026-09-05 across the repo —
+the Production Floor view, Planning, BO Tracking, the demo cheat sheet's troubleshooting step, the
+reconciliation pass and the archiving sweep **all** filter on `Item Status = Active`
+(`cutover-runbook-2026-09-01.md:394,447` · `cutover-plan-2026-09-02.md:220` ·
+`demo-cheat-sheet-2026-09-01.md:147` · `archiving-plan.md:42,72`).
+
+Replacing `Active` with step values makes **every one of those filters silently match nothing** —
+no error, just empty views. It also destroys the one-predicate "is this row live?" test, which
+would become `Item Status NOT IN (Delivered, Cancelled, Regrouped)` — poorly supported in
+SharePoint view filters.
+
+### Naming — three different things are currently called "Status"
+
+`Status` (the composite), `Item Status` (lifecycle), and 8 × `{Stage} Status`. That collision is
+the real source of confusion. **Display names can be changed safely — view filters and flow
+expressions bind to the *internal* name**, so renaming the label is low-risk:
+
+| Internal name (unchanged) | Today | Proposed display |
+|---|---|---|
+| `ItemStatus` | Item Status | **`Lifecycle`** |
+| `Location` | Location | `Location` — keep, accurate and familiar to staff |
+| `Status` | Status | **`Step Status`** + a new `Status Date` (see below) |
+| *(new)* | — | **`Current Step`** |
+| `{Stage}Status` | Coiling Status, … | keep — per-stage detail |
+
+### Order-scoped vs item-scoped steps
+
+`phase1-plan.md`'s `Workflow Tasks` chain is deliberately **mixed-scope**: order-level `Order Entry`
+→ parallel Electrical/Shop reviews → AND-gate → **fan-out to per-unit** Planning Schedule → Work
+Order → **converge back to order-level** Confirm Planned Dates.
+
+So a single per-unit column cannot represent it. **The split, which rides on the
+parent→`Order Items` sync:**
+
+- **Order-level step** lives on `Order`, syncs down as **`Order - Current Step`**.
+- **Unit-level step** lives on `Order Items` as **`Current Step`**.
+- **Overall position** = whichever is further along — a calculated column, viable *because* the sync
+  makes both values local. The cross-list dependency becomes a local comparison.
+
+### Sequencing and open items
+
+**Do not build yet.** Depends on the `Workflow Tasks` list (Phase 1, not started) and the parent
+sync. The shape is decided now so that `Item Status` isn't overloaded in the meantime — that would
+be expensive to unpick.
+
+**Open — check before inventing a new vocabulary:** FRM10-12's `List` sheet (cols 25–27) already
+carries a **"Statut PIONEER"** table — `Envoyé à l'assemblage`, `Pièces B.O.`, `Problèmes`,
+`Fini prêt à livrer`, `Livrée`, `Entreposé Morin`, `Reçu Pioneer`, codes `EC`/`BP`/`PP`, plus an
+`FP`/`LP` list at col 29. **This may already be the process status wanted**, with the advantage that
+staff use it today.
+
+### Related: the composite `Status` column should be split
+
+`Status` holds values like `TE-Se-4`. Code table confirmed 2026-09-05 in FRM10-12's `List` sheet
+(cols 13–15): `AT` Attente · `EC` En cours · `RE` Réparation · `BO` Manque Pièces · **`TE` Terminé**
+· `B1`/`B2`/`B3` Bobine 1/2/3.
+
+**The status is relative to the *current* step, not absolute** — `TE-Se-4` on a unit at
+`Location = Bobinage` means "Bobinage finished as of Sept 4". Measured 2026-09-05: 156 of 1019 rows
+populated, 16 distinct values, all shape `PREFIX-Month-Day`.
+
+Three defects that splitting into **`Step Status`** (Choice) + **`Status Date`** (Date Only) fixes:
+
+1. **No year** — on a list holding dates out to 2029.
+2. **Ambiguous French months** — `Jui` is Juin *or* Juillet; `Ma` would be Mars *or* Mai. **9 live
+   rows carry `Jui`** and cannot be resolved without asking staff.
+3. **Sorts as text** — `TE-Ao-11` before `TE-Se-4`, which is meaningless.
+
+It also loses *which step* the status applied to (that's in `Location`, which moves on), so
+historical status is unrecoverable once a unit advances — consider a `Status Step` column too.
+
+⚠️ **Code collision — the same two letters mean different things per column:**
+
+| Code | As `Location` | As `Status` |
+|---|---|---|
+| `TE` | Test (stage) | **Terminé** (finished) |
+| `BO` | Bobinage (winding) | **Manque Pièces** (missing parts) |
+| `RE` | Réparation | Réparation — the only one that agrees |
+
+Anything parsing these must know which column it is reading. Worth stating in the staff guide.
+
 ## Next steps
 - [ ] Confirm the draft schema above (especially the ⚠-flagged type changes) with the user,
       then build the `Order Items` list in SharePoint and add the confirmed new columns to

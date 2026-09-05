@@ -77,6 +77,11 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 14 | **A2 / A3** — park fallback, strip stage stamping | 🔵 A | not started | Not blocking anything |
 | 15 | **A5c** `toLower()` on six stages | 🔵 A | not started | Track A recommended skipping |
 | 16 | **D5 + A8** — deploy viewer, disable transfer flow | 🟠 D / 🔵 A | **cut by the user** | The Monday cutover decision |
+| 17 | **Centralise parents into `Order Items`** — sync `Order`/`Models`/`Model Revisions` down as `Order - X` / `Model - X` / `Mod. Rev. - X` | 🔵 A | **new 2026-09-05** | Picker workbook built (113 columns) — awaiting your selections. Needs a change-guard on every write |
+| 18 | **Split the composite `Status`** into `Step Status` + `Status Date` | 🔵 A | **new 2026-09-05** | Code table found; see `infrastructure-overview.md` |
+| 19 | **`Current Step` — the third status axis** | 🔵 A | **decided, not built** | Depends on Phase 1 + item 17. **Do not overload `Item Status`** — see `infrastructure-overview.md` |
+| 20 | **Estimated Delivery Date** — calculated column + nightly refresh flow | 🔵 A | **new 2026-09-05** | Formula extracted; `TODAY()` freezes at write time, hence the ~21-row nightly touch |
+| 21 | **One-time BO Manager → `Order Items` transfer** in the transfer flow | 🔵 A | not started | Key is `TableBO.Order`. **Remove the mapping after the run** or it clobbers SharePoint-native BO edits |
 
 **Items 1, 2, 3, 4, 6 and 13 all need the same thing: a working Power Automate designer.** That
 single blocker gates most of what is left, including everything that would make Production Floor
