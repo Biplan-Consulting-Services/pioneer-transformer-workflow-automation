@@ -900,3 +900,81 @@ This is the third claim in this repo this week that dissolved when the source wa
 than the symptom — after "the `toLower()` fix was applied" and "`Model Revisions.Family` is 28%
 junk". The shared shape: a number measured on the destination, and a cause assumed for it. Measure
 the source before writing a work item against it.
+
+---
+
+## The tank status vocabularies — read 2026-09-05, and there are three of them
+
+Session notes had this down as *"a fourth status vocabulary — `Statut PIONEER`, with values
+`Envoyé à l'assemblage`, `Pièces B.O.`, `Problèmes`, `Fini prêt à livrer`, `Livrée`,
+`Entreposé Morin`, `Reçu Pioneer`"*, flagged as unexamined and never written into this repo. Read
+from FRM10-12's `List` sheet, that description **merges three separate tables into one**, and this
+is the first time any of it is recorded here. Columns 26–28 hold three vocabularies stacked vertically, each with its
+own `Statut … / Statut / Code` header row.
+
+### 1 · `Statut Cuve` — the tank fabricator
+
+| Status | Code |
+|---|---|
+| Confirmé | `CC` |
+| Matériel commandé | `MC` |
+| En production | `WC` |
+| Parti à la peinture | `EP` |
+| Assemblage final | `AC` |
+| Pièces B.O. | `BC` |
+| Problèmes | `PC` |
+| Livrée | `LC` |
+
+### 2 · `Statut Peinture` — the paint shop
+
+| Status | Code |
+|---|---|
+| Confirmé | `CP` |
+| Cuve reçue | `RP` |
+| En production | `WP` |
+| Envoyé à l'assemblage | `EC` |
+| Pièces B.O. | `BP` |
+| Problèmes | `PP` |
+| Fini prêt à livrer | `FP` |
+| Livrée | `LP` |
+
+### 3 · `Statut PIONEER` — arrival back at Pioneer
+
+| Status | Code |
+|---|---|
+| Entreposé Morin | `E` |
+| Reçu Pioneer | `R` |
+
+**Two values, not seven.** Everything else in the roadmap's list came from the Peinture table.
+
+### What they are, and why it matters that they are not the unit's status
+
+These follow **the tank** through outside suppliers — fabricator, then paint shop, then back to
+Pioneer. That is a supply-chain axis, entirely separate from the unit's own production stages
+(`Location`: Isolation → Bobinage → … → Livraison), and separate again from `Item Status` and from
+the composite `Status`. It is a **fifth** axis, not a fourth, and it belongs to a different object.
+
+⚠️ **The code-collision trap is now worse than recorded.** Two-letter codes are reused across four
+namespaces with different meanings:
+
+| Code | As `Location` | As `Status` | As `Statut Peinture` |
+|---|---|---|---|
+| `EC` | — | **En cours** | **Envoyé à l'assemblage** |
+| `BO` | **Bobinage** | **Manque Pièces** | — |
+| `RE` | Réparation | Réparation | — |
+| `E` / `R` | — | — | **Entreposé Morin / Reçu Pioneer** |
+
+Anything parsing a two-letter code must know which column it came from. `EC` in particular already
+caused a production failure through a different route — see the `toLower()` guard in
+`transfer-flow-forensics-2026-09-04.md` §9.1.
+
+### Recommendation — out of scope, and say so
+
+None of this is on `Order Items` today and none of it should be pulled in as part of the current
+migration. Tank supply-chain state is about a **component from a supplier**, not about the
+transformer's own progress; folding it into the unit's status columns would repeat exactly the
+mistake the 2026-08-12 `Location` / `Item Status` split was made to undo. If it is migrated later it
+wants its own list, keyed on the tank, with `Order Items` holding at most a lookup.
+
+Recorded here so the next person does not have to re-derive it, and so the roadmap's "fourth
+vocabulary" note stops being quoted as though `Statut PIONEER` had seven values.

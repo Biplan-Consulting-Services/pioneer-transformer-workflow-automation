@@ -73,3 +73,36 @@ at all. Those 6 are excluded from every list above and deserve their own look.
 
 Nothing gets **deleted** from `Models` until the lists are clear *and* FRM10-12's `.pq` queries
 have been grepped for each column name — Power Query binds by name and breaks silently.
+
+---
+
+## The 6 revisions with no model key — mostly not broken
+
+They were excluded from every list above because their `Pioneer_Model_Code_TextField` is blank.
+Checked 2026-09-05, and the exclusion is mostly an artifact of *my* reading rather than a defect:
+
+**The lookup does not serialise in a CSV export** — only its `_TextField` mirror does, and
+`Model Revisions - Sync Lookup TextFields` has been **off since 2026-08-21** (R16). So a blank mirror
+on a recently created revision says nothing about the lookup itself.
+
+The dates settle it:
+
+| Created | Rows | Mirror blank |
+|---|---|---|
+| before 2026-08-21 | 386 | **1** |
+| on/after 2026-08-21 | 5 | **5 of 5** |
+
+A clean split on the exact date the sync was disabled. **Those 5 will fill themselves** when the
+one-time TextField backfill runs, and they rejoin the dedup lists at that point — re-run
+`scripts/gen_dedup.py` afterwards rather than treating them as orphans now.
+
+Two that do need a person:
+
+- **`MR-HYQU-0098-V1`** — created **2026-08-19**, two days *before* the disable, and still blank.
+  The only one not explained by the outage.
+- **A revision with no `Model_Revion_ID` at all** — blank ID, client ENMAX, spec `506-3T85-003`,
+  created 2026-08-27. Whatever created it did not assign an ID. That is a defect regardless of the
+  sync flows.
+
+The other four resolve by name alone: `MR-ENMA-0056-V1` → `M-ENMA-0056`, and so on — each target
+already exists in `Models`, so nothing is actually orphaned.
