@@ -846,3 +846,48 @@ Worth knowing before designing `Current Step` (roadmap item 19): `Order` already
 `Thermal Constraints`, `Elec. Design Validation`, `Mechanical Design 1`, `Customer Drawings`,
 `Mechanical Design 2`, `Update Delivery Date`, `P.O. Final`, `Production`. That is the order-scoped
 half of the two-level design already built; do not invent a second vocabulary for it.
+
+---
+
+## `Location` is not missing — checked 2026-09-05
+
+Roadmap item 6 carried *"`Location` empty on 841 of 1,016 active units — never backfilled — makes
+Production Floor near-useless"* for weeks. It is misdiagnosed on every count.
+
+**It is blank at source.** In `TableOrders` (09-04 23:08 refresh, 1,019 rows) `Location` is blank on
+**863**. There is no backfill to run, because there is nothing to backfill *from* — a backfill flow
+would write 863 nulls.
+
+**The mapping is not the problem either.** The flow's `MappedLocation` compose translates the
+two-letter codes to full names (`IS`→Isolation, `BO`→Bobinage, `ST`→Stacking, `AS`→Assemblage,
+`FO`→Four, `TA`→Tanking, `TE`→Test, `FI`→Finition, `LI`→Livraison, `ENT`→Entrepôt, `XT`→Extérieur,
+`RE`→Réparation) and falls through to `null`. Every one of the 156 populated codes at source is
+handled: **zero** fall through.
+
+**And the blanks are exactly right.** Cross-tabulated against whether a unit has any stage date:
+
+| | Has a `Location` | No `Location` |
+|---|---|---|
+| Production started | **156** | 0 |
+| Not started | 0 | **863** |
+
+A perfect split. `Location` is filled when a unit physically enters the shop and not before, which is
+what a physical-location column should do. The 2026-08-12 decision that made `Location` *purely
+physical* is being honoured by the data.
+
+### What is actually worth checking
+
+Of the 156 units carrying a `Location`, **98 already have a `Delivery Date`** — finished units still
+holding whichever station they last passed through. Only **58** are genuinely on the floor.
+
+So if the Production Floor view looks wrong, the cause is not missing data, it is the **filter**: a
+view keyed on "`Location` is not empty" shows 156 when the answer is 58. Add `Item Status = Active`,
+or a null `Delivery End Date`, and it resolves. That is B2-verify's job (roadmap item 7), and it is
+no longer blocked on a backfill that was never needed.
+
+### Method note
+
+This is the third claim in this repo this week that dissolved when the source was checked rather
+than the symptom — after "the `toLower()` fix was applied" and "`Model Revisions.Family` is 28%
+junk". The shared shape: a number measured on the destination, and a cause assumed for it. Measure
+the source before writing a work item against it.
