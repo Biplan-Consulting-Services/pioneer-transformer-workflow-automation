@@ -534,20 +534,49 @@ cheaper than the chain suggests.
 | Order | 330 | 3.1 | 29 (`22106`) | **Safe** |
 | Models | 147 | 6.9 | 91 (`1002113-22`) | OK **with a change-guard** |
 | Model Revisions | 391 | ~2.6 | not measured | OK **with a change-guard** |
-| **Clients** | 37 | 27.5 | **698 — HYDRO QUEBEC is 68% of the list** | **Do not sync** |
+| **Clients** | 37 | 27.5 | **698 — HYDRO QUEBEC is 68% of the list** | **`Lead Time` only, after X3** |
 
 ### Three traps
 
-1. **Do not sync the `Clients` list.** One edit to the HYDRO QUEBEC row fans out to **698**
-   `Order Items` updates plus a trigger-flow run each — more than the load that hit the capacity cap
-   on 2026-09-04. And the payoff is nil: `Clients` has only **two** real columns (`Title`,
-   `Client_ID`), `Order Items` already resolves the name through its own `Client` lookup, and
-   `Client_ID_TextField` already exists there.
+1. **Sync `Clients.Lead Time` and nothing else — and only after X3.** ⚠️ *Revised 2026-09-05; this
+   trap previously read "do not sync the Clients list" and that was too broad.* One edit to the
+   HYDRO QUEBEC row does fan out to **698** `Order Items` updates plus a trigger-flow run each. But
+   that 698 was measured against the **current 100-action trigger flow**: once X3 strips the
+   stage-stamping it is ~5 actions and 698 runs drains in minutes. A client's lead time also changes
+   only a few times a year, so the burst is rare — and when it fires it is doing the work you want.
+
+   What still holds is *which* columns travel. The name columns stay off: `Clients` has only two
+   real columns (`Title`, `Client_ID`), `Order Items` already resolves the name through its own
+   `Client` lookup, and `Client_ID_TextField` already exists there and needs a one-time backfill
+   rather than a sync. What is new is the FRM13 `LeedTime` data landing on `Clients` (see
+   [[CLAUDE.md]] → FRM13): **`Lead Time` travels** because branch 7 of Estimated Delivery needs it
+   local to `Order Items`; **`Pièce critique` / `Fournisseur` do not** — they are reference, one
+   lookup away, and duplicating them onto 1,052 rows buys nothing.
+
+   Why syncing it is a *correction* rather than a risk: `Order.Lead Time` values layer by date, not
+   by order-specific decision. HYDRO QUEBEC's 240 orders split `26` (144, 2024-02 → 2026-04), `20`
+   (84, of which 82 are 2026) and `28` (12, all 2026-08) — each a snapshot of what the number was
+   thought to be at order entry, never backfilled. FRM13's current 28 only appears from this August.
+   So the sync corrects 228 of 240 rather than flattening overrides. **One check first:** the 82 HQ
+   orders at `20` in 2026 — if any was a faster date actually promised to a customer, the sync
+   rewrites it.
 2. **The SA trap — `Order.Model` is not `Order Items.Model`.** For SA units, `Order Items.Model`
    deliberately points at the **SA twin** (resolved via `Models.Parent Model`) while `Order.Model`
    points at the main model. That difference was built on purpose and caught in testing 2026-09-01.
-   Syncing `Order - Model` down would overwrite it and silently fabricate spec data. **Use the
-   direct `Order Items` lookup for anything model-related.**
+   **Measured 2026-09-05:** of the 34 orders holding both an SA and a non-SA unit with a model on
+   each, **32 carry a different model on the SA unit**; 2 match. Model Revision splits identically.
+   Zero orders have non-SA siblings that disagree — so "all items of an order share a model" is
+   exactly right for the normal units and exactly wrong for the SA ones.
+
+   The decision (2026-09-05) is that a model corrected on the `Order` **must** propagate, so the
+   sync does not skip SA units — it **re-resolves** them: for `SA Job` false write `Order.Model`
+   straight through; for `SA Job` true write the `Models` row where `SA Model` is true and
+   `Parent Model` equals the new model's `Model_Code`. That link is sound — it resolves on **15 of
+   15** SA models. Two limits: only **15 of 390** models have a twin at all, so an order moving to
+   any of the other 375 must stop and flag for engineering rather than write a wrong model or a
+   blank; and **5 of the 42 SA units already sit on plain `M-` models** rather than `MSA-` (order
+   `22110` runs `M-HYQU-0094` against an SA unit on `M-GEPO-0013`, a different client's design), so
+   those have no twin to re-resolve to and need review first.
 3. **`Models` ↔ `Model Revisions` is a cycle** — `Models.Latest Model Revision` → Model Revisions,
    and `Model Revisions.Pioneer Model Code` → Models. Neither writes to the other today so nothing
    loops, but a future sync writing back up the chain is where an infinite loop would start.
