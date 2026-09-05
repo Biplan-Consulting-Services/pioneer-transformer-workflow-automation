@@ -86,6 +86,8 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 23 | **Remove the 14 spec columns duplicated on `Models`** | 🔵 A | **new 2026-09-05** | Revision is authoritative. **Backfill 3 of them into `Model Revisions` first, writing only where blank** — `Core Type` 285 vs 103, `Oil Type` 334 vs 266, `Model Type` 390 vs 336. Grep the `.pq` queries before deleting |
 | 24 | **`Models` → SA twin propagation** | 🔵 A | **new 2026-09-05** | A model change must reach its SA twin. Self-referential edge — change-guard, plus skip when `SA Model` is already true |
 | 25 | **`Model Revisions.Family` fill pass from FRM10-12** | 🔵 A | **new 2026-09-05** | Blank on **329 of 391**. Check the Choice allows fill-in first, or anything outside `A`/`B1`/`B2`/`C` is rejected |
+| 26 | **FRM11 — how tightly is it coupled to FRM10-12?** | 🔵 A | **new 2026-09-05, waiting on a copy** | FRM11 owns tank/paint supplier status, is 1:1 with `Order Items` on `Unit ID` (963 of 1,052 match), and carries `In FRM10_12` + `Last Synchronisation Date` — so it reads *from* the workbook being migrated. **If `TableOrders` changes shape or goes away, that sync breaks**, with 4,052 rows and attached supplier reports behind it. Not investigated; needs the workbook |
+| 27 | **Which tank-status vocabulary is current?** | 🔵 A | **new 2026-09-05** | FRM10-12's `List` sheet and FRM11's live values have drifted — 3 overlap, `Dessin reçu`/`Terminée`/`BC reçu` are FRM11-only, 5 `List` values are FRM10-12-only. Ask rather than infer; the archive may just hold older values |
 
 **Items 1, 2, 3, 4, 6 and 13 all need the same thing: a working Power Automate designer.** That
 single blocker gates most of what is left, including everything that would make Production Floor
