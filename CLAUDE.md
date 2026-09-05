@@ -82,6 +82,22 @@ had — hence a dedicated place to plan it before touching production.
     of 26. Whichever way that is settled, settle it in both places.
   - It also carries its own `TableOrders` (per order, `B7:AN169`) — same name as FRM10-12's but
     a different table with different columns. Don't conflate them.
+- **FRM11** — the **tank tracking form**, and the owner of the tank/paint supplier statuses.
+  No repo of its own; discovered 2026-09-05 from the user and confirmed against
+  `FRM10-12/linked-workbooks/Archive active.xlsx`, which carries `TableArchiveFRM11`
+  (4,052 rows × 39 columns) on an `Archive FRM11` sheet with its own Power Query.
+  - It tracks each tank through **two outside suppliers** — fabricator (`Fournisseur CUVE`:
+    CADORETTE, METELEC, FRAMECO, FALCON…) then paint (`RAD` / `B-WALL`) — and back to Pioneer,
+    with **supplier reports attached**. `Tank Supplier Status` / `Paint Supplier Status` and
+    `Code cuve` / `Code peinture` are the live columns; FRM10-12's `List` sheet holds only the
+    vocabularies for its own dropdowns.
+  - **Keyed on `NUMÉRO DE CUVE`, which is the unit ID** (`21535-1/2`), so FRM11 is **1:1 with
+    `Order Items`** — 963 of 1,052 list units match. ⚠️ `Order Items.Tank` is a **Boolean flag**,
+    not a tank number, and is not the join key.
+  - It already carries `In FRM10_12` and `Last Synchronisation Date`, so a sync between the two
+    exists on the FRM11 side.
+  - **Out of scope for the Order Items migration** — supplier state is a different axis from the
+    unit's own production progress. See `docs/infrastructure-overview.md`.
 - These are separate git repos — the cross-links above are documentation only (relative
   folder paths under the same client directory), not a git/build dependency.
 

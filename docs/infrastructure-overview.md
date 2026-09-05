@@ -968,13 +968,59 @@ Anything parsing a two-letter code must know which column it came from. `EC` in 
 caused a production failure through a different route — see the `toLower()` guard in
 `transfer-flow-forensics-2026-09-04.md` §9.1.
 
-### Recommendation — out of scope, and say so
+### It is already owned — by FRM11
 
-None of this is on `Order Items` today and none of it should be pulled in as part of the current
-migration. Tank supply-chain state is about a **component from a supplier**, not about the
-transformer's own progress; folding it into the unit's status columns would repeat exactly the
-mistake the 2026-08-12 `Location` / `Item Status` split was made to undo. If it is migrated later it
-wants its own list, keyed on the tank, with `Order Items` holding at most a lookup.
+These three tables are the *reference lists*. The tracking itself lives in **FRM11**, with supplier
+reports attached (per the user, 2026-09-05). The FRM10-12 `List` sheet only holds the vocabularies
+so its own dropdowns can use them.
 
-Recorded here so the next person does not have to re-derive it, and so the roadmap's "fourth
-vocabulary" note stops being quoted as though `Statut PIONEER` had seven values.
+`Archive active.xlsx` carries `TableArchiveFRM11` — **4,052 rows × 39 columns** — and its shape
+confirms it:
+
+| FRM11 column | |
+|---|---|
+| `NUMÉRO DE CUVE` | the key |
+| `Fournisseur CUVE` / `Fournisseur Peinture` | the two suppliers |
+| `Tank Supplier Status` / `Paint Supplier Status` | the two vocabularies |
+| `Code cuve` / `Code peinture` | the two-letter codes |
+| `RAD` / `B-WALL` shipping + return dates | the two paint vendors |
+| `In FRM10_12`, `Last Synchronisation Date` | it already syncs with FRM10-12 |
+
+Tank suppliers: `CADORETTE` 1526, `METELEC` 1107, `FRAMECO` 670, `FALCON` 70, plus two small ones.
+
+### ⚠️ Correcting myself: it is not a different grain
+
+I wrote above that this "belongs to a different object" and would want "its own list, keyed on the
+tank". **`NUMÉRO DE CUVE` is the unit ID** — `21535-1/2`, `21562-2/6`, the same format as
+`Order Items.Unit ID`. There is one tank per transformer, so FRM11 is **1:1 with `Order Items`**, not
+a coarser or finer grain. The join needs no new key:
+
+| | |
+|---|---|
+| FRM11 rows | 4,052 distinct |
+| …matching an `Order Items` `Unit ID` | **963** |
+| `Order Items` units absent from FRM11 | 89 |
+| FRM11 rows not on the list | 3,089 — historical, it is an *archive* table |
+
+Note also that **`Order Items.Tank` is a Boolean flag, not a tank number** (1052/1052 `True`), so it
+is not the join key and must not be mistaken for one.
+
+### What still stands, and what to ask
+
+The *grain* argument was wrong; the **axis** argument is not. This is supplier state, not the
+transformer's own production progress, and folding it into `Location` / `Item Status` / `Status`
+would repeat exactly what the 2026-08-12 split was made to undo. Since FRM11 already owns it and
+already syncs with FRM10-12, the right move is **leave it there** — and if a unit ever needs to show
+tank status, read it across the existing `Unit ID` join rather than copying the vocabulary in.
+
+⚠️ **One thing to settle before anyone builds against either side.** The values FRM11 actually holds
+and the vocabularies in FRM10-12's `List` sheet have **drifted apart**:
+
+| | Values seen |
+|---|---|
+| `List` sheet `Statut Cuve` | Confirmé · Matériel commandé · En production · Parti à la peinture · Assemblage final · Pièces B.O. · Problèmes · Livrée |
+| FRM11 `Tank Supplier Status` | Livrée 2056 · En production 148 · **Problème** 61 · **Dessin reçu** 50 · **Terminée** 29 · **BC reçu** 24 |
+
+Three overlap; `Dessin reçu`, `Terminée` and `BC reçu` appear only in FRM11, and five `List` values
+appear only in FRM10-12. It is an archive table, so it may simply hold older values — but **ask
+which list is current** rather than assuming either. Same question applies to Peinture.
