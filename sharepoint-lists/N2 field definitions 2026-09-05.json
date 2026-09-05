@@ -1,0 +1,434 @@
+[
+ {
+  "display": "Order - Order Number",
+  "name": "OrdOrderNumber",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Order",
+  "srcCol": "Order Number",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - Order Number\" Name=\"OrdOrderNumber\" StaticName=\"OrdOrderNumber\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Qty",
+  "name": "OrdQty",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Order",
+  "srcCol": "Qty",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Order - Qty\" Name=\"OrdQty\" StaticName=\"OrdQty\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Order Type",
+  "name": "OrdOrderType",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Order",
+  "srcCol": "Order Type",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - Order Type\" Name=\"OrdOrderType\" StaticName=\"OrdOrderType\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Order Date",
+  "name": "OrdOrderDate",
+  "type": "DateTime",
+  "srcType": "DateTime",
+  "list": "Order",
+  "srcCol": "Order Date",
+  "xml": "<Field Type=\"DateTime\" DisplayName=\"Order - Order Date\" Name=\"OrdOrderDate\" StaticName=\"OrdOrderDate\" Required=\"FALSE\" Group=\"Parent Sync\" Format=\"DateOnly\" />"
+ },
+ {
+  "display": "Order - Initial Promised Date",
+  "name": "OrdInitialPromisedDate",
+  "type": "DateTime",
+  "srcType": "DateTime",
+  "list": "Order",
+  "srcCol": "Initial Promised Date",
+  "xml": "<Field Type=\"DateTime\" DisplayName=\"Order - Initial Promised Date\" Name=\"OrdInitialPromisedDate\" StaticName=\"OrdInitialPromisedDate\" Required=\"FALSE\" Group=\"Parent Sync\" Format=\"DateOnly\" />"
+ },
+ {
+  "display": "Order - Order Folder",
+  "name": "OrdOrderFolder",
+  "type": "URL",
+  "srcType": "URL",
+  "list": "Order",
+  "srcCol": "Order Folder",
+  "xml": "<Field Type=\"URL\" DisplayName=\"Order - Order Folder\" Name=\"OrdOrderFolder\" StaticName=\"OrdOrderFolder\" Required=\"FALSE\" Group=\"Parent Sync\" Format=\"Hyperlink\" />"
+ },
+ {
+  "display": "Order - Order Step",
+  "name": "OrdOrderStep",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Order",
+  "srcCol": "Order Step",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - Order Step\" Name=\"OrdOrderStep\" StaticName=\"OrdOrderStep\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Note",
+  "name": "OrdNote",
+  "type": "Note",
+  "srcType": "Note",
+  "list": "Order",
+  "srcCol": "Note",
+  "xml": "<Field Type=\"Note\" DisplayName=\"Order - Note\" Name=\"OrdNote\" StaticName=\"OrdNote\" Required=\"FALSE\" Group=\"Parent Sync\" NumLines=\"4\" />"
+ },
+ {
+  "display": "Order - PO",
+  "name": "OrdPO",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Order",
+  "srcCol": "PO",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - PO\" Name=\"OrdPO\" StaticName=\"OrdPO\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Price",
+  "name": "OrdPrice",
+  "type": "Currency",
+  "srcType": "Currency",
+  "list": "Order",
+  "srcCol": "Price",
+  "xml": "<Field Type=\"Currency\" DisplayName=\"Order - Price\" Name=\"OrdPrice\" StaticName=\"OrdPrice\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Province/State",
+  "name": "OrdProvinceState",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Order",
+  "srcCol": "Province/State",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - Province/State\" Name=\"OrdProvinceState\" StaticName=\"OrdProvinceState\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - WET-WETP",
+  "name": "OrdWETWETP",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Order",
+  "srcCol": "WET-WETP",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - WET-WETP\" Name=\"OrdWETWETP\" StaticName=\"OrdWETWETP\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Indexing",
+  "name": "OrdIndexing",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Order",
+  "srcCol": "Indexing",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - Indexing\" Name=\"OrdIndexing\" StaticName=\"OrdIndexing\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - New model to be created",
+  "name": "OrdNewmodeltobecreated",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Order",
+  "srcCol": "New model to be created",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - New model to be created\" Name=\"OrdNewmodeltobecreated\" StaticName=\"OrdNewmodeltobecreated\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Engineering Required",
+  "name": "OrdEngineeringRequired",
+  "type": "Boolean",
+  "srcType": "Boolean",
+  "list": "Order",
+  "srcCol": "Engineering Required",
+  "xml": "<Field Type=\"Boolean\" DisplayName=\"Order - Engineering Required\" Name=\"OrdEngineeringRequired\" StaticName=\"OrdEngineeringRequired\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - LDs",
+  "name": "OrdLDs",
+  "type": "Boolean",
+  "srcType": "Boolean",
+  "list": "Order",
+  "srcCol": "LDs",
+  "xml": "<Field Type=\"Boolean\" DisplayName=\"Order - LDs\" Name=\"OrdLDs\" StaticName=\"OrdLDs\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Client Date Status",
+  "name": "OrdClientDateStatus",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Order",
+  "srcCol": "Client Date Status",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - Client Date Status\" Name=\"OrdClientDateStatus\" StaticName=\"OrdClientDateStatus\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Order - Sales Notes",
+  "name": "OrdSalesNotes",
+  "type": "Note",
+  "srcType": "Note",
+  "list": "Order",
+  "srcCol": "Sales Notes",
+  "xml": "<Field Type=\"Note\" DisplayName=\"Order - Sales Notes\" Name=\"OrdSalesNotes\" StaticName=\"OrdSalesNotes\" Required=\"FALSE\" Group=\"Parent Sync\" NumLines=\"4\" />"
+ },
+ {
+  "display": "Order - Order Status",
+  "name": "OrdOrderStatus",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Order",
+  "srcCol": "Order Status",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Order - Order Status\" Name=\"OrdOrderStatus\" StaticName=\"OrdOrderStatus\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Model - Model_ID",
+  "name": "MdlModelID",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Models",
+  "srcCol": "Model_ID",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Model - Model_ID\" Name=\"MdlModelID\" StaticName=\"MdlModelID\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Model - Modification_Status",
+  "name": "MdlModificationStatus",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Models",
+  "srcCol": "Modification_Status",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Model - Modification_Status\" Name=\"MdlModificationStatus\" StaticName=\"MdlModificationStatus\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Model - Estimated Effort",
+  "name": "MdlEstimatedEffort",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Models",
+  "srcCol": "Estimated Effort",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Model - Estimated Effort\" Name=\"MdlEstimatedEffort\" StaticName=\"MdlEstimatedEffort\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Model - Latest Model Revision",
+  "name": "MdlLatestModelRevision",
+  "type": "Text",
+  "srcType": "Lookup",
+  "list": "Models",
+  "srcCol": "Latest Model Revision",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Model - Latest Model Revision\" Name=\"MdlLatestModelRevision\" StaticName=\"MdlLatestModelRevision\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Model - Parent Model",
+  "name": "MdlParentModel",
+  "type": "Text",
+  "srcType": "Lookup",
+  "list": "Models",
+  "srcCol": "Parent Model",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Model - Parent Model\" Name=\"MdlParentModel\" StaticName=\"MdlParentModel\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Model_Revion_ID",
+  "name": "RevModelRevionID",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Model_Revion_ID",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Model_Revion_ID\" Name=\"RevModelRevionID\" StaticName=\"RevModelRevionID\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Spec_ID",
+  "name": "RevSpecID",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Spec_ID",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Spec_ID\" Name=\"RevSpecID\" StaticName=\"RevSpecID\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Client_Model_Code",
+  "name": "RevClientModelCode",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Client_Model_Code",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Client_Model_Code\" Name=\"RevClientModelCode\" StaticName=\"RevClientModelCode\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Notes",
+  "name": "RevNotes",
+  "type": "Note",
+  "srcType": "Note",
+  "list": "Model Revisions",
+  "srcCol": "Notes",
+  "xml": "<Field Type=\"Note\" DisplayName=\"Mod. Rev. - Notes\" Name=\"RevNotes\" StaticName=\"RevNotes\" Required=\"FALSE\" Group=\"Parent Sync\" NumLines=\"4\" />"
+ },
+ {
+  "display": "Mod. Rev. - kVA",
+  "name": "RevkVA",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Model Revisions",
+  "srcCol": "kVA",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Mod. Rev. - kVA\" Name=\"RevkVA\" StaticName=\"RevkVA\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Model Type",
+  "name": "RevModelType",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Model Revisions",
+  "srcCol": "Model Type",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Model Type\" Name=\"RevModelType\" StaticName=\"RevModelType\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Oil Type",
+  "name": "RevOilType",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Model Revisions",
+  "srcCol": "Oil Type",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Oil Type\" Name=\"RevOilType\" StaticName=\"RevOilType\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Core Type",
+  "name": "RevCoreType",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Model Revisions",
+  "srcCol": "Core Type",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Core Type\" Name=\"RevCoreType\" StaticName=\"RevCoreType\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Phases",
+  "name": "RevPhases",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Model Revisions",
+  "srcCol": "Phases",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Mod. Rev. - Phases\" Name=\"RevPhases\" StaticName=\"RevPhases\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Oil Amount",
+  "name": "RevOilAmount",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Model Revisions",
+  "srcCol": "Oil Amount",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Mod. Rev. - Oil Amount\" Name=\"RevOilAmount\" StaticName=\"RevOilAmount\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Cable",
+  "name": "RevCable",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Cable",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Cable\" Name=\"RevCable\" StaticName=\"RevCable\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Form",
+  "name": "RevForm",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Form",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Form\" Name=\"RevForm\" StaticName=\"RevForm\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Copper (LV)",
+  "name": "RevCopperLV",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Copper (LV)",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Copper (LV)\" Name=\"RevCopperLV\" StaticName=\"RevCopperLV\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Wire (HV)",
+  "name": "RevWireHV",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Wire (HV)",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Wire (HV)\" Name=\"RevWireHV\" StaticName=\"RevWireHV\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Overcoil",
+  "name": "RevOvercoil",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Model Revisions",
+  "srcCol": "Overcoil",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Mod. Rev. - Overcoil\" Name=\"RevOvercoil\" StaticName=\"RevOvercoil\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Model Description",
+  "name": "RevModelDescription",
+  "type": "Note",
+  "srcType": "MultiChoice",
+  "list": "Model Revisions",
+  "srcCol": "Model Description",
+  "xml": "<Field Type=\"Note\" DisplayName=\"Mod. Rev. - Model Description\" Name=\"RevModelDescription\" StaticName=\"RevModelDescription\" Required=\"FALSE\" Group=\"Parent Sync\" NumLines=\"4\" />"
+ },
+ {
+  "display": "Mod. Rev. - JS #",
+  "name": "RevJS",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "JS #",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - JS #\" Name=\"RevJS\" StaticName=\"RevJS\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Spec_Revision",
+  "name": "RevSpecRevision",
+  "type": "Text",
+  "srcType": "Text",
+  "list": "Model Revisions",
+  "srcCol": "Spec_Revision",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Spec_Revision\" Name=\"RevSpecRevision\" StaticName=\"RevSpecRevision\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Spec_Date",
+  "name": "RevSpecDate",
+  "type": "DateTime",
+  "srcType": "DateTime",
+  "list": "Model Revisions",
+  "srcCol": "Spec_Date",
+  "xml": "<Field Type=\"DateTime\" DisplayName=\"Mod. Rev. - Spec_Date\" Name=\"RevSpecDate\" StaticName=\"RevSpecDate\" Required=\"FALSE\" Group=\"Parent Sync\" Format=\"DateOnly\" />"
+ },
+ {
+  "display": "Mod. Rev. - Primary Voltage",
+  "name": "RevPrimaryVoltage",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Model Revisions",
+  "srcCol": "Primary Voltage",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Mod. Rev. - Primary Voltage\" Name=\"RevPrimaryVoltage\" StaticName=\"RevPrimaryVoltage\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Secondary Voltage",
+  "name": "RevSecondaryVoltage",
+  "type": "Number",
+  "srcType": "Number",
+  "list": "Model Revisions",
+  "srcCol": "Secondary Voltage",
+  "xml": "<Field Type=\"Number\" DisplayName=\"Mod. Rev. - Secondary Voltage\" Name=\"RevSecondaryVoltage\" StaticName=\"RevSecondaryVoltage\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Pioneer Model Code",
+  "name": "RevPioneerModelCode",
+  "type": "Text",
+  "srcType": "Lookup",
+  "list": "Model Revisions",
+  "srcCol": "Pioneer Model Code",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Pioneer Model Code\" Name=\"RevPioneerModelCode\" StaticName=\"RevPioneerModelCode\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Duplicate Order",
+  "name": "RevDuplicateOrder",
+  "type": "Text",
+  "srcType": "Lookup",
+  "list": "Model Revisions",
+  "srcCol": "Duplicate Order",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Duplicate Order\" Name=\"RevDuplicateOrder\" StaticName=\"RevDuplicateOrder\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ },
+ {
+  "display": "Mod. Rev. - Family",
+  "name": "RevFamily",
+  "type": "Text",
+  "srcType": "Choice",
+  "list": "Model Revisions",
+  "srcCol": "Family",
+  "xml": "<Field Type=\"Text\" DisplayName=\"Mod. Rev. - Family\" Name=\"RevFamily\" StaticName=\"RevFamily\" Required=\"FALSE\" Group=\"Parent Sync\" />"
+ }
+]
