@@ -446,3 +446,71 @@ Scanner kept at `scratchpad/ec_scan.py`; point it at any newer snapshot. Note th
 `datetime` cells as fine — the Excel connector hands those to the flow as serial numbers, which is
 what `addDays('1899-12-30', int(...))` is built for. Only a genuine *string* in a date column is a
 landmine.
+
+---
+
+## 10. The two-way diff, re-run 2026-09-05
+
+Against `Order Items 2026-09-05 1432.csv` (1,052 rows) and `TableOrders` in the 09-04 23:08 refresh
+(1,019 rows). Supersedes §5 and §5a.
+
+### Workbook → list: 71 missing, and the prediction holds
+
+| | |
+|---|---|
+| In the workbook, absent from the list | **71** |
+| …orders `22143`–`22155`, added after the last run | **65** |
+| …genuinely unmatched | **6** |
+
+The run creates the 65. The prediction recorded as "expect 72 → ~7, not zero" was right; the exact
+figures shifted by one because the workbook has been refreshed since. **The six that survive**:
+
+```
+20877R1-1/1
+P1_001-1/1
+P20001-1/1      P20002-1/1
+P20004-1/2      P20004-2/2
+```
+
+Five carry the `P` prefix, one is an `R1` revision suffix. Re-diff after the run and expect exactly
+these six. Anything else appearing is a new problem, not this one.
+
+### List → workbook: 104 orphans, not 71 — and most have a cause
+
+The 71 on record is stale. It is **104**, and splitting it by `Item Status` turns it from a research
+task into three buckets:
+
+| | Rows | What it is |
+|---|---|---|
+| `Delivered` | **36** | Correctly archived out of the workbook. Nothing to do. |
+| `Active`, but delivered in fact | **57** | 🔴 `Item Status` was never advanced. |
+| `Active`, genuinely unexplained | **11** | The real reconciliation work. |
+
+**The 57 matter today, not after the run.** They carry a `Delivery End Date` or
+`Delivery Status = Completed`, so they are finished units still sitting as `Active` — and
+`Item Status = Active` is the filter behind the Production Floor view, Planning, BO Tracking, the
+reconciliation pass and the archiving sweep. Of 1,016 `Active` rows, **57 are wrong**.
+
+That is the same shape as the `Location` finding in `infrastructure-overview.md`: 98 of the 156
+units carrying a `Location` are already delivered. Both point at one cause — **nothing advances
+`Item Status` when a unit ships** — and one fix closes both.
+
+### The 11 that are genuinely unexplained
+
+```
+22021-1/20   22021-5/20   22021-6/20   22021-7/20
+22021-8/20   22021-9/20   22021-10/20  22021-12/20
+E21010-1/2   E21010-2/2   E21014-1/1
+```
+
+Two clusters, neither of them random:
+
+- **Eight are all order `22021`** — units 1, 5, 6, 7, 8, 9, 10 and 12 of 20. A partial-order
+  mismatch: the list holds units the workbook no longer does. Most likely the order's quantity
+  changed, or those units were regrouped, and the list kept rows the workbook dropped. **One order
+  to look at, not eight rows.**
+- **Three carry an `E` prefix** — `E21010`, `E21014`. Every note in this repo about prefixed keys
+  talks about `P`; `E` appears nowhere. Worth asking what it means before assuming it is junk.
+
+So the reconciliation pass has **one order and one unknown prefix** to resolve, plus a bulk status
+correction. That is a materially smaller job than "71 orphan rows waiting".

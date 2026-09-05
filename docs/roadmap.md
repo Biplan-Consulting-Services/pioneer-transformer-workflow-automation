@@ -62,13 +62,13 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | # | Change | Track | Status | Blocked on / note |
 |---|---|---|---|---|
 | 1 | **Clean 1,375 fabricated Tanking/Delivery statuses** | 🔵 A | not started | Designer. Spec'd, discriminator proven |
-| 2 | **72 workbook rows with no `Order Items` row** | 🔵 A | not started | Run backfill → re-diff. **Do not hunt a matching bug** |
+| 2 | **71 workbook rows with no `Order Items` row** | 🔵 A | **re-diffed 2026-09-05** | 65 are the new orders `22143`–`22155`. The run creates them. Only **6** are real, and they are named in `transfer-flow-forensics-2026-09-04.md` §10 |
 | 3 | **Map A5's remaining 5 columns** — all still 0-populated | 🔵 A | 2 of 7 | Designer |
 | 4 | **A4 — fold TextField sync into the transfer flow** | 🔵 A | not started | Designer |
 | 5 | **Re-enable the trigger flow** (after backfill) | 🔵 A | off since Sep 1 | Items 3/4 first |
 | 6 | ~~**`Location` empty on 841 of 1,016 active units**~~ **NOT A DEFECT** | 🔵 A | **closed 2026-09-05** | It is blank at source too — 863 of 1,019 — and blank on **exactly** the units that have not started production. Nothing to backfill. See `infrastructure-overview.md` |
 | 7 | **B2-verify** — Production Floor + Planning vs real data | 🟢 B | never done | No longer blocked by item 6. **Check the view's filter:** 98 of the 156 units carrying a `Location` are already delivered, so the floor view may be showing 156 where it should show 58 |
-| 8 | **A7 reconciliation pass** — ~71 orphan rows waiting | 🔵 A | deferred 2026-08-21 | Deferral reasoning has expired |
+| 8 | **A7 reconciliation pass** — **104** orphan rows, not 71 | 🔵 A | **re-measured 2026-09-05** | 36 correctly `Delivered`; **57 delivered but still `Active`** — those inflate every `Item Status = Active` view *today*; only **11** are genuinely unexplained. §10 |
 | 9 | **A6b** — hand-fix rows failing on one column | 🔵 A | 5 genuine, not 35 | 30 of 35 fix themselves on re-run |
 | 10 | **Export the sales Power App** — `power-apps/` is still `.gitkeep` | 🟠 D | not done | Tenant is the only rollback for a live fan-out |
 | 11 | **D4 viewer parity check** | 🟠 D | not done | Needs a viewer refresh |
