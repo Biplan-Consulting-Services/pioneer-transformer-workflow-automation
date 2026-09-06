@@ -15,3 +15,5 @@ desktop.ini
 # Transient Power Automate test-run captures - for validating connector behavior in
 # the moment, not a record worth keeping once the finding's written into the docs
 workflow-data/*raw output*.json
+__pycache__/
+*.pyc

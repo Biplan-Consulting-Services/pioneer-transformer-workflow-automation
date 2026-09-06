@@ -31,6 +31,20 @@ had — hence a dedicated place to plan it before touching production.
   static image).
 - `workflow-data/` — exports/samples of workflow data (Power Automate flow definitions,
   run logs, etc.) once that automation layer exists.
+- `workbooks/` — copies of workbooks that are analysed here but belong to no repo of their own
+  (currently FRM11).
+- `power-query/<workbook>/*.pq` — the M code of those workbooks, one file per query, first line
+  a `// Query: <real name>` comment so the filename is not load-bearing. **Read these instead of
+  reopening the workbook.**
+- `scripts/` — analysis and generation scripts. Two conventions worth knowing:
+  - **`Export-PowerQuery.ps1`** pulls every query out of a workbook into `.pq` files. It is the
+    counterpart to `FRM10-12/scripts/Sync-PowerQuery.ps1`, which pushes them back in; same Excel
+    COM surface (`$wb.Queries` → `.Name` / `.Formula`), so the two round-trip. It opens
+    `ReadOnly`, never saves and **never refreshes** — do not relax that, a generic refresh on
+    FRM10-12 wipes its native formula columns.
+  - The `gen_*.py` / `*_scan.py` scripts all read the newest `sharepoint-lists/*.csv` export
+    through `load_exports.py`, which already handles the `ListSchema` record described below.
+    Reach for one of these before hand-rolling a parser.
 - `sharepoint-lists/` — canonical export staging for **all** shared SharePoint lists used
   across Pioneer Transformer projects (`Models`, `Model Revisions`, `Models SA`, `Order`,
   `EngineeringChangeOrders`, `ModelChanges`, `Clients`, plus new-in-design lists like
@@ -91,11 +105,30 @@ had — hence a dedicated place to plan it before touching production.
     with **supplier reports attached**. `Tank Supplier Status` / `Paint Supplier Status` and
     `Code cuve` / `Code peinture` are the live columns; FRM10-12's `List` sheet holds only the
     vocabularies for its own dropdowns.
-  - **Keyed on `NUMÉRO DE CUVE`, which is the unit ID** (`21535-1/2`), so FRM11 is **1:1 with
-    `Order Items`** — 963 of 1,052 list units match. ⚠️ `Order Items.Tank` is a **Boolean flag**,
-    not a tank number, and is not the join key.
-  - It already carries `In FRM10_12` and `Last Synchronisation Date`, so a sync between the two
-    exists on the FRM11 side.
+  - **Keyed on `NUMÉRO DE CUVE`, which is the unit ID** (`21535-1/2`). ⚠️ `Order Items.Tank` is
+    **not** a tank number and is not the join key.
+  - 🔴 **It reads FRM10-12 as its root data source** — analysed 2026-09-06 from the workbook
+    itself; M code tracked at `power-query/FRM11/*.pq`, full write-up in
+    `docs/frm11-coupling-analysis-2026-09-06.md`. This is a **hard dependency**, not a sync:
+    - `TableOrders` → `Imported FRM10_12 Data` (**10 columns**, referenced by literal string:
+      `Order`, `Client`, `Type`, `KVA and KV`, `PO Item #`, `Location`, `Tanking Date`,
+      `Original Tanking Date`, `Tanking date change justification`, `Tank`) → `FournTank`
+      → **890 live rows** → **8 supplier report sheets** → 8 outside companies.
+    - It also imports `TableCuveCodes` / `TablePeintureCodes` / `TablePioneerCodes` from
+      FRM10-12, so the tank-status vocabularies cannot drift between the two.
+    - Its purge rule reads FRM10-12's `Location` and `Status` **in two-letter codes**
+      (`{XT,TE,FI,LI}`, or `TA` + `Status` containing `TE`) — the transfer flow converts those to
+      display names on the way into SharePoint, so a SharePoint-native source must translate back.
+    - **Action: do not reshape or retire `TableOrders` as part of this migration.** Both consumers
+      can coexist; the risk is a later cleanup pass deciding the workbook is redundant.
+  - 🔑 **Every external workbook is resolved through a SharePoint list named `Index`**
+    (`Title` → `Path`) on `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`, via an
+    `ImportFromIndex(sheet, table)` helper. That indirection is why the 2026-09-04 move of
+    FRM10-12 to `Revue/Formulaires/` did not break FRM11 — **and it makes the eventual cutover a
+    one-row edit**: publish a SharePoint-sourced workbook exposing `TableOrders`, repoint the row,
+    no M changes. Assume other workbooks use the same helper.
+  - `In FRM10_12` and `Last Synchronisation Date` live on **`TableArchiveFRM11`** in
+    `Archive active.xlsx`, not on FRM11's live table.
   - **Out of scope for the Order Items migration** — supplier state is a different axis from the
     unit's own production progress. See `docs/infrastructure-overview.md`.
 - These are separate git repos — the cross-links above are documentation only (relative

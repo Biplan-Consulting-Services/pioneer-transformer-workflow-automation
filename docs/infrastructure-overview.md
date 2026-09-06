@@ -1002,8 +1002,23 @@ a coarser or finer grain. The join needs no new key:
 | `Order Items` units absent from FRM11 | 89 |
 | FRM11 rows not on the list | 3,089 — historical, it is an *archive* table |
 
-Note also that **`Order Items.Tank` is a Boolean flag, not a tank number** (1052/1052 `True`), so it
-is not the join key and must not be mistaken for one.
+Note also that **`Order Items.Tank` is not a tank number** and is not the join key.
+
+⚠️ **Corrected 2026-09-06:** the counts in that table came from `TableArchiveFRM11`, the *archive*.
+The live table is `TableFournTank` on FRM11's `fourn Tank` sheet — **890 rows, 821 matching an
+`Order Items` `Unit ID`** — and FRM11 is deliberately *narrower* than `Order Items`, not 1:1: its
+root query drops SA/W/R/OS units and purges anything already tanked. `Order Items.Tank` was also
+recorded here as `True` on 1052/1052; it is **143 of 1,052**, and in FRM10-12 the source column
+holds a two-letter status code that the transfer flow reduces to a Yes/No. Full numbers, the
+filter and the purge rule in `frm11-coupling-analysis-2026-09-06.md`.
+
+### ⚠️ And the sync runs the other way from what this section assumed
+
+`In FRM10_12` and `Last Synchronisation Date` are columns on **`TableArchiveFRM11`**, in
+`Archive active.xlsx` — FRM11's live table carries neither. FRM11 does not "sync with" FRM10-12 as
+a peer: **it reads FRM10-12 as its root data source**, on every refresh, through a SharePoint list
+named `Index` that maps a title to a workbook path. Ten `TableOrders` columns feed it, and eight
+supplier report sheets hang off the result. See `frm11-coupling-analysis-2026-09-06.md`.
 
 ### What still stands, and what to ask
 
@@ -1013,14 +1028,23 @@ would repeat exactly what the 2026-08-12 split was made to undo. Since FRM11 alr
 already syncs with FRM10-12, the right move is **leave it there** — and if a unit ever needs to show
 tank status, read it across the existing `Unit ID` join rather than copying the vocabulary in.
 
-⚠️ **One thing to settle before anyone builds against either side.** The values FRM11 actually holds
-and the vocabularies in FRM10-12's `List` sheet have **drifted apart**:
+### ~~The vocabularies have drifted~~ — RESOLVED 2026-09-06, they never drifted
 
-| | Values seen |
-|---|---|
-| `List` sheet `Statut Cuve` | Confirmé · Matériel commandé · En production · Parti à la peinture · Assemblage final · Pièces B.O. · Problèmes · Livrée |
-| FRM11 `Tank Supplier Status` | Livrée 2056 · En production 148 · **Problème** 61 · **Dessin reçu** 50 · **Terminée** 29 · **BC reçu** 24 |
+I recorded here that FRM10-12's `List` sheet and FRM11's live values had **drifted apart**, and
+said to ask which was current. **The question was malformed and there is nobody to ask.** They are
+two different vocabularies, both current, on two different axes:
 
-Three overlap; `Dessin reçu`, `Terminée` and `BC reçu` appear only in FRM11, and five `List` values
-appear only in FRM10-12. It is an archive table, so it may simply hold older values — but **ask
-which list is current** rather than assuming either. Same question applies to Peinture.
+| | Source | Live values |
+|---|---|---|
+| `Status` | FRM10-12's `Tank` code, via a lookup on the three `List`-sheet code tables | `Reçu Pioneer` 15 · blank 875 |
+| `Tank Supplier Status` | **computed from the supplier reports** — `TableLocales` marks it `Calculated` | blank 514 · En production 134 · Livrée 108 · Problème 70 · Terminée 27 · Dessin reçu 20 · BC reçu 14 · B-Wall 3 |
+| `Paint Supplier Status` | same | blank 779 · Reçue 61 · Livrée 40 · Terminée 10 |
+
+`Dessin reçu` / `BC reçu` / `Terminée` are supplier-report vocabulary and were never meant to
+appear in the `List` sheet. And FRM11 does not hold its own copy of the code tables at all — it
+**imports `TableCuveCodes`, `TablePeintureCodes` and `TablePioneerCodes` from FRM10-12**, so those
+are identical by construction.
+
+The genuinely useful finding underneath: **`Status` is populated on 15 of 890 rows.** The
+`Statut Cuve` / `Statut Peinture` vocabularies are essentially unused in practice — only the
+`Reçu Pioneer` code `R` ever appears.
