@@ -131,6 +131,48 @@ had — hence a dedicated place to plan it before touching production.
     `Archive active.xlsx`, not on FRM11's live table.
   - **Out of scope for the Order Items migration** — supplier state is a different axis from the
     unit's own production progress. See `docs/infrastructure-overview.md`.
+### 🔑 How every Pioneer workbook finds every other one
+
+Mapped 2026-09-06 from the M code of all five workbooks — **98 queries**, tracked under
+`power-query/<workbook>/*.pq`, full write-up in `docs/workbook-data-graph-2026-09-06.md`.
+
+**There is not one hardcoded workbook URL in the entire estate.** Every cross-workbook read goes
+through a SharePoint list named **`Index`** (`Title` → `Path`) on
+`https://ermcopower.sharepoint.com/sites/PioneerPlanificatio`, via an `ImportFromIndex(title, table)`
+helper copied into each file. Consequences:
+
+- Moving a workbook breaks nothing if its `Index` row is repointed — that is why the 2026-09-04
+  move of FRM10-12 was survivable.
+- **The eventual FRM10-12 cutover is a one-row edit**, not a rewrite: publish a SharePoint-sourced
+  workbook exposing `TableOrders`, repoint the row, and FRM09 / FRM11 / FRM13 follow unchanged.
+- `Index` is unversioned and unwatched. Treat it as production infrastructure.
+
+Who reads what:
+
+| `Index` title | Read by | Tables |
+|---|---|---|
+| **FRM10-12** | FRM09, FRM11, FRM13 | `TableOrders` (all three), plus FRM11 also takes `TableCuveCodes` / `TablePeintureCodes` / `TablePioneerCodes` |
+| **FRM11** | FRM13 | `TableFournTank` |
+| **FRM13-Auto** | FRM10-12 | `LeedTime` |
+| **Archive active** | FRM10-12, FRM11, FRM13 | the `TableArchive*` tables |
+| **BO Manager** | FRM10-12 | `TableBO` |
+| **Temps Standard** | FRM10-12 | `TableJobTimes` |
+| **Rapport …** × 8 | FRM11 | `TableReport` (title computed at runtime) |
+
+🔴 **There is a cycle:** FRM10-12 → FRM13 → FRM10-12 (and the longer FRM10-12 → FRM11 → FRM13 →
+FRM10-12). No refresh order makes the estate consistent, and it is the likely cause of
+`Order.Lead Time` disagreeing with FRM13's `LeedTime` on 306 of 342 rows.
+
+🟢 **FRM10-12 already reads the SharePoint lists directly** — `Orders`, `Models`, `Model Revisions`,
+`Models SA` via `SharePoint.Tables`, with `FlattenSharePointLookupLists` (expands lookups) and
+`ApplyColumnMap` / `ColumnMap` (declarative rename/retype). The machinery a SharePoint-sourced
+`TableOrders` would need is already in production.
+
+⚠️ **And that is why `Refresh All` destroys FRM10-12:** `TableOrders` reads the sheet table it
+writes back to, and its second step strips six native formula columns (`Estimated Delivery Date`,
+`Price CAD`/`USD`/`Price`, `Navigation Order`, `Navigation Model`). A generic refresh re-lands the
+table without them. Office Script button only.
+
 - These are separate git repos — the cross-links above are documentation only (relative
   folder paths under the same client directory), not a git/build dependency.
 

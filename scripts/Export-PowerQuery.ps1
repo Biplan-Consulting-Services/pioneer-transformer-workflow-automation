@@ -28,6 +28,13 @@
 .PARAMETER ListOnly
     Print the query names and their M length, write nothing.
 
+.PARAMETER SafeCopy
+    Copy the workbook to the temp directory and read the copy instead of the
+    original. Use this on any workbook whose "refresh data when opening the file"
+    setting is unknown -- ReadOnly already makes a refresh unable to persist, but
+    a refresh on FRM10-12 is slow and hits SharePoint, and this avoids it touching
+    the real file at all. The copy is deleted afterwards.
+
 .EXAMPLE
     ./Export-PowerQuery.ps1 -WorkbookPath "..\workbooks\PRO1.FRM11 - Planification Approbation Cuve.xlsx" -ListOnly
 
@@ -37,11 +44,21 @@
 param(
     [Parameter(Mandatory = $true)][string]$WorkbookPath,
     [string]$OutputPath,
-    [switch]$ListOnly
+    [switch]$ListOnly,
+    [switch]$SafeCopy
 )
 
 $ErrorActionPreference = 'Stop'
 $WorkbookPath = (Resolve-Path $WorkbookPath).Path
+$SourcePath = $WorkbookPath
+$TempCopy = $null
+
+if ($SafeCopy) {
+    $TempCopy = Join-Path ([System.IO.Path]::GetTempPath()) ("expq_" + [guid]::NewGuid().ToString('N') + [System.IO.Path]::GetExtension($WorkbookPath))
+    Copy-Item -LiteralPath $WorkbookPath -Destination $TempCopy
+    $SourcePath = $TempCopy
+    Write-Host "SafeCopy: reading a temp copy, the original is not opened."
+}
 
 if (-not $OutputPath) {
     $base = [System.IO.Path]::GetFileNameWithoutExtension($WorkbookPath)
@@ -62,7 +79,7 @@ $excel.DisplayAlerts = $false
 $written = 0
 try {
     # ReadOnly, no link update, no add-ins prompt. Never save this workbook.
-    $wb = $excel.Workbooks.Open($WorkbookPath, 0, $true)
+    $wb = $excel.Workbooks.Open($SourcePath, 0, $true)
     try {
         $queries = $wb.Queries
         Write-Host "$($queries.Count) quer$(if ($queries.Count -eq 1) {'y'} else {'ies'})"
@@ -99,6 +116,7 @@ try {
 finally {
     $excel.Quit()
     [System.Runtime.InteropServices.Marshal]::ReleaseComObject($excel) | Out-Null
+    if ($TempCopy -and (Test-Path $TempCopy)) { Remove-Item -LiteralPath $TempCopy -Force }
 }
 
 Write-Host ""
