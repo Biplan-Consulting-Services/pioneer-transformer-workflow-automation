@@ -95,6 +95,13 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 33 | **FRM13's `TableOrders` may be erroring on every refresh** | 🟡 B | **new 2026-09-06, unconfirmed** | Two `Table.ExpandTableColumn` steps expand `Client Desired Date` out of a step whose column list does not include it, which should raise *"the column wasn't found"*. The sheet table does hold the column with data, so either I am misreading the step chain or the sheet has been stale since the last good refresh. **Refresh FRM13 once and watch** — do not act on this without confirming |
 | 29 | **Verify the `Index` list row for `FRM10-12`** | 🟢 A | **new 2026-09-06, ~2 min** | FRM11 (and probably every other workbook using `ImportFromIndex`) resolves FRM10-12 through a `Title`→`Path` row in the `Index` list on `.../sites/PioneerPlanificatio`. Confirm `Path` points at `General/FAB/Revue/Formulaires/FRM10-12.xlsx` after the 2026-09-04 move. Circumstantial evidence says it is fine — FRM11 holds orders `22143`–`22155`, which only exist post-move — but the row itself has not been read |
 
+> ⏸️ **Items 26–33 are parked** (user, 2026-09-06 02:45). They came out of the FRM11 and
+> cross-workbook Power Query analysis and are all *findings*, not blockers — the workbook estate
+> keeps working exactly as it does today whether or not anyone acts on them. **The Session 1
+> execution plan outranks all of them**; pick these up in conversation if there is time, not
+> instead. The two with a real clock on them are **29** (verify the `Index` row, ~2 min) and
+> **33** (refresh FRM13 once and watch for an error).
+
 **Items 1, 2, 3, 4, 6 and 13 all need the same thing: a working Power Automate designer.** That
 single blocker gates most of what is left, including everything that would make Production Floor
 usable. It is worth more attention than any individual row above.
