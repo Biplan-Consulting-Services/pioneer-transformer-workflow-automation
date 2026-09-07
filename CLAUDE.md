@@ -75,6 +75,35 @@ had — hence a dedicated place to plan it before touching production.
   the result as `--local`. **Author locally, validate locally, paste once** — a structural
   mistake then cannot reach production, and the `.zip` (kept beside each pulled version) is
   the only artifact that re-imports.
+
+  ### The hand-off: `_inbox/` and `_outbox/`
+
+  The user has a Chrome extension exposing the flow's raw JSON in the designer. I cannot see
+  or drive that extension — browser automation cannot enumerate extensions, and deep-linking
+  the flow page fails from a session without the environment context. So the loop is a
+  copy/paste hand-off with two folders per flow, and the versioning is what makes it safe:
+
+  ```
+  user copies JSON out of the designer      ->  _inbox/  (any filename)
+  flow_version.py intake                    ->  stored as a `pulled` version, _inbox cleared
+  <authoring script>  +  snapshot --local    ->  a `local` version, parent = that pull
+  flow_version.py stage vNNN                ->  _outbox/PASTE-ME.definition.json  (+ .md)
+  user pastes it back, saves, copies out     ->  _inbox/  again
+  flow_version.py intake                     ->  hash matches  =>  vNNN flips to `applied`
+  ```
+
+  Details that matter:
+
+  - **Shape is detected, not configured.** The extension hands over the bare `definition`
+    object; an export hands over the full wrapper. The hash covers the `definition` alone, so
+    the same flow in either shape hashes the same and is correctly seen as unchanged.
+  - **`intake` removes what it consumed.** The version file is the record; the doorway stays
+    empty so a stale paste cannot be ingested twice. It refuses outright if `_inbox` holds
+    more than one file rather than guessing which is current.
+  - **`stage` clears `_outbox` first**, so there is never a question about which file to
+    paste, and writes a `PASTE-ME.md` with the before/after counts to eyeball afterwards.
+  - **A pull that matches a pending version's parent is not a fork.** Nothing moved, so the
+    draft stays valid — forking it there would cry wolf on every re-export.
 - `workbooks/` — copies of workbooks that are analysed here but belong to no repo of their own
   (currently FRM11).
 - `power-query/<workbook>/*.pq` — the M code of those workbooks, one file per query, first line

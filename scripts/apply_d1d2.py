@@ -44,6 +44,15 @@ MAPPINGS = {
 WRITES = (("No_Items_Found", "CreateOrderItem"), ("One_Item_Found", "UpdateOrderItem"))
 
 
+def def_of(doc):
+    """The `definition` object, whatever shape was handed in.
+
+    The user copies the bare definition out of the designer's JSON editor, while
+    an exported package wraps it in properties. Both must work, or the authoring
+    step breaks depending on where the input came from."""
+    return doc.get("properties", {}).get("definition", doc.get("definition", doc))
+
+
 def locate(defn):
     sw = defn["actions"]["Apply_to_each"]["actions"]["CheckOrderMatch"]["actions"]["Switch"]
     out = {}
@@ -61,7 +70,7 @@ def main():
     out = a.out or src.replace(".json", " +d1d2.json")
 
     doc = json.load(io.open(src, encoding="utf-8"))
-    defn = doc["properties"]["definition"]
+    defn = def_of(doc)
     before = copy.deepcopy(doc)
 
     params = locate(defn)
@@ -87,7 +96,7 @@ def main():
 
     # --- prove the change is confined ---
     after = json.load(io.open(out, encoding="utf-8"))
-    pb, pa = locate(before["properties"]["definition"]), locate(after["properties"]["definition"])
+    pb, pa = locate(def_of(before)), locate(def_of(after))
     print("wrote %s" % os.path.basename(out))
     print("wrote %s  (the two parameter objects only)" % os.path.basename(pout))
     print()
@@ -110,14 +119,14 @@ def main():
     # everything outside those two parameter objects must be byte-identical
     def blank(doc):
         c = copy.deepcopy(doc)
-        for act, P in locate(c["properties"]["definition"]).items():
+        for act, P in locate(def_of(c)).items():
             P.clear()
         return json.dumps(c, sort_keys=True)
     same = blank(before) == blank(after)
     print()
     print("rest of the definition unchanged: %s" % same)
-    print("toLower( count: %d (expect 28)" % json.dumps(after).count("toLower("))
-    print("'EC' count    : %d (expect 0)" % json.dumps(after).count("'EC'"))
+    print("toLower( count: %d (expect 28)" % json.dumps(def_of(after)).count("toLower("))
+    print("'EC' count    : %d (expect 0)" % json.dumps(def_of(after)).count("'EC'"))
     print()
     print("RESULT: %s" % ("OK -- exactly the 6 mappings, on both actions, nothing else touched"
                           if (ok and same) else "PROBLEM -- do not paste this"))

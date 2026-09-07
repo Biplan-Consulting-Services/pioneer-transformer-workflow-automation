@@ -232,10 +232,20 @@ def cmd_snapshot(a):
                 v["state"] = "applied"
                 v["appliedAt"] = now_iso(a.at)
                 print("v%03d CONFIRMED APPLIED -- this pull carries its exact definition." % v["v"])
+        # A pending version is only stale if the tenant is somewhere OTHER than
+        # the version it was authored from. A pull that matches its parent means
+        # nothing moved, so it stays perfectly valid -- forking it there would
+        # cry wolf on every re-export.
+        matched = {v["v"] for v in same}
         for other in pending(h):
+            if other.get("parent") in matched:
+                print("v%03d still pending and still valid -- the tenant is unchanged"
+                      " at v%03d, which is what it was authored from." % (other["v"], other["parent"]))
+                continue
             other["state"] = "forked"
             other["forkedAt"] = now_iso(a.at)
-            print("v%03d marked FORKED -- still pending but the tenant moved elsewhere." % other["v"])
+            print("v%03d marked FORKED -- authored on v%03d but the tenant is at v%03d."
+                  % (other["v"], other.get("parent") or 0, sorted(matched)[-1]))
         save_hist(a.flow, h)
         print("no new version stored (identical to v%03d)" % same[0]["v"])
         return 0
@@ -293,6 +303,87 @@ def cmd_snapshot(a):
         fp.get("toLower"), fp.get("ecUpper")))
     if a.local:
         print("      NOT in the tenant. It becomes `applied` only when a later pull matches this sha.")
+    return 0
+
+
+def cmd_intake(a):
+    """Ingest whatever the user dropped in _inbox/ as a pulled version.
+
+    Shape is detected, not configured: the bare `definition` object, the full
+    export document, or a .zip package all work -- and the hash covers the
+    definition alone, so the same flow pasted in two different shapes gives the
+    same hash and is correctly recognised as unchanged."""
+    fold = flow_dir(a.flow)
+    inbox = os.path.join(fold, "_inbox")
+    if not os.path.isdir(inbox):
+        raise SystemExit("no _inbox in %s" % fold)
+    files = [f for f in sorted(glob.glob(os.path.join(inbox, "*")))
+             if os.path.isfile(f) and os.path.splitext(f)[1].lower() in (".json", ".zip", ".txt")]
+    if not files:
+        print("_inbox is empty -- paste the JSON in there first")
+        print("   %s" % inbox)
+        return 1
+    if len(files) > 1 and not a.all:
+        print("more than one file in _inbox -- refusing to guess which is current:")
+        for f in files:
+            print("   %s" % os.path.basename(f))
+        print("remove the stale ones, or pass --all to take them in filename order")
+        return 1
+    rc = 0
+    for f in files:
+        print("--- %s" % os.path.basename(f))
+        try:
+            klass = argparse.Namespace(src=f, note=a.note or "pasted from designer",
+                                       local=False, parent=None, at=a.at, flow=a.flow)
+            rc |= cmd_snapshot(klass)
+        except SystemExit as e:
+            print("   FAILED: %s" % e); rc = 1; continue
+        except Exception as e:
+            print("   FAILED to parse: %s" % e); rc = 1; continue
+        os.remove(f)          # the version file is the record; the doorway stays clear
+        print("   consumed (removed from _inbox)")
+    return rc
+
+
+def cmd_stage(a):
+    """Put one version in _outbox/ as the single thing to paste back."""
+    h = load_hist(a.flow)
+    v = parse_ref(h, a.ref)
+    fold = flow_dir(a.flow)
+    out = os.path.join(fold, "_outbox")
+    os.makedirs(out, exist_ok=True)
+    for old in glob.glob(os.path.join(out, "PASTE-ME*")):
+        os.remove(old)        # never two candidates
+    doc = read_any(os.path.join(fold, v["files"]["definition"]))[0]
+    io.open(os.path.join(out, "PASTE-ME.definition.json"), "w", encoding="utf-8").write(
+        json.dumps(definition(doc), indent=2, ensure_ascii=False) + "\n")
+    fp = v.get("fingerprint", {})
+    par = by_v(h, v["parent"]) if v.get("parent") else None
+    pf = par.get("fingerprint", {}) if par else {}
+    L = ["# Paste this back", "",
+         "**v%03d — %s**" % (v["v"], v.get("note", "")), "",
+         "File: `PASTE-ME.definition.json` — the bare `definition` object.", ""]
+    if par:
+        L += ["Authored from **v%03d** (%s), which is what the flow was at %s." % (
+                  par["v"], par.get("note", ""), par["captured"][:16].replace("T", " ")), ""]
+    L += ["## After pasting, check these in the editor", "",
+          "| | before | after |", "|---|---|---|"]
+    for k, label in (("CreateOrderItem", "`CreateOrderItem` item/* fields"),
+                     ("UpdateOrderItem", "`UpdateOrderItem` item/* fields"),
+                     ("toLower", "`toLower(` occurrences"),
+                     ("ecUpper", "unguarded `'EC'`")):
+        L.append("| %s | %s | **%s** |" % (label, pf.get(k, "—"), fp.get(k, "—")))
+    L += ["", "## Then close the loop", "",
+          "Save in Power Automate, copy the JSON back out into `_inbox/`, and tell me.",
+          "`flow_version.py intake` will confirm by hash — if it matches, v%03d flips to" % v["v"],
+          "`applied`. Until then it stays `local`: I do not mark my own work as landed.", "",
+          "If it does **not** match, v%03d is marked `forked` and I report exactly what" % v["v"],
+          "differs — which is the signal that something else changed underneath.", ""]
+    io.open(os.path.join(out, "PASTE-ME.md"), "w", encoding="utf-8").write("\n".join(L) + "\n")
+    print("staged v%03d -> _outbox/PASTE-ME.definition.json" % v["v"])
+    print("  %s" % v.get("note", ""))
+    print("  expect after paste: Create %s / Update %s | toLower %s | 'EC' %s" % (
+        fp.get("CreateOrderItem"), fp.get("UpdateOrderItem"), fp.get("toLower"), fp.get("ecUpper")))
     return 0
 
 
@@ -383,6 +474,10 @@ def main():
     s.add_argument("--parent", help="version this was authored from (default: newest live)")
     s.add_argument("--at", help="override capture time, 'YYYY-MM-DD HHMM', for backfills")
     s.set_defaults(fn=cmd_snapshot)
+    s = sub.add_parser("intake"); s.add_argument("--note", default="")
+    s.add_argument("--at"); s.add_argument("--all", action="store_true")
+    s.set_defaults(fn=cmd_intake)
+    s = sub.add_parser("stage"); s.add_argument("ref"); s.set_defaults(fn=cmd_stage)
     sub.add_parser("status").set_defaults(fn=cmd_status)
     sub.add_parser("list").set_defaults(fn=cmd_list)
     s = sub.add_parser("diff"); s.add_argument("a"); s.add_argument("b"); s.set_defaults(fn=cmd_diff)
