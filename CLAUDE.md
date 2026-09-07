@@ -29,8 +29,52 @@ had — hence a dedicated place to plan it before touching production.
 - `docs/diagrams/` — exported diagram images/source files (the Mermaid diagrams embedded in
   `infrastructure-overview.md` are the primary/current copy; export here if a tool needs a
   static image).
-- `workflow-data/` — exports/samples of workflow data (Power Automate flow definitions,
-  run logs, etc.) once that automation layer exists.
+- `workflow-data/` — exports/samples of workflow data (run logs, raw connector output), and
+  **one subfolder per Power Automate flow** holding its version history.
+
+  ### 🔴 THE RULE: snapshot before you modify
+
+  **Nothing modifies a flow — in the designer or by pasting JSON — until the current
+  definition has been exported and snapshotted.** These are production automation with no
+  undo, and a single mis-click on a List Name dropdown has wiped every field mapping on both
+  write actions before (risk R4). One command, every time:
+
+  ```
+  python scripts/flow_version.py snapshot <export.zip> --note "what changed"
+  ```
+
+  ### Why it is a version system and not timestamped files
+
+  **Two authors edit these flows**: the user in the Power Automate designer, and this repo by
+  patching exported JSON. That makes the history a fork, not a line, and the bad case is
+  silent — I author from v002, the designer is edited by hand meanwhile, I paste, and the hand
+  edit is gone with nothing reporting anything. So every version records a **parent**, and
+  authoring **refuses to run** when its parent is not the newest known-live version.
+
+  | state | meaning |
+  |---|---|
+  | `pulled` | exported from the tenant — *was live* at capture. A fact. |
+  | `local` | authored here. `parent` says what it was based on. **Not in the tenant.** |
+  | `applied` | **inferred, never asserted** — set only when a later pull carries the same definition hash. A paste cannot prove itself; only an export can. |
+  | `forked` | a later pull did not match, so this local version never landed and is stale. |
+
+  `history.json` is the source of truth — filenames are for humans and `MANIFEST.md` is
+  generated from it. **Metadata never lives only in a filename.** The hash covers the
+  `definition` object alone, not the export wrapper, so volatile metadata cannot make an
+  unchanged flow look changed.
+
+  ```
+  flow_version.py status          # what is live, what is pending, what forked or went stale
+  flow_version.py list            # the table, with field counts per version
+  flow_version.py diff v002 v003  # per-field added / removed / changed on both write actions
+  flow_version.py emit v003       # paste-ready shapes for a JSON editor
+  ```
+
+  Authoring a change is a separate script per change (`apply_d1d2.py` is the pattern): apply
+  it to the newest pulled version, assert the diff is exactly what was intended, then snapshot
+  the result as `--local`. **Author locally, validate locally, paste once** — a structural
+  mistake then cannot reach production, and the `.zip` (kept beside each pulled version) is
+  the only artifact that re-imports.
 - `workbooks/` — copies of workbooks that are analysed here but belong to no repo of their own
   (currently FRM11).
 - `power-query/<workbook>/*.pq` — the M code of those workbooks, one file per query, first line

@@ -1,0 +1,75 @@
+{
+  "flow": {
+    "folder": "Order Items - excel transfer flow",
+    "displayName": "Order Items - Excel Transfer Flow",
+    "id": "4260a403-41e6-65b6-8e87-76b72fb9c26e",
+    "site": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio"
+  },
+  "versions": [
+    {
+      "v": 1,
+      "captured": "2026-09-05T19:00:00-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "baseline pre-P3",
+      "sha256": "9d27fc7069ebfaad9132565daf9d6adb15dbc486739b6f64398c1349a5306160",
+      "fingerprint": {
+        "toLower": 4,
+        "ecUpper": 24,
+        "actions": 5,
+        "CreateOrderItem": 50,
+        "UpdateOrderItem": 58,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v001__2026-09-05T19-00__pulled__baseline-pre-P3.json",
+        "package": "v001__2026-09-05T19-00__pulled__baseline-pre-P3.zip"
+      },
+      "appliedAt": "2026-09-05T19:00:00-04:00",
+      "source": "Order Items Excel Transfer Flow 2026-09-05 1900.zip"
+    },
+    {
+      "v": 2,
+      "captured": "2026-09-07T15:12:00-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "P3 toLower applied",
+      "sha256": "121f21ea7b9d557a36722f6c90d40ef97be66e1d760e7e071971da29af4e7b6b",
+      "fingerprint": {
+        "toLower": 28,
+        "ecUpper": 0,
+        "actions": 5,
+        "CreateOrderItem": 50,
+        "UpdateOrderItem": 58,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v002__2026-09-07T15-12__pulled__P3-toLower-applied.json",
+        "package": "v002__2026-09-07T15-12__pulled__P3-toLower-applied.zip"
+      },
+      "appliedAt": "2026-09-07T15:12:00-04:00",
+      "source": "OrderItemsTransferFlow_20260907191257.zip"
+    },
+    {
+      "v": 3,
+      "captured": "2026-09-07T16:06:59-04:00",
+      "state": "local",
+      "parent": 2,
+      "note": "D1D2 six columns",
+      "sha256": "8c20b0184ad8538d7b14f20f569f865bebd372eb14f603bb0dfded8e35e0b1bc",
+      "fingerprint": {
+        "toLower": 28,
+        "ecUpper": 0,
+        "actions": 5,
+        "CreateOrderItem": 56,
+        "UpdateOrderItem": 64,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v003__2026-09-07T16-06__local__D1D2-six-columns.json"
+      },
+      "appliedAt": null,
+      "source": "d1d2.json"
+    }
+  ]
+}
