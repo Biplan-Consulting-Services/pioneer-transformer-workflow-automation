@@ -109,3 +109,65 @@ typo to fix here.
 Afterwards, count `BO` populated on `Order Items`. Track B's earlier import covered **73**; the
 real source holds **76**, so expect the gap to close rather than the number to stay put. Anything
 far above that means the roll-up was sourced from the wrong table.
+
+---
+
+## Resolved and authored 2026-09-07 — `scripts/apply_d3.py`, version **v004**
+
+This sheet left three things open. All three are now answered, and D3 is authored rather than
+pasted by hand.
+
+### The connector parameters, resolved live
+
+| | |
+|---|---|
+| `source` | `sites/ermcopower.sharepoint.com,88b9ed6c-…511f6,7f8472f6-…3e6bcc` |
+| `drive` | `b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64` |
+| `file` | `01DI2JQP7NBWFPJE6RMBFL5PPWQWB7HUO7` |
+| `table` | `{3580DC32-2968-4A81-A234-0D14634618E2}` |
+
+🔴 **The path in this sheet was wrong.** It is `General/FAB/Achat/**BOs**`, plural — there is no
+`Achat/BO` folder. The `BOs` folder holds `BO Manager.xlsx` and a `test` folder.
+
+**Where the table GUID comes from, and why it can be trusted.** The Excel Online connector's
+`table` parameter is the table's **`xr:uid`** from the workbook XML. Confirmed rather than
+assumed: `TableOrders`'s `xr:uid` in FRM10-12 is `{72371618-48E3-4FA4-B667-3B76BFA2D42A}`, which
+is character-for-character the `table` value the live flow already uses. `TableBO`'s is the value
+above. ⚠️ Read from the 2026-09-03 local snapshot — `xr:uid` is stable across saves and only
+changes if the table is deleted and recreated, but a wrong id fails the action loudly rather than
+silently, so the D4 smoke test settles it.
+
+### 🔴 `TBD` in the date columns — a second EC-shaped landmine
+
+The date columns are not clean:
+
+| column | populated | non-date values |
+|---|---|---|
+| `BO1 Date` | 39 | **`TBD`** on `21838-1/5`, `21840-1/10` |
+| `BO2 Date` | 17 | **`TBD`** on `21521-1/1` |
+| `BO3 Date` | 5 | none |
+
+`int('TBD')` throws, and the throw surfaces as `Action 'Switch' failed` — the same signature as
+the EC bug. **And the part-number guard does not catch it:** all three rows carry a part number,
+so the group guard passes and the value reaches the conversion. Both guards are required, and the
+`TBD` test is **case-insensitive** for exactly the reason `'EC'` was not.
+
+### The group guard is otherwise sound
+
+Checked across all three groups: **zero rows** carry a `BO{n} Date` without a `BO{n} Part Numbre`.
+So guarding a group on its part number really does cover the whole group.
+
+### Shape of the change
+
+| | v002 | v004 |
+|---|---|---|
+| top-level actions | 5 | **6** — adds `List_rows_present_in_a_table_BO` |
+| in-loop actions | 10 | **11** — adds `Filter_BO` |
+| `CreateOrderItem` `item/*` | 50 | **75** |
+| `UpdateOrderItem` `item/*` | 58 | **83** |
+| `toLower(` | 28 | **34** — 3 TBD guards × 2 write actions |
+
+The chain is spliced, not appended: `List_rows → List_rows_BO → Filter_array → … → Apply_to_each`,
+and in the loop `RawOrder → Filter_BO → IsSA → …`. `apply_d3.py` asserts the rewiring held and
+that nothing outside the two new actions and the two parameter objects moved.
+

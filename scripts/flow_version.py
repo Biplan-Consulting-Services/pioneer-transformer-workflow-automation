@@ -161,6 +161,26 @@ def pending(h):
     return [v for v in h["versions"] if v["state"] == "local"]
 
 
+def roots_in_live(h, start, live_v):
+    """True when `start` reaches the live version through pending drafts only.
+
+    A chain of local drafts is legitimate -- v003 then v004 on top of it, pasted
+    together as one edit. What is NOT legitimate is a chain rooted in something
+    the tenant has moved past, which is the case the guard exists to catch.
+    """
+    seen = set()
+    cur = start
+    while cur is not None and cur not in seen:
+        if cur == live_v:
+            return True
+        seen.add(cur)
+        node = by_v(h, cur)
+        if node is None or node["state"] != "local":
+            return False
+        cur = node.get("parent")
+    return False
+
+
 def parse_ref(h, ref):
     if ref in ("live", "latest"):
         return live(h) or newest(h)
@@ -266,10 +286,14 @@ def cmd_snapshot(a):
     parent = None
     if a.local:
         lv = live(h)
-        parent = parse_ref(h, a.parent)["v"] if a.parent else (lv["v"] if lv else None)
-        if lv and parent != lv["v"]:
+        # Default to the newest pending draft when one exists, so a chain of
+        # changes authored in sequence records its real ancestry.
+        pend = pending(h)
+        default = (pend[-1]["v"] if pend else (lv["v"] if lv else None))
+        parent = parse_ref(h, a.parent)["v"] if a.parent else default
+        if lv and not roots_in_live(h, parent, lv["v"]):
             raise SystemExit(
-                "REFUSING: parent is v%03d but the newest known-live version is v%03d.\n"
+                "REFUSING: v%03d does not descend from the newest known-live version v%03d.\n"
                 "Re-export the flow, snapshot it, and re-author on top of that -- "
                 "otherwise pasting this reverts whatever changed in between." % (parent, lv["v"]))
 
@@ -397,12 +421,17 @@ def cmd_status(a):
     print("LIVE      : %s" % (("v%03d  %s  (%s)" % (lv["v"], lv.get("note", ""), lv["captured"][:16]))
                               if lv else "UNKNOWN -- nothing pulled"))
     print("pending   : %s" % (", ".join("v%03d (%s)" % (x["v"], x.get("note", "")) for x in p) or "none"))
+    if len(p) > 1:
+        tip = p[-1]
+        print("            ^ these chain -- paste only v%03d, it contains the rest" % tip["v"])
     forked = [v for v in h["versions"] if v["state"] == "forked"]
     if forked:
         print("forked    : %s   <-- authored but never applied" %
               ", ".join("v%03d" % v["v"] for v in forked))
     for x in p:
-        if lv and x.get("parent") != lv["v"]:
+        # Use the same chain rule as the authoring guard: a draft built on another
+        # pending draft is fine as long as the chain roots in the live version.
+        if lv and not roots_in_live(h, x.get("parent"), lv["v"]):
             print("\nSTALE  v%03d was authored on v%03d but v%03d is live." % (x["v"], x["parent"], lv["v"]))
             print("       Pasting it would revert the difference. Re-author it.")
     return 0

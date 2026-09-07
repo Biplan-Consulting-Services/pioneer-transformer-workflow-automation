@@ -58,7 +58,7 @@
     },
     "Filter_array": {
       "runAfter": {
-        "List_rows_present_in_a_table": [
+        "List_rows_present_in_a_table_BO": [
           "Succeeded"
         ]
       },
@@ -83,7 +83,7 @@
         },
         "IsSA": {
           "runAfter": {
-            "RawOrder": [
+            "Filter_BO": [
               "Succeeded"
             ]
           },
@@ -246,7 +246,26 @@
                           "item/Protector_x0020__x0026__x0020_Sw": "@item()?['Protector & Switchgear Item _x0023_']",
                           "item/Configuration": "@if(or(equals(trim(string(item()?['Configuration'])), ''), equals(trim(string(item()?['Configuration'])), '00:00:00')), null, item()?['Configuration'])",
                           "item/Section_x0020_Qty": "@if(equals(trim(string(item()?['Section Qty'])), ''), null, int(item()?['Section Qty']))",
-                          "item/Order_Number_TextField": "@outputs('OrderNumberText')"
+                          "item/Order_Number_TextField": "@outputs('OrderNumberText')",
+                          "item/BO/Value": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO'], ''))), '')), null, first(body('Filter_BO'))?['BO'])",
+                          "item/BO1PartNumber": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 Part Numbre'])",
+                          "item/BO1Description": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 Description'])",
+                          "item/BO1POIntern": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 PO Intern'])",
+                          "item/BO1Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO1 Date'])))",
+                          "item/BO1Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 Fournisseur Interne'])",
+                          "item/BO1OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 OK'])",
+                          "item/BO2PartNumber": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 Part Numbre'])",
+                          "item/BO2Description": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 Description'])",
+                          "item/BO2POIntern": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 PO Intern'])",
+                          "item/BO2Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO2 Date'])))",
+                          "item/BO2Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 Fournisseur Interne'])",
+                          "item/BO2OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 OK'])",
+                          "item/BO3PartNumber": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Part Numbre'])",
+                          "item/BO3Description": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Description'])",
+                          "item/BO3POIntern": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 PO Intern'])",
+                          "item/BO3Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO3 Date'])))",
+                          "item/BO3Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Fournisseur Interne'])",
+                          "item/BO3OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 OK'])"
                         },
                         "host": {
                           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
@@ -333,7 +352,26 @@
                           "item/Protector_x0020__x0026__x0020_Sw": "@item()?['Protector & Switchgear Item _x0023_']",
                           "item/Configuration": "@if(or(equals(trim(string(item()?['Configuration'])), ''), equals(trim(string(item()?['Configuration'])), '00:00:00')), null, item()?['Configuration'])",
                           "item/Section_x0020_Qty": "@if(equals(trim(string(item()?['Section Qty'])), ''), null, int(item()?['Section Qty']))",
-                          "item/Order_Number_TextField": "@outputs('OrderNumberText')"
+                          "item/Order_Number_TextField": "@outputs('OrderNumberText')",
+                          "item/BO/Value": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO'], ''))), '')), null, first(body('Filter_BO'))?['BO'])",
+                          "item/BO1PartNumber": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 Part Numbre'])",
+                          "item/BO1Description": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 Description'])",
+                          "item/BO1POIntern": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 PO Intern'])",
+                          "item/BO1Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO1 Date'])))",
+                          "item/BO1Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 Fournisseur Interne'])",
+                          "item/BO1OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO1 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO1 OK'])",
+                          "item/BO2PartNumber": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 Part Numbre'])",
+                          "item/BO2Description": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 Description'])",
+                          "item/BO2POIntern": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 PO Intern'])",
+                          "item/BO2Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO2 Date'])))",
+                          "item/BO2Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 Fournisseur Interne'])",
+                          "item/BO2OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO2 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO2 OK'])",
+                          "item/BO3PartNumber": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Part Numbre'])",
+                          "item/BO3Description": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Description'])",
+                          "item/BO3POIntern": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 PO Intern'])",
+                          "item/BO3Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO3 Date'])))",
+                          "item/BO3Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Fournisseur Interne'])",
+                          "item/BO3OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 OK'])"
                         },
                         "host": {
                           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
@@ -694,6 +732,18 @@
             "operationMetadataId": "a8ec857b-4395-4718-a875-0e5d872aa295"
           },
           "type": "If"
+        },
+        "Filter_BO": {
+          "type": "Query",
+          "runAfter": {
+            "RawOrder": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@outputs('List_rows_present_in_a_table_BO')?['body/value']",
+            "where": "@equals(trim(string(coalesce(item()?['Order'], ''))), outputs('RawOrder'))"
+          }
         }
       },
       "runAfter": {
@@ -744,6 +794,35 @@
             "value": "@null"
           }
         ]
+      }
+    },
+    "List_rows_present_in_a_table_BO": {
+      "type": "OpenApiConnection",
+      "runAfter": {
+        "List_rows_present_in_a_table": [
+          "Succeeded"
+        ]
+      },
+      "metadata": {
+        "01DI2JQP7NBWFPJE6RMBFL5PPWQWB7HUO7": "/General/FAB/Achat/BOs/BO Manager.xlsx"
+      },
+      "runtimeConfiguration": {
+        "paginationPolicy": {
+          "minimumItemCount": 5000
+        }
+      },
+      "inputs": {
+        "host": {
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+          "operationId": "GetItems",
+          "connectionName": "shared_excelonlinebusiness-1"
+        },
+        "parameters": {
+          "source": "sites/ermcopower.sharepoint.com,88b9ed6c-d686-4bbe-b445-4e753ad511f6,7f8472f6-8a89-4591-a116-98a1783e6bcc",
+          "drive": "b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64",
+          "file": "01DI2JQP7NBWFPJE6RMBFL5PPWQWB7HUO7",
+          "table": "{3580DC32-2968-4A81-A234-0D14634618E2}"
+        }
       }
     }
   }
