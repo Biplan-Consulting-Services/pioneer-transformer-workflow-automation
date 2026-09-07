@@ -42,7 +42,7 @@ USAGE
     python flow_version.py diff v002 v003
     python flow_version.py emit v003         # paste-ready shapes for an editor
 """
-import json, io, os, re, sys, glob, zipfile, hashlib, argparse, datetime
+import json, io, os, re, sys, glob, zipfile, hashlib, argparse, datetime, shutil
 
 WA = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.join(WA, "workflow-data")
@@ -159,6 +159,27 @@ def live(h):
 
 def pending(h):
     return [v for v in h["versions"] if v["state"] == "local"]
+
+
+def archive_intake(inbox, path):
+    """Move a consumed drop into _inbox/_archive/ stamped with arrival time.
+
+    Never deletes. The raw drop is the evidence -- exact bytes, original
+    filename, arrival moment -- and a version record is a normalised derivative
+    of it, not a replacement.
+    """
+    arch = os.path.join(inbox, "_archive")
+    os.makedirs(arch, exist_ok=True)
+    stamp = datetime.datetime.fromtimestamp(os.path.getmtime(path)).strftime("%Y-%m-%dT%H-%M")
+    base = os.path.basename(path)
+    dest = os.path.join(arch, "%s__%s" % (stamp, base))
+    i = 2
+    while os.path.exists(dest):          # same file dropped twice in one minute
+        root, ext = os.path.splitext(base)
+        dest = os.path.join(arch, "%s__%s-%d%s" % (stamp, root, i, ext))
+        i += 1
+    shutil.move(path, dest)
+    return os.path.relpath(dest, inbox).replace(os.sep, "/")
 
 
 def ancestors(h, v):
@@ -371,7 +392,9 @@ def cmd_intake(a):
     if not os.path.isdir(inbox):
         raise SystemExit("no _inbox in %s" % fold)
     files = [f for f in sorted(glob.glob(os.path.join(inbox, "*")))
-             if os.path.isfile(f) and os.path.splitext(f)[1].lower() in (".json", ".zip", ".txt")]
+             if os.path.isfile(f)                       # _archive/ is a dir, so skipped
+             and os.path.basename(f).lower() != "readme.md"
+             and os.path.splitext(f)[1].lower() in (".json", ".zip", ".txt")]
     if not files:
         print("_inbox is empty -- paste the JSON in there first")
         print("   %s" % inbox)
@@ -393,8 +416,7 @@ def cmd_intake(a):
             print("   FAILED: %s" % e); rc = 1; continue
         except Exception as e:
             print("   FAILED to parse: %s" % e); rc = 1; continue
-        os.remove(f)          # the version file is the record; the doorway stays clear
-        print("   consumed (removed from _inbox)")
+        print("   archived -> _inbox/%s" % archive_intake(inbox, f))
     return rc
 
 
