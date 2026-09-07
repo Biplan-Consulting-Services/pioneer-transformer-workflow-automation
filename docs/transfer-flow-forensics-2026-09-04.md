@@ -573,9 +573,15 @@ found it — worth asking rather than deriving, when the question is what a valu
 
 ---
 
-## 12. ✅ P1 CLOSED — the Excel action resolves to the moved workbook
+## 12. P1 — re-confirmed tenant-side, and it was never a "move"
 
-2026-09-07. **The hard run-blocker is cleared.** It needed neither the designer nor a test run: the
+⚠️ **P1 was already closed.** The risk-register artifact recorded it passing from the flow export
+on 2026-09-05 and the tracker has it ticked `done`; §12 was written on 2026-09-07 without reading
+that first, so the first half below re-derives a settled result. Kept because the **second** half is
+new — the tenant-side lookup, and the two-distinct-files finding, which the artifact does not have
+and which contradicts the "the workbook moved" framing still in its blocker panel.
+
+2026-09-07. **The hard run-blocker is cleared** (and was already known to be). It needed neither the designer nor a test run: the
 Excel connector stores a **drive item ID**, and both the flow export and the live tenant agree on
 where that ID points.
 
