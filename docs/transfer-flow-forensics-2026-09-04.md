@@ -693,3 +693,119 @@ Leave this alone.
   added on build night) and **18 do not**. Cross-checked mechanically both ways: every one of the
   paste sheet's 24 entries exists in the live action and is still unguarded, and **no mapping that
   tests `'EC'` is left uncovered**. Zero problems either direction.
+
+---
+
+## 13. D6 — the `Family` fill pass: gate closed, and the step is not what the tracker says
+
+Checked 2026-09-07 before the designer session, because the tracker's D6 carries a gate.
+
+Checked 2026-09-07 against the flow export and the 2026-09-04 23:08 workbook, **before** the
+designer session, because the tracker's D6 carries a gate: *"checking first that the Choice allows
+fill-in, or every value outside `A`/`B1`/`B2`/`C` is rejected."*
+
+### ✅ The gate is closed — there is no domain risk
+
+`TableOrders.Family`, all 1,019 rows:
+
+| value | rows |
+|---|---|
+| *(blank)* | 385 |
+| `A` | 247 |
+| `B1` | 191 |
+| `C` | 178 |
+| `B2` | 18 |
+
+**Zero values outside `{A, B1, B2, C}`.** The Choice column accepts every value the workbook holds,
+so **fill-in does not need to be enabled** and nothing will be silently rejected. The gate can be
+ticked without touching SharePoint.
+
+*(This also finishes off the "~28% legacy junk" theory that was once the leading suspect for the
+iteration-497 failure. It was wrong on the SharePoint side — `C` 34, `B1` 19, `A` 7, `B2` 2, 329
+blank, zero numeric — and it is wrong on the Excel side too.)*
+
+### 🔴 But D6 does not need building — it is already in the flow
+
+`Apply_to_each → CheckMatchCountModels → Update_item`, writing to `Model Revisions`
+(`e2ff8703-b590-4648-b181-9b47cf3883ba`):
+
+```
+id                    @outputs('ResolvedModelRevisionID')
+item/ModelName        @outputs('ResolvedModelCode')
+item/Family/Value     @item()?['Family']        ← already mapped
+```
+
+fired when `length(GetModels1) == 1`, with
+
+```
+ResolvedModelCode       = first(GetModels1.body/value).ModelName
+ResolvedModelRevisionID = first(GetModels1.body/value).ModelRevision/Id
+```
+
+So the fill pass runs on **every** run already. The tracker's *"Add the Family fill pass"* is
+stale — the work is not "add it", it is the guard below.
+
+### ⚠️ The real D6: it has no blank guard, so a blank source can clear a good value
+
+`@item()?['Family']` is written unconditionally, and **385 of 1,019 unit rows have a blank
+`Family`**. `UpdateOrderItem`-style always-overwrite semantics mean a blank source writes a blank
+target — so a revision whose `Family` was set by hand, or by an earlier unit in the same run, is
+cleared the moment a blank-Family unit on the same model comes through.
+
+That is the most likely reason `Model Revisions.Family` is blank on **329 of 391** despite the
+mapping having existed and run: it is not a missing write, it is a write that also erases.
+
+⚠️ **One thing to confirm rather than assume.** That a SharePoint *Update item* sends blank and
+clears a Choice is the expected behaviour, but I have not watched it happen on this column. **One
+page of run history settles it** — open any Sep 1 iteration whose unit row had a blank `Family`,
+look at `Update_item`'s raw inputs, and see whether `Family/Value` went out empty. Worth the two
+minutes before changing anything, because it decides whether this is a real defect or a non-issue.
+
+### If it is confirmed, the fix is a Condition, not an expression
+
+Writing `null` instead does not help — null clears a Choice too. The field has to **not be sent**:
+
+```
+Condition:  empty(trim(coalesce(item()?['Family'], '')))  is equal to  false
+
+  YES →  Update item   id, ModelName, Family/Value        (the current action, unchanged)
+  NO  →  Update item   id, ModelName                      (no Family key at all)
+```
+
+Two `Update item` actions, same target, differing only by whether `Family/Value` is present. That
+keeps the useful writes and stops the erasing ones.
+
+### The join is one grain too coarse — 2 models to decide
+
+`Model Revisions.Family` is **per revision**. The workbook's `Family` is **per unit**, and
+`TableOrders` carries **no revision key at all** (`Navigation Model` is a hyperlink; the model
+merge key is `PO Item #`, per `FRM10-12/power-query/TableOrders.pq`). So Family reaches a revision
+only through its model, and every revision of a model receives the same value.
+
+Grouping the 634 Family-carrying rows by `PO Item #`:
+
+| | |
+|---|---|
+| distinct models carrying a `Family` | **61** |
+| …whose units **agree** | **59** |
+| …whose units **disagree** | **2** |
+| rows involved in a disagreement | 31 |
+
+| model | values |
+|---|---|
+| `132125` | `C` × 22 · `A` × 2 |
+| `1001912-22` | `C` × 6 · `A` × 1 |
+
+Both have an obvious majority, and in both the minority is 1–2 rows against 6–22. **Majority wins
+is defensible here, but it is a call to make rather than derive** — if `A` on those few units is
+deliberate, the flow will overwrite it, and the grain mismatch means there is nowhere for the
+distinction to live.
+
+### Summary — what actually changes for D6
+
+| tracker says | reality |
+|---|---|
+| Check the Choice allows fill-in | ✅ **Done. Not needed** — all source values are inside `{A,B1,B2,C}` |
+| Add the fill pass | ❌ **Already built** and running |
+| — | 🔴 **Add a blank guard**, or every run erases as well as fills — confirm from run history first |
+| — | ⚠️ Decide `132125` and `1001912-22` (majority `C` in both) |
