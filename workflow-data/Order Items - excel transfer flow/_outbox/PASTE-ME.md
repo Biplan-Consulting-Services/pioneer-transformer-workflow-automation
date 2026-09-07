@@ -2,7 +2,19 @@
 
 **v004 — D3 BO transfer**
 
-File: `PASTE-ME.definition.json` — the bare `definition` object.
+## Which file
+
+Editors disagree about which level they take. Try in this order:
+
+| file | shape | use when |
+|---|---|---|
+| `PASTE-ME.properties.json` | `{apiId, displayName, definition, connectionReferences}` | the editor says **missing `definition` flow property** — it wants a wrapper |
+| `PASTE-ME.definition.json` | the bare `definition` (`$schema` / `triggers` / `actions`) | the editor shows `triggers` and `actions` at its top level |
+| `PASTE-ME.minimal.json` | just `{definition, connectionReferences}` | the wrapper is rejected for having extra keys |
+| `PASTE-ME.full.json` | the whole export document | last resort |
+
+`connectionReferences` is carried through **unchanged from what is live**, so none
+of these rebinds a connection.
 
 Authored from **v003** (D1D2 six columns), which is what the flow was at 2026-09-07 16:06.
 

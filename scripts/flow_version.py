@@ -379,14 +379,35 @@ def cmd_stage(a):
     for old in glob.glob(os.path.join(out, "PASTE-ME*")):
         os.remove(old)        # never two candidates
     doc = read_any(os.path.join(fold, v["files"]["definition"]))[0]
-    io.open(os.path.join(out, "PASTE-ME.definition.json"), "w", encoding="utf-8").write(
-        json.dumps(definition(doc), indent=2, ensure_ascii=False) + "\n")
+    # Editors disagree about which level they take. An extension reporting
+    # `missing "definition" flow property` wants a WRAPPER holding a definition
+    # key, not the definition itself -- so write every plausible shape and let the
+    # tool decide, rather than guessing and having a paste fail (or half-succeed).
+    props = doc.get("properties")
+    shapes = {"PASTE-ME.definition.json": definition(doc)}
+    if props:
+        shapes["PASTE-ME.properties.json"] = props
+        shapes["PASTE-ME.minimal.json"] = {
+            k: props[k] for k in ("definition", "connectionReferences") if k in props}
+        shapes["PASTE-ME.full.json"] = doc
+    for fn, obj in shapes.items():
+        io.open(os.path.join(out, fn), "w", encoding="utf-8").write(
+            json.dumps(obj, indent=2, ensure_ascii=False) + "\n")
     fp = v.get("fingerprint", {})
     par = by_v(h, v["parent"]) if v.get("parent") else None
     pf = par.get("fingerprint", {}) if par else {}
     L = ["# Paste this back", "",
-         "**v%03d — %s**" % (v["v"], v.get("note", "")), "",
-         "File: `PASTE-ME.definition.json` — the bare `definition` object.", ""]
+         "**v%03d \u2014 %s**" % (v["v"], v.get("note", "")), "",
+         "## Which file", "",
+         "Editors disagree about which level they take. Try in this order:", "",
+         "| file | shape | use when |",
+         "|---|---|---|",
+         "| `PASTE-ME.properties.json` | `{apiId, displayName, definition, connectionReferences}` | the editor says **missing `definition` flow property** \u2014 it wants a wrapper |",
+         "| `PASTE-ME.definition.json` | the bare `definition` (`$schema` / `triggers` / `actions`) | the editor shows `triggers` and `actions` at its top level |",
+         "| `PASTE-ME.minimal.json` | just `{definition, connectionReferences}` | the wrapper is rejected for having extra keys |",
+         "| `PASTE-ME.full.json` | the whole export document | last resort |", "",
+         "`connectionReferences` is carried through **unchanged from what is live**, so none",
+         "of these rebinds a connection.", ""]
     if par:
         L += ["Authored from **v%03d** (%s), which is what the flow was at %s." % (
                   par["v"], par.get("note", ""), par["captured"][:16].replace("T", " ")), ""]
