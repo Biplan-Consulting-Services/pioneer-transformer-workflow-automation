@@ -178,3 +178,38 @@ grep -c "'EC'"      definition.json   # expect 0
 
 The 4 pre-existing `toLower()` calls are on `Tanking` and `Delivery`, which are deliberately
 not mapped (A5b) — leave them alone.
+
+---
+
+## Verified against the export — 2026-09-07
+
+Re-checked mechanically in both directions against
+`workflow-data/Order Items Excel Transfer Flow 2026-09-05 1900 definition.json`:
+
+| check | result |
+|---|---|
+| mappings calling `addDays` | 22 |
+| …already carrying `toLower` | **4** — `Planned Tanking Date` + `Planned Delivery Date`, both actions |
+| …unguarded | **18** |
+| every one of the 24 entries below exists live and is still unguarded | ✅ 0 problems |
+| any mapping testing `'EC'` that this sheet does *not* cover | ✅ none |
+
+The 24 = **6 stages × (Date + Status/Value) × 2 actions**: Assembly, Coiling, Drying, Finishing,
+Stacking, Testing. The `Status/Value` half matters as much as the date half — it is what turns a
+marker into `In Progress` rather than `Completed`.
+
+### ⚠️ Three columns this sheet deliberately does not cover — and why to know about it
+
+`ManualEstimatedDeliveryDate`, `OriginalTankingDate` and `TankDeliveryDate` also call
+`int()` inside `addDays`, but they have **no `EC` branch at all** — only an empty-string guard. So
+`toLower` would not help them; they would need a whole guard added.
+
+They are **clean today** (`scripts/ec_scan.py` checks all three, plus `Tanking Date`,
+`Delivery Date`, `Section Qty` and `Time (days)`). But the argument this sheet already makes —
+*markers are staff typing `ec` into a live column, not a fixed legacy set* — applies to them too.
+Left out on purpose so the paste stays mechanical and reviewable; logged as hardening, not a
+blocker. Roadmap item 34.
+
+⚠️ One caveat on the scan: it reads the **2026-09-04 23:08** snapshot, and the live workbook was
+modified **2026-09-07 11:31 by Pierre Lamarre**. The specific rows may have moved. That is the
+point of applying the guard to all six stages rather than fixing today's six rows.

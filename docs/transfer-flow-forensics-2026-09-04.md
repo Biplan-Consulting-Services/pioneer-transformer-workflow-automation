@@ -570,3 +570,120 @@ real.
 
 *(The `LI` rule came from the user, not from this analysis. Neither of my two attempts would have
 found it — worth asking rather than deriving, when the question is what a value **means**.)*
+
+---
+
+## 12. ✅ P1 CLOSED — the Excel action resolves to the moved workbook
+
+2026-09-07. **The hard run-blocker is cleared.** It needed neither the designer nor a test run: the
+Excel connector stores a **drive item ID**, and both the flow export and the live tenant agree on
+where that ID points.
+
+### What the flow actually stores
+
+`List_rows_present_in_a_table` → `inputs/parameters`:
+
+| parameter | value |
+|---|---|
+| `source` | `sites/ermcopower.sharepoint.com,88b9ed6c-…511f6,7f8472f6-…3e6bcc` |
+| `drive` | `b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64` |
+| `file` | `01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW` |
+| `table` | `{72371618-48E3-4FA4-B667-3B76BFA2D42A}` |
+
+The `drive` string decodes (base64url → three little-endian GUIDs) to exactly:
+
+```
+siteId  88b9ed6c-d686-4bbe-b445-4e753ad511f6   ← matches `source`
+webId   7f8472f6-8a89-4591-a116-98a1783e6bcc   ← matches `source`
+listId  9a19a8cf-bcc9-4b20-9a95-bfab27b4aeb8   ← the document library
+```
+
+### Resolved live — read-only GET, no designer
+
+```
+GET /sites/PioneerPlanificatio/_api/v2.0/drives/b!bO25…tK64/items/01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW
+```
+
+```json
+"name": "FRM10-12.xlsx",
+"parentReference": { "name": "Formulaires",
+  "path": "/drives/b!bO25…tK64/root:/General/FAB/Revue/Formulaires" },
+"size": 1003365,
+"createdDateTime":      "2026-08-28T21:40:51Z",
+"lastModifiedDateTime": "2026-09-07T15:31:19Z",
+"lastModifiedBy":       "Pierre Lamarre"
+```
+
+**`General/FAB/Revue/Formulaires/FRM10-12.xlsx`. P1 passes.**
+
+### 🔑 And the flow's own metadata proves it was never a "move"
+
+The action carries a file-picker cache that lists **two different drive items**:
+
+```json
+"metadata": {
+  "01DI2JQP22Z26NHHS4SNF3AQ7EFXBRVYT3": "/General/FAB/Revue/FRM10-12.xlsx",
+  "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW": "/General/FAB/Revue/Formulaires/FRM10-12.xlsx",
+  "tableId": "{5C992B17-9EDB-42E2-898E-09902BAFBC08}"
+}
+```
+
+Two IDs, two paths. So this repo's account of a workbook *move* on 2026-09-04 is wrong in kind:
+the `Formulaires` copy is a **separate file created 2026-08-28 21:40** — the same day as the
+corruption repair (`FRM10-12` WS-010) — and the flow's `file` parameter was **repointed** at it at
+some point before the 2026-09-05 export. The old item still exists at the old path.
+
+Two consequences worth carrying:
+
+- ⚠️ **A stale `Revue/FRM10-12.xlsx` is still sitting there** and is a different file. Anything
+  still pointing at the old item is reading a workbook nobody maintains. The `Index` list row is
+  the one to check (roadmap item 29) — and the same question applies to any human bookmark.
+- `metadata.tableId` `{5C992B17-…}` ≠ `parameters.table` `{72371618-…}`. The metadata block is a
+  **UI display cache**, which is why it also still holds the old path; the live parameter is the
+  one that runs. Do not "fix" the mismatch.
+
+### ✅ P1's sibling checks, also closed from the export
+
+| Step 0 item | Finding |
+|---|---|
+| **Top Count = 5000, not 10** | There is **no Top Count parameter at all** — `parameters` holds only `drive`/`file`/`source`/`table`. Paging is done by `runtimeConfiguration.paginationPolicy.minimumItemCount: 5000`. That is the correct shape, and it is what let the Sep 1 run reach 982 iterations past the 256 default. **Nothing to change.** |
+| Concurrency | `Apply_to_each.runtimeConfiguration` is `{}` — sequential, one row at a time. Matches the 40m29s / 982-iteration run, and is the safe setting. Leave it. |
+| Trigger | `manual` (`Request`). Confirms: run from the **Run button on the detail page**. |
+
+### The Switch, and what "Action 'Switch' failed" can mean
+
+```
+Switch on  @length(outputs('Get_Order_items')?['body/value'])
+  case 0 → CreateOrderItem   (50 item/* fields)
+  case 1 → UpdateOrderItem   (58 item/* fields)
+  default → DuplicateOrderItem   [Compose]
+```
+
+The default branch is a bare `Compose`, so it cannot throw. **A `Switch` failure is always
+`CreateOrderItem` or `UpdateOrderItem` failing** — which is consistent with the `int('ec')` cause.
+
+### The 50-vs-58 field gap is deliberate — not a parity bug
+
+The eight extra fields on `UpdateOrderItem` are exactly:
+
+```
+AssemblyStartDate  CoilingStartDate  DeliveryStartDate  DryingStartDate
+FinishingStartDate StackingStartDate TankingStartDate   TestingStartDate     all = @null
+```
+
+Update **clears** the stage Start Dates; Create does not need to, because a new row has them blank.
+Excel carries no start dates, and the S2 remediation's discriminator is *"blank `{Stage} Start
+Date`"* — so the flow is actively maintaining that invariant. Every other field is mapped
+identically on both actions, and **no field is mapped with a different expression between them.**
+Leave this alone.
+
+### A5c and D1/D2 re-verified against this export
+
+- **All 6 D1/D2 targets are still absent** from the definition: `Info_x002b_`,
+  `Technical_x0020_Notes`, `Protector_x0020__x0026__x0020_Sw`, `Configuration`,
+  `Section_x0020_Qty`, `Order_Number_TextField`. Step 2 items 10 and 11 stand as written.
+- **A5c is exactly right and ready to paste.** 22 mappings call `addDays`; **4 carry the
+  `toLower` guard** (`Planned Tanking Date` and `Planned Delivery Date`, both actions — the two
+  added on build night) and **18 do not**. Cross-checked mechanically both ways: every one of the
+  paste sheet's 24 entries exists in the live action and is still unguarded, and **no mapping that
+  tests `'EC'` is left uncovered**. Zero problems either direction.
