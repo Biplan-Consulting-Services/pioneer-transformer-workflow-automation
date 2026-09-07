@@ -97,9 +97,22 @@ had — hence a dedicated place to plan it before touching production.
   - **Shape is detected, not configured.** The extension hands over the bare `definition`
     object; an export hands over the full wrapper. The hash covers the `definition` alone, so
     the same flow in either shape hashes the same and is correctly seen as unchanged.
-  - **`intake` removes what it consumed.** The version file is the record; the doorway stays
-    empty so a stale paste cannot be ingested twice. It refuses outright if `_inbox` holds
-    more than one file rather than guessing which is current.
+  - **`intake` archives what it consumed, never deletes it.** Drops move to
+    `_inbox/_archive/YYYY-MM-DDTHH-MM__<original filename>`, stamped from the file's own
+    mtime so the stamp records when it *arrived*. The doorway stays empty so a stale paste
+    cannot be ingested twice, and intake refuses outright if `_inbox` holds more than one
+    file rather than guessing which is current.
+
+    The archived drop is **not** a duplicate of the version record — it is the exact bytes
+    handed over, under the name Power Automate gave them, at the moment they arrived; the
+    version record is a normalised derivative. ⚠️ This was learned the hard way: intake used
+    to delete, and because a drop that *matches* an existing version stores nothing, it
+    destroyed the v004 milestone package at the exact moment that package proved itself
+    correct.
+  - **A confirming pull's `.zip` is kept beside the version it confirmed.** The package is
+    the only artifact that re-imports — it carries `connectionsMap`/`apisMap`, which is what
+    rebinds the connections. A definition-only JSON cannot restore a flow. So: **JSON for
+    editing, `.zip` for rollback.**
   - **`stage` clears `_outbox` first**, so there is never a question about which file to
     paste, and writes a `PASTE-ME.md` with the before/after counts to eyeball afterwards.
   - **A pull that matches a pending version's parent is not a fork.** Nothing moved, so the
