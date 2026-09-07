@@ -161,6 +161,19 @@ def pending(h):
     return [v for v in h["versions"] if v["state"] == "local"]
 
 
+def ancestors(h, v):
+    """Every local version in v's parent chain, nearest first."""
+    out, seen, cur = [], set(), v.get("parent")
+    while cur is not None and cur not in seen:
+        seen.add(cur)
+        node = by_v(h, cur)
+        if node is None:
+            break
+        out.append(node)
+        cur = node.get("parent")
+    return out
+
+
 def roots_in_live(h, start, live_v):
     """True when `start` reaches the live version through pending drafts only.
 
@@ -206,7 +219,8 @@ def write_manifest(flow, h):
          "| `pulled` | exported from the tenant — *was live* at capture. A fact. |",
          "| `local` | authored in this repo. Not in the tenant. `parent` says what it was based on. |",
          "| `applied` | **inferred** — a later pull carried the same definition hash. A paste never claims this itself. |",
-         "| `forked` | a later pull did *not* match, so this local version was never applied and is now stale. |",
+         "| `superseded` | its changes ARE live, folded into a later version. Nothing to do. |",
+         "| `forked` | a later pull did *not* match, so this version was never applied and is now stale. **Investigate.** |",
          "",
          "| v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |",
          "|---|---|---|---|---|---|---|---|---|---|"]
@@ -252,6 +266,21 @@ def cmd_snapshot(a):
                 v["state"] = "applied"
                 v["appliedAt"] = now_iso(a.at)
                 print("v%03d CONFIRMED APPLIED -- this pull carries its exact definition." % v["v"])
+                # Keep the package that proved it. The .zip is the only artifact
+                # that re-imports -- it carries connectionsMap/apisMap, so a
+                # definition-only JSON cannot restore the flow.
+                if zb and "package" not in v.get("files", {}):
+                    pkg = v["files"]["definition"][:-5] + ".zip"
+                    io.open(os.path.join(fold, pkg), "wb").write(zb)
+                    v.setdefault("files", {})["package"] = pkg
+                    print("     package attached: %s  (the only re-importable artifact)" % pkg)
+                # Everything this version was built on is now live too, folded in.
+                for anc in ancestors(h, v):
+                    if anc["state"] == "local":
+                        anc["state"] = "superseded"
+                        anc["supersededBy"] = v["v"]
+                        print("v%03d superseded by v%03d -- its changes are live, folded in."
+                              % (anc["v"], v["v"]))
         # A pending version is only stale if the tenant is somewhere OTHER than
         # the version it was authored from. A pull that matches its parent means
         # nothing moved, so it stays perfectly valid -- forking it there would

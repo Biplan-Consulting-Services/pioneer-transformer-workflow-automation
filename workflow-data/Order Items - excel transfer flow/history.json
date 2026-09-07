@@ -53,7 +53,7 @@
     {
       "v": 3,
       "captured": "2026-09-07T16:06:59-04:00",
-      "state": "local",
+      "state": "superseded",
       "parent": 2,
       "note": "D1D2 six columns",
       "sha256": "8c20b0184ad8538d7b14f20f569f865bebd372eb14f603bb0dfded8e35e0b1bc",
@@ -69,12 +69,13 @@
         "definition": "v003__2026-09-07T16-06__local__D1D2-six-columns.json"
       },
       "appliedAt": null,
-      "source": "d1d2.json"
+      "source": "d1d2.json",
+      "supersededBy": 4
     },
     {
       "v": 4,
       "captured": "2026-09-07T17:19:44-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 3,
       "note": "D3 BO transfer",
       "sha256": "9cbacfebd261bc025cb01e4084e97481be5eb63aa34283b5ecdefae58cc250f2",
@@ -87,9 +88,10 @@
         "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
       },
       "files": {
-        "definition": "v004__2026-09-07T17-19__local__D3-BO-transfer.json"
+        "definition": "v004__2026-09-07T17-19__local__D3-BO-transfer.json",
+        "package": "v004__2026-09-07T17-19__local__D3-BO-transfer.zip"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-07T18:46:53-04:00",
       "source": "d3.json"
     }
   ]

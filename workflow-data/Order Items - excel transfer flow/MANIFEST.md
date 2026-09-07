@@ -17,13 +17,13 @@ snapshotted here.**
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-05 19:00 | `pulled` | — | baseline pre-P3 | 50 | 58 | 4 | 24 | `9d27fc7069eb` |
 | **v002** | 2026-09-07 15:12 | `pulled` | — | P3 toLower applied | 50 | 58 | 28 | 0 | `121f21ea7b9d` |
-| **v003** | 2026-09-07 16:06 | `local` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `8c20b0184ad8` |
-| **v004** | 2026-09-07 17:19 | `local` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `9cbacfebd261` |
+| **v003** | 2026-09-07 16:06 | `forked` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `8c20b0184ad8` |
+| **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `9cbacfebd261` |
 
 ## Right now
 
-- **Live:** v002 — P3 toLower applied
-- **Pending (authored, not applied):** v003, v004
+- **Live:** v004 — D3 BO transfer
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 
