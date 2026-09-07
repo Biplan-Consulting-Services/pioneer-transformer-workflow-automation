@@ -11,13 +11,14 @@ snapshotted here.**
 | `pulled` | exported from the tenant — *was live* at capture. A fact. |
 | `local` | authored in this repo. Not in the tenant. `parent` says what it was based on. |
 | `applied` | **inferred** — a later pull carried the same definition hash. A paste never claims this itself. |
-| `forked` | a later pull did *not* match, so this local version was never applied and is now stale. |
+| `superseded` | its changes ARE live, folded into a later version. Nothing to do. |
+| `forked` | a later pull did *not* match, so this version was never applied and is now stale. **Investigate.** |
 
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-05 19:00 | `pulled` | — | baseline pre-P3 | 50 | 58 | 4 | 24 | `9d27fc7069eb` |
 | **v002** | 2026-09-07 15:12 | `pulled` | — | P3 toLower applied | 50 | 58 | 28 | 0 | `121f21ea7b9d` |
-| **v003** | 2026-09-07 16:06 | `forked` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `8c20b0184ad8` |
+| **v003** | 2026-09-07 16:06 | `superseded` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `8c20b0184ad8` |
 | **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `9cbacfebd261` |
 
 ## Right now
