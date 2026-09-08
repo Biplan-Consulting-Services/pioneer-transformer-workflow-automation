@@ -599,7 +599,7 @@ const STEPS = [
   {id:"N7",ph:5,r:6,t:"Nightly refresh flow at 03:00",
    why:"Filtered to ~21 rows, not 1,052.",deps:["N6","N5"]},
   {id:"N8",ph:5,r:7,t:"Split Status into Step Status + Status Date",
-   why:"READY TO PASTE: scripts/n8_split_status.js creates both columns then fills them. 247 rows, not 156, and ALL 247 parse. The code table is read from FRM10-12's own List sheet (TableValidationStatusCode), not inferred. The 19 ambiguous 'Jui' rows all resolve to juillet from each unit's own real stage dates - most landing on the exact same day - so NONE need a human, against the plan to flag 9.",deps:[]}
+   why:"READY TO PASTE: scripts/n8_split_status.js creates both columns then fills them. 247 rows, not 156, and ALL 247 parse. The code table is read from FRM10-12's own List sheet (TableValidationStatusCode), not inferred. The 19 ambiguous 'Jui' rows all resolve to juillet from each unit's own real stage dates - most landing on the exact same day - so NONE need a human, against the plan to flag 9. ⚠️ THE TRANSFER FLOW IS NOT ADAPTED FOR THESE COLUMNS, AND SHOULD NOT BE - the parse cannot live in a per-row expression (no year in the value, ambiguous Jui, and status prefixes that collide with the Location codes). The create branch needs nothing: 0 of the 65 run-created rows carry a composite Status. The UPDATE branch is the problem and is what create-only deletes - while it lives it rewrites Status and lets the split columns go stale silently. So: do create-only first, OR re-run this script after the final transfer run (it is idempotent). Keep the composite Status column - FRM11 parses that format.",deps:[]}
 ];
 
 const byId = {};

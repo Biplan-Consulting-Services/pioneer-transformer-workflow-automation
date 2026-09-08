@@ -48,9 +48,27 @@
      in 2026-07-06 .. 2026-09-04 (Jul 19, Aug 86, Sep 142), which is what a
      "current production status" should look like against a 2026-09-08 today.
 
-   COLUMN TYPES follow N2's conventions, deliberately
-     Step Status -> TEXT, not Choice. A synced/written Choice silently REJECTS
-       any value outside its option list, per row -- the Family failure mode.
+   COLUMN TYPES
+     Step Status -> CHOICE, with the 8 options generated from PREFIX below.
+       ⚠️ THIS REVERSES AN EARLIER DECISION IN THIS FILE, on purpose (user,
+       2026-09-08). It previously said TEXT, citing N2's rule that a Choice
+       "silently REJECTS any value outside its option list, per row" -- the
+       Family failure mode. That rule is real but it is about columns a FLOW
+       WRITES with values from an open-ended external source. Step Status is
+       neither:
+         - the closed vocabulary is 8 values from FRM10-12's own authoritative
+           TableValidationStatusCode, and only 5 occur in the data at all;
+         - after this one-time script, NOTHING writes it but staff. The
+           transfer flow must not (see docs/n8-transfer-flow-interaction-
+           2026-09-08.md) and the Status Date stamp writes the DATE, not this.
+       So the rejection hazard has no path in, and Choice buys what Text
+       cannot: a dropdown instead of free text, no typos, and real grouping,
+       filtering and colour formatting in the views staff actually use.
+       🔑 The options are BUILT FROM PREFIX, the same table the parse uses, so
+       the option list and the values written cannot drift apart. A hand-typed
+       second copy is exactly how a Choice write starts failing per-row.
+       FillInChoice is FALSE -- "allow custom values" would give back the free
+       text this change exists to remove.
      Status Date -> DateTime with DateOnly. Never DateTime-with-time: that is
        what reintroduces the UTC-midnight day-early bug.
      Neither is added to the default view.
@@ -72,8 +90,16 @@
   const MONTH  = {ja:1, fe:2, "fé":2, ma:3, av:4, ao:8, se:9, oc:10, no:11, de:12};
   const REAL   = ["CoilingDate","StackingDate","AssemblyDate","DryingDate","TestingDate","FinishingDate"];
 
+  // Option list generated from PREFIX -- never hand-typed, so it cannot drift
+  // from the values the parse produces. Order follows PREFIX; it is cosmetic
+  // and can be reordered later in column settings without touching data.
+  const esc = (t) => t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const CHOICES = Object.values(PREFIX);
   const FIELDS = [
-    '<Field Type="Text" DisplayName="Step Status" Name="StepStatus" StaticName="StepStatus" Required="FALSE" Group="Status Split" MaxLength="40" />',
+    '<Field Type="Choice" DisplayName="Step Status" Name="StepStatus" StaticName="StepStatus" ' +
+      'Required="FALSE" Group="Status Split" Format="Dropdown" FillInChoice="FALSE"><CHOICES>' +
+      CHOICES.map(c => "<CHOICE>" + esc(c) + "</CHOICE>").join("") +
+      '</CHOICES></Field>',
     '<Field Type="DateTime" Format="DateOnly" DisplayName="Status Date" Name="StatusDate" StaticName="StatusDate" Required="FALSE" Group="Status Split" />'
   ];
 
@@ -175,6 +201,29 @@
   if (!now.has("StepStatus") || !now.has("StatusDate")) {
     console.error("  columns not present after create - stopping before the write"); return; }
   console.log("  read-back: both columns present");
+
+  // ---- Choice guard: a Choice write of a value that is not an option FAILS,
+  // per row, so prove every value the plan will write is actually an option
+  // BEFORE writing 247 rows. Also catches the case where an earlier run of
+  // this script created Step Status as Text.
+  const col = (back.value||[]).find(c => c.name === "StepStatus") || {};
+  const opts = (col.choice && col.choice.choices) || null;
+  if (!opts) {
+    console.warn("  ⚠ Step Status is NOT a Choice column (an earlier run created it as Text?).");
+    console.warn("    The write below still works, but you lose the dropdown and the validation.");
+    console.warn("    Convert it in column settings - SharePoint preserves existing values.");
+  } else {
+    const want = [...new Set(plan.map(p => p.step))];
+    const missing = want.filter(v => !opts.includes(v));
+    console.log("  Step Status options (" + opts.length + "): " + opts.join(" | "));
+    console.log("  distinct values to write (" + want.length + "): " + want.join(" | "));
+    if (missing.length) {
+      console.error("  *** STOPPING: these values are not options, every such row would fail: "
+                    + missing.join(", "));
+      return;
+    }
+    console.log("  all values to write are valid options - safe to proceed");
+  }
 
   // ------------------------------------------------------------- populate
   const et = (await J(base+"/_api/web/lists(guid'"+OI+"')?$select=ListItemEntityTypeFullName"))

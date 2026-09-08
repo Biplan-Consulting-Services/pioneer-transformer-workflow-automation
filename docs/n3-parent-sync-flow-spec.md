@@ -343,6 +343,30 @@ broader.
 string, including 110 characters of JSON, without complaint. See
 `docs/r22-mapping-correction-2026-09-08.md`.
 
+### 🔄 Rule 5 is being REVISED — Choice→Text was over-broad
+
+Challenged by the user 2026-09-08 and **they are right**. The rule feared a real thing (a
+per-row silent rejection) but assumed the child could receive values the parent never held. It
+cannot — *unless the child is stricter than the parent*. The corrected rule:
+
+> **Mirror the parent exactly — its option list AND its `FillInChoice` setting** — with the
+> options generated from the parent's schema, never hand-typed. Then the child can never
+> reject a value the parent accepted.
+
+Copying `FillInChoice` is the part that would have been missed: **8 of 11** Choice-sourced
+columns are safe as a *strict* Choice, but **3 are not** (`Model Type` 21 out-of-list values,
+`Description` 14, `Oil Type` 3) — and all three have `FillInChoice="TRUE"` on the parent, which
+is where the free text got in. Many are cosmetic variants of real options (`LUMINOL`/`Luminol`,
+`Substation`/`SUBSTATION`, `ZIG ZAG`/`ZIG-ZAG`), so a strict Choice would reject real rows over
+a capital letter.
+
+🔴 **And it is not a column-only change:** all 10 target columns are written with a *plain*
+parameter key today (`item/OrdOrderType`); a Choice column needs `item/OrdOrderType/Value`.
+**20 mapping edits that must ship in the same change as the conversion**, or the writes stop
+landing with nothing reporting an error. Plan and sequencing in
+`docs/parent-choice-columns-2026-09-08.md`. `RevModelDescription` stays text — MultiChoice
+would need array writes and it is the R22 column.
+
 ### Sanity numbers to build against
 
 The run already populated these, so N3's first job is to *keep them right*, not to fill them:

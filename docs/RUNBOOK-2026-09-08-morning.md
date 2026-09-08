@@ -88,6 +88,18 @@ Creates `Step Status` (Text) and `Status Date` (Date Only), then splits the comp
 - code table read from **FRM10-12's own `List` sheet** (`TableValidationStatusCode`), not inferred
 - **all 247 parse; all 19 ambiguous `Jui` rows resolve to *juillet*** from each unit's own real stage dates — most landing on the *exact* same day. **None need a human**, against the roadmap's plan to flag 9
 
+⚠️ **The transfer flow is NOT adapted for these two columns — and it should not be.** It writes the
+raw composite (`item/Status = @item()?['Status']`) on both actions and touches neither new column.
+The **create** branch needs no adaptation: measured, **0 of the 65 rows the run created carry a
+composite `Status`**, and no order ≥ `22143` has one — a new order has no status yet. The **update**
+branch is the problem, and it is the branch create-only deletes: while it is live it rewrites
+`Status` from Excel and leaves the split columns to go **stale silently** on the 156 live status
+rows. So this is a run-order constraint, not a mapping: either do create-only first, or **re-run
+`n8_split_status.js` after the final transfer run** — it is idempotent (creation skips existing
+columns, the populate pass recomputes and overwrites). Full reasoning, including why the parse
+must not live in the flow at all — no year in the value, ambiguous `Jui`, and prefixes that
+collide with the Location codes — in **`docs/n8-transfer-flow-interaction-2026-09-08.md`**.
+
 ## N3 — ready to paste and validate
 
 `workflow-data/n3-flows/` — three definitions plus `MAPPING.md`.

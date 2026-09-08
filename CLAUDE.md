@@ -232,6 +232,19 @@ had — hence a dedicated place to plan it before touching production.
     no M changes. Assume other workbooks use the same helper.
   - `In FRM10_12` and `Last Synchronisation Date` live on **`TableArchiveFRM11`** in
     `Archive active.xlsx`, not on FRM11's live table.
+  - 🔑 **It parses FRM10-12's composite `Status` format, so that format cannot be retired.**
+    `power-query/FRM11/Rows to purge.pq` computes
+    `"Already Tanked" = List.Contains({"XT","TE","FI","LI"}, [Location.1]) or ([Location.1] = "TA"
+    and Text.Contains([Status.1], "TE"))`. Two consequences, found 2026-09-08 while checking
+    whether the transfer flow was adapted for `N8`'s new `Status Date` column:
+    - `XT` (Extérieur) sits in the **Already Tanked** set beside `TE`/`FI`/`LI`, which is
+      independent confirmation that Extérieur is **past tanking** — FRM11 stops tracking a tank
+      there because the tank is already on the unit. This is what the `X1` remediation keys on.
+    - `N8` splits `Status` into `Step Status` + `Status Date`, but **keep the composite `Status`
+      column as a legacy mirror**: FRM11 depends on the format (via the *Archive active* workbook,
+      not Order Items directly, so nothing breaks today — but a SharePoint-sourced `TableOrders`
+      would have to keep producing it). The split pair cannot cheaply reconstruct it, since
+      `Step Status` stores the display name (`Terminé`) rather than the code (`TE`).
   - **Out of scope for the Order Items migration** — supplier state is a different axis from the
     unit's own production progress. See `docs/infrastructure-overview.md`.
 ### 🔑 How every Pioneer workbook finds every other one
