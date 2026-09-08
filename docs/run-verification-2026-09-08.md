@@ -179,6 +179,43 @@ theoretical concern; it is measurable on the list right now.
 populated on all 1,117 rows, it carries a stale date, and it is named "test". If it appears on any
 staff view it will be asked about on day one.
 
+
+## R22 FIXED — 2026-09-08 08:35, verified against the source
+
+979 rows now hold the real value instead of the raw expanded-lookup array. **0 failures, and 0
+blobs remain on the live list** (re-read after: 1,121 rows, `stillHoldingABlob: 0`, longest value
+14 chars vs ~110 before).
+
+| value | rows | | value | rows |
+|---|---|---|---|---|
+| SUBWAY | 314 | | ANNEX | 35 |
+| NETWORK | 243 | | VAULT-1PH | 34 |
+| PADMOUNT | 165 | | LTC | 28 |
+| MALT + SA | 75 | | MALT | 24 |
+| MINPAD-1HP | 40 | | SUBSTATION | 11 |
+| | | | SUBSTATION LTC / PARTS / FLAT FRONT | 4 / 4 / 1 |
+
+**No lookup table was needed, and that is the point:** the correct value was already inside the
+broken one — the flow wrote the whole reference instead of its `Value`, so `Value` *is* the
+parent's value as of the run. Extraction is lossless, not a guess. **Zero rows were multi-valued**,
+so the join logic never had to choose between alternatives.
+
+🟢 **Verified against the authoritative source anyway**, not just against that reasoning: joined
+each unit to its parent via `Mod. Rev. - Model_Revion_ID` and compared with
+`Model Revisions.Model Description`. **979 of 979 match exactly** — 0 differing, 0 case-only
+differences, 0 units whose parent revision could not be found.
+
+⚠️ **My first verification pass reported 979 MISMATCHES and was wrong.** `lib.norm` lowercases text
+and only unwraps *expanded-reference* arrays, so it left the parent side as the literal string
+`["padmount"]`. That is the **`R19` wrapper trap for the second time in one session**, in the
+opposite direction — the export wraps multi-choice values as a plain string array, and any
+comparison has to unwrap **both** shapes. Recorded here because it will happen again otherwise.
+
+⚠️ Still outstanding: **the v006 mapping is unchanged.** It will re-write the blob on any future
+run. It needs `…?['ModelDescription']?['Value']`. Safe for now only because the flow is
+manual-trigger and heading to create-only — see the `N3` build rules, which now warn about exactly
+this.
+
 ## Still open
 
 - **`R6`** — the two-directional re-diff has not been run.
