@@ -16,6 +16,12 @@
                               duplicated order number in the entire 445-row
                               list, and its 2 units are EXACTLY the 2 that were
                               otherwise unexplained. That closes it.
+                              🔴 STILL UNRESOLVED: repointing the units at 488
+                              does NOT stop the skip. The flow resolves P20004
+                              by NAME and will still find two rows. One of them
+                              has to go before the flow can ever pick these up
+                              -- Id 487 is the candidate: wrong client, and now
+                              zero units attached.
      20877R1-1/1, P20002-1/1  also parentless, but they carry NO status, NO
                               location and NO tanking date -- dormant, so they
                               are deliberately NOT created here.
@@ -134,14 +140,25 @@
     }
   };
 
-  // 487 = the PIONEER TRANSFORMERS P20004 row. Deliberately NOT 488 (ERMCO):
-  // the workbook gives both P20004 units Client = PIONEER TRANSFORMERS.
+  // P20004 -> Order Id 488, client ERMCO. USER DECISION, 2026-09-08 08:30.
+  //
+  // ⚠️ THIS CONTRADICTS THE WORKBOOK, on purpose. TableOrders gives both P20004
+  // units Client = PIONEER TRANSFORMERS, which is why the first run of this
+  // script pointed them at Id 487. The user overrode that: P20004 is ERMCO's.
+  // The row data supports them -- 487 carries Client PIONEER TRANSFORMERS with
+  // Order Date 06-23 (matching the workbook), while 488 carries Client ERMCO
+  // dated 06-25 and has NO units attached. That reads as 487 being created from
+  // the workbook with the wrong client and 488 being the correction.
+  //
+  // Consequence to be aware of: the workbook still says PIONEER TRANSFORMERS,
+  // so if the transfer flow ever resolves Client from TableOrders it will try
+  // to write it back. Fix the workbook, or retire Id 487 (see below).
   const UNIT_ORDER  = { "P1_001-1/1": "P1_001", "P20001-1/1": "P20001",
-                        "P20004-1/2": 487, "P20004-2/2": 487 };
+                        "P20004-1/2": 488, "P20004-2/2": 488 };
   const UNIT_CLIENT = { "P1_001-1/1": "PIONEER TRANSFORMERS",
                         "P20001-1/1": "CONED",
-                        "P20004-1/2": "PIONEER TRANSFORMERS",
-                        "P20004-2/2": "PIONEER TRANSFORMERS" };
+                        "P20004-1/2": "ERMCO",
+                        "P20004-2/2": "ERMCO" };
 
   // Fields that carry a column DEFAULT on Order Items and must therefore be
   // sent as an explicit null when the workbook has no value -- omitting them
