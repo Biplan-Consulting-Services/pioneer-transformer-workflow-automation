@@ -253,3 +253,82 @@ condition stops the necessary ones from costing a run.
 
 Test each on **one** parent row with a small fan-out before enabling. `Order` is the natural
 choice: pick an order with 2–3 units and no SA.
+
+---
+
+## 🔴 Five things the R3 run proved, that N3 must get right
+
+Added 2026-09-08 after measuring the backfill against both source workbooks. Every one of these
+is a mistake **already made once** in the transfer flow, or a behaviour of SharePoint that is not
+what you would assume. Read this before writing a single mapping.
+
+### 1 · Unwrap `.Value` — a parent lookup does NOT come back as a string
+
+This is the one that already bit us. `RevModelDescription` on **979 of 1,117 rows** now holds:
+
+```
+[{"@odata.type":"#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference","Id":5,"Value":"MALT"}]
+```
+
+The intended value was `MALT`. The mapping passed the **whole expanded-reference array** instead
+of its `Value`. It is the *write*-side twin of the export-side trap in `R19`
+(`SUBWAY` vs `["SUBWAY"]`) — same mistake, opposite direction.
+
+**Every** N3 mapping reads a Lookup or Choice off a parent list, so **every** N3 mapping is
+exposed to this:
+
+```
+✅  first(body('Filter_Revisions'))?['ModelDescription']?['Value']
+🔴  first(body('Filter_Revisions'))?['ModelDescription']
+```
+
+A MultiChoice returns several entries — join them, do not take `first()` blindly. And note it
+fails **silently and legibly**: the row is populated, nothing errors, and it looks fine until
+someone reads the column. Check one real row's raw inputs per mapping, not the run status.
+
+### 2 · `null` does not clear a field — it leaves the old value
+
+Proven, not assumed: the flow writes `null` for a stage whose source date is blank, the run
+rewrote all 1,013 comparable rows, and **844 stale `Pending` statuses survived anyway**
+(Testing 813, Stacking 26, Finishing 4, Drying 1).
+
+So for N3:
+
+- a change-guard that "clears" a field by writing `null` **does nothing at all**;
+- **no re-run will ever remove a stale value** — if N3 writes something wrong, re-running the
+  corrected flow will not undo it, and you need a one-off pass that writes an explicit value;
+- the flip side is load-bearing and must not be "fixed": it is exactly what preserves the blank
+  `{Stage} Start Date` marker that `X1`/`R14` key on. All eight start-date columns are still
+  0-populated because of it.
+
+### 3 · Dates: write a **bare** `yyyy-mm-dd`, never a full instant
+
+A bare date into a Date-Only column stores site-local midnight — `04:00Z` or `05:00Z` split by
+DST. A full instant stores UTC midnight, which renders as **the previous day**: the exact bug the
+whole backfill existed to fix. Verified after the run: `Planned Tanking Date` 552 at `04:00Z` +
+416 at `05:00Z`, `OrdOrderDate` 1,011 of 1,011 correct, and **zero** touched rows left at
+`00:00:00Z`.
+
+### 4 · Resolve-by-key must handle an **ambiguous** parent, not just a missing one
+
+`P20004` appears **twice** in `Order` — Id 487 (`PIONEER TRANSFORMERS`) and Id 488 (`ERMCO`). It is
+the only duplicated order number in all 445 rows, and its two units are **exactly** the two the
+transfer flow could not explain skipping. `first(…)` on that filter is a coin toss between two
+different clients.
+
+N3 resolves parents by key for every one of its flows, so it inherits this. Do not take
+`first()`; count the matches and **flag anything other than exactly one** rather than guessing —
+the same discipline `R2` already demands for the SA twin.
+
+### 5 · The synced columns are `Text` on purpose — keep them that way
+
+`N2` deliberately remapped `Choice` → `Text` and `Lookup` → `Text` when creating the 48 columns,
+because a synced `Choice` **silently rejects any value outside its option list, per row, inside
+the flow** — the `Family` failure mode. That decision is what makes mapping 1 above safe to do as
+a plain string. Do not "tidy" these back into Choice columns later.
+
+### Sanity numbers to build against
+
+The run already populated these, so N3's first job is to *keep them right*, not to fill them:
+`MdlModelID` **1,008** · `RevkVA` **1,006** · `OrdOrderNumber` **1,013** of 1,117 rows. If an N3
+test run moves those counts down, it is clearing values it should have left alone — see 2 above.
