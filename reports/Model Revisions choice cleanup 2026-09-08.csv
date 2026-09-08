@@ -1,0 +1,385 @@
+﻿row_id,model_revision,column,current_value,tier,action,proposed_value,why
+3,MR-ENMA-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+4,MR-ENMA-0024-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+5,MR-ENMA-0030-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+6,MR-ENMA-0033-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+7,MR-ENMA-0035-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+8,MR-ENMA-0036-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+9,MR-ENMA-0041-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+13,MR-TOHY-0009-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+15,MR-TOHY-0011-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+16,MR-ALPO-0009-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+57,MR-ENMA-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+58,MR-ENMA-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+59,MR-ENMA-0008-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+60,MR-ENMA-0009-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+61,MR-ENMA-0010-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+62,MR-ENMA-0011-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+63,MR-ENMA-0012-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+64,MR-ENMA-0047-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+65,MR-ENMA-0013-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+66,MR-ENMA-0048-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+67,MR-ENMA-0049-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+68,M-ENMA-0014,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+69,M-ENMA-0042,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+70,MR-ENMA-0015-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+71,MR-ENMA-0016-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+72,M-ENMA-0050,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+73,M-ENMA-0051,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+74,MR-ENMA-0017-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+75,MR-ENMA-0018-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+76,MR-ENMA-0052-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+77,MR-ENMA-0053-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+78,MR-MAGA-0008-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+79,MR-MAGA-0009-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+80,MR-MAGA-0010-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+81,MR-MAGA-0011-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+82,MR-KBAU-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+83,MR-LGEN-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+84,MR-LGEN-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+85,MR-LGEN-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+86,MR-LGEN-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+87,MR-LGEN-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+88,MR-XCEN-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+89,M-XCEN-0002,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+90,MR-XCEN-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+92,MR-XCEN-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+96,MR-MAGA-0012-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+117,MR-MAGA-0013-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+130,MR-MAGA-0014-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+131,MR-MAGA-0015-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+133,MR-EPCO-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+134,MR-ALPO-0010-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+135,MR-GEPO-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+136,MR-GEPO-0002-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+137,MR-GEPO-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+138,MR-GEPO-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+139,MR-GEPO-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+140,MR-GEPO-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+141,MR-GEPO-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+142,MR-GEPO-0008-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+143,MR-GEPO-0009-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+144,MR-GEPO-0010-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+145,MR-GEPO-0011-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+146,MR-GEPO-0012-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+147,MR-GEPO-0013-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+150,MR-GEPO-0016-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+153,MR-EPCO-0002-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+154,MR-AUEN-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+155,M-AUEN-0002,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+156,MR-AUEN-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+157,MR-AUEN-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+158,MR-AUEN-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+159,MR-AUEN-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+160,MR-AUEN-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+161,MR-AUEN-0008-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+162,MR-AUEN-0009-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+163,MR-AUEN-0010-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+164,MR-AUEN-0011-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+165,MR-AUEN-0012-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+169,MR-MAGA-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+179,MR-EPCO-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+180,MR-EPCO-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+181,MR-EPCO-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+182,MR-EPCO-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+185,MR-FIEN-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+203,M-ENTE-0001,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+204,MR-ENMA-0019-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+206,MR-ENMA-0021-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+207,MR-ENMA-0022-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+208,MR-ENMA-0023-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+211,MR-ENMA-0026-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+212,MR-ENMA-0027-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+213,MR-ENMA-0028-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+215,MR-ENMA-0031-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+217,MR-ENMA-0034-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+218,MR-ENMA-0037-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+220,MR-ENMA-0039-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+221,MR-ENMA-0040-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+222,MR-ENMA-0043-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+223,MR-ENMA-0044-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+238,MR-TOHY-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+239,M-TOHY-0002,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+241,MR-TOHY-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+242,MR-TOHY-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+243,MR-TOHY-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+244,MR-TOHY-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+265,MR-ALPO-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+266,MR-ALPO-0002-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+268,MR-ALPO-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+269,MR-ALPO-0005-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+270,MR-ALPO-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+271,MR-ALPO-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+275,MR-XCEN-0008-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+276,MR-XCEN-0009-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+279,MR-TOHY-0032-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+280,MR-TOHY-0033-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+281,MR-NAEL-0002-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+282,M-NAEL-0003,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+285,MR-NAEL-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+286,MR-NAEL-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+307,MR-XCEN-0010-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+314,MR-ELPA-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+315,MR-ELPA-0002-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+316,MR-KORT-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+317,MR-KORT-0002-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+318,MR-KORT-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+319,MR-KORT-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+320,M-KORT-0005,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+330,MR-KEEL-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+347,MR-PSEG-0003-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+348,MR-PSEG-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+351,MR-PSEG-0007-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+355,MR-PSEG-0011-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+356,MR-PSEG-0012-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+357,MR-PSEG-0013-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+359,MR-PSEG-0015-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+360,MR-PSEG-0016-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+363,MR-PSEG-0019-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+364,MR-PSEG-0020-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+365,MR-PSEG-0021-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+376,MR-MAGA-0006-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+379,MR-EXEL-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+380,MR-PITR-0004-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+381,MR-EPBC-0002-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+382,MR-EPBC-0001-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+415,MR-ENMA-0056-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+416,MR-ENMA-0057-V1,Model Description,NETWORK,AUTO,remove selection,,"duplicates Model Type, which already reads NETWORK - nothing is lost"
+184,MR-SCTE-0001-V1,Model Description,SPARE PARTS,AUTO,set,SPAREPARTS,case/spacing variant of an existing option
+370,MR-GTWO-0001-V1,Model Description,SPARE PARTS,AUTO,set,SPAREPARTS,case/spacing variant of an existing option
+10,MR-LGEN-0002-V1,Model Description,ZIG ZAG,AUTO,set,ZIG-ZAG,case/spacing variant of an existing option
+132,MR-HYQU-0063-V1,Model Type,0,AUTO,clear,,not a real value
+297,MR-HYQU-0083-V1,Model Type,0,AUTO,clear,,not a real value
+17,MR-HYQU-0040-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+198,MR-OTHY-0010-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+226,MR-OTHY-0001-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+227,MR-OTHY-0011-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+228,MR-OTHY-0002-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+229,MR-OTHY-0003-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+231,MR-OTHY-0004-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+232,MR-OTHY-0005-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+234,MR-OTHY-0007-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+235,MR-OTHY-0008-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+236,MR-OTHY-0009-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+298,MR-PITR-0002-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+299,MR-PITR-0003-V1,Model Type,C2,AUTO,move to Model Description,C2,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+199,MR-LITE-0001-V1,Model Type,FLAT FRONT,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+121,MR-HYQU-0078-V1,Model Type,LTC,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+123,MR-HYQU-0080-V1,Model Type,LTC,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+124,MR-HYQU-0081-V1,Model Type,LTC,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+195,MR-HYQU-0071-V1,Model Type,LTC,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+196,MR-HYQU-0072-V1,Model Type,LTC,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+383,MR-HYQU-0079-V1,Model Type,LTC,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+113,MR-HYQU-0060-V1,Model Type,MALT,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+187,MR-HYQU-0082-V1,Model Type,MALT,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+313,MR-LGEN-0008-V1,Model Type,MALT,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+114,MR-HYQU-0076-V1,Model Type,MALT + SA,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+115,MR-HYQU-0077-V1,Model Type,MALT + SA,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+384,MR-HYQU-0094-V1,Model Type,MALT + SA,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+388,MR-HYQU-0095-V1,Model Type,MALT + SA,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+410,MRSA-HYQU-0076-V1,Model Type,MALT + SA,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+411,MRSA-HYQU-0077-V1,Model Type,MALT + SA,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+296,MR-CRSC-0001-V1,Model Type,PARTS,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+386,MR-WIHI-0001-V1,Model Type,PARTS,AUTO,clear,,already present in Model Description; Model Type then needs a real type
+337,MR-ENBR-0001-V1,Model Type,POWER-S,AUTO,move to Model Description,POWER-S,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+152,MR-PIRE-0001-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+166,MR-CENO-0001-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+167,MR-CENO-0002-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+183,MR-ALST-0001-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+277,MR-LISA-0001-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+288,MR-LISA-0002-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+289,MR-LISA-0003-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+290,MR-LISA-0004-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+301,MR-TECO-0001-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+311,MR-TECO-0003-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+312,MR-POWE-0001-V1,Model Type,POWER-W,AUTO,move to Model Description,POWER-W,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+2,MR-TOHY-0018-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+12,MR-TOHY-0034-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+14,MR-TOHY-0010-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+23,MR-HYQU-0043-V1,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+24,M-HYQU-0008,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+26,M-HYQU-0009,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+27,MR-HYQU-0074-V1,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+28,MR-HYQU-0075-V1,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+30,M-HYQU-0012,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+32,MR-HYQU-0013-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+33,MR-HYQU-0047-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+35,M-HYQU-0014,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+116,MR-HYQU-0034-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+128,MR-HYQU-0011-V1,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+129,MR-HYQU-0010-V1,Model Type,SUBMERSIBLE,AUTO,set,1PH SUBMERSIBLE,Phases=1 resolves 1PH vs 3PH deterministically
+247,MR-TOHY-0012-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+248,MR-TOHY-0013-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+251,MR-TOHY-0016-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+252,MR-TOHY-0017-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+253,MR-TOHY-0019-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+254,M-TOHY-0020,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+258,MR-TOHY-0025-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+259,MR-TOHY-0026-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+261,MR-TOHY-0028-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+378,MR-REDE-0001-V1,Model Type,SUBMERSIBLE,AUTO,set,3PH SUBMERSIBLE,Phases=3 resolves 1PH vs 3PH deterministically
+100,MR-MEEN-0001-V1,Model Type,Substation,AUTO,set,SUBSTATION,case/spacing variant of an existing option
+101,MR-MEEN-0002-V1,Model Type,Substation,AUTO,set,SUBSTATION,case/spacing variant of an existing option
+102,MR-MEEN-0003-V1,Model Type,Substation,AUTO,set,SUBSTATION,case/spacing variant of an existing option
+103,MR-MEEN-0004-V1,Model Type,Substation,AUTO,set,SUBSTATION,case/spacing variant of an existing option
+104,MR-MEEN-0005-V1,Model Type,Substation,AUTO,set,SUBSTATION,case/spacing variant of an existing option
+120,MR-HYQU-0061-V1,Model Type,ZIG-ZAG,AUTO,move to Model Description,ZIG-ZAG,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+168,MR-HYQU-0039-V1,Model Type,ZIG-ZAG,AUTO,move to Model Description,ZIG-ZAG,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+178,MR-LGEN-0001-V1,Model Type,ZIG-ZAG,AUTO,move to Model Description,ZIG-ZAG,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+186,MR-HYQU-0073-V1,Model Type,ZIG-ZAG,AUTO,move to Model Description,ZIG-ZAG,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+190,MR-HYQU-0066-V1,Model Type,ZIG-ZAG,AUTO,move to Model Description,ZIG-ZAG,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+237,MR-HYQU-0038-V1,Model Type,ZIG-ZAG,AUTO,move to Model Description,ZIG-ZAG,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+340,MR-HYQU-0088-V1,Model Type,ZIG-ZAG,AUTO,move to Model Description,ZIG-ZAG,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+188,MR-HYQU-0064-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+191,MR-HYQU-0067-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+192,MR-HYQU-0068-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+193,MR-HYQU-0069-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+194,MR-HYQU-0070-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+309,MR-HYQU-0002-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+338,MR-HYQU-0086-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+339,MR-HYQU-0087-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+341,MR-HYQU-0089-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+344,M-HYQU-0092,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+397,MRSA-HYQU-0064-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+398,MRSA-HYQU-0066-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+399,MRSA-HYQU-0069-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+400,MRSA-HYQU-0096-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+401,MRSA-HYQU-0065-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+402,MRSA-HYQU-0067-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+403,MRSA-HYQU-0070-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+404,MRSA-HYQU-0097-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+405,MRSA-HYQU-0082-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+407,MRSA-HYQU-0068-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+408,MRSA-HYQU-0092-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+409,MRSA-HYQU-0002-V1,Model Type,ZIG-ZAG + SA,AUTO,move to Model Description,ZIG-ZAG + SA,"a Model Description option, not a Model Type; MultiChoice so nothing is lost"
+212,MR-ENMA-0027-V1,Oil Type,0,AUTO,clear,,not a real value
+221,MR-ENMA-0040-V1,Oil Type,0,AUTO,clear,,not a real value
+133,MR-EPCO-0001-V1,Oil Type,LUMINOL,AUTO,set,Luminol,case variant of an existing option
+153,MR-EPCO-0002-V1,Oil Type,LUMINOL,AUTO,set,Luminol,case variant of an existing option
+179,MR-EPCO-0003-V1,Oil Type,LUMINOL,AUTO,set,Luminol,case variant of an existing option
+181,MR-EPCO-0005-V1,Oil Type,LUMINOL,AUTO,set,Luminol,case variant of an existing option
+301,MR-TECO-0001-V1,Oil Type,LUMINOL,AUTO,set,Luminol,case variant of an existing option
+337,MR-ENBR-0001-V1,Oil Type,LUMINOL,AUTO,set,Luminol,case variant of an existing option
+57,MR-ENMA-0006-V1,Oil Type,MIDEL,AUTO,set,Midel,case variant of an existing option
+206,MR-ENMA-0021-V1,Oil Type,MIDEL,AUTO,set,Midel,case variant of an existing option
+18,MR-HYQU-0005-V1,Model Description,ANNEX,REVIEW,set,?  no obvious target,no exact option; confirm the target once
+20,M-HYQU-0006,Model Description,ANNEX,REVIEW,set,?  no obvious target,no exact option; confirm the target once
+21,MR-HYQU-0007-V1,Model Description,ANNEX,REVIEW,set,?  no obvious target,no exact option; confirm the target once
+22,M-HYQU-0001,Model Description,ANNEX,REVIEW,set,?  no obvious target,no exact option; confirm the target once
+95,MR-HYQU-0026-V1,Model Description,ANNEX,REVIEW,set,?  no obvious target,no exact option; confirm the target once
+132,MR-HYQU-0063-V1,Model Description,Goujon,REVIEW,set,?  one-off,no exact option; confirm the target once
+387,M-HYQU-0093,Model Description,MINPAD-1HP,REVIEW,set,(typo of MINPAD-1PH; and MINPAD is a Model Type value),no exact option; confirm the target once
+36,MR-HYQU-0015-V1,Model Description,MINPAD-1PH,REVIEW,set,"(MINPAD is a Model Type value, not a Description)",no exact option; confirm the target once
+39,M-HYQU-0016,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+41,M-HYQU-0017,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+43,MR-HYQU-0018-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+44,MR-HYQU-0019-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+46,MR-HYQU-0020-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+48,MR-HYQU-0021-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+50,MR-HYQU-0022-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+51,MR-HYQU-0023-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+53,MR-HYQU-0024-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+94,MR-HYQU-0025-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+97,MR-HYQU-0027-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+99,MR-HYQU-0028-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+105,MR-HYQU-0029-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+106,MR-HYQU-0037-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+107,M-HYQU-0030,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+108,MR-HYQU-0058-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+109,MR-HYQU-0031-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+110,MR-HYQU-0032-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+112,MR-HYQU-0033-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+118,MR-HYQU-0035-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+119,MR-HYQU-0036-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+126,MR-HYQU-0062-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+201,MR-FIEN-0003-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+202,M-FIEN-0002,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+295,MR-CAIN-0001-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+300,MR-GOSO-0001-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+310,MR-TECO-0002-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+323,MR-RIED-0001-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+326,MR-MULT-0002-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+327,MR-UNUT-0001-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+331,MR-HYQU-0003-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+377,MR-FIEN-0004-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+385,MR-LISA-0005-V1,Model Description,PADMOUNT,REVIEW,set,"(PADMOUNT is a Model Type value, not a Description)",no exact option; confirm the target once
+297,MR-HYQU-0083-V1,Model Description,PLAQUE ANCRAGE,REVIEW,set,?  one-off,no exact option; confirm the target once
+37,MR-PITR-0001-V1,Model Description,PROTOTYPE,REVIEW,set,?  one-off,no exact option; confirm the target once
+406,MRSA-HYQU-0071-V1,Model Description,SUBSTATION + LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+332,MR-HITA-0001-V1,Model Description,SUBSTATION LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+333,MR-HITA-0002-V1,Model Description,SUBSTATION LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+334,MR-HITA-0003-V1,Model Description,SUBSTATION LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+335,MR-HYQU-0084-V1,Model Description,SUBSTATION LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+336,MR-HYQU-0085-V1,Model Description,SUBSTATION LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+342,MR-HYQU-0090-V1,Model Description,SUBSTATION LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+343,MR-HYQU-0091-V1,Model Description,SUBSTATION LTC,REVIEW,set,SUBSTATION + LTC   (MultiChoice: two selections),no exact option; confirm the target once
+23,MR-HYQU-0043-V1,Model Description,SUBWAY-1PH,REVIEW,set,SUBWAY  (+ a 1PH marker?),no exact option; confirm the target once
+27,MR-HYQU-0074-V1,Model Description,SUBWAY-1PH,REVIEW,set,SUBWAY  (+ a 1PH marker?),no exact option; confirm the target once
+28,MR-HYQU-0075-V1,Model Description,SUBWAY-1PH,REVIEW,set,SUBWAY  (+ a 1PH marker?),no exact option; confirm the target once
+128,MR-HYQU-0011-V1,Model Description,SUBWAY-1PH,REVIEW,set,SUBWAY  (+ a 1PH marker?),no exact option; confirm the target once
+17,MR-HYQU-0040-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+198,MR-OTHY-0010-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+226,MR-OTHY-0001-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+227,MR-OTHY-0011-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+228,MR-OTHY-0002-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+229,MR-OTHY-0003-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+231,MR-OTHY-0004-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+232,MR-OTHY-0005-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+234,MR-OTHY-0007-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+235,MR-OTHY-0008-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+236,MR-OTHY-0009-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+298,MR-PITR-0002-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+299,MR-PITR-0003-V1,Model Description,VAULT-1PH,REVIEW,set,1PH-VAULT,no exact option; confirm the target once
+18,MR-HYQU-0005-V1,Model Type,ANNEX,REVIEW,set,?  no obvious target - Core Type has 'Annexe',no exact option; confirm the target once
+20,M-HYQU-0006,Model Type,ANNEX,REVIEW,set,?  no obvious target - Core Type has 'Annexe',no exact option; confirm the target once
+21,MR-HYQU-0007-V1,Model Type,ANNEX,REVIEW,set,?  no obvious target - Core Type has 'Annexe',no exact option; confirm the target once
+22,M-HYQU-0001,Model Type,ANNEX,REVIEW,set,?  no obvious target - Core Type has 'Annexe',no exact option; confirm the target once
+95,MR-HYQU-0026-V1,Model Type,ANNEX,REVIEW,set,?  no obvious target - Core Type has 'Annexe',no exact option; confirm the target once
+36,MR-HYQU-0015-V1,Model Type,MINPAD,REVIEW,set,1PH PAD (MINIPAD),no exact option; confirm the target once
+387,M-HYQU-0093,Model Type,MINPAD,REVIEW,set,1PH PAD (MINIPAD),no exact option; confirm the target once
+39,M-HYQU-0016,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+41,M-HYQU-0017,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+43,MR-HYQU-0018-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+44,MR-HYQU-0019-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+46,MR-HYQU-0020-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+48,MR-HYQU-0021-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+50,MR-HYQU-0022-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+51,MR-HYQU-0023-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+53,MR-HYQU-0024-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+94,MR-HYQU-0025-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+97,MR-HYQU-0027-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+99,MR-HYQU-0028-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+105,MR-HYQU-0029-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+106,MR-HYQU-0037-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+107,M-HYQU-0030,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+108,MR-HYQU-0058-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+109,MR-HYQU-0031-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+110,MR-HYQU-0032-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+112,MR-HYQU-0033-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+118,MR-HYQU-0035-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+119,MR-HYQU-0036-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+126,MR-HYQU-0062-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+201,MR-FIEN-0003-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+202,M-FIEN-0002,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+295,MR-CAIN-0001-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+300,MR-GOSO-0001-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+310,MR-TECO-0002-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+323,MR-RIED-0001-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+326,MR-MULT-0002-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+327,MR-UNUT-0001-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+331,MR-HYQU-0003-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+377,MR-FIEN-0004-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+385,MR-LISA-0005-V1,Model Type,PADMOUNT,REVIEW,set,3PH PAD (PADMOUNT),no exact option; confirm the target once
+189,MR-HYQU-0065-V1,Model Type,POWER LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+332,MR-HITA-0001-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+333,MR-HITA-0002-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+334,MR-HITA-0003-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+335,MR-HYQU-0084-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+336,MR-HYQU-0085-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+342,MR-HYQU-0090-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+343,MR-HYQU-0091-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+406,MRSA-HYQU-0071-V1,Model Type,POWER-LTC,REVIEW,set,(move to Model Description: POWER-? + LTC),no exact option; confirm the target once
+37,MR-PITR-0001-V1,Model Type,PROTO MINIPAD,REVIEW,set,1PH PAD (MINIPAD),no exact option; confirm the target once
+184,MR-SCTE-0001-V1,Model Type,SPARE PARTS,REVIEW,set,(move to Model Description as SPAREPARTS),no exact option; confirm the target once
+370,MR-GTWO-0001-V1,Model Type,SPARE PARTS,REVIEW,set,(move to Model Description as SPAREPARTS),no exact option; confirm the target once
+10,MR-LGEN-0002-V1,Model Type,ZIG ZAG,REVIEW,set,(move to Model Description as ZIG-ZAG),no exact option; confirm the target once
