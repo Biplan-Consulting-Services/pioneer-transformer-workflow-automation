@@ -1,22 +1,15 @@
 # Paste this back
 
+## → `PASTE-ME.json`
+
 **v006 — v006 fetch-once + review fixes + Mdl-Rev columns**
 
-## Which file
+That is the file. It is the export's `properties` object — the shape the
+extension accepted for v004 — and `connectionReferences` inside it is carried
+through unchanged from what is live, so pasting it never rebinds a connection.
 
-Editors disagree about which level they take. Try in this order:
-
-| file | shape | use when |
-|---|---|---|
-| `PASTE-ME.properties.json` | `{apiId, displayName, definition, connectionReferences}` | the editor says **missing `definition` flow property** — it wants a wrapper |
-| `PASTE-ME.definition.json` | the bare `definition` (`$schema` / `triggers` / `actions`) | the editor shows `triggers` and `actions` at its top level |
-| `PASTE-ME.minimal.json` | just `{definition, connectionReferences}` | the wrapper is rejected for having extra keys |
-| `PASTE-ME.full.json` | the whole export document | last resort |
-
-`connectionReferences` is carried through **unchanged from what is live**, so none
-of these rebinds a connection.
-
-Authored from **v005** (v005 Order-X columns populated), which is what the flow was at 2026-09-08 00:04.
+`alternate-shapes/` holds the same version in three other shapes. Ignore it unless
+the editor rejects the file above; then try `definition-only.json` first.
 
 ## After pasting, check these in the editor
 

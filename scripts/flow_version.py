@@ -434,34 +434,37 @@ def cmd_stage(a):
     # `missing "definition" flow property` wants a WRAPPER holding a definition
     # key, not the definition itself -- so write every plausible shape and let the
     # tool decide, rather than guessing and having a paste fail (or half-succeed).
+    # ONE file to paste. The `properties` shape is what the extension took for
+    # v004, so it is the default rather than one of four guesses. The other
+    # shapes stay available under alternate-shapes/ in case the editor changes,
+    # but they are out of the way so there is never a question which to use.
     props = doc.get("properties")
-    shapes = {"PASTE-ME.definition.json": definition(doc)}
+    main = props if props else definition(doc)
+    io.open(os.path.join(out, "PASTE-ME.json"), "w", encoding="utf-8").write(
+        json.dumps(main, indent=2, ensure_ascii=False) + "\n")
+    alt = os.path.join(out, "alternate-shapes")
+    os.makedirs(alt, exist_ok=True)
+    for old_alt in glob.glob(os.path.join(alt, "*.json")):
+        os.remove(old_alt)
+    others = {"definition-only.json": definition(doc)}
     if props:
-        shapes["PASTE-ME.properties.json"] = props
-        shapes["PASTE-ME.minimal.json"] = {
+        others["definition-plus-connections.json"] = {
             k: props[k] for k in ("definition", "connectionReferences") if k in props}
-        shapes["PASTE-ME.full.json"] = doc
-    for fn, obj in shapes.items():
-        io.open(os.path.join(out, fn), "w", encoding="utf-8").write(
+        others["whole-export-document.json"] = doc
+    for fn, obj in others.items():
+        io.open(os.path.join(alt, fn), "w", encoding="utf-8").write(
             json.dumps(obj, indent=2, ensure_ascii=False) + "\n")
     fp = v.get("fingerprint", {})
     par = by_v(h, v["parent"]) if v.get("parent") else None
     pf = par.get("fingerprint", {}) if par else {}
     L = ["# Paste this back", "",
+         "## \u2192 `PASTE-ME.json`", "",
          "**v%03d \u2014 %s**" % (v["v"], v.get("note", "")), "",
-         "## Which file", "",
-         "Editors disagree about which level they take. Try in this order:", "",
-         "| file | shape | use when |",
-         "|---|---|---|",
-         "| `PASTE-ME.properties.json` | `{apiId, displayName, definition, connectionReferences}` | the editor says **missing `definition` flow property** \u2014 it wants a wrapper |",
-         "| `PASTE-ME.definition.json` | the bare `definition` (`$schema` / `triggers` / `actions`) | the editor shows `triggers` and `actions` at its top level |",
-         "| `PASTE-ME.minimal.json` | just `{definition, connectionReferences}` | the wrapper is rejected for having extra keys |",
-         "| `PASTE-ME.full.json` | the whole export document | last resort |", "",
-         "`connectionReferences` is carried through **unchanged from what is live**, so none",
-         "of these rebinds a connection.", ""]
-    if par:
-        L += ["Authored from **v%03d** (%s), which is what the flow was at %s." % (
-                  par["v"], par.get("note", ""), par["captured"][:16].replace("T", " ")), ""]
+         "That is the file. It is the export's `properties` object \u2014 the shape the",
+         "extension accepted for v004 \u2014 and `connectionReferences` inside it is carried",
+         "through unchanged from what is live, so pasting it never rebinds a connection.", "",
+         "`alternate-shapes/` holds the same version in three other shapes. Ignore it unless",
+         "the editor rejects the file above; then try `definition-only.json` first.", ""]
     L += ["## After pasting, check these in the editor", "",
           "| | before | after |", "|---|---|---|"]
     for k, label in (("CreateOrderItem", "`CreateOrderItem` item/* fields"),
@@ -476,7 +479,7 @@ def cmd_stage(a):
           "If it does **not** match, v%03d is marked `forked` and I report exactly what" % v["v"],
           "differs — which is the signal that something else changed underneath.", ""]
     io.open(os.path.join(out, "PASTE-ME.md"), "w", encoding="utf-8").write("\n".join(L) + "\n")
-    print("staged v%03d -> _outbox/PASTE-ME.definition.json" % v["v"])
+    print("staged v%03d -> _outbox/PASTE-ME.json" % v["v"])
     print("  %s" % v.get("note", ""))
     print("  expect after paste: Create %s / Update %s | toLower %s | 'EC' %s" % (
         fp.get("CreateOrderItem"), fp.get("UpdateOrderItem"), fp.get("toLower"), fp.get("ecUpper")))
