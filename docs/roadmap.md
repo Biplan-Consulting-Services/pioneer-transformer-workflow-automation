@@ -106,6 +106,16 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 36 | ~~**N3's lookup internal names**~~ | ✅ A | **RESOLVED 2026-09-07** | `OrderNumber` / `Model` / `ModelRevision` (plus `Client`, `RegroupedInto`), read from the platform. The fan-out filters are `<name>Id eq <parent ID>`, and the lookups' target list GUIDs match the `table` params the transfer flow already uses — independent confirmation. ⚠️ Two routes do **not** work here: `_api/web/lists/…/fields` is unavailable on this tenant (4 timeouts + `Failed to fetch`), and an export's `ListSchema` omits Lookup columns entirely. What works is `_api/v2.0/sites/root/lists/<id>/columns`. Detail in `n3-parent-sync-flow-spec.md` |
 | 29 | **Verify the `Index` list row for `FRM10-12`** | 🟢 A | **new 2026-09-06, ~2 min** | FRM11 (and probably every other workbook using `ImportFromIndex`) resolves FRM10-12 through a `Title`→`Path` row in the `Index` list on `.../sites/PioneerPlanificatio`. Confirm `Path` points at `General/FAB/Revue/Formulaires/FRM10-12.xlsx` after the 2026-09-04 move. Circumstantial evidence says it is fine — FRM11 holds orders `22143`–`22155`, which only exist post-move — but the row itself has not been read. ⚠️ **Sharpened 2026-09-07:** it was never a move. The flow's own metadata shows **two distinct files** — the old `Revue/FRM10-12.xlsx` and a separate `Revue/Formulaires/FRM10-12.xlsx` created 2026-08-28 (corruption-repair day). The stale twin is still there, so a wrong `Index` row would not error — it would silently read an abandoned workbook. That makes this check more important, not less |
 
+> 📍 **Session handover 2026-09-08:** `../HANDOVER-2026-09-08.md` — what is live, the four
+> gates before the run, and the corrections not to re-assume. Read it with this file.
+>
+> **Live now:** flow **v006** · 48 parent columns on `Order Items` · view `FRM10-12 Layout`.
+> **The run has not happened.** Gates: `C2` cancel wedged instances · `P4` pre-run export
+> (🔴 ticked done but never done — the only data rollback) · `R1`/`R2` re-confirm the cutoff and
+> refresh, the workbook was saved 2026-09-07 11:31 · `D4` smoke test, which now also has to
+> confirm that reading records from `Get items` rather than `Get item` kept the flattened
+> `Name/Value` key form working. `D5` is **obsolete** — there is no Top Count parameter.
+
 > ⏸️ **Items 26–33 are parked** (user, 2026-09-06 02:45). They came out of the FRM11 and
 > cross-workbook Power Query analysis and are all *findings*, not blockers — the workbook estate
 > keeps working exactly as it does today whether or not anyone acts on them. **The Session 1

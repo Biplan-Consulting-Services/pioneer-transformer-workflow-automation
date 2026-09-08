@@ -302,6 +302,14 @@ def cmd_snapshot(a):
                         anc["supersededBy"] = v["v"]
                         print("v%03d superseded by v%03d -- its changes are live, folded in."
                               % (anc["v"], v["v"]))
+                # Nothing left to paste. A stale PASTE-ME for a version that is
+                # already live reads as work still waiting.
+                ob = os.path.join(fold, "_outbox")
+                cleared = 0
+                for f in glob.glob(os.path.join(ob, "PASTE-ME*")) +                          glob.glob(os.path.join(ob, "alternate-shapes", "*.json")):
+                    os.remove(f); cleared += 1
+                if cleared:
+                    print("     _outbox cleared (%d files) -- nothing left to paste" % cleared)
         # A pending version is only stale if the tenant is somewhere OTHER than
         # the version it was authored from. A pull that matches its parent means
         # nothing moved, so it stays perfectly valid -- forking it there would
