@@ -1,0 +1,828 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>Order Items Migration Risks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap">
+
+<style>
+:root{
+  --paper:#F5F6F4; --panel:#FFFFFF;
+  --ink:#1B2229; --ink-2:#4A5560; --ink-3:#78838E;
+  --rule:#DDE0DE; --rule-2:#EAECEA;
+  --copper:#A9541F; --copper-soft:#F2E5DC;
+  --crit:#A8271F; --crit-bg:#FAE9E7;
+  --high:#8A5A08; --high-bg:#FBF0DC;
+  --med:#2F5D74;  --med-bg:#E4EEF3;
+  --low:#4B5B4E;  --low-bg:#E8EDE8;
+  --done:#1F6B4A; --done-bg:#E2F0E8;
+  --doing:#9A6206; --doing-bg:#FBEEDA;
+  --wait-bg:#F0F1EF; --edge-in:#2C6E9B;
+  --shadow:0 1px 2px rgba(27,34,41,.05), 0 4px 14px rgba(27,34,41,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#13181D; --panel:#1A2027;
+    --ink:#E6EAEC; --ink-2:#A9B4BD; --ink-3:#7C8892;
+    --rule:#2B333B; --rule-2:#232B32;
+    --copper:#D98A50; --copper-soft:#2C2119;
+    --crit:#F08074; --crit-bg:#33201E;
+    --high:#DFAE55; --high-bg:#2E2617;
+    --med:#7FB6D0;  --med-bg:#1B2A33;
+    --low:#9DB3A2;  --low-bg:#1E251F;
+    --done:#63C295; --done-bg:#172A22;
+    --doing:#E0A94F; --doing-bg:#2C2416;
+    --wait-bg:#20272E; --edge-in:#6FB2DA;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#13181D; --panel:#1A2027;
+  --ink:#E6EAEC; --ink-2:#A9B4BD; --ink-3:#7C8892;
+  --rule:#2B333B; --rule-2:#232B32;
+  --copper:#D98A50; --copper-soft:#2C2119;
+  --crit:#F08074; --crit-bg:#33201E;
+  --high:#DFAE55; --high-bg:#2E2617;
+  --med:#7FB6D0;  --med-bg:#1B2A33;
+  --low:#9DB3A2;  --low-bg:#1E251F;
+  --done:#63C295; --done-bg:#172A22;
+  --doing:#E0A94F; --doing-bg:#2C2416;
+  --wait-bg:#20272E; --edge-in:#6FB2DA;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1220px;margin:0 auto;padding:40px 28px 72px}
+
+.mast{border-bottom:2px solid var(--ink);padding-bottom:18px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--copper);font-weight:600;margin:0 0 10px}
+h1{font-family:"Barlow Condensed",Impact,sans-serif;font-weight:700;
+  font-size:clamp(38px,6vw,62px);line-height:.95;margin:0 0 12px;
+  text-wrap:balance;text-transform:uppercase}
+.standfirst{font-size:17px;color:var(--ink-2);max-width:62ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3)}
+.meta b{color:var(--ink-2);font-weight:500}
+
+.tally{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);margin:28px 0 40px}
+.tal{background:var(--panel);padding:16px 18px}
+.tal .n{font-family:"IBM Plex Mono",monospace;font-size:32px;font-weight:600;
+  line-height:1;font-variant-numeric:tabular-nums}
+.tal .l{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);margin-top:7px}
+.tal.c .n{color:var(--crit)} .tal.h .n{color:var(--high)}
+.tal.m .n{color:var(--med)} .tal.l2 .n{color:var(--low)}
+
+.blocker{border:1px solid var(--crit);background:var(--crit-bg);
+  padding:22px 24px;margin-bottom:44px;border-left-width:5px}
+.blocker h2{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  font-size:26px;margin:0 0 4px;color:var(--crit)}
+.blocker p{margin:0 0 12px;max-width:70ch}
+.blocker p:last-child{margin-bottom:0}
+
+.sec{margin-bottom:44px}
+.sechead{display:flex;align-items:baseline;gap:14px;
+  border-bottom:1px solid var(--ink);padding-bottom:7px;margin-bottom:20px}
+.sechead h2{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  font-size:24px;margin:0}
+.sechead .ct{font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+  color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums}
+
+.risks{display:flex;flex-direction:column;gap:14px}
+.risk{background:var(--panel);border:1px solid var(--rule);
+  border-left:4px solid var(--ink-3);padding:18px 20px;box-shadow:var(--shadow)}
+.risk.c{border-left-color:var(--crit)} .risk.h{border-left-color:var(--high)}
+.risk.m{border-left-color:var(--med)}  .risk.l{border-left-color:var(--low)}
+.rtop{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:9px}
+.rid{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);
+  font-weight:500;padding-top:3px;min-width:34px}
+.rtitle{font-weight:600;font-size:16.5px;flex:1;min-width:220px;line-height:1.32}
+.blast{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;
+  white-space:nowrap;border-radius:2px}
+.blast.c{background:var(--crit-bg);color:var(--crit)}
+.blast.h{background:var(--high-bg);color:var(--high)}
+.blast.m{background:var(--med-bg);color:var(--med)}
+.blast.l{background:var(--low-bg);color:var(--low)}
+.rbody{margin:0 0 12px;color:var(--ink-2);max-width:76ch}
+.fix{border-top:1px dashed var(--rule);padding-top:11px;margin-top:12px;
+  display:flex;gap:11px;align-items:flex-start}
+.fix .lab{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--copper);font-weight:600;
+  padding-top:3px;white-space:nowrap}
+.fix .txt{flex:1;max-width:72ch}
+code{font-family:"IBM Plex Mono",monospace;font-size:.88em;background:var(--rule-2);
+  padding:1.5px 5px;border-radius:2px;word-break:break-word}
+.risk strong{color:var(--ink);font-weight:600}
+
+/* ---------------- tracker ---------------- */
+.tracker{border:1px solid var(--rule);background:var(--panel);
+  box-shadow:var(--shadow);margin-bottom:44px}
+.tkhead{padding:24px 26px 18px;border-bottom:1px solid var(--rule)}
+.tkhead h2{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  font-size:26px;margin:0 0 6px}
+.tkhead p{margin:0;color:var(--ink-2);max-width:68ch;font-size:14.5px}
+
+.progwrap{display:flex;align-items:center;gap:16px;margin-top:18px;flex-wrap:wrap}
+.progbar{flex:1;min-width:200px;height:8px;background:var(--wait-bg);
+  border-radius:99px;overflow:hidden;display:flex}
+.progbar i{display:block;height:100%}
+.progbar i.d{background:var(--done)}
+.progbar i.g{background:var(--doing)}
+.progtxt{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:2px;border:1px solid var(--rule)}
+.sw.w{background:var(--wait-bg)} .sw.r{background:var(--panel);border-color:var(--ink-3)}
+.sw.g{background:var(--doing-bg);border-color:var(--doing)}
+.sw.d{background:var(--done-bg);border-color:var(--done)}
+
+.graphscroll{overflow-x:auto;padding:22px 26px 8px}
+.graph{position:relative;min-width:1100px;height:700px;padding-bottom:40px}
+.graph svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.phlabel{position:absolute;top:0;font-family:"IBM Plex Mono",monospace;
+  font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600}
+.node{position:absolute;width:150px;padding:8px 10px;border-radius:3px;
+  border:1px solid var(--rule);background:var(--wait-bg);cursor:pointer;
+  font-size:12.2px;line-height:1.3;color:var(--ink-3);text-align:left;
+  font-family:inherit;transition:opacity .12s,border-color .12s;display:block;
+  touch-action:manipulation;min-height:64px}
+@media (hover:hover){.node:hover{border-color:var(--copper)}}
+.node.sel{border-color:var(--copper);box-shadow:0 0 0 2px var(--copper-soft)}
+.node .ntitle{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden}
+.node.sel .ntitle,.node:focus-visible .ntitle{-webkit-line-clamp:unset;overflow:visible}
+.node.sel,.node:focus-visible{z-index:6;min-height:0;width:246px;background:var(--panel);
+  box-shadow:0 0 0 2px var(--copper-soft),0 6px 18px rgba(27,34,41,.16)}
+.nwhy{display:none;margin-top:6px;padding-top:6px;border-top:1px dashed var(--rule);
+  font-size:11.4px;line-height:1.42;color:var(--ink-2)}
+.node.sel .nwhy,.node:focus-visible .nwhy{display:block}
+.node.sel.done,.node:focus-visible.done{background:var(--done-bg)}
+.node.sel.doing,.node:focus-visible.doing{background:var(--doing-bg)}
+@media (hover:hover){
+  .node:hover .ntitle{-webkit-line-clamp:unset;overflow:visible}
+  .node:hover .nwhy{display:block}
+  .node:hover{z-index:6;min-height:0;width:246px;background:var(--panel);
+    box-shadow:0 6px 18px rgba(27,34,41,.16)}
+  .node.done:hover{background:var(--done-bg)}
+  .node.doing:hover{background:var(--doing-bg)}
+}
+.node:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.node .nid{font-family:"IBM Plex Mono",monospace;font-size:9.5px;
+  letter-spacing:.06em;opacity:.72;display:block;margin-bottom:2px}
+.node.ready{background:var(--panel);border-color:var(--ink-3);color:var(--ink)}
+.node.doing{background:var(--doing-bg);border-color:var(--doing);color:var(--ink);
+  font-weight:600}
+.node.done{background:var(--done-bg);border-color:var(--done);color:var(--done)}
+.node.done .ntitle{text-decoration:line-through;text-decoration-thickness:1px;
+  opacity:.8}
+.node.gate::after{content:"GATE";position:absolute;top:-7px;right:6px;
+  font-family:"IBM Plex Mono",monospace;font-size:8px;letter-spacing:.09em;
+  background:var(--crit);color:#fff;padding:1px 4px;border-radius:2px}
+.graph.focused .node{opacity:.28}
+.graph.focused .node.lit{opacity:1}
+.edge{stroke:var(--rule);stroke-width:1.4;fill:none}
+.graph.focused .edge{opacity:.12}
+.edge.satisfied{stroke:var(--done);opacity:.55}
+/* Direction is carried by hue AND arrowhead, so it still reads without colour.
+   Blue/orange is the pair that survives red-green colour blindness. */
+.graph.focused .edge.in{opacity:1;stroke:var(--edge-in);stroke-width:2.2;
+  marker-end:url(#ar-in)}
+.graph.focused .edge.out{opacity:1;stroke:var(--copper);stroke-width:2.2;
+  marker-end:url(#ar-out)}
+
+.edgekey{display:none;gap:18px;flex-wrap:wrap;padding:0 26px 14px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-3)}
+.graphwrap.focused .edgekey{display:flex}
+.edgekey span{display:flex;align-items:center;gap:7px}
+.edgekey i{width:22px;height:0;border-top:2.2px solid currentColor;
+  position:relative}
+.edgekey i::after{content:"";position:absolute;right:-1px;top:-3.5px;
+  border-left:5px solid currentColor;border-top:3.5px solid transparent;
+  border-bottom:3.5px solid transparent}
+.edgekey .k-in{color:var(--edge-in)}
+.edgekey .k-out{color:var(--copper)}
+
+.hint{padding:0 26px 20px;font-family:"IBM Plex Mono",monospace;
+  font-size:11px;color:var(--ink-3)}
+/* Branch the instruction on what the device can actually do, not screen size —
+   a touchscreen laptop answers yes to both and must be told about hover. */
+.hint-touch{display:none}
+@media (hover:none){.hint-mouse{display:none}.hint-touch{display:inline}}
+.savebar{padding:12px 26px;border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.savebar b{color:var(--copper);font-weight:600}
+
+.tklist{border-top:1px solid var(--rule)}
+.phase{border-bottom:1px solid var(--rule-2)}
+.phase:last-child{border-bottom:0}
+.phtitle{display:flex;align-items:baseline;gap:12px;padding:16px 26px 8px}
+.phtitle h3{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  font-size:19px;margin:0;letter-spacing:.01em}
+.phtitle .pn{font-family:"IBM Plex Mono",monospace;font-size:11px;
+  color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums}
+.items{list-style:none;margin:0;padding:0 26px 16px}
+.item{display:grid;grid-template-columns:22px 1fr;gap:12px;padding:9px 0;
+  border-top:1px solid var(--rule-2);align-items:start}
+.item:first-child{border-top:0}
+.tick{width:18px;height:18px;border:1.5px solid var(--ink-3);border-radius:3px;
+  background:transparent;cursor:pointer;margin-top:3px;padding:0;
+  display:flex;align-items:center;justify-content:center;color:transparent}
+.tick:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.item.done .tick{background:var(--done);border-color:var(--done);color:#fff}
+.item.doing .tick{background:var(--doing);border-color:var(--doing);color:#fff}
+.tick svg{width:11px;height:11px}
+.item .what{font-weight:600;display:block;margin-bottom:1px}
+.item.done .what{text-decoration:line-through;opacity:.62;font-weight:500}
+.item .why{color:var(--ink-2);font-size:14px}
+.item.waiting .what,.item.waiting .why{opacity:.5}
+.needs{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);
+  margin-top:3px;display:block}
+.needs b{color:var(--crit);font-weight:500}
+
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);
+  display:flex;flex-wrap:wrap;gap:6px 20px}
+@media (max-width:640px){.wrap{padding:28px 18px 56px}.rid{min-width:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<script id="app-state" type="application/json">{"status":{"P1":"done","P2":"done","P3":"done","P5":"done","P4":"todo","C1":"done","C2":"doing","D1":"done","D2":"done","D3":"done","D6":"done","D4":"todo","D5":"todo","R1":"todo","R2":"todo","R3":"todo","R4":"todo","R5":"todo","R6":"todo","R7":"todo","X1":"todo","X2":"todo","X3":"todo","X4":"todo","X5":"todo","X6":"todo","N1":"done","N2":"done","N4":"done","N3":"todo","N5":"todo","N6":"todo","N7":"todo"},"v":1}</script>
+
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow">Pioneer Transformer · Order Items migration</p>
+    <h1>What can still go wrong</h1>
+    <p class="standfirst">Every open risk in the Power Automate / SharePoint migration, with what it actually costs and how to close it — plus a tracker for the work itself.</p>
+    <div class="meta">
+      <span><b>Compiled</b> 2026-09-05</span>
+      <span><b>Scope</b> Order Items · 1,052 rows</span>
+      <span><b>Source</b> live tenant, not docs</span>
+    </div>
+  </header>
+
+  <div class="tally">
+    <div class="tal c"><div class="n">1</div><div class="l">Blocks the run</div></div>
+    <div class="tal h"><div class="n">5</div><div class="l">Silent data loss</div></div>
+    <div class="tal m"><div class="n">9</div><div class="l">Wasted time</div></div>
+    <div class="tal l2"><div class="n">7</div><div class="l">Known &amp; bounded</div></div>
+  </div>
+
+  <section class="blocker">
+    <h2>Check this before anything else</h2>
+    <p><strong>FRM10-12 has moved and the flow may be pointing at a file that no longer exists.</strong> The Sep 1 run resolved it at <code>/General/FAB/Revue/FRM10-12.xlsx</code>. That path is now empty — the live workbook sits in <code>Revue/Formulaires/</code>, last refreshed 23:08:06 on Sep 4.</p>
+    <p>The Excel connector stores a drive item ID, which normally survives a move within the same library. So it will <em>probably</em> still resolve. But if the file was moved by copy-and-delete, that ID is dead and the run reads nothing.</p>
+    <p><strong>Two minutes:</strong> open the flow's <code>List rows present in a table</code> action and confirm the file resolves to <code>Revue/Formulaires/FRM10-12.xlsx</code>. Re-pick it if not. Everything downstream assumes this passed.</p>
+    <p><strong>Checked and re-pointed 2026-09-05.</strong> The table location was changed by hand, which is the same class of edit that once wiped every field mapping. Nothing outside the designer can confirm the 58 mappings survived — run history holds only the Sep 1 run, which is the old definition. <strong>Export the flow as a <code>.zip</code> (step P5) and read the definition JSON:</strong> non-destructive, already required as the only rollback, and the only check that needs no production write.</p>
+    <p><strong>Done, and it passes.</strong> The exported definition resolves <code>/General/FAB/Revue/Formulaires/FRM10-12.xlsx</code>, table <code>{72371618-…}</code>; the old path and table id survive only in <code>metadata</code> as a stale cache. Pagination <code>minimumItemCount</code> is 5000. The mappings survived — though they were never symmetric: <code>UpdateOrderItem</code> carries 58 fields and <code>CreateOrderItem</code> 50, and the gap is exactly the eight <code>{Stage}StartDate</code> fields, which Update sets to <code>@null</code>. Harmless, and it is what preserves the blank-Start-Date marker R14 keys on.</p>
+  </section>
+
+  <!-- ============ TRACKER ============ -->
+  <section class="tracker">
+    <div class="tkhead">
+      <h2>Implementation tracker</h2>
+      <p>Click any step to cycle it: waiting → in progress → done. A step stays dimmed until everything it depends on is finished, so the graph always shows what you can actually start next. Your progress is saved to this page for everyone who opens it.</p>
+      <p style="margin-top:10px"><strong>Amber means prepared and waiting on you.</strong> Six steps are sitting there: <code>P3</code>, <code>D1</code>, <code>D2</code>, <code>D3</code> and <code>D6</code> each have a paste sheet in <code>docs/</code> with every name read out of the export rather than retyped, so the designer session is copy-and-verify. <code>N2</code> has a runnable script — the only thing missing is a permission I am not able to grant myself.</p>
+      <div class="progwrap">
+        <div class="progbar" id="progbar"></div>
+        <div class="progtxt" id="progtxt"></div>
+      </div>
+      <div class="legend">
+        <span><i class="sw w"></i>Waiting on a dependency</span>
+        <span><i class="sw r"></i>Ready to start</span>
+        <span><i class="sw g"></i>In progress</span>
+        <span><i class="sw d"></i>Done</span>
+      </div>
+    </div>
+
+    <div class="graphwrap" id="graphwrap">
+    <div class="graphscroll">
+      <div class="graph" id="graph"><svg id="edges" aria-hidden="true"></svg></div>
+    </div>
+    <div class="edgekey">
+      <span class="k-in"><i></i>Depends on&nbsp;— feeds in</span>
+      <span class="k-out"><i></i>Unblocks&nbsp;— feeds out</span>
+    </div>
+    </div>
+    <p class="hint"><span class="hint-mouse">Hover a step to isolate its dependencies; click to advance it.</span><span class="hint-touch">Tap a step to isolate its dependencies. Double-tap to advance it — or use the tick boxes below.</span> Green links are dependencies already satisfied.</p>
+
+    <div class="tklist" id="tklist"></div>
+    <div class="savebar" id="savebar"><span>Progress saves to this page.</span></div>
+  </section>
+
+  <!-- ============ RISKS ============ -->
+  <section class="sec">
+    <div class="sechead"><h2>Silent data loss</h2><span class="ct">5 risks · none report an error</span></div>
+    <div class="risks">
+
+      <div class="risk h">
+        <div class="rtop"><span class="rid">R1</span><span class="rtitle">Mapping <code>BO</code> from the wrong workbook wipes the BO department's data</span><span class="blast h">73 rows</span></div>
+        <p class="rbody">FRM10-12's <code>BO</code> column is itself pulled from BO Manager — a second-hand mirror holding 69 values where the real source holds 76. <code>UpdateOrderItem</code> always overwrites, so mapping it would <strong>null every one of the 73 rows</strong> imported into SharePoint, wherever the stale mirror is blank. The <code>BO Tracking</code> view goes empty and nothing reports a failure.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Never source <code>BO</code> from <code>TableOrders</code>. Take the one-time transfer from <code>TableBO</code> in BO Manager, joined on <code>Order</code> → <code>Order Items.Title</code>. <strong>Then delete the mapping</strong> — the flow is re-runnable, so leaving it in makes every future run overwrite SharePoint-native BO edits.</span></div>
+      </div>
+
+      <div class="risk h">
+        <div class="rtop"><span class="rid">R2</span><span class="rtitle">Syncing <code>Order.Model</code> down attaches the wrong design to the SA units</span><span class="blast h">32 of 34 orders</span></div>
+        <p class="rbody"><strong>Measured 2026-09-05 against the fresh export.</strong> The decision is to write <code>Order.Model</code> into the existing <code>Order Items.Model</code> rather than a separate column, so this is an overwrite. Of the <strong>34</strong> orders holding both an SA and a non-SA unit with a model on each, <strong>32 carry a different model on the SA unit</strong>; 2 match. Model Revision splits identically. Meanwhile <strong>zero</strong> orders have non-SA siblings that disagree — so "all items of an order match" is exactly right for the normal units and exactly wrong for the SA ones.</p>
+        <p class="rbody">The twin is also not derivable. <strong>5 of the 42 SA units sit on plain <code>M-</code> models</strong> rather than <code>MSA-</code>: order <code>22110</code> runs <code>M-HYQU-0094</code> against an SA unit on <code>M-GEPO-0013</code>, a different client's design. <code>Models.Parent Model</code> is set on only 15 rows and holds Model_Codes, so it cannot resolve the rest either.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Don't copy — <strong>re-resolve</strong>. For <code>SA Job</code> false write <code>Order.Model</code> straight through; for <code>SA Job</code> true write the twin: the <code>Models</code> row where <code>SA Model</code> is true and <code>Parent Model</code> equals the new model's <code>Model_Code</code>. <strong>That link is sound — it resolves on 15 of 15 SA models.</strong> But only <strong>15 of 390 models have a twin at all</strong>, so when an order moves to one of the other 375 the flow must stop and flag for engineering rather than write a wrong model or a blank. The 5 SA units already sitting on plain <code>M-</code> models need reviewing first — they have no twin to re-resolve to.</span></div>
+      </div>
+
+      <div class="risk h">
+        <div class="rtop"><span class="rid">R3</span><span class="rtitle">Wedged trigger-flow runs would undo the date fix</span><span class="blast h">29+ instances</span></div>
+        <p class="rbody">Instances started Sep 2 are still <code>Running</code>, stalled before their final write, each holding a <strong>Sep 2 snapshot</strong> of its row. If they resume after the backfill they overwrite fresh values with stale ones — and they write dates as full UTC instants, which is exactly the mechanism that makes every date read a day early.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Cancel all <code>Running</code> instances <strong>before</strong> the run, then re-filter and confirm zero. Safe to cancel — the cause was the capacity cap, not a defect. The only loss is some cosmetic TextField draining with no confirmed consumers.</span></div>
+      </div>
+
+      <div class="risk h">
+        <div class="rtop"><span class="rid">R4</span><span class="rtitle">Editing the flow can wipe all 58 field mappings</span><span class="blast h">no backup exists</span></div>
+        <p class="rbody">There is a documented incident where an accidental re-selection of the List Name dropdown <strong>erased every field mapping on both write actions</strong> and forced a full rebuild. You are about to hand-edit those same two actions, in a designer that is already unstable — and <code>workflow-data/</code> holds only run-output JSON, not a flow backup.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Export the flow as a <code>.zip</code> package before touching the canvas. Thirty seconds, and it is the only rollback that exists for the flow definition itself.</span></div>
+      </div>
+
+      <div class="risk h">
+        <div class="rtop"><span class="rid">R5</span><span class="rtitle">No rollback for the data either</span><span class="blast h">~1,000 rows × 3 lists</span></div>
+        <p class="rbody">The run overwrites ~58 fields on roughly a thousand rows across <code>Order Items</code>, <code>Order</code> and <code>Model Revisions</code>. Item versioning is on, so single-row recovery works — but a thousand-row restore by hand is not a real option.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Full export of all three lists into <code>sharepoint-lists/</code> immediately before the run, using the existing <code>{List} {date} {time}.csv</code> convention. This is the actual rollback.</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sechead"><h2>Wasted time &amp; wrong results</h2><span class="ct">9 risks</span></div>
+    <div class="risks">
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R6</span><span class="rtitle">Every date on the list reads one day early</span><span class="blast m">~4,711 values</span></div>
+        <p class="rbody">The site moved to Eastern while these values are stored at UTC midnight, so they render as the previous day. Confirmed by eye, not inferred: unit <code>21408-1/1</code> stores <code>2026-04-23T00:00:00Z</code> and the list shows <strong>4/22/2026</strong>. This is what the whole run is for.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Run the backfill. All 24 date columns are now <em>Date Only</em>, and a Date-Only column receives site-local midnight from the connector — proven by the August writes, which landed at 04:00/05:00Z with the DST offset correct per date. Verify afterwards by re-counting stored time-of-day, never by run status.</span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R7</span><span class="rtitle">The <code>EC</code> guard is case-sensitive and was never fixed — 6 rows will throw</span><span class="blast m">6 rows</span></div>
+        <p class="rbody">The Sep 1 run completed all 982 iterations but reported <code>Action 'Switch' failed</code>, first at iteration 497. The one documented benign cause — <code>int()</code> on the literal <code>EC</code> — was fixed on Aug 18, so this is something else and nobody has identified it. "Failed is normal here" is being used as a blanket excuse, and that is how a real fault stays hidden.</p>
+        <p class="rbody"><strong>Wrong suspect, and the right one was hiding in the runbook.</strong> <code>Model Revisions.Family</code> was accused on a claim that ~28% of its values were legacy junk. The fresh export says otherwise — <code>C</code> 34, <code>B1</code> 19, <code>A</code> 7, <code>B2</code> 2, <strong>329 blank, no numeric values at all</strong>. And the <code>int()</code>/<code>EC</code> cause was never "fixed on Aug 18": it was <em>diagnosed</em> at 01:45 on Sep 1, five hours before the run, and <code>cutover-runbook-2026-09-01.md</code> records the fix as an instruction — <em>"The fix — apply to all six mapped stages"</em> — that nothing marks as carried out.</p>
+        <p class="rbody">The bug is case sensitivity. The guard is <code>equals(trim(...), 'EC')</code> and Power Automate's <code>equals()</code> is case-sensitive, so a lowercase <code>ec</code> falls straight through to <code>int('ec')</code> and throws — a <code>Switch</code> failure on a stage-date row, the same error the Sep 1 run reported.</p>
+        <p class="rbody"><strong>Scanned against the workbook the next run will actually read</strong> (the 09-04 23:08 refresh, <code>TableOrders</code> 1,019 rows). Marker rows went <strong>9 → 10</strong> since D0's 08-31 scan, and the ones that throw went <strong>3 → 6</strong>. All ten sit in <code>Coiling Date</code>; every other <code>int()</code>-bound column is clean, so <code>Section Qty</code>'s guard really is belt-and-braces. <strong>The lowercase count doubled in four days</strong> — this is staff typing into a live column, not a fixed legacy set, so hand-fixing today's six would be wrong again next week.</p>
+        <p class="rbody">⚠️ <strong>One thing I had been overstating.</strong> Proven: the guard is case-sensitive, lowercase <code>ec</code> exists, <code>int('ec')</code> throws, and that throw presents as <code>Action 'Switch' failed</code>. <em>Not</em> proven: that iteration <strong>497 specifically</strong> was one of those rows. The workbook has been refreshed four times since Sep 1 and Power Query rebuilds <code>TableOrders</code>, so row order then and now are not comparable — in the 09-04 snapshot the first <code>ec</code> row sits at position ~63, not 497. One page of run history would settle it, and it changes nothing about the fix.</p>
+        <p class="rbody"><strong>Confirmed from the exported definition, 2026-09-05.</strong> <code>toLower()</code> appears <strong>four times in the entire flow, all on Tanking and Delivery</strong> — the two stages that are not even mapped. All six that matter still read <code>equals(trim(item()?['Coiling Date']), 'EC')</code>, and there are 24 uppercase <code>'EC'</code> literals. The structure closes it: <code>Switch</code> branches on <code>length(Get_Order_items)</code> into <code>CreateOrderItem</code> / <code>UpdateOrderItem</code> / <code>DuplicateOrderItem</code>, and the stage-date mappings live <em>inside</em> those actions — so an <code>int('ec')</code> throw surfaces exactly as <code>Action 'Switch' failed</code>. <strong>Re-run without fixing it and it fails identically.</strong></p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">This is now an edit, not a check: <strong>24 expressions</strong> — six stages × <code>{Stage}Status</code> and <code>{Stage}Date</code>, on both write actions. <strong>Paste sheet ready at <code>docs/a5c-tolower-paste-sheet.md</code></strong>, generated by transforming the live expression text out of the export rather than retyping it. Apply to all six stages even though only <code>Coiling Date</code> carries markers today — nothing stops the same typing appearing in <code>Stacking</code> tomorrow. It outranks the five parity columns in D1: those are cosmetic, this one decides whether the run completes clean.</span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R8</span><span class="rtitle">Running before mapping costs a second 40-minute run</span><span class="blast m">40 min + a triple flood</span></div>
+        <p class="rbody">A run without the five new column mappings leaves them blank and forces a repeat. And a repeat is not just wall-clock: each run generates ~1,000 modifications on <code>Order Items</code>, <code>Order</code> <em>and</em> <code>Model Revisions</code> — the triple flood that wedged the trigger flow in the first place.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Map first — but time-box the designer to 45 minutes. If the canvas has not rendered by then, run anyway. The five columns appear on no staff view; the wrong dates are on screen right now. <strong>Dates win if you have to choose.</strong></span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R9</span><span class="rtitle">Committing 40 minutes to five untested mappings</span><span class="blast m">the whole run</span></div>
+        <p class="rbody">Five brand-new expressions go straight into a production run with no smaller trial. One wrong internal name writes nothing, silently — exactly how <code>Planned Delivery Date</code> failed once already by being retyped instead of read from <code>/fields</code>.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Drop <code>Top Count</code> to <code>10</code>, run, and read the write action's raw inputs in run history to confirm the new keys carry sane values. <strong>Then restore it to 5000 and re-verify</strong> — a forgotten threshold is its own documented incident.</span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R10</span><span class="rtitle">Turning the trigger flow back on floods the system</span><span class="blast m">~1,000 runs</span></div>
+        <p class="rbody">Re-enabling after a thousand-row backfill can fire a run per touched row, on a flow carrying 100+ actions. That is the same shape of load that hit the capacity cap. Worse, its stage-stamping half would write <code>Pending</code> into stages the backfill deliberately left blank — destroying the very marker the Tanking/Delivery cleanup depends on.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Strip the stage-stamping out first: a TextField-only flow is ~5 actions instead of 100+, so a flood drains in minutes rather than wedging for days. Then re-enable <strong>one flow at a time, watching</strong> — if any run passes ten minutes, turn it straight back off.</span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R11</span><span class="rtitle">The nightly date refresh could touch 1,052 rows instead of 21</span><span class="blast m">50× the load</span></div>
+        <p class="rbody">Only rows whose milestone has already passed can change value overnight — measured at about 21. An unfiltered nightly sweep would touch every row, plus a trigger-flow run each, forever.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Filter to <code>Item Status = Active</code> with both <code>Delivery End Date</code> and <code>Manual Estimated Delivery Date</code> null, then drop rows whose milestone is still in the future. Cap version history first — a nightly touch writes 365 versions per row per year.</span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R12</span><span class="rtitle">The nightly refresh can reintroduce the day-early bug it exists to avoid</span><span class="blast m">half closed</span></div>
+        <p class="rbody"><strong>Half closed 2026-09-05.</strong> The test column proves SharePoint accepts <code>TODAY()</code>, so the design survives. What remains is that a calculated column recomputes only when the <em>item</em> is written — which is why the nightly touch exists. But <code>TODAY()</code> in a SharePoint calculated column is widely UTC-based rather than site-local, and a 1am Eastern refresh happens to hide that: 05:00Z stamps the correct date and freezes it for the day. <strong>Any row edited between roughly 8pm and midnight Eastern recomputes with UTC already on tomorrow and reads a day ahead</strong> until the next pass — the same symptom this entire run exists to fix.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Check the test column after 8pm Eastern: if it shows tomorrow, <code>TODAY()</code> is UTC and every evening edit drifts. Touching all 1,052 rows nightly is also 1,052 trigger-flow runs and ~384,000 versions a year — put a <strong>trigger condition</strong> on the Order Items flow so a touch-only update never creates a run (conditions are evaluated before the run exists, so they cost nothing), and cap version history first.</span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R19</span><span class="rtitle">Deleting the duplicated columns from <code>Models</code> loses data on three of them</span><span class="blast m">304 values</span></div>
+        <p class="rbody">Fourteen spec columns exist on both lists — twelve by name, plus <code>kVA and kV</code>/<code>kVA</code> and <code>Description</code>/<code>Model Description</code> — and the revision is authoritative, so removing the <code>Models</code> copies is right in principle. But three are <strong>better populated on <code>Models</code></strong>: <code>Core Type</code> 285 vs 103, <code>Oil Type</code> 334 vs 266, <code>Model Type</code> 390 vs 336. Deleting those drops 182, 68 and 54 values that exist nowhere else.</p>
+        <p class="rbody">⚠️ <strong>The disagreement counts were mostly noise — corrected 2026-09-05.</strong> A naive comparison reports 522 conflicts; <strong>405 are cosmetic</strong>. Two causes: multi-choice columns export as a JSON array (<code>SUBWAY</code> against <code>["SUBWAY"]</code>), and French vs English decimal separators plus stray spaces (<code>7,875x13,25</code> against <code>7.875x13.25</code>). <strong>Only 117 are real.</strong></p>
+        <p class="rbody">Which overturns two things I wrote here earlier. <code>Description</code> vs <code>Model Description</code> was called "probably not the same field at all" on the strength of zero agreements in 295 — they <em>are</em> the same field, the zero was the JSON wrapper, and <strong>5</strong> genuinely differ. <code>Form</code> was called the one deserving the closest look on 102 disagreements; <strong>3</strong> survive.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Two sorted lists are ready — <strong><code>sharepoint-lists/Models dedup worklist 2026-09-05.csv</code></strong>: <strong>373 BACKFILL</strong> rows (safe to write) and <strong>117 REVIEW</strong> rows (need a person). Write <strong>only where the revision's value is blank</strong>, never over one that is set — <code>Model Revisions</code> has been the source of truth for weeks, so a populated cell is a deliberate edit. Most of the 117 are <code>Models</code> holding a placeholder (<code>Core Type</code> <code>None</code> vs <code>Amorphe</code>, <code>Phases</code> <code>0</code> vs <code>3</code>) and clear in bulk; genuine conflicts like <code>Model Type</code> <code>ZIG-ZAG</code> vs <code>MALT</code> are the minority. Then grep FRM10-12's <code>.pq</code> queries for each name — Power Query binds by name and breaks silently.</span></div>
+      </div>
+
+      <div class="risk m">
+        <div class="rtop"><span class="rid">R20</span><span class="rtitle"><code>Order.Lead Time</code> is not the client lead time and must not feed branch 7</span><span class="blast m">306 of 342 wrong</span></div>
+        <p class="rbody">FRM13 (<code>FAB/Suivi/Dessin</code>) holds <code>LeedTime</code> — 17 clients plus a <strong><code>GENERIC VALUE</code> row of 26 weeks</strong>, which is exactly <code>Order.Lead Time</code>'s column default. That looked like confirmation the two were the same quantity. They are not. Checked against the real rows: of the 342 orders whose client appears in FRM13, <strong>306 disagree and only 36 agree</strong>. HYDRO QUEBEC should be 28 weeks; 144 of its orders say 26 and 84 say 20, and only 12 say 28.</p>
+        <p class="rbody">And these are not per-order decisions — <strong>they layer by date</strong>. HYDRO QUEBEC's 240 orders split <code>26</code> (144, spanning 2024-02 to 2026-04), <code>20</code> (84, of which 82 are 2026) and <code>28</code> (12, <em>all</em> of them 2026-08). Each value is a snapshot of what the number was thought to be when the order was entered, and nobody backfills. FRM13's current 28 only starts appearing this August. So there are no overrides to protect.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Put the FRM13 <code>LeedTime</code> table on the <code>Clients</code> list — 17 clients, near-static — with <code>GENERIC VALUE</code>'s 26 as the <em>column default</em> rather than a fake client row, and <strong>sync <code>Lead Time</code> straight down to <code>Order Items</code></strong> (see R13). Because the values are drift rather than overrides, that sync <em>corrects</em> 228 of HQ's 240 orders instead of flattening anything. Two clients need pairing by hand first — <code>CITY OF RED DEER</code> ↔ <code>RED DEER</code> and <code>HYDRO OTTAWA</code> ↔ <code>OTTAWA HYDRO</code>; the other 15 match on name. Retire the Excel <code>default 52</code>, which contradicts FRM13's own 26. <strong>Eyeball the 82 HQ orders sitting at 20 before the first run</strong> — if any of those was a faster date actually promised to a customer, the sync rewrites it.</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sechead"><h2>Known, bounded, not urgent</h2><span class="ct">7 items · decided or deferred</span></div>
+    <div class="risks">
+
+      <div class="risk l">
+        <div class="rtop"><span class="rid">R13</span><span class="rtitle">Syncing the Clients list would fan out 698 rows from one edit</span><span class="blast l">68% of the list</span></div>
+        <p class="rbody">HYDRO QUEBEC accounts for 698 of 1,019 unit rows. One edit to that single Clients row would cascade to 698 updates plus a trigger run each — more than the load that already capped you out. The payoff is nil: <code>Clients</code> has two real columns, and <code>Order Items</code> already carries the name and <code>Client_ID_TextField</code>.</p>
+        <p class="rbody"><strong>Revised 2026-09-05 — "never sync Clients" was too broad.</strong> The 698 figure was measured against the current 100-action trigger flow. Once X3 strips the stage-stamping that flow is ~5 actions, so 698 runs drains in minutes rather than wedging. And a client's lead time changes a few times a year, so the burst is rare — and when it fires it is doing the work you actually want done.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Sync the <strong>number</strong>, not the notes. <code>Lead Time</code> travels to <code>Order Items</code> for branch 7; <code>Pièce critique</code> and <code>Fournisseur</code> stay on <code>Clients</code> as reference one lookup away, rather than duplicated onto 1,052 rows. The name columns stay off entirely — <code>Order - Client</code>, <code>Model - Client</code>, <code>Mod. Rev. - Client</code> and <code>Client - Client_ID</code> are not created; the existing <code>Client</code> lookup is the only one, and <code>Client_ID_TextField</code> just needs its one-time backfill. <strong>Build it now, enable it after X3</strong> — 698 runs of a 100-action flow is the exact shape that capped you out.</span></div>
+      </div>
+
+      <div class="risk l">
+        <div class="rtop"><span class="rid">R14</span><span class="rtitle">1,375 fabricated "Completed" statuses from an old mapping</span><span class="blast l">939 on live units</span></div>
+        <p class="rbody">An earlier bad mapping wrote <code>Completed</code> plus fake end dates onto Tanking and Delivery. The mapping is fixed; the data is not.</p>
+        <p class="rbody"><strong>Re-checked 2026-09-05 by a second route, and it holds.</strong> I set out to show this was overstated — the backfill wrote those statuses <em>from real workbook dates</em>, so provenance was being mistaken for incorrectness. Wrong, twice. First I tested "does the workbook hold a date for this unit?", on which 881 of 882 looked correct; that fails because these dates are <strong>scheduled</strong>, not actual — 903 of 972 <code>Tanking Date</code> values are in the future, out to 2030. Then I tested "is the date in the past?", which is also not the rule.</p>
+        <p class="rbody"><strong>The rule is <code>Location</code>.</strong> A unit at <code>Location = LI</code> (Livraison) with a date is delivered, whatever the date says. The list agrees exactly: <strong>36 units sit at Livraison, and all 36</strong> are <code>Item Status = Delivered</code>, carry a <code>Delivery End Date</code> and read <code>Delivery Status = Completed</code>. Meanwhile <strong>237 rows read <code>Completed</code> with a blank <code>Location</code></strong>. So a <code>Completed</code> delivery on a unit that never reached Livraison is fabricated — 364 of 400.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Standalone one-time flow keyed on a blank <code>{Stage} Start Date</code>. Run it <strong>after</strong> the backfill and <strong>delete its Planned-date writes</strong> — the backfill will have just written those correctly, so copying stale end dates over them is now actively harmful. <strong>Do not soften it</strong> on the strength of "but the workbook has a date". If a second condition is wanted, <code>Location ≠ Livraison</code> is the natural one and it spares the 36 that are real.</span></div>
+      </div>
+
+      <div class="risk l">
+        <div class="rtop"><span class="rid">R15</span><span class="rtitle">104 orphan rows, not 71 — but most of them have a cause</span><span class="blast l">11 real</span></div>
+        <p class="rbody"><strong>Re-diffed 2026-09-05.</strong> Workbook → list: <strong>71 missing</strong>, of which 65 are the new orders <code>22143</code>–<code>22155</code> that the run creates. The old "expect 72 → ~7" prediction holds, and the six survivors are now named, so the post-run re-diff has something exact to check: <code>20877R1-1/1</code>, <code>P1_001-1/1</code>, <code>P20001-1/1</code>, <code>P20002-1/1</code>, <code>P20004-1/2</code>, <code>P20004-2/2</code>.</p>
+        <p class="rbody">List → workbook is the direction that had drifted. The recorded 71 is now <strong>104</strong> — but split by <code>Item Status</code> it collapses: <strong>36</strong> correctly <code>Delivered</code>, <strong>57</strong> whose delivery values are fabricated rather than evidence of shipping (see R14), and <strong>11</strong> genuinely unexplained.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">The 11 are not random. <strong>Eight are all order <code>22021</code></strong> — units 1, 5, 6, 7, 8, 9, 10 and 12 of 20, a partial-order mismatch, so it is one order to look at rather than eight rows. The other three carry an <strong><code>E</code> prefix</strong> (<code>E21010-1/2</code>, <code>E21010-2/2</code>, <code>E21014-1/1</code>) that appears nowhere in this repo — every note about prefixed keys discusses <code>P</code>. <strong>Ask what <code>E</code> means before assuming it is junk.</strong> That is a far smaller job than "71 orphan rows waiting".</span></div>
+      </div>
+
+      <div class="risk l">
+        <div class="rtop"><span class="rid">R16</span><span class="rtitle">Three sync flows have been off since August</span><span class="blast l">by decision</span></div>
+        <p class="rbody">The Order Items trigger plus the Model Revisions and Order TextField syncs are all disabled — the latter two switched off in the same minute on Aug 21 and never restored. TextFields are stale as a result, and the ID TextFields on app-created rows are blank.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Staying off until the final sync run, by your call. Then one-time backfill passes rather than reviving the ongoing flows — the parent sync makes those TextFields redundant anyway.</span></div>
+      </div>
+
+      <div class="risk l">
+        <div class="rtop"><span class="rid">R17</span><span class="rtitle">Models ↔ Model Revisions is a genuine cycle</span><span class="blast l">latent</span></div>
+        <p class="rbody"><code>Models.Latest Model Revision</code> points one way and <code>Model Revisions.Pioneer Model Code</code> points back. Neither writes to the other today, so nothing loops — but a future sync writing back up the chain is where an infinite loop starts.</p>
+        <p class="rbody"><strong>A third edge is now planned into this.</strong> A change to a model must also update its SA twin — so <code>Models</code> will write to <code>Models</code>. That is self-referential: editing <code>M-HYQU-0092</code> fires the flow, which writes <code>MSA-HYQU-0092</code>, which fires the same flow again. It terminates today only because no <code>MSA-</code> model has a twin of its own, which is luck rather than design.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">A change-guard on every sync write: only write when the value actually differs. That is what stops the <code>Models</code> → <code>Models SA</code> edge looping, and it also stops one <code>Models</code> edit rewriting all 91 units that use it. Belt and braces on the self-edge: skip the write outright when <code>SA Model</code> is already true, so a twin can never trigger another hop.</span></div>
+      </div>
+
+      <div class="risk l">
+        <div class="rtop"><span class="rid">R18</span><span class="rtitle">Two unrelated things are both called "72"</span><span class="blast l">reporting trap</span></div>
+        <p class="rbody">72 rows have a null <code>Order_Number_TextField</code> waiting on the trigger flow. Separately, 72 workbook rows have no <code>Order Items</code> row. Same number, unrelated causes, pure coincidence — and easy to conflate in a status update at 3am.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Name which one you mean whenever it comes up. <em>(An earlier version of this card blamed the thin Production Floor view on <code>Location</code> being empty on 841 units. That was wrong and is now closed — see the card below.)</em></span></div>
+      </div>
+
+      <div class="risk l">
+        <div class="rtop"><span class="rid">R21</span><span class="rtitle"><code>Location</code> was never broken — roadmap item 6 closed</span><span class="blast l">closed</span></div>
+        <p class="rbody">"<code>Location</code> empty on 841 of 1,016 active units — never backfilled — makes Production Floor near-useless" sat on the roadmap for weeks. It is wrong on all three counts. <strong>It is blank at source too</strong> (863 of 1,019 in <code>TableOrders</code>), so there is nothing to backfill from — a backfill flow would write 863 nulls. The mapping is fine: the flow's <code>MappedLocation</code> compose translates all twelve codes and <strong>zero</strong> of the populated ones fall through to null.</p>
+        <p class="rbody">And the blanks are correct. Cross-tabulated against whether a unit has any stage date, the split is perfect — <strong>156 with a <code>Location</code> have all started production; 863 without have none</strong>. It is filled when a unit physically enters the shop and not before, which is exactly what the 2026-08-12 "purely physical" decision intended.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Nothing to do. <strong>I also got the follow-on wrong</strong> — I claimed 98 of the 156 were already delivered so the floor view should show 58. By the <code>Location = LI</code> rule the real number is <strong>36</strong>, and <strong>150 of the 156 are genuinely on the floor</strong>. The view is about right and there is no filter bug. B2-verify goes back to being ordinary verification.</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <span>Verified against the live tenant 2026-09-04/05 · risks re-measured 2026-09-05</span>
+    <span>Detail: <code>roadmap.md</code> · <code>infrastructure-overview.md</code> · <code>transfer-flow-forensics-2026-09-04.md</code></span>
+  </footer>
+</div>
+
+<script>
+const PHASES = [
+  {k:"pre",  n:"1 · Pre-flight"},
+  {k:"deck", n:"2 · Clear decks"},
+  {k:"map",  n:"3 · Designer"},
+  {k:"run",  n:"4 · The run"},
+  {k:"clean",n:"5 · Cleanup"},
+  {k:"arch", n:"6 · New architecture"}
+];
+
+const STEPS = [
+  {id:"P1",ph:0,r:0,gate:1,t:"Confirm the flow reads Formulaires/FRM10-12.xlsx",
+   why:"The workbook moved to Revue/Formulaires/. Confirm the Excel action still resolves to it — nothing below matters if the flow is reading a dead file.",deps:[]},
+  {id:"P2",ph:0,r:1,t:"Confirm Top Count is 5000",
+   why:"It was dropped to 10 for testing once and a run went out at that setting.",deps:[]},
+  {id:"P3",ph:0,r:2,gate:1,t:"Add toLower() to the 24 EC guards",
+   why:"CONFIRMED MISSING from the export - toLower() appears 4 times, all on unmapped stages. 6 rows in the 09-04 workbook will throw. Paste sheet: docs/a5c-tolower-paste-sheet.md.",deps:["P5"]},
+  {id:"P4",ph:0,r:3,t:"Export Order Items, Order, Model Revisions",
+   why:"Order Items, Order and Model Revisions. The only real rollback for the data.",deps:[]},
+  {id:"P5",ph:0,r:4,t:"Export the flow as a .zip package",
+   why:"The only rollback for the flow definition. A dropdown mis-click has wiped every mapping before.",deps:[]},
+
+  {id:"C1",ph:1,r:0,t:"Confirm all three sync flows are OFF",
+   why:"They stay off through the run and until the final sync.",deps:[]},
+  {id:"C2",ph:1,r:1,gate:1,t:"Cancel wedged instances, confirm zero",
+   why:"Then confirm Running is zero. They hold Sep 2 snapshots and would overwrite the fix with UTC-midnight dates.",deps:["C1"]},
+
+  {id:"D1",ph:2,r:0,t:"Map the 5 columns on both write actions",
+   why:"On BOTH write actions. Paste sheet: docs/a5-d1-d2-paste-sheet.md, both sides read from the export. Protector & Switchgear Item # truncates to Protector_x0020__x0026__x0020_Sw - never retype it.",deps:["P1","P5"]},
+  {id:"D2",ph:2,r:1,t:"Map Order_Number_TextField",
+   why:"One mapping, no extra calls — keeps Order Number populated while the sync flows are off.",deps:["P5"]},
+  {id:"D3",ph:2,r:2,t:"Add the one-time BO transfer from TableBO",
+   why:"Paste sheet: docs/a5-d3-bo-transfer-paste-sheet.md. Joined on Order -> Order Items.Title, never from TableOrders.BO. Do not blind-map the BO{n} OK booleans - BO1 OK is False on 988 of 1014.",deps:["P5"]},
+  {id:"D6",ph:2,r:5,t:"Add the Family fill pass from FRM10-12",
+   why:"Model Revisions.Family is blank on 329 of 391. Fetch it from FRM10-12 and write it back - checking first that the Choice allows fill-in, or every value outside A/B1/B2/C is rejected.",deps:["P5"]},
+  {id:"D4",ph:2,r:3,gate:1,t:"Smoke test at Top Count 10",
+   why:"Read the raw inputs in run history and confirm the new keys carry real values.",deps:["D1","D2","D3","D6"]},
+  {id:"D5",ph:2,r:4,gate:1,t:"Restore Top Count to 5000 and re-verify",
+   why:"And re-verify it. A forgotten threshold is its own documented incident.",deps:["D4"]},
+
+  {id:"R1",ph:3,r:0,t:"Confirm the workbook cutoff is in force",
+   why:"Staff already know it is the cutoff period, so this is a confirmation rather than an announcement - check nobody has saved FRM10-12 since the last refresh.",deps:[]},
+  {id:"R2",ph:3,r:1,t:"Refresh via the Office Script button only",
+   why:"Never Refresh All or COM RefreshAll — all three destroy the native-formula columns.",deps:["R1"]},
+  {id:"R3",ph:3,r:2,gate:1,t:"Run the flow — click once",
+   why:"From the Run button on the detail page, not the canvas. A second concurrent run conflicts.",deps:["P1","P2","P3","P4","C2","D5","R2"]},
+  {id:"R4",ph:3,r:3,gate:1,t:"Verify stored time-of-day is 04:00/05:00Z",
+   why:"Expect 04:00/05:00Z. The actual point of the run — and a healthy run still reports Failed, so never verify by status.",deps:["R3"]},
+  {id:"R5",ph:3,r:4,t:"Verify new columns, and BO still 73",
+   why:"Protector & Switchgear Item # will be 0 — that is correct, it is blank at source.",deps:["R3"]},
+  {id:"R6",ph:3,r:5,t:"Re-diff both directions — expect 71 → 6",
+   why:"The six are already named: 20877R1-1/1, P1_001-1/1, P20001-1/1, P20002-1/1, P20004-1/2, P20004-2/2. Anything else appearing is a NEW problem.",deps:["R3"]},
+  {id:"R7",ph:3,r:6,t:"Remove the BO mapping AND the 5 companion writes",
+   why:"After cutoff the SharePoint list is the reference, so both must go - left in, every future run overwrites SharePoint-native edits with stale Excel values.",deps:["R3"]},
+
+  {id:"X1",ph:4,r:0,t:"Tanking/Delivery remediation flow",
+   why:"1,375 fabricated statuses. Delete its Planned-date writes first — the backfill just set those.",deps:["R4"]},
+  {id:"X2",ph:4,r:1,t:"Build the reconciliation pass",
+   why:"104 orphans, but only 11 are real - 8 of them a single order (22021) and 3 with an unexplained E prefix. Much smaller than it looked.",deps:["R6"]},
+  {id:"X3",ph:4,r:2,t:"Strip 2c stage-stamping from the trigger flow",
+   why:"Out of the trigger flow. Highest leverage: ~5 actions instead of 100+. Gates both the re-enable and the sync work.",deps:["R4"]},
+  {id:"X4",ph:4,r:3,gate:1,t:"Re-enable the trigger flow, watch 15 min",
+   why:"Watch it for 15 minutes. If any run passes ten minutes, turn it straight back off.",deps:["X3"]},
+  {id:"X5",ph:4,r:4,t:"Re-enable Model Revisions sync",
+   why:"One at a time — they share a throughput bucket.",deps:["X4"]},
+  {id:"X6",ph:4,r:5,t:"Re-enable Order sync",
+   why:"Read its definition first — the docs say it should not exist as an ongoing flow.",deps:["X5"]},
+
+  {id:"N1",ph:5,r:0,t:"Return the picker workbook",
+   why:"117 columns ticked or unticked. Everything below waits on it.",deps:[]},
+  {id:"N2",ph:5,r:1,t:"Create the parent columns on Order Items",
+   why:"48 columns. Script ready at scripts/n2_create_columns.js with an UNDO block - createfieldasxml sets the internal name outright, which the UI cannot do. Blocked only on a permission.",deps:["N1"]},
+  {id:"N3",ph:5,r:2,t:"Build the 3 parent sync flows",
+   why:"Change-guard on every write, and skip SA units when writing Model / Model Revision - 32 of 34 mixed orders carry a different model on the SA unit.",deps:["N2","X3"]},
+  {id:"N4",ph:5,r:3,t:"Test TODAY() in a calculated column",
+   why:"Done 2026-09-05 - SharePoint accepts it, so the column is buildable. Now check the same column after 8pm: if it reads tomorrow, TODAY() is UTC.",deps:[]},
+  {id:"N5",ph:5,r:4,t:"Cap version history on Order Items",
+   why:"On Order Items — a nightly touch writes 365 versions per row per year.",deps:[]},
+  {id:"N6",ph:5,r:5,t:"Build the Estimated Delivery column",
+   why:"Branches 1, 2 and 7 only — needs Lead Time synced down first.",deps:["N4","N3"]},
+  {id:"N7",ph:5,r:6,t:"Nightly refresh flow at 03:00",
+   why:"Filtered to ~21 rows, not 1,052.",deps:["N6","N5"]},
+  {id:"N8",ph:5,r:7,t:"Split Status into Step Status + Status Date",
+   why:"Into Step Status + Status Date. 156 rows, 16 values — flag the 9 ambiguous 'Jui' rows for a human.",deps:[]}
+];
+
+const byId = {};
+STEPS.forEach(s => byId[s.id] = s);
+const stateEl = document.getElementById("app-state");
+let STATE;
+try { STATE = JSON.parse(stateEl.textContent) || {}; } catch (e) { STATE = {}; }
+if (!STATE.status) STATE.status = {};
+
+const CX = 168, CY = 82, PAD_T = 30, PAD_L = 4;
+const NEXT = { todo:"doing", doing:"done", done:"todo" };
+
+// Input state. `lastPointer` is read from the real event rather than a media
+// query, so a hybrid device (touchscreen laptop) behaves correctly per gesture
+// instead of being locked into one mode by what it *could* do.
+let lastPointer = "mouse";
+let lastTapId = null, lastTapAt = 0, selected = null;
+const TAP_MS = 350;
+
+function stat(id){ return STATE.status[id] || "todo"; }
+function ready(s){ return s.deps.every(d => stat(d) === "done"); }
+
+function render(){
+  const g = document.getElementById("graph");
+  const svg = document.getElementById("edges");
+  [...g.querySelectorAll(".node,.phlabel")].forEach(n => n.remove());
+
+  PHASES.forEach((p,i) => {
+    const l = document.createElement("div");
+    l.className = "phlabel";
+    l.style.left = (PAD_L + i*CX) + "px";
+    l.textContent = p.n;
+    g.appendChild(l);
+  });
+
+  STEPS.forEach(s => {
+    const b = document.createElement("button");
+    const st = stat(s.id), rdy = ready(s);
+    b.className = "node " + st + (st==="todo" && rdy ? " ready" : "") + (s.gate ? " gate" : "");
+    b.style.left = (PAD_L + s.ph*CX) + "px";
+    b.style.top  = (PAD_T + s.r*CY) + "px";
+    b.dataset.id = s.id;
+    b.type = "button";
+    b.innerHTML = '<span class="nid">' + s.id + '</span><span class="ntitle"></span>' +
+                  '<span class="nwhy"></span>';
+    b.querySelector(".ntitle").textContent = s.t;
+    b.querySelector(".nwhy").textContent = s.why;
+    b.setAttribute("aria-label", s.id + ": " + s.t + " — " + st);
+    if (s.id === selected) b.classList.add("sel");
+    // Touch has no hover, so the two jobs a mouse splits across hover and click
+    // have to share one gesture. Single tap always means the same thing —
+    // select — and only a double tap advances state. Selection is harmless and
+    // idempotent, so it can fire on the first tap with no wait-and-see delay.
+    b.addEventListener("pointerdown", e => { lastPointer = e.pointerType || "mouse"; });
+    b.addEventListener("click", () => {
+      if (lastPointer === "touch") {
+        const now = Date.now();
+        if (lastTapId === s.id && now - lastTapAt < TAP_MS) {
+          lastTapId = null; lastTapAt = 0;
+          cycle(s.id);
+        } else {
+          lastTapId = s.id; lastTapAt = now;
+          setSelected(s.id);
+        }
+      } else {
+        cycle(s.id);
+      }
+    });
+    b.addEventListener("mouseenter", () => { if (lastPointer !== "touch") focus(s.id); });
+    b.addEventListener("mouseleave", () => { if (lastPointer !== "touch") focus(selected); });
+    b.addEventListener("focus", () => focus(s.id));
+    b.addEventListener("blur", () => focus(selected));
+    g.appendChild(b);
+  });
+
+  let paths = '<defs>' +
+    '<marker id="ar-in" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+      '<path d="M0,0 L8,4 L0,8 z" style="fill:var(--edge-in)"/></marker>' +
+    '<marker id="ar-out" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">' +
+      '<path d="M0,0 L8,4 L0,8 z" style="fill:var(--copper)"/></marker>' +
+    '</defs>';
+  STEPS.forEach(s => {
+    s.deps.forEach(d => {
+      const p = byId[d]; if (!p) return;
+      const x1 = PAD_L + p.ph*CX + 150, y1 = PAD_T + p.r*CY + 31;
+      const x2 = PAD_L + s.ph*CX,       y2 = PAD_T + s.r*CY + 31;
+      const mx = (x1 + x2) / 2;
+      const cls = "edge" + (stat(d) === "done" ? " satisfied" : "");
+      paths += '<path class="' + cls + '" data-to="' + s.id + '" data-from="' + d +
+               '" d="M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 + '"/>';
+    });
+  });
+  svg.innerHTML = paths;
+
+  const list = document.getElementById("tklist");
+  list.innerHTML = "";
+  PHASES.forEach((p,i) => {
+    const mine = STEPS.filter(s => s.ph === i);
+    const dn = mine.filter(s => stat(s.id) === "done").length;
+    const sec = document.createElement("div");
+    sec.className = "phase";
+    const h = document.createElement("div");
+    h.className = "phtitle";
+    h.innerHTML = '<h3></h3><span class="pn">' + dn + '/' + mine.length + '</span>';
+    h.querySelector("h3").textContent = p.n;
+    sec.appendChild(h);
+    const ul = document.createElement("ul");
+    ul.className = "items";
+    mine.forEach(s => {
+      const st = stat(s.id), rdy = ready(s);
+      const li = document.createElement("li");
+      li.className = "item " + st + (st==="todo" && !rdy ? " waiting" : "");
+      const missing = s.deps.filter(d => stat(d) !== "done");
+      li.innerHTML =
+        '<button class="tick" type="button" aria-label="Cycle ' + s.id + '">' +
+        '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6.5 4.5 10 11 2.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '</button><div><span class="what"></span><span class="why"></span>' +
+        (missing.length ? '<span class="needs">waiting on <b>' + missing.join(", ") + '</b></span>' : '') +
+        '</div>';
+      li.querySelector(".what").textContent = s.id + " · " + s.t;
+      li.querySelector(".why").textContent = s.why;
+      li.querySelector(".tick").addEventListener("click", () => cycle(s.id));
+      ul.appendChild(li);
+    });
+    sec.appendChild(ul);
+    list.appendChild(sec);
+  });
+
+  const total = STEPS.length;
+  const dn = STEPS.filter(s => stat(s.id) === "done").length;
+  const dg = STEPS.filter(s => stat(s.id) === "doing").length;
+  const bar = document.getElementById("progbar");
+  bar.innerHTML = '<i class="d" style="width:' + (dn/total*100) + '%"></i>' +
+                  '<i class="g" style="width:' + (dg/total*100) + '%"></i>';
+  document.getElementById("progtxt").textContent =
+    dn + " of " + total + " done" + (dg ? " · " + dg + " in progress" : "");
+}
+
+function setSelected(id){
+  selected = (selected === id) ? id : id;
+  [...document.querySelectorAll(".node.sel")].forEach(n => n.classList.remove("sel"));
+  const n = document.querySelector('.node[data-id="' + id + '"]');
+  if (n) n.classList.add("sel");
+  focus(id);
+}
+
+function clearSelected(){
+  selected = null;
+  [...document.querySelectorAll(".node.sel")].forEach(n => n.classList.remove("sel"));
+  focus(null);
+}
+
+function focus(id){
+  const g = document.getElementById("graph");
+  const wrap = document.getElementById("graphwrap");
+  const clear = () => [...g.querySelectorAll(".lit")]
+    .forEach(n => n.classList.remove("lit","in","out"));
+  if (!id){ g.classList.remove("focused"); wrap.classList.remove("focused");
+    clear(); return; }
+  g.classList.add("focused");
+  clear();
+  const lit = new Set([id]);
+  byId[id].deps.forEach(d => lit.add(d));
+  STEPS.forEach(s => { if (s.deps.includes(id)) lit.add(s.id); });
+  lit.forEach(x => { const n = g.querySelector('.node[data-id="' + x + '"]'); if (n) n.classList.add("lit"); });
+  // An edge whose `to` is this node feeds INTO it (a dependency);
+  // one whose `from` is this node feeds OUT of it (something it unblocks).
+  [...g.querySelectorAll("path")].forEach(p => {
+    if (p.dataset.to === id) p.classList.add("lit","in");
+    else if (p.dataset.from === id) p.classList.add("lit","out");
+  });
+  document.getElementById("graphwrap").classList.add("focused");
+}
+
+let timer = null, canSave = true;
+function cycle(id){
+  STATE.status[id] = NEXT[stat(id)];
+  render();
+  if (!canSave) return;
+  clearTimeout(timer);
+  timer = setTimeout(save, 1100);
+  note("Saving…");
+}
+
+function note(msg){
+  const b = document.getElementById("savebar");
+  b.innerHTML = "";
+  const s = document.createElement("span");
+  s.textContent = msg;
+  b.appendChild(s);
+}
+
+const REST_NOTE = "Progress saves to this page.";
+
+function serialize(){
+  // Reset every JS-rendered region to its at-rest form before capturing, so the
+  // published document is the page as a fresh visitor should first see it —
+  // never a snapshot of transient UI (a mid-save "Saving…" line, a hover state).
+  const g = document.getElementById("graph");
+  const list = document.getElementById("tklist");
+  const bar = document.getElementById("progbar");
+  const gs = g.innerHTML, ls = list.innerHTML, bs = bar.innerHTML;
+  g.innerHTML = '<svg id="edges" aria-hidden="true"></svg>';
+  list.innerHTML = "";
+  bar.innerHTML = "";
+  document.getElementById("progtxt").textContent = "";
+  note(REST_NOTE);
+  stateEl.textContent = JSON.stringify(STATE);
+  // Publish BODY CONTENT ONLY. The platform wraps whatever it is given in a
+  // full document skeleton, so returning a whole document here nested one
+  // inside the other on every save -- three levels deep, and the file half
+  // again as large, before it was caught. Everything this page needs (its
+  // title, font links and styles) already sits inside the body, so
+  // body.innerHTML is complete on its own.
+  // NB: deliberately no literal tag syntax in this comment -- an unwrap script
+  // searching for the skeleton matched prose here and ate the document.
+  const html = document.body.innerHTML;
+  g.innerHTML = gs; list.innerHTML = ls; bar.innerHTML = bs;
+  render();
+  return html;
+}
+
+async function save(){
+  const api = await claude.use("artifact");
+  if (!api){ canSave = false; note("Progress is not saved in this view."); return; }
+  try {
+    await api.publish(serialize());
+    note("Saved.");
+  } catch (e){
+    const c = e && e.code;
+    if (c === "not_granted" || c === "not_writer"){
+      canSave = false; note("View only — your ticks are not saved.");
+    } else if (c === "conflict"){
+      note("Someone else saved first — reloading their version.");
+    } else {
+      note("Could not save. Your ticks are still shown here.");
+    }
+  }
+}
+
+// Tapping empty canvas clears the selection — on touch there is no "move the
+// pointer away", so dismissal needs its own target.
+document.getElementById("graph").addEventListener("click", e => {
+  if (!e.target.closest(".node")) clearSelected();
+});
+
+render();
+claude.use("artifact").then(api => {
+  if (!api){ canSave = false; note("Progress is not saved in this view."); }
+});
+</script>
+
+</body></html>
