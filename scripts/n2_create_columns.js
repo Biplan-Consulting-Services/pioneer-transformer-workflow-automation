@@ -39,6 +39,7 @@
 (async () => {
   const base = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const LIST = "Order Items";
+  const LIST_ID = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
 
   const FIELDS = [
     "<Field Type=\"Text\" DisplayName=\"Order - Order Number\" Name=\"OrdOrderNumber\" StaticName=\"OrdOrderNumber\" Required=\"FALSE\" Group=\"Parent Sync\" />",
@@ -126,11 +127,18 @@
 
   // Read back what SharePoint actually stored. A POST returning 200 is not
   // proof the field is the type you asked for.
-  const v = await (await fetch(base + "/_api/web/lists/getbytitle('" + LIST +
-    "')/fields?$select=Title,InternalName,TypeAsString&$filter=Group%20eq%20'Parent%20Sync'",
-    { credentials: "include", headers: { "Accept": "application/json;odata=nometadata" } })).json();
-  console.log("stored in group 'Parent Sync': " + v.value.length + " (expect 48)");
-  console.table(v.value);
+  // NOTE: _api/web/lists/.../fields is UNAVAILABLE on this tenant -- it hangs as a
+  // navigation (45s document_idle, 4 times across two days) and returns
+  // "Failed to fetch" as a fetch. Use the v2.0 columns endpoint, which works.
+  // The "sites/root" segment is required; _api/v2.0/lists/<id> returns itemNotFound.
+  const cols = await (await fetch(base + "/_api/v2.0/sites/root/lists/" + LIST_ID + "/columns",
+    { credentials: "include", headers: { "Accept": "application/json" } })).json();
+  const mine = (cols.value || []).filter(c => c.columnGroup === "Parent Sync")
+    .map(c => ({ name: c.name, display: c.displayName,
+                 type: Object.keys(c).find(k => ["text","number","dateTime","boolean",
+                        "currency","hyperlinkOrPicture","choice","lookup","note"].includes(k)) || "?" }));
+  console.log("stored in group 'Parent Sync': " + mine.length + " (expect 48)");
+  console.table(mine);
 })();
 
 
@@ -141,18 +149,22 @@
 (async () => {
   const base = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const LIST = "Order Items";
+  const LIST_ID = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
   const dg = await (await fetch(base + "/_api/contextinfo", { method: "POST",
     credentials: "include", headers: { "Accept": "application/json;odata=nometadata" } })).json();
-  const v = await (await fetch(base + "/_api/web/lists/getbytitle('" + LIST +
-    "')/fields?$select=InternalName&$filter=Group%20eq%20'Parent%20Sync'",
-    { credentials: "include", headers: { "Accept": "application/json;odata=nometadata" } })).json();
-  for (const f of v.value) {
-    await fetch(base + "/_api/web/lists/getbytitle('" + LIST +
-      "')/fields/getbyinternalnameortitle('" + f.InternalName + "')", {
+  // Enumerate via the v2.0 columns endpoint -- _api/web/.../fields is unavailable
+  // on this tenant. Getting this wrong would have left the rollback broken.
+  const cols = await (await fetch(base + "/_api/v2.0/sites/root/lists/" + LIST_ID + "/columns",
+    { credentials: "include", headers: { "Accept": "application/json" } })).json();
+  const mine = (cols.value || []).filter(c => c.columnGroup === "Parent Sync");
+  console.log("about to delete " + mine.length + " columns in group 'Parent Sync'");
+  for (const f of mine) {
+    const r = await fetch(base + "/_api/web/lists/getbytitle('" + LIST +
+      "')/fields/getbyinternalnameortitle('" + f.name + "')", {
       method: "POST", credentials: "include",
       headers: { "X-RequestDigest": dg.FormDigestValue, "X-HTTP-Method": "DELETE",
                  "IF-MATCH": "*" } });
-    console.log("deleted " + f.InternalName);
+    console.log((r.ok ? "deleted " : "FAILED " + r.status + " ") + f.name);
   }
 })();
 ---------------------------------------------------------------------- */
