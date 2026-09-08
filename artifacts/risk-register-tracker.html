@@ -255,7 +255,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<script id="app-state" type="application/json">{"status":{"P1":"done","P2":"done","P3":"done","P5":"done","P4":"todo","C1":"done","C2":"doing","D1":"done","D2":"done","D3":"done","D6":"done","D4":"todo","D5":"todo","R1":"todo","R2":"todo","R3":"todo","R4":"todo","R5":"todo","R6":"todo","R7":"todo","X1":"todo","X2":"todo","X3":"todo","X4":"todo","X5":"todo","X6":"todo","N1":"done","N2":"done","N4":"done","N3":"todo","N5":"todo","N6":"todo","N7":"todo"},"v":1}</script>
+<script id="app-state" type="application/json">{"status":{"P1":"done","P2":"done","P3":"done","P5":"done","P4":"done","C1":"done","C2":"done","D1":"done","D2":"done","D3":"done","D6":"done","D4":"todo","D5":"todo","R1":"done","R2":"todo","R3":"todo","R4":"todo","R5":"todo","R6":"todo","R7":"todo","X1":"todo","X2":"todo","X3":"todo","X4":"todo","X5":"todo","X6":"todo","N1":"done","N2":"done","N4":"done","N3":"todo","N5":"todo","N6":"todo","N7":"todo"},"v":1}</script>
 
 <div class="wrap">
 
@@ -321,7 +321,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
 
   <!-- ============ RISKS ============ -->
   <section class="sec">
-    <div class="sechead"><h2>Silent data loss</h2><span class="ct">5 risks · none report an error</span></div>
+    <div class="sechead"><h2>Silent data loss</h2><span class="ct">5 risks · 1 closed · none report an error</span></div>
     <div class="risks">
 
       <div class="risk h">
@@ -338,9 +338,10 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
       </div>
 
       <div class="risk h">
-        <div class="rtop"><span class="rid">R3</span><span class="rtitle">Wedged trigger-flow runs would undo the date fix</span><span class="blast h">29+ instances</span></div>
+        <div class="rtop"><span class="rid">R3</span><span class="rtitle">Wedged trigger-flow runs would undo the date fix</span><span class="blast l">closed</span></div>
         <p class="rbody">Instances started Sep 2 are still <code>Running</code>, stalled before their final write, each holding a <strong>Sep 2 snapshot</strong> of its row. If they resume after the backfill they overwrite fresh values with stale ones — and they write dates as full UTC instants, which is exactly the mechanism that makes every date read a day early.</p>
-        <div class="fix"><span class="lab">Fix</span><span class="txt">Cancel all <code>Running</code> instances <strong>before</strong> the run, then re-filter and confirm zero. Safe to cancel — the cause was the capacity cap, not a defect. The only loss is some cosmetic TextField draining with no confirmed consumers.</span></div>
+        <p class="rbody"><strong>Closed 2026-09-08 — cancelled and confirmed zero by the user.</strong> This is a tenant fact only the user can establish, so it is taken on their confirmation rather than re-derived here. <strong>What closed is the count at a moment, not the risk for all time:</strong> the value of this step is zero wedged instances <em>at the instant <code>R3</code> starts</em>, and <code>R3</code> is still gated on <code>P4</code>, <code>D5</code> and <code>R2</code>. Nothing should start new instances while all three sync flows stay off (<code>C1</code>), so this should hold — but if the run slips by days, <strong>re-filter once more immediately before clicking Run.</strong> A count that has <em>risen</em> means something switched a flow back on, and that needs understanding before the run, not after.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Done. Cancel all <code>Running</code> instances <strong>before</strong> the run, then re-filter and confirm zero — and again just before <code>R3</code> if time has passed. Safe to cancel — the cause was the capacity cap, not a defect. The only loss is some cosmetic TextField draining with no confirmed consumers.</span></div>
       </div>
 
       <div class="risk h">
@@ -352,7 +353,8 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
       <div class="risk h">
         <div class="rtop"><span class="rid">R5</span><span class="rtitle">No rollback for the data either</span><span class="blast h">~1,000 rows × 3 lists</span></div>
         <p class="rbody">The run overwrites ~58 fields on roughly a thousand rows across <code>Order Items</code>, <code>Order</code> and <code>Model Revisions</code>. Item versioning is on, so single-row recovery works — but a thousand-row restore by hand is not a real option.</p>
-        <div class="fix"><span class="lab">Fix</span><span class="txt">Full export of all three lists into <code>sharepoint-lists/</code> immediately before the run, using the existing <code>{List} {date} {time}.csv</code> convention. This is the actual rollback.</span></div>
+        <p class="rbody"><strong>Done 2026-09-08 02:17 — the rollback exists.</strong> <code>Order Items 2026-09-08 0217</code> (1,052 rows, <strong>143 columns</strong>), <code>Order 2026-09-08 0217</code> (445), <code>Model Revisions 2026-09-08 0218</code> (391) and <code>Models 2026-09-08 0218</code> (390). Verified rather than assumed: the row counts rule out the <code>BO Tracking</code> view trap that once produced a 3-row export, and <code>Order Items</code> is <strong>+48 columns</strong> on the Sep 5 snapshot — exactly <code>N2</code>, which confirms the export is live. The other three are <strong>byte-identical</strong> to Sep 5, which is the expected result with every sync flow off and no run yet, and is itself evidence nothing has been edited. The 48 parent columns are empty, as they should be until <code>R3</code>. ⚠️ Read emptiness by eye, not by count — a Boolean <code>False</code> exports as a non-empty cell, which is what once inflated <code>BO</code> to a phantom 626.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Done. Full export of all three lists into <code>sharepoint-lists/</code> immediately before the run, using the existing <code>{List} {date} {time}.csv</code> convention. This is the actual rollback.</span></div>
       </div>
 
     </div>
@@ -799,14 +801,21 @@ function serialize(){
   const assets = [...document.querySelectorAll("title, [data-asset]")];
   const headHTML = assets.map(el => el.outerHTML).join(NL).trim();
 
-  // An asset that currently sits in the body would otherwise be emitted twice
-  // -- once from the head assembly above, once inside the body capture. Swap
-  // each for a comment across the capture, then put it straight back.
-  const hidden = assets
-    .filter(el => document.body.contains(el))
-    .map(el => { const m = document.createComment("a"); el.replaceWith(m); return [m, el]; });
-  let bodyHTML = document.body.innerHTML;
-  hidden.forEach(([m, el]) => m.replaceWith(el));
+  // An asset sitting in the body would otherwise be emitted twice -- once from
+  // the head assembly above, once inside the body capture. So take the body
+  // from a CLONE with the assets deleted, rather than mutating the live page:
+  // nothing to restore, and no placeholder left behind.
+  //
+  // An earlier version of this swapped each asset for a comment node and put it
+  // back afterwards. The live page ended up correct, so it looked fine -- but
+  // the CAPTURED STRING kept those comment nodes, so every publish that began
+  // with the assets in the body added five more invisible markers to the
+  // document, for good. It survived a four-generation round-trip test because
+  // the markers are stable once present; it was caught by diffing a real
+  // in-page save against this source.
+  const clone = document.body.cloneNode(true);
+  [...clone.querySelectorAll("title, [data-asset]")].forEach(el => el.remove());
+  let bodyHTML = clone.innerHTML;
 
   g.innerHTML = gs; list.innerHTML = ls; bar.innerHTML = bs;
   render();
@@ -829,7 +838,12 @@ function serialize(){
   // rather than nest it.
   // NB: no literal tag syntax in these comments either -- a cleanup script
   // searching for the shell once matched prose here and ate the document.
-  bodyHTML = bodyHTML.replace(/<\/?(?:!doctype[^>]*|html[^>]*|head[^>]*|body[^>]*)>/gi, "");
+  // The lookahead is the whole point: the tag name must END here. Without it
+  // "head" also prefix-matches <header ...> and </header>, and this guard ate
+  // this page's own masthead element on the first real save -- the mast lost its
+  // rule and padding, and the only trace was whitespace where the tag had been.
+  // Exactly the failure the note above warns about, reintroduced in a new form.
+  bodyHTML = bodyHTML.replace(/<\/?(?:!doctype|html|head|body)(?=[\s>\/])[^>]*>/gi, "");
 
   // Trim both captures. Without this the round trip is stable in CONTENT but
   // not in SIZE: the newlines added around the body below land inside the next
