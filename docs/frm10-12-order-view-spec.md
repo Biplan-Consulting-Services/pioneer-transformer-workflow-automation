@@ -1,6 +1,24 @@
 # `Order Items` view spec — `FRM10-12 Layout`
 
-A read-only-by-convention view on **`Order Items`** whose column order mirrors FRM10-12's
+> ## ⚠️ Correction by the parent session, 2026-09-08
+>
+> This spec states that `Configuration`, `Section_x0020_Qty`, `Info_x002b_` and
+> `Technical_x0020_Notes` "never appear in the transfer flow's field mapping" and calls that
+> the real gap. **That was true until 2026-09-07 and is not true now.** Those four — plus
+> `Protector_x0020__x0026__x0020_Sw` — are exactly the D1/D2 mappings added in v003 and applied
+> live in v004. Verified against the current definition: all five are mapped on both write
+> actions.
+>
+> They are blank **on the list** because the transfer run has not happened yet, not because
+> nothing writes them. The expected populated counts after the run are already recorded in
+> `a5-d1-d2-paste-sheet.md` (`Configuration` ~491, `Section Qty` ~112, `Info+` ~96,
+> `Technical Notes` ~6, `Protector & Switchgear Item #` **0** — blank at source).
+>
+> The rest of the spec stands, and its `TableOrders.pq` finding at the bottom was **right and
+> valuable** — see roadmap item 44.
+
+
+A view on **`Order Items`** whose column order mirrors FRM10-12's
 **`TableOrders`** left to right, so staff moving from the workbook to the list find the same
 layout. Authored 2026-09-08. **Nothing in here has been executed** — the creation script is
 `scripts/create_frm1012_view.js`, and it is meant to be pasted into a browser console by hand.
@@ -188,8 +206,8 @@ Unit ID                         ->  Title                              renamed b
 2. **`PO Item #` → the `Model` lookup, not a text field.** Verified on data (943/948), but it
    means the column renders as a link rather than plain text, and it counts against the
    12-lookup view threshold.
-3. **The tail goes last.** Puts `ItemStatus` at position 79 rather than near the front, which
-   is unusual for this list — every other view leads with it or filters on it.
+3. **The tail goes last.** Puts `ItemStatus` at position 77 of 79 rather than near the front,
+   which is unusual for this list — every other view leads with it or filters on it.
 4. **No filter and no sort.** See below.
 5. **`Status` stays as the composite.** It is the honest counterpart today, but roadmap item 18
    plans to split it, and the list already carries a fuller 8-stage model this view does not
