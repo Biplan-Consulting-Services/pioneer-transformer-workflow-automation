@@ -6,35 +6,49 @@ definitions, so every target name here is exactly what `n2_create_columns.js` cr
 **Prerequisites:** N2 (the 48 columns exist) and **A3** (2c stage-stamping stripped out of the
 `Order Items` trigger flow). A3 is not optional — see *Capacity* below.
 
-## 🔴 Read the lookup internal names before you build
+## ✅ The lookup internal names — RESOLVED 2026-09-07
 
-The fan-out filter needs the internal name of each lookup **on `Order Items`** — the columns
-pointing back at `Order`, `Models` and `Model Revisions`. **I could not read them.** They are
-absent from the list export's `ListSchema` record entirely, and the tenant timed out on the REST
-call. So they are deliberately left as placeholders below rather than guessed.
+Read from the platform, not guessed. `Order Items` has **117 columns**; these are its lookups:
 
-**Re-attempted 2026-09-07, still blocked, and now understood.** The export cannot supply these:
-its `ListSchema` record carries **90 fields and none of type `Lookup`** — SharePoint omits lookup
-columns from an export's schema as well as its data. And the REST call below **hangs on this
-tenant**: two 45-second timeouts on 2026-09-05 and two more on 2026-09-07, while every
-`_api/v2.0/…` endpoint answers immediately.
+| lookup | **internal name** | → list | list GUID | show field |
+|---|---|---|---|---|
+| `Order Number` | **`OrderNumber`** | `Order` | `6fe35dfe-2b7d-455a-abe3-056abb386733` | `Order_x0020_Number1` |
+| `Model` | **`Model`** | `Models` | `b43a5140-0f9d-4ac1-9019-43b897074224` | `ModelName` |
+| `Model Revision` | **`ModelRevision`** | `Model Revisions` | `e2ff8703-b590-4648-b181-9b47cf3883ba` | `ModelID` |
+| `Client` | `Client` | `Clients` | `3bcf7d97-…` | `Title` |
+| `Regrouped Into` | `RegroupedInto` | *self* | `d6468ec5-…` | `Title` ⚠️ multi-value |
 
-✅ **The route that works, ~30 seconds:** SharePoint → `Order Items` → **List settings** → click
-the lookup column → the URL ends `…&Field=<InternalName>`. That is the internal name, read from
-the platform rather than guessed. Do that for the `Order`, `Models` and `Model Revisions` lookups
-and paste them here.
-
-Or run this, if the endpoint ever starts responding:
+So the fan-out filters are:
 
 ```
-/_api/web/lists/getbytitle('Order Items')/fields
-   ?$select=Title,InternalName,TypeAsString,LookupList,LookupField
-   &$filter=TypeAsString eq 'Lookup'
+Order            OrderNumberId    eq @{triggerOutputs()?['body/ID']}
+Models           ModelId          eq @{triggerOutputs()?['body/ID']}
+Model Revisions  ModelRevisionId  eq @{triggerOutputs()?['body/ID']}
 ```
 
-This is the same rule as everywhere else in this repo: a retyped internal name writes nothing,
-silently. `Protector & Switchgear Item #` on this very list is `Protector_x0020__x0026__x0020_Sw`,
-truncated mid-word at 32 characters.
+The list GUIDs match the `table` parameters the transfer flow already uses, which is an
+independent confirmation that these are the right lists.
+
+### How to read them, because the obvious route does not work here
+
+⚠️ **`_api/web/lists/…/fields` is unavailable on this tenant.** Two 45-second
+`document_idle` timeouts on 2026-09-05, two more on 2026-09-07, and `Failed to fetch` when
+called as a `fetch` rather than a navigation. Not flakiness.
+
+⚠️ **An export cannot supply them either.** Its `ListSchema` record carries 90 fields and
+**not one of type `Lookup`** — SharePoint omits lookup columns from an export's schema as well
+as its data.
+
+✅ **What works:**
+
+```js
+fetch("/sites/PioneerPlanificatio/_api/v2.0/sites/root/lists/<listId>/columns")
+  // each entry: {name, displayName, lookup:{listId, columnName, allowMultipleValues}}
+```
+
+Note `_api/v2.0/**sites/root**/lists/…` — the shorter `_api/v2.0/lists/…` returns
+`itemNotFound`. Or, without any API: list settings → click the column → the `Field=`
+parameter in the URL.
 
 ## Shape — the same five blocks in each flow
 
