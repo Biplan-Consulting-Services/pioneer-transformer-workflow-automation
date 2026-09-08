@@ -124,6 +124,61 @@ workbook diff independently finds 104 list rows with no `TableOrders` counterpar
 routes, same set, `21408-1/1` and `21408-1/1 SA` in both. That is what turns the `R4` residue from
 a hypothesis into a fact: those 93 stale dates are unreachable-by-design, not a mapping failure.
 
+
+## The 4 skipped live units — created and verified 2026-09-08 06:45
+
+`scripts/create_missing_units.js` then `scripts/fix_created_units.js`.
+
+| unit | Id | Order | Location | verified |
+|---|---|---|---|---|
+| `P1_001-1/1` | 1128 | 562 (new) | Bobinage | ✅ |
+| `P20001-1/1` | 1129 | 563 (new) | Tanking | ✅ |
+| `P20004-1/2` | 1130 | 487 | — | ✅ |
+| `P20004-2/2` | 1131 | 487 | — | ✅ |
+
+Every date landed at `04:00:00Z`, so the bare-date rule holds for hand-written rows too, not only
+flow-written ones.
+
+**Two defects in my own create script, both caught by the read-back and both fixed:**
+
+- `Frame` came back `"Plaspak"` on 1128/1130/1131. The payload builder dropped empty values, so it
+  **omitted** the key and SharePoint applied the column **default**. *Omitting a field is not the
+  same as sending null.* The flow never hits this because it sends every mapped field explicitly.
+  Cleared; the create script now carries a `NULLS` list.
+- `ClientId` was null on unit 1129 and order 563 — client ids were resolved from *existing Order
+  rows* and no existing Order carries CONED. CONED does exist in `Clients` (Id **123**, matched on
+  `Title`). Set on both.
+
+🟢 **`null` DOES clear a field over raw REST** — no retry with `""` was needed. That confirms the
+distinction rather than leaving it assumed: the "null does not clear" behaviour is the **Power
+Automate connector**, which is what kept the 844 stale `Pending` statuses alive. Raw REST is a
+different code path.
+
+### The contamination report's two extra fields are calculated columns, not contamination
+
+`Bo_x0020_Sort_x0020_Date` and `test_x0020_calculated_x0020_colu` showed values on the new rows
+that no script set. Checked over REST on three rows — an untouched orphan (Id 4), a run-created row
+(Id 1090) and a hand-created row (Id 1128):
+
+| Id | Planned Tanking | Bo Sort Date | test calculated column |
+|---|---|---|---|
+| 4 | `2026-04-23T00:00:00Z` | `2026-04-23T00:00:00Z` | `2026-09-11T04:00:00Z` |
+| 1090 | `2027-01-29T05:00:00Z` | `2027-01-29T05:00:00Z` | `2026-09-15T04:00:00Z` |
+| 1128 | `2026-08-28T04:00:00Z` | `2026-08-28T04:00:00Z` | `2026-09-15T04:00:00Z` |
+
+`Bo Sort Date` mirrors `Planned Tanking Date` on every row. **Nothing was contaminated** — and the
+CSV export is simply blind to calculated columns (now recorded in `CLAUDE.md`).
+
+🔑 **`test calculated column` is live evidence for `R12`.** Id 4 reads **2026-09-11** while Ids 1090
+and 1128 read **2026-09-15**. Id 4 was last written 2026-09-05; the other two today. So the value is
+**frozen at each row's last write** and is already days stale — exactly the freeze `R12` predicts
+and exactly why `N6` cannot rely on `TODAY()` without the `N7` nightly touch. This is no longer a
+theoretical concern; it is measurable on the list right now.
+
+⚠️ **Remove or hide `test calculated column` before staff arrive.** It is a probe from `N4`, it is
+populated on all 1,117 rows, it carries a stale date, and it is named "test". If it appears on any
+staff view it will be asked about on day one.
+
 ## Still open
 
 - **`R6`** — the two-directional re-diff has not been run.

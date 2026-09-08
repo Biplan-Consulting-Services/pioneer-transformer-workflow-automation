@@ -162,6 +162,15 @@ had — hence a dedicated place to plan it before touching production.
        → click the column → the `Field=` parameter in the URL** instead. That is the one route
        confirmed to work.
 
+  3. **Calculated columns come back BLANK in a CSV export, but populate fine over REST.**
+     Found 2026-09-08: `Bo Sort Date` and `test calculated column` read as empty on **all 1,117
+     rows** of the post-run export, which looks exactly like "the run failed to fill them". Over
+     `_api/web/lists(...)/items` both are populated on **every** row — `Bo Sort Date` equals
+     `Planned Tanking Date` on an untouched orphan (Id 4), a run-created row (Id 1090) and a
+     hand-created row (Id 1128) alike. So the values are there; the export is blind to them.
+     Same family as the Lookup gap above: **never conclude a column is empty from an export
+     alone.** Check one row over REST first.
+
   The export also follows **the currently selected view**, not the list. The first Order Items
   export of 2026-09-05 was the BO Tracking view — 3 rows, 23 columns — and looked like a real
   export until counted. Switch to All Items first, and sanity-check the row count.
