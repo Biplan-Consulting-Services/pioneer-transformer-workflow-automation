@@ -1,6 +1,6 @@
 # Paste this back
 
-**v005 — v005 Order-X columns populated**
+**v006 — v006 fetch-once + review fixes + Mdl-Rev columns**
 
 ## Which file
 
@@ -16,23 +16,23 @@ Editors disagree about which level they take. Try in this order:
 `connectionReferences` is carried through **unchanged from what is live**, so none
 of these rebinds a connection.
 
-Authored from **v004** (D3 BO transfer), which is what the flow was at 2026-09-07 17:19.
+Authored from **v005** (v005 Order-X columns populated), which is what the flow was at 2026-09-08 00:04.
 
 ## After pasting, check these in the editor
 
 | | before | after |
 |---|---|---|
-| `CreateOrderItem` item/* fields | 75 | **93** |
-| `UpdateOrderItem` item/* fields | 83 | **101** |
+| `CreateOrderItem` item/* fields | 93 | **122** |
+| `UpdateOrderItem` item/* fields | 101 | **130** |
 | `toLower(` occurrences | 34 | **34** |
 | unguarded `'EC'` | 0 | **0** |
 
 ## Then close the loop
 
 Save in Power Automate, copy the JSON back out into `_inbox/`, and tell me.
-`flow_version.py intake` will confirm by hash — if it matches, v005 flips to
+`flow_version.py intake` will confirm by hash — if it matches, v006 flips to
 `applied`. Until then it stays `local`: I do not mark my own work as landed.
 
-If it does **not** match, v005 is marked `forked` and I report exactly what
+If it does **not** match, v006 is marked `forked` and I report exactly what
 differs — which is the signal that something else changed underneath.
 

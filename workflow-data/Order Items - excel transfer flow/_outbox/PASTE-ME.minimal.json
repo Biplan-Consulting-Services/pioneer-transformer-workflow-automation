@@ -59,7 +59,7 @@
       },
       "Filter_array": {
         "runAfter": {
-          "List_rows_present_in_a_table_BO": [
+          "Get_All_OrderItems": [
             "Succeeded"
           ]
         },
@@ -118,29 +118,6 @@
             "type": "Compose",
             "inputs": "@split(last(split(if(outputs('IsSA'), replace(outputs('RawOrder'), ' SA', ''), outputs('RawOrder')), '-')), '/')"
           },
-          "Get_Orders": {
-            "runAfter": {
-              "ItemStatus": [
-                "Succeeded"
-              ]
-            },
-            "metadata": {
-              "operationMetadataId": "faf83ff7-749d-4ad0-96cf-20806708f51f"
-            },
-            "type": "OpenApiConnection",
-            "inputs": {
-              "parameters": {
-                "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
-                "table": "6fe35dfe-2b7d-455a-abe3-056abb386733",
-                "$filter": "Order_x0020_Number1 eq '@{outputs('OrderNumberText')}'"
-              },
-              "host": {
-                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                "operationId": "GetItems",
-                "connectionName": "shared_sharepointonline"
-              }
-            }
-          },
           "CheckOrderMatch": {
             "actions": {
               "ResolvedOrderId": {
@@ -148,34 +125,11 @@
                   "operationMetadataId": "33528f74-ede3-400e-8edd-8fd1b9c664a4"
                 },
                 "type": "Compose",
-                "inputs": "@first(outputs('Get_Orders')?['body/value'])?['ID']"
-              },
-              "Get_Order_items": {
-                "runAfter": {
-                  "Condition": [
-                    "Succeeded"
-                  ]
-                },
-                "metadata": {
-                  "operationMetadataId": "18f573e3-3e33-4301-b677-d4307736d538"
-                },
-                "type": "OpenApiConnection",
-                "inputs": {
-                  "parameters": {
-                    "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
-                    "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
-                    "$filter": "Title eq '@{outputs('RawOrder')}'"
-                  },
-                  "host": {
-                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                    "operationId": "GetItems",
-                    "connectionName": "shared_sharepointonline"
-                  }
-                }
+                "inputs": "@first(body('Filter_Orders'))?['ID']"
               },
               "Switch": {
                 "runAfter": {
-                  "Get_Order_items": [
+                  "Condition": [
                     "Succeeded"
                   ]
                 },
@@ -267,24 +221,53 @@
                             "item/BO3Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO3 Date'])))",
                             "item/BO3Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Fournisseur Interne'])",
                             "item/BO3OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 OK'])",
-                            "item/OrdOrderNumber": "@outputs('GetResolvedOrder')?['body/Order_x0020_Number1']",
-                            "item/OrdQty": "@outputs('GetResolvedOrder')?['body/Qty']",
-                            "item/OrdOrderType": "@outputs('GetResolvedOrder')?['body/Order_x0020_Type1/Value']",
-                            "item/OrdOrderDate": "@if(empty(outputs('GetResolvedOrder')?['body/Order_x0020_Date']), null, formatDateTime(outputs('GetResolvedOrder')?['body/Order_x0020_Date'], 'yyyy-MM-dd'))",
-                            "item/OrdInitialPromisedDate": "@if(empty(outputs('GetResolvedOrder')?['body/Initial_x0020_Promised_x0020_Dat']), null, formatDateTime(outputs('GetResolvedOrder')?['body/Initial_x0020_Promised_x0020_Dat'], 'yyyy-MM-dd'))",
-                            "item/OrdOrderStep": "@outputs('GetResolvedOrder')?['body/Order_x0020_Step/Value']",
-                            "item/OrdNote": "@outputs('GetResolvedOrder')?['body/Note']",
-                            "item/OrdPO": "@outputs('GetResolvedOrder')?['body/PO']",
-                            "item/OrdPrice": "@outputs('GetResolvedOrder')?['body/Price']",
-                            "item/OrdProvinceState": "@outputs('GetResolvedOrder')?['body/Province_x002F_State']",
-                            "item/OrdWETWETP": "@outputs('GetResolvedOrder')?['body/WET_x002d_WETP/Value']",
-                            "item/OrdIndexing": "@outputs('GetResolvedOrder')?['body/Indexing/Value']",
-                            "item/OrdNewmodeltobecreated": "@outputs('GetResolvedOrder')?['body/New_x0020_model_x0020_to_x0020_b/Value']",
-                            "item/OrdEngineeringRequired": "@outputs('GetResolvedOrder')?['body/EngineeringRequired']",
-                            "item/OrdLDs": "@outputs('GetResolvedOrder')?['body/LDs']",
-                            "item/OrdClientDateStatus": "@outputs('GetResolvedOrder')?['body/ClientDateStatus/Value']",
-                            "item/OrdSalesNotes": "@outputs('GetResolvedOrder')?['body/SalesNotes']",
-                            "item/OrdOrderStatus": "@outputs('GetResolvedOrder')?['body/OrderStatus/Value']"
+                            "item/OrdOrderNumber": "@first(body('Filter_Orders'))?['Order_x0020_Number1']",
+                            "item/OrdQty": "@first(body('Filter_Orders'))?['Qty']",
+                            "item/OrdOrderType": "@first(body('Filter_Orders'))?['Order_x0020_Type1/Value']",
+                            "item/OrdOrderDate": "@if(empty(first(body('Filter_Orders'))?['Order_x0020_Date']), null, formatDateTime(first(body('Filter_Orders'))?['Order_x0020_Date'], 'yyyy-MM-dd'))",
+                            "item/OrdInitialPromisedDate": "@if(empty(first(body('Filter_Orders'))?['Initial_x0020_Promised_x0020_Dat']), null, formatDateTime(first(body('Filter_Orders'))?['Initial_x0020_Promised_x0020_Dat'], 'yyyy-MM-dd'))",
+                            "item/OrdOrderStep": "@first(body('Filter_Orders'))?['Order_x0020_Step/Value']",
+                            "item/OrdNote": "@first(body('Filter_Orders'))?['Note']",
+                            "item/OrdPO": "@first(body('Filter_Orders'))?['PO']",
+                            "item/OrdPrice": "@first(body('Filter_Orders'))?['Price']",
+                            "item/OrdProvinceState": "@first(body('Filter_Orders'))?['Province_x002F_State']",
+                            "item/OrdWETWETP": "@first(body('Filter_Orders'))?['WET_x002d_WETP/Value']",
+                            "item/OrdIndexing": "@first(body('Filter_Orders'))?['Indexing/Value']",
+                            "item/OrdNewmodeltobecreated": "@first(body('Filter_Orders'))?['New_x0020_model_x0020_to_x0020_b/Value']",
+                            "item/OrdEngineeringRequired": "@if(equals(trim(item()?['Engineering Required']), 'Y'), true, if(equals(trim(item()?['Engineering Required']), 'N'), false, null))",
+                            "item/OrdLDs": "@if(equals(trim(item()?['LDs']), 'Y'), true, if(equals(trim(item()?['LDs']), 'N'), false, null))",
+                            "item/OrdClientDateStatus": "@if(or(equals(trim(toUpper(item()?['Client Date Status'])), 'CONFIRMED'), equals(trim(toUpper(item()?['Client Date Status'])), 'CONFRIMED')), 'Confirmed', if(equals(trim(toUpper(item()?['Client Date Status'])), 'PENDING'), 'Pending', null))",
+                            "item/OrdSalesNotes": "@item()?['Sales Notes']",
+                            "item/OrdOrderStatus": "Active",
+                            "item/MdlModelID": "@first(body('Filter_Models'))?['ModelID']",
+                            "item/MdlModificationStatus": "@first(body('Filter_Models'))?['ModificationStatus/Value']",
+                            "item/MdlEstimatedEffort": "@first(body('Filter_Models'))?['Estimated_x0020_Effort']",
+                            "item/MdlLatestModelRevision": "@first(body('Filter_Models'))?['ModelRevision/Value']",
+                            "item/MdlParentModel": "@first(body('Filter_Models'))?['ParentModel/Value']",
+                            "item/RevModelRevionID": "@first(body('Filter_ModelRevision'))?['ModelID']",
+                            "item/RevSpecID": "@first(body('Filter_ModelRevision'))?['SpecID']",
+                            "item/RevClientModelCode": "@first(body('Filter_ModelRevision'))?['ModelName']",
+                            "item/RevNotes": "@first(body('Filter_ModelRevision'))?['Notes']",
+                            "item/RevkVA": "@first(body('Filter_ModelRevision'))?['kVA_x0020_and_x0020_kV']",
+                            "item/RevModelType": "@first(body('Filter_ModelRevision'))?['Model_x0020_Type/Value']",
+                            "item/RevOilType": "@first(body('Filter_ModelRevision'))?['Oil_x0020_Type/Value']",
+                            "item/RevCoreType": "@first(body('Filter_ModelRevision'))?['Core_x0020_Type/Value']",
+                            "item/RevPhases": "@first(body('Filter_ModelRevision'))?['Phases']",
+                            "item/RevOilAmount": "@first(body('Filter_ModelRevision'))?['OilAmount']",
+                            "item/RevCable": "@first(body('Filter_ModelRevision'))?['Cable']",
+                            "item/RevForm": "@first(body('Filter_ModelRevision'))?['Form']",
+                            "item/RevCopperLV": "@first(body('Filter_ModelRevision'))?['Copper_x0028_LV_x0029_']",
+                            "item/RevWireHV": "@first(body('Filter_ModelRevision'))?['Wire_x0028_HV_x0029_']",
+                            "item/RevOvercoil": "@first(body('Filter_ModelRevision'))?['Overcoil']",
+                            "item/RevModelDescription": "@if(empty(first(body('Filter_ModelRevision'))?['Description']), null, string(first(body('Filter_ModelRevision'))?['Description']))",
+                            "item/RevJS": "@first(body('Filter_ModelRevision'))?['JS_x0020__x0023_']",
+                            "item/RevSpecRevision": "@first(body('Filter_ModelRevision'))?['Spec_Revision']",
+                            "item/RevSpecDate": "@if(empty(first(body('Filter_ModelRevision'))?['Spec_Date']), null, formatDateTime(first(body('Filter_ModelRevision'))?['Spec_Date'], 'yyyy-MM-dd'))",
+                            "item/RevPrimaryVoltage": "@first(body('Filter_ModelRevision'))?['PrimaryVoltage']",
+                            "item/RevSecondaryVoltage": "@first(body('Filter_ModelRevision'))?['SecondaryVoltage']",
+                            "item/RevPioneerModelCode": "@first(body('Filter_ModelRevision'))?['Model/Value']",
+                            "item/RevDuplicateOrder": "@first(body('Filter_ModelRevision'))?['DuplicateOrder/Value']",
+                            "item/RevFamily": "@first(body('Filter_ModelRevision'))?['Family/Value']"
                           },
                           "host": {
                             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
@@ -307,7 +290,7 @@
                           "parameters": {
                             "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
                             "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
-                            "id": "@first(outputs('Get_Order_items')?['body/value'])?['ID']",
+                            "id": "@first(body('Filter_OrderItems'))?['ID']",
                             "item/Title": "@outputs('RawOrder')",
                             "item/OrderNumber/Id": "@outputs('ResolvedOrderId')",
                             "item/Unit_x0023_": "@int(first(outputs('UnitFraction')))",
@@ -391,24 +374,53 @@
                             "item/BO3Date": "@if(or(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], ''))), ''), equals(toLower(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Date'], '')))), 'tbd')), null, addDays('1899-12-30', int(first(body('Filter_BO'))?['BO3 Date'])))",
                             "item/BO3Fournisseur": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 Fournisseur Interne'])",
                             "item/BO3OK": "@if(or(empty(body('Filter_BO')), equals(trim(string(coalesce(first(body('Filter_BO'))?['BO3 Part Numbre'], ''))), '')), null, first(body('Filter_BO'))?['BO3 OK'])",
-                            "item/OrdOrderNumber": "@outputs('GetResolvedOrder')?['body/Order_x0020_Number1']",
-                            "item/OrdQty": "@outputs('GetResolvedOrder')?['body/Qty']",
-                            "item/OrdOrderType": "@outputs('GetResolvedOrder')?['body/Order_x0020_Type1/Value']",
-                            "item/OrdOrderDate": "@if(empty(outputs('GetResolvedOrder')?['body/Order_x0020_Date']), null, formatDateTime(outputs('GetResolvedOrder')?['body/Order_x0020_Date'], 'yyyy-MM-dd'))",
-                            "item/OrdInitialPromisedDate": "@if(empty(outputs('GetResolvedOrder')?['body/Initial_x0020_Promised_x0020_Dat']), null, formatDateTime(outputs('GetResolvedOrder')?['body/Initial_x0020_Promised_x0020_Dat'], 'yyyy-MM-dd'))",
-                            "item/OrdOrderStep": "@outputs('GetResolvedOrder')?['body/Order_x0020_Step/Value']",
-                            "item/OrdNote": "@outputs('GetResolvedOrder')?['body/Note']",
-                            "item/OrdPO": "@outputs('GetResolvedOrder')?['body/PO']",
-                            "item/OrdPrice": "@outputs('GetResolvedOrder')?['body/Price']",
-                            "item/OrdProvinceState": "@outputs('GetResolvedOrder')?['body/Province_x002F_State']",
-                            "item/OrdWETWETP": "@outputs('GetResolvedOrder')?['body/WET_x002d_WETP/Value']",
-                            "item/OrdIndexing": "@outputs('GetResolvedOrder')?['body/Indexing/Value']",
-                            "item/OrdNewmodeltobecreated": "@outputs('GetResolvedOrder')?['body/New_x0020_model_x0020_to_x0020_b/Value']",
-                            "item/OrdEngineeringRequired": "@outputs('GetResolvedOrder')?['body/EngineeringRequired']",
-                            "item/OrdLDs": "@outputs('GetResolvedOrder')?['body/LDs']",
-                            "item/OrdClientDateStatus": "@outputs('GetResolvedOrder')?['body/ClientDateStatus/Value']",
-                            "item/OrdSalesNotes": "@outputs('GetResolvedOrder')?['body/SalesNotes']",
-                            "item/OrdOrderStatus": "@outputs('GetResolvedOrder')?['body/OrderStatus/Value']"
+                            "item/OrdOrderNumber": "@first(body('Filter_Orders'))?['Order_x0020_Number1']",
+                            "item/OrdQty": "@first(body('Filter_Orders'))?['Qty']",
+                            "item/OrdOrderType": "@first(body('Filter_Orders'))?['Order_x0020_Type1/Value']",
+                            "item/OrdOrderDate": "@if(empty(first(body('Filter_Orders'))?['Order_x0020_Date']), null, formatDateTime(first(body('Filter_Orders'))?['Order_x0020_Date'], 'yyyy-MM-dd'))",
+                            "item/OrdInitialPromisedDate": "@if(empty(first(body('Filter_Orders'))?['Initial_x0020_Promised_x0020_Dat']), null, formatDateTime(first(body('Filter_Orders'))?['Initial_x0020_Promised_x0020_Dat'], 'yyyy-MM-dd'))",
+                            "item/OrdOrderStep": "@first(body('Filter_Orders'))?['Order_x0020_Step/Value']",
+                            "item/OrdNote": "@first(body('Filter_Orders'))?['Note']",
+                            "item/OrdPO": "@first(body('Filter_Orders'))?['PO']",
+                            "item/OrdPrice": "@first(body('Filter_Orders'))?['Price']",
+                            "item/OrdProvinceState": "@first(body('Filter_Orders'))?['Province_x002F_State']",
+                            "item/OrdWETWETP": "@first(body('Filter_Orders'))?['WET_x002d_WETP/Value']",
+                            "item/OrdIndexing": "@first(body('Filter_Orders'))?['Indexing/Value']",
+                            "item/OrdNewmodeltobecreated": "@first(body('Filter_Orders'))?['New_x0020_model_x0020_to_x0020_b/Value']",
+                            "item/OrdEngineeringRequired": "@if(equals(trim(item()?['Engineering Required']), 'Y'), true, if(equals(trim(item()?['Engineering Required']), 'N'), false, null))",
+                            "item/OrdLDs": "@if(equals(trim(item()?['LDs']), 'Y'), true, if(equals(trim(item()?['LDs']), 'N'), false, null))",
+                            "item/OrdClientDateStatus": "@if(or(equals(trim(toUpper(item()?['Client Date Status'])), 'CONFIRMED'), equals(trim(toUpper(item()?['Client Date Status'])), 'CONFRIMED')), 'Confirmed', if(equals(trim(toUpper(item()?['Client Date Status'])), 'PENDING'), 'Pending', null))",
+                            "item/OrdSalesNotes": "@item()?['Sales Notes']",
+                            "item/OrdOrderStatus": "Active",
+                            "item/MdlModelID": "@first(body('Filter_Models'))?['ModelID']",
+                            "item/MdlModificationStatus": "@first(body('Filter_Models'))?['ModificationStatus/Value']",
+                            "item/MdlEstimatedEffort": "@first(body('Filter_Models'))?['Estimated_x0020_Effort']",
+                            "item/MdlLatestModelRevision": "@first(body('Filter_Models'))?['ModelRevision/Value']",
+                            "item/MdlParentModel": "@first(body('Filter_Models'))?['ParentModel/Value']",
+                            "item/RevModelRevionID": "@first(body('Filter_ModelRevision'))?['ModelID']",
+                            "item/RevSpecID": "@first(body('Filter_ModelRevision'))?['SpecID']",
+                            "item/RevClientModelCode": "@first(body('Filter_ModelRevision'))?['ModelName']",
+                            "item/RevNotes": "@first(body('Filter_ModelRevision'))?['Notes']",
+                            "item/RevkVA": "@first(body('Filter_ModelRevision'))?['kVA_x0020_and_x0020_kV']",
+                            "item/RevModelType": "@first(body('Filter_ModelRevision'))?['Model_x0020_Type/Value']",
+                            "item/RevOilType": "@first(body('Filter_ModelRevision'))?['Oil_x0020_Type/Value']",
+                            "item/RevCoreType": "@first(body('Filter_ModelRevision'))?['Core_x0020_Type/Value']",
+                            "item/RevPhases": "@first(body('Filter_ModelRevision'))?['Phases']",
+                            "item/RevOilAmount": "@first(body('Filter_ModelRevision'))?['OilAmount']",
+                            "item/RevCable": "@first(body('Filter_ModelRevision'))?['Cable']",
+                            "item/RevForm": "@first(body('Filter_ModelRevision'))?['Form']",
+                            "item/RevCopperLV": "@first(body('Filter_ModelRevision'))?['Copper_x0028_LV_x0029_']",
+                            "item/RevWireHV": "@first(body('Filter_ModelRevision'))?['Wire_x0028_HV_x0029_']",
+                            "item/RevOvercoil": "@first(body('Filter_ModelRevision'))?['Overcoil']",
+                            "item/RevModelDescription": "@if(empty(first(body('Filter_ModelRevision'))?['Description']), null, string(first(body('Filter_ModelRevision'))?['Description']))",
+                            "item/RevJS": "@first(body('Filter_ModelRevision'))?['JS_x0020__x0023_']",
+                            "item/RevSpecRevision": "@first(body('Filter_ModelRevision'))?['Spec_Revision']",
+                            "item/RevSpecDate": "@if(empty(first(body('Filter_ModelRevision'))?['Spec_Date']), null, formatDateTime(first(body('Filter_ModelRevision'))?['Spec_Date'], 'yyyy-MM-dd'))",
+                            "item/RevPrimaryVoltage": "@first(body('Filter_ModelRevision'))?['PrimaryVoltage']",
+                            "item/RevSecondaryVoltage": "@first(body('Filter_ModelRevision'))?['SecondaryVoltage']",
+                            "item/RevPioneerModelCode": "@first(body('Filter_ModelRevision'))?['Model/Value']",
+                            "item/RevDuplicateOrder": "@first(body('Filter_ModelRevision'))?['DuplicateOrder/Value']",
+                            "item/RevFamily": "@first(body('Filter_ModelRevision'))?['Family/Value']"
                           },
                           "host": {
                             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
@@ -431,7 +443,7 @@
                     }
                   }
                 },
-                "expression": "@length(outputs('Get_Order_items')?['body/value'])",
+                "expression": "@length(body('Filter_OrderItems'))",
                 "metadata": {
                   "operationMetadataId": "4c406144-f16b-41b3-8970-080107fece41"
                 },
@@ -465,32 +477,9 @@
                   }
                 }
               },
-              "GetResolvedOrder": {
-                "runAfter": {
-                  "ResolvedOrderId": [
-                    "Succeeded"
-                  ]
-                },
-                "metadata": {
-                  "operationMetadataId": "01716b75-6102-49bc-8bfc-bae59ddc0b73"
-                },
-                "type": "OpenApiConnection",
-                "inputs": {
-                  "parameters": {
-                    "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
-                    "table": "6fe35dfe-2b7d-455a-abe3-056abb386733",
-                    "id": "@outputs('ResolvedOrderId')"
-                  },
-                  "host": {
-                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                    "operationId": "GetItem",
-                    "connectionName": "shared_sharepointonline"
-                  }
-                }
-              },
               "ClientIDToWrite": {
                 "runAfter": {
-                  "GetResolvedOrder": [
+                  "ResolvedOrderId": [
                     "Succeeded"
                   ]
                 },
@@ -498,7 +487,7 @@
                   "operationMetadataId": "0c3cdd74-c229-4ab8-a514-09f1ccfc6e50"
                 },
                 "type": "Compose",
-                "inputs": "@outputs('GetResolvedOrder')?['body/Client/Id']"
+                "inputs": "@first(body('Filter_Orders'))?['Client/Id']"
               },
               "Condition": {
                 "actions": {
@@ -509,7 +498,7 @@
                     "type": "SetVariable",
                     "inputs": {
                       "name": "ModelIDToWrite",
-                      "value": "@outputs('GetResolvedOrder')?['body/Model/Id']"
+                      "value": "@first(body('Filter_Orders'))?['Model/Id']"
                     }
                   },
                   "Set_variable_1": {
@@ -524,7 +513,7 @@
                     "type": "SetVariable",
                     "inputs": {
                       "name": "ModelRevisionIDToWrite",
-                      "value": "@outputs('GetResolvedOrder')?['body/ModelRevision/Id']"
+                      "value": "@first(body('Filter_Orders'))?['ModelRevision/Id']"
                     }
                   }
                 },
@@ -544,7 +533,7 @@
                         "parameters": {
                           "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
                           "table": "b43a5140-0f9d-4ac1-9019-43b897074224",
-                          "$filter": "ParentModelId eq @{outputs('GetResolvedOrder')?['body/Model/Id']} and SAModel eq 1"
+                          "$filter": "ParentModelId eq @{first(body('Filter_Orders'))?['Model/Id']} and SAModel eq 1"
                         },
                         "host": {
                           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
@@ -631,18 +620,27 @@
               }
             },
             "runAfter": {
-              "Get_Orders": [
+              "Filter_OrderItems": [
                 "Succeeded"
               ]
             },
             "else": {
-              "actions": {}
+              "actions": {
+                "RecordSkippedOrder": {
+                  "type": "AppendToArrayVariable",
+                  "runAfter": {},
+                  "inputs": {
+                    "name": "SkippedUnits",
+                    "value": "@concat(outputs('RawOrder'), ' | order not resolved: ', string(length(body('Filter_Orders'))), ' matches for \"', outputs('OrderNumberText'), '\"')"
+                  }
+                }
+              }
             },
             "expression": {
               "and": [
                 {
                   "equals": [
-                    "@length(outputs('Get_Orders')?['body/value'])",
+                    "@length(body('Filter_Orders'))",
                     1
                   ]
                 }
@@ -677,29 +675,6 @@
             "type": "Compose",
             "inputs": "@if(equals(item()?['Location'], 'AN'), 'Cancelled',\r\nif(and(equals(outputs('MappedLocation'), 'Livraison'), not(equals(item()?['Delivery Date'], ''))), 'Delivered',\r\n'Active'))"
           },
-          "GetModels1": {
-            "runAfter": {
-              "ItemStatus": [
-                "Succeeded"
-              ]
-            },
-            "metadata": {
-              "operationMetadataId": "b7c52a9b-49c7-462f-bd34-6ea6ddaf611e"
-            },
-            "type": "OpenApiConnection",
-            "inputs": {
-              "parameters": {
-                "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
-                "table": "b43a5140-0f9d-4ac1-9019-43b897074224",
-                "$filter": "ModelName eq '@{item()?['PO Item _x0023_']}'"
-              },
-              "host": {
-                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                "operationId": "GetItems",
-                "connectionName": "shared_sharepointonline"
-              }
-            }
-          },
           "CheckMatchCountModels": {
             "actions": {
               "ResolvedModelRevisionID": {
@@ -707,7 +682,7 @@
                   "operationMetadataId": "7e34f86d-3038-4e78-a85b-bb2dcb7a101a"
                 },
                 "type": "Compose",
-                "inputs": "@first(outputs('GetModels1')?['body/value'])?['ModelRevision/Id']"
+                "inputs": "@first(body('Filter_Models'))?['ModelRevision/Id']"
               },
               "ResolvedModelCode": {
                 "runAfter": {
@@ -719,7 +694,7 @@
                   "operationMetadataId": "bd60a84f-5005-4584-8a5a-013443558700"
                 },
                 "type": "Compose",
-                "inputs": "@first(outputs('GetModels1')?['body/value'])?['ModelName']"
+                "inputs": "@first(body('Filter_Models'))?['ModelName']"
               },
               "Update_item": {
                 "runAfter": {
@@ -737,7 +712,7 @@
                     "table": "e2ff8703-b590-4648-b181-9b47cf3883ba",
                     "id": "@outputs('ResolvedModelRevisionID')",
                     "item/ModelName": "@outputs('ResolvedModelCode')",
-                    "item/Family/Value": "@item()?['Family']"
+                    "item/Family/Value": "@if(empty(trim(string(coalesce(item()?['Family'], '')))), null, item()?['Family'])"
                   },
                   "host": {
                     "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
@@ -748,18 +723,27 @@
               }
             },
             "runAfter": {
-              "GetModels1": [
+              "CheckOrderMatch": [
                 "Succeeded"
               ]
             },
             "else": {
-              "actions": {}
+              "actions": {
+                "RecordSkippedModel": {
+                  "type": "AppendToArrayVariable",
+                  "runAfter": {},
+                  "inputs": {
+                    "name": "SkippedUnits",
+                    "value": "@concat(outputs('RawOrder'), ' | model not resolved: ', string(length(body('Filter_Models'))), ' matches for \"', outputs('PoItemNumber'), '\" (Model Revisions not updated)')"
+                  }
+                }
+              }
             },
             "expression": {
               "and": [
                 {
                   "equals": [
-                    "@length(outputs('GetModels1')?['body/value'])",
+                    "@length(body('Filter_Models'))",
                     1
                   ]
                 }
@@ -773,7 +757,7 @@
           "Filter_BO": {
             "type": "Query",
             "runAfter": {
-              "RawOrder": [
+              "ResetModelRevisionID": [
                 "Succeeded"
               ]
             },
@@ -781,10 +765,91 @@
               "from": "@outputs('List_rows_present_in_a_table_BO')?['body/value']",
               "where": "@equals(trim(string(coalesce(item()?['Order'], ''))), outputs('RawOrder'))"
             }
+          },
+          "ResetModelID": {
+            "type": "SetVariable",
+            "runAfter": {
+              "RawOrder": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "name": "ModelIDToWrite",
+              "value": null
+            }
+          },
+          "ResetModelRevisionID": {
+            "type": "SetVariable",
+            "runAfter": {
+              "ResetModelID": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "name": "ModelRevisionIDToWrite",
+              "value": null
+            }
+          },
+          "PoItemNumber": {
+            "type": "Compose",
+            "runAfter": {
+              "ItemStatus": [
+                "Succeeded"
+              ]
+            },
+            "inputs": "@trim(string(coalesce(item()?['PO Item _x0023_'], '')))"
+          },
+          "Filter_Orders": {
+            "type": "Query",
+            "runAfter": {
+              "PoItemNumber": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "from": "@outputs('Get_All_Orders')?['body/value']",
+              "where": "@equals(trim(string(coalesce(item()?['Order_x0020_Number1'], ''))), outputs('OrderNumberText'))"
+            }
+          },
+          "Filter_Models": {
+            "type": "Query",
+            "runAfter": {
+              "Filter_Orders": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "from": "@outputs('Get_All_Models')?['body/value']",
+              "where": "@equals(trim(string(coalesce(item()?['ModelName'], ''))), outputs('PoItemNumber'))"
+            }
+          },
+          "Filter_ModelRevision": {
+            "type": "Query",
+            "runAfter": {
+              "Filter_Models": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "from": "@outputs('Get_All_ModelRevisions')?['body/value']",
+              "where": "@equals(item()?['ID'], first(body('Filter_Models'))?['ModelRevision/Id'])"
+            }
+          },
+          "Filter_OrderItems": {
+            "type": "Query",
+            "runAfter": {
+              "Filter_ModelRevision": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "from": "@outputs('Get_All_OrderItems')?['body/value']",
+              "where": "@equals(trim(string(coalesce(item()?['Title'], ''))), outputs('RawOrder'))"
+            }
           }
         },
         "runAfter": {
-          "InitializeModelRevisionIDToWrite": [
+          "InitSkippedUnits": [
             "Succeeded"
           ]
         },
@@ -860,6 +925,130 @@
             "file": "01DI2JQP7NBWFPJE6RMBFL5PPWQWB7HUO7",
             "table": "{3580DC32-2968-4A81-A234-0D14634618E2}"
           }
+        }
+      },
+      "Get_All_Orders": {
+        "runAfter": {
+          "List_rows_present_in_a_table_BO": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "18f573e3-3e33-4301-b677-d4307736d538"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "6fe35dfe-2b7d-455a-abe3-056abb386733"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "Get_All_Models": {
+        "runAfter": {
+          "Get_All_Orders": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "18f573e3-3e33-4301-b677-d4307736d538"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "b43a5140-0f9d-4ac1-9019-43b897074224"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "Get_All_ModelRevisions": {
+        "runAfter": {
+          "Get_All_Models": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "18f573e3-3e33-4301-b677-d4307736d538"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "e2ff8703-b590-4648-b181-9b47cf3883ba"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "Get_All_OrderItems": {
+        "runAfter": {
+          "Get_All_ModelRevisions": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "18f573e3-3e33-4301-b677-d4307736d538"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "InitSkippedUnits": {
+        "type": "InitializeVariable",
+        "runAfter": {
+          "InitializeModelRevisionIDToWrite": [
+            "Succeeded"
+          ]
+        },
+        "inputs": {
+          "variables": [
+            {
+              "name": "SkippedUnits",
+              "type": "array"
+            }
+          ]
         }
       }
     }
