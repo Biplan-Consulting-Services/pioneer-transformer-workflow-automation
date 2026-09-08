@@ -93,6 +93,27 @@
       },
       "appliedAt": "2026-09-07T18:46:53-04:00",
       "source": "d3.json"
+    },
+    {
+      "v": 5,
+      "captured": "2026-09-08T00:04:10-04:00",
+      "state": "local",
+      "parent": 4,
+      "note": "v005 Order-X columns populated",
+      "sha256": "f248c30bc06e84cb31a8439e8637c22e0d3b99668baa242864f8870b8e5fc8a0",
+      "fingerprint": {
+        "toLower": 34,
+        "ecUpper": 0,
+        "actions": 6,
+        "CreateOrderItem": 93,
+        "UpdateOrderItem": 101,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v005__2026-09-08T00-04__local__v005-Order-X-columns-populated.json"
+      },
+      "appliedAt": null,
+      "source": "v005.json"
     }
   ]
 }
