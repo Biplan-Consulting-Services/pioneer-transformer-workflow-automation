@@ -101,6 +101,29 @@ input corroborates it — `E21006-2/2` carries `OrdOrderType` `ETS`.
 So they are legitimate orders, not junk. `E21006-2/2` is also a **fourth** `E`-prefixed unit beyond
 the three `R15` names.
 
+## R6 — the two-directional re-diff: **PASS, with nothing unexpected**
+
+Post-run export `Order Items 2026-09-08 0557.csv` against `TableOrders` read out of
+`workbooks/FRM10-12 2026-09-08 0219.xlsx` (`Orders!B5:CE1024`, 82 columns, **1,019 unit keys**).
+That workbook copy postdates `R2`'s refresh — verified by the presence of orders `22143`–`22155`
+in it — so it is the right side of the comparison.
+
+| direction | predicted | measured |
+|---|---|---|
+| workbook → list, missing | **exactly the 6 named** | **6, and exactly those 6** |
+| unexpected extras | any = a NEW problem | **zero** |
+| rows created by the run | 65 | **65**, across exactly the 13 orders `22143`–`22155` |
+| rows removed | 0 | **0** |
+| list → workbook, missing | ~104 | **104** |
+
+The six are `20877R1-1/1`, `P1_001-1/1`, `P20001-1/1`, `P20002-1/1`, `P20004-1/2`, `P20004-2/2` —
+the exact set named in advance. **Nothing else appeared**, which was the whole point of naming them.
+
+🔑 **The 104 is the same 104 twice over.** REST found 104 rows with `Modified` ≠ 2026-09-08; the
+workbook diff independently finds 104 list rows with no `TableOrders` counterpart. Two unrelated
+routes, same set, `21408-1/1` and `21408-1/1 SA` in both. That is what turns the `R4` residue from
+a hypothesis into a fact: those 93 stale dates are unreachable-by-design, not a mapping failure.
+
 ## Still open
 
 - **`R6`** — the two-directional re-diff has not been run.
