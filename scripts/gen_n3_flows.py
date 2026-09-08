@@ -135,9 +135,19 @@ def read_expr(src, kind):
     if kind in ("choice", "lookup"):
         return "%s?['Value']" % b
     if kind == "multichoice":
-        # keep only the Values and join them -- never store the raw array
-        return ("if(empty(coalesce(%s, json('[]'))), null, "
-                "join(select(%s, item()?['Value']), '; '))" % (b, b))
+        # Keep only the Values and join them -- NEVER store the raw array. A
+        # MultiChoice source arrives as [{"Value":"MALT"},...]; string() on that
+        # serialises the whole array, which is exactly the 110-character blob
+        # R22 put on 979 rows.
+        #
+        # coalesce INSIDE select() as well as in the guard, on purpose:
+        # Power Automate's if() evaluates BOTH branches rather than
+        # short-circuiting, so select(null, ...) can throw even when the guard
+        # is true. Coalescing both places is correct either way and costs
+        # nothing.
+        arr = "coalesce(%s, json('[]'))" % b
+        return ("if(empty(%s), null, join(select(%s, item()?['Value']), '; '))"
+                % (arr, arr))
     return b
 
 def build(flow_name, parent, lookup_id_field, mapping):

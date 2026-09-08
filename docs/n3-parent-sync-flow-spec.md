@@ -330,6 +330,19 @@ because a synced `Choice` **silently rejects any value outside its option list, 
 the flow** — the `Family` failure mode. That decision is what makes mapping 1 above safe to do as
 a plain string. Do not "tidy" these back into Choice columns later.
 
+⚠️ **But "the sync columns are all Text" is not true, and it is worth retiring as an assumption**
+(asked 2026-09-08, measured from the list's own schema). The 47 parent columns are **Text 29 ·
+Number 7 · Note 4 · DateTime 3 · Boolean 2 · Currency 1 · URL 1**. Of the 27 whose source field
+resolves straight out of the flow definition, **26 match their parent's type exactly** — dates are
+`DateTime`, quantities are `Number`, `Price` is `Currency`, `OrdOrderFolder` is `URL`. Only the
+**Choice and Lookup** sources were flattened to `Text`, which is exactly the rule above and no
+broader.
+
+**Exactly one column's type disagrees with its parent: `RevModelDescription` is `Note` against a
+`MultiChoice` source** — and that is *why* R22 could happen at all. A `Note` field accepts any
+string, including 110 characters of JSON, without complaint. See
+`docs/r22-mapping-correction-2026-09-08.md`.
+
 ### Sanity numbers to build against
 
 The run already populated these, so N3's first job is to *keep them right*, not to fill them:

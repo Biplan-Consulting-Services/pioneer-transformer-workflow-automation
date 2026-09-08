@@ -54,7 +54,7 @@ Trigger list **Model Revisions** · fan-out filter `ModelRevisionId` · **24** f
 | `RevFamily` | `Family` | choice | `triggerOutputs()?['body/Family']?['Value']` |
 | `RevForm` | `Form` | plain | `triggerOutputs()?['body/Form']` |
 | `RevJS` | `JS_x0020__x0023_` | plain | `triggerOutputs()?['body/JS_x0020__x0023_']` |
-| `RevModelDescription` | `Description` | multichoice | `if(empty(coalesce(triggerOutputs()?['body/Description'], json('[]'))), null, join(select(triggerOutputs()?['body/Description'], item()?['Value']), '; '))` |
+| `RevModelDescription` | `Description` | multichoice | `if(empty(coalesce(triggerOutputs()?['body/Description'], json('[]'))), null, join(select(coalesce(triggerOutputs()?['body/Description'], json('[]')), item()?['Value']), '; '))` |
 | `RevModelType` | `Model_x0020_Type` | choice | `triggerOutputs()?['body/Model_x0020_Type']?['Value']` |
 | `RevModelRevionID` | `ModelID` | plain | `triggerOutputs()?['body/ModelID']` |
 | `RevNotes` | `Notes` | plain | `triggerOutputs()?['body/Notes']` |
@@ -74,37 +74,3 @@ Trigger list **Model Revisions** · fan-out filter `ModelRevisionId` · **24** f
 ## Deliberately excluded
 
 `OrdOrderFolder` (`Order_x0020_Folder`, URL). Roadmap 38 is an open decision — a hyperlink is an object on both read and write, the shape was never sourced, and a wrong one either fails every row or writes nothing. Confirm the shape from one real trigger payload, then add it.
-
-## Validate these four things on the first run — I could not check them without the tenant
-
-Everything above was read from the platform. These four are structural choices that only a
-real run can confirm, so check them on one parent row with a small fan-out before enabling
-(the spec suggests an `Order` with 2–3 units and no SA):
-
-1. **`splitOn` + `triggerOutputs()`.** The trigger is `GetOnUpdatedItems` with
-   `splitOn: @triggerOutputs()?['body/value']`, so each changed parent becomes its own run and
-   `triggerOutputs()?['body/<field>']` refers to that single item. If the payload turns out not
-   to be split, every `triggerOutputs()?['body/...']` would need `first(...)` instead — check
-   one raw trigger output first.
-2. **`ID` vs `Id`.** The fan-out uses `triggerOutputs()?['body/ID']` and the update uses
-   `items('Apply_to_each_unit')?['ID']`. The connector emits both spellings; `ID` is the one the
-   transfer flow already uses. Confirm in the raw inputs rather than assuming.
-3. **`needsUpdate` returns a real boolean.** `@or(...)` in a Compose should yield `true`/`false`,
-   which is what the following `If` compares against. If it ever arrives as the string `"true"`
-   the condition silently never fires and nothing syncs — so on the smoke test, confirm the
-   Compose output is boolean and that an actual change does trigger an update.
-4. **The change-guard fires the right way round.** Edit one field on one parent and confirm
-   exactly the units of that parent update, and that a second identical run updates **nothing**.
-   A guard that never fires and a guard that always fires look identical from the run history —
-   only the second, no-op run distinguishes them.
-
-⚠️ **No trigger condition is set on these three flows, deliberately.** Writing to `Order Items`
-cannot re-trigger a flow that watches `Order`, `Models` or `Model Revisions`. The trigger
-condition the spec calls for belongs on the **`Order Items`** flow, so a sync-only write never
-creates a run there — that is `X3`'s territory, not this one's.
-
-⚠️ **`X3` is a hard prerequisite**, not a preference. Per the spec's capacity section, these
-flows must not be enabled until the 2c stage-stamping is out of the `Order Items` trigger flow.
-`Models` has a worst-case fan-out of **91** units from a single edit; each of those writes fires
-the trigger flow, and at 100+ actions per run that is the shape of load that hit the capacity cap
-and wedged 29 instances for six days.

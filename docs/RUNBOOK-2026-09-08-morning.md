@@ -4,6 +4,10 @@ Written 2026-09-08 ~10:00 while you slept, updated after your two answers.
 Everything below is ready; nothing here needs thinking, only running and reading.
 **Total hands-on time: about 20 minutes.**
 
+📅 **Cutover moved to Thursday night** (user, 2026-09-08). Nothing in this runbook becomes
+less true — the three scripts still want running, and they are independent of the date. The
+create-only flow change is explicitly **not** needed yet.
+
 ✅ **Both open decisions are now closed** — `Extérieur` is finished goods waiting outside
 to ship, and you deleted the duplicate `P20004` Order row. Nothing in this runbook needs
 a judgement call any more; every script runs end-to-end with zero rows held back.
@@ -141,8 +145,14 @@ cutover: the 48 parent columns are already populated (`MdlModelID` 1,008 · `Rev
 - ⚠️ **Remove or hide `test calculated column`** — an N4 probe, populated on all 1,121 rows,
   carrying a stale date, named "test".
 - **Make the flow create-only** before cutover (gut the `One_Item_Found` branch).
-- **The v006 `RevModelDescription` mapping is still wrong** — it needs `?['Value']`. The data is
-  fixed; the mapping will re-break it on any future run.
+- 🔴 **The v006 `RevModelDescription` mapping is still wrong — and so was the fix these docs
+  prescribed.** `?['Value']` is NOT the answer. The source internal name is `Description` (not
+  `ModelDescription`), and it is the only `MultiChoice` field on any parent list, so the value is
+  an **array** and the bug is `string()` serialising it. The prescribed fix evaluates to `null`,
+  and `null` does not clear a field through the connector — so it would have pasted clean, run
+  clean, and left the blob in place with nothing reporting anything. The correct expression, and
+  why `coalesce` appears twice, is in **`docs/r22-mapping-correction-2026-09-08.md`**. It applies
+  to **`CreateOrderItem` as well** — every doc treated R22 as an update-only problem.
 
 ## Reports to read if you want the evidence
 
