@@ -1,0 +1,121 @@
+# R3 run verification — 2026-09-08
+
+Measured against the **live tenant** via the SharePoint REST API at ~06:15, after the user ran
+`R3`. Nothing here is inferred from run status — a healthy run reports `Failed`, so status was
+never consulted. Sources: `_api/web/lists(guid'd6468ec5…')/items` (paged, `odata=nometadata`),
+plus `workflow-data/UpdateOrderItemRawInput.json` for one iteration's resolved inputs.
+
+## R4 — the day-early dates: **PASS**
+
+The whole project existed to fix ~4,711 date values rendering a day early. It worked.
+
+| | |
+|---|---|
+| rows now on the list | **1,117** (was 1,052 → **+65**) |
+| rows the run wrote | **1,013**, all stamped `Modified 2026-09-08` |
+| rows the run never touched | **104** |
+
+**Stored time-of-day, which is the actual test:**
+
+| column | non-null | `04:00Z` | `05:00Z` | `00:00:00Z` |
+|---|---|---|---|---|
+| `Planned_x0020_Tanking_x0020_Date` | 1,028 | 552 | 416 | **60** |
+| `CoilingDate` | 237 | 143 | 1 | **93** |
+| `OrdOrderDate` | 1,011 | 782 | 229 | **0** |
+
+The `04:00`/`05:00` split is the DST offset resolving per date — exactly the predicted signature.
+
+🟢 **The crosstab is what closes it:**
+
+| | rows |
+|---|---|
+| touched by the run **AND** still `00:00:00Z` | **0** |
+| untouched **AND** still `00:00:00Z` | 93 |
+| untouched and already clean | 11 |
+
+**Zero.** Every row the run wrote carries a correct site-local instant. There is no mapping
+defect. `OrdOrderDate`, written fresh into a new column, is 1,011 for 1,011 correct.
+
+### The 93 that remain are orphans, not failures
+
+They sit entirely inside the 104 rows the run never touched — which is **R15's 104 orphan rows**,
+list rows with no workbook counterpart. Split by `Item Status`: **68 Active, 36 Delivered** — the
+36 matching R15's "36 correctly Delivered" exactly.
+
+⚠️ **`21408-1/1` is one of them**, which matters because risk card `R6` cites it as *the* proof of
+the bug (`2026-04-23T00:00:00Z` showing as 4/22). It was last modified **2026-09-05**, before the
+run. Its stale value is not a failure of the run — **the run cannot reach it.** Re-running will not
+fix these 93; only the `X2` reconciliation pass can.
+
+## R5 — new columns: **PASS**, with two findings
+
+| column | predicted | measured | |
+|---|---|---|---|
+| `Info_x002b_` | ≈96 | **96** | exact |
+| `Technical_x0020_Notes` | ≈6 | **6** | exact |
+| `Section_x0020_Qty` | ≈112 | **112** | exact |
+| `Configuration` | ≈491 | **500** | +9 |
+| `Protector_x0020__x0026__x0020_Sw` | 0 | **0** | correct — blank at source |
+| new rows created | +65 | **+65** | exact |
+
+Three exact hits is strong evidence the `D1` mappings landed on the right internal names.
+
+**Parent columns populated at scale** — `MdlModelID` 1,008 · `RevkVA` 1,006 · `OrdOrderNumber`
+1,013. This retires the largest open unknown in v006: the fetch-once restructure changed every
+parent read from `Get item` to a cached `Get items` filtered in memory, and the flattened key form
+was *statically consistent but empirically unconfirmed*. **Now confirmed** — the raw inputs show
+`MdlModelID` `M-MEEN-0002`, `MdlLatestModelRevision` `MR-MEEN-0002-V1`, `RevkVA` 2500,
+`RevPhases` 3. Had it been wrong, 29 columns would have landed blank with no error.
+
+### 🔴 Finding 1 — `RevModelDescription` stores a raw odata reference on 979 rows
+
+```
+[{"@odata.type":"#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference","Id":5,"Value":"MALT"}]
+```
+
+The intended value is `MALT`. The mapping passes the **whole expanded-lookup array** instead of its
+`Value`, so 979 of 1,117 rows now hold ~110 characters of JSON as literal text. Confirmed at scale,
+not a one-row fluke — and it is the *write*-side twin of the export-side trap already documented in
+`R19` (`SUBWAY` vs `["SUBWAY"]`).
+
+**Fix:** read `…?['ModelDescription']?['Value']` rather than the reference, then re-write that one
+column. It is the only one of the 29 parent columns affected — every other sampled `Rev*`/`Mdl*`
+value is a clean scalar.
+
+### 🟡 Finding 2 — `BO` reached 84, not the predicted 76
+
+`TableBO` holds 76 roll-up rows and the pre-run list had 73. **Hypothesis, not yet checked:** the
+run wrote 76 and a further 8 pre-existing values survived untouched among the 104 orphans
+(76 + 8 = 84). Worth one query before `R7` removes the mapping, because the alternative — the join
+fanning out to unintended rows — would mean wrong BO data on 8 units.
+
+## Answered along the way: what the `E` prefix means
+
+`R15` flagged three `E`-prefixed orphans (`E21010-1/2`, `E21010-2/2`, `E21014-1/1`) with
+"**ask what `E` means before assuming it is junk**".
+
+**It means `Order Type = ETS`.** From the `Order` export: **all 12** orders with `Order Type = ETS`
+start with `E`, and 12 of the 13 `E`-prefixed orders are ETS (the 13th is a `Repair`). The raw
+input corroborates it — `E21006-2/2` carries `OrdOrderType` `ETS`.
+
+So they are legitimate orders, not junk. `E21006-2/2` is also a **fourth** `E`-prefixed unit beyond
+the three `R15` names.
+
+## Still open
+
+- **`R6`** — the two-directional re-diff has not been run.
+- **`R7`** — 🔴 the `BO` mapping and the 5 `Order` companion writes are **still in the flow**. It is
+  re-runnable, so until they come out, any future run overwrites SharePoint-native BO edits with
+  stale Excel values.
+- **`SkippedUnits`** — v006 records which rows it dropped and why. Not yet read; it would confirm
+  the 104 directly rather than by inference.
+- The `RevModelDescription` fix above.
+
+## Method notes worth keeping
+
+- `_api/web/lists(guid'…')/items` with `$select` + `$top=500` and `odata.nextLink` paging **works
+  fine** from a plain browser tab, contradicting nothing but usefully extending the record: it is
+  the `…/fields` endpoint that hangs on this tenant, not `…/items`.
+- Ask for `Accept: application/json;odata=nometadata` — the default returns Atom XML.
+- A CSV export **cannot** verify `R4`: it carries the rendered date, not the stored instant. This
+  check is only possible over REST.

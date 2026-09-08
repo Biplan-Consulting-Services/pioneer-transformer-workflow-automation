@@ -255,7 +255,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<script id="app-state" type="application/json">{"status":{"P1":"done","P2":"done","P3":"done","P5":"done","P4":"done","C1":"done","C2":"done","D1":"done","D2":"done","D3":"done","D6":"done","D4":"done","D5":"done","R1":"done","R2":"done","R3":"done","R4":"todo","R5":"todo","R6":"todo","R7":"todo","X1":"todo","X2":"todo","X3":"todo","X4":"todo","X5":"todo","X6":"todo","N1":"done","N2":"done","N4":"done","N3":"todo","N5":"todo","N6":"todo","N7":"todo"},"v":1}</script>
+<script id="app-state" type="application/json">{"status":{"P1":"done","P2":"done","P3":"done","P5":"done","P4":"done","C1":"done","C2":"done","D1":"done","D2":"done","D3":"done","D6":"done","D4":"done","D5":"done","R1":"done","R2":"done","R3":"done","R4":"done","R5":"done","R6":"todo","R7":"todo","X1":"todo","X2":"todo","X3":"todo","X4":"todo","X5":"todo","X6":"todo","N1":"done","N2":"done","N4":"done","N3":"todo","N5":"todo","N6":"todo","N7":"todo"},"v":1}</script>
 
 <div class="wrap">
 
@@ -273,7 +273,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
   <div class="tally">
     <div class="tal c"><div class="n">1</div><div class="l">Blocks the run</div></div>
     <div class="tal h"><div class="n">5</div><div class="l">Silent data loss</div></div>
-    <div class="tal m"><div class="n">9</div><div class="l">Wasted time</div></div>
+    <div class="tal m"><div class="n">10</div><div class="l">Wasted time</div></div>
     <div class="tal l2"><div class="n">7</div><div class="l">Known &amp; bounded</div></div>
   </div>
 
@@ -361,13 +361,15 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
   </section>
 
   <section class="sec">
-    <div class="sechead"><h2>Wasted time &amp; wrong results</h2><span class="ct">9 risks</span></div>
+    <div class="sechead"><h2>Wasted time &amp; wrong results</h2><span class="ct">10 risks · 1 closed</span></div>
     <div class="risks">
 
       <div class="risk m">
-        <div class="rtop"><span class="rid">R6</span><span class="rtitle">Every date on the list reads one day early</span><span class="blast m">~4,711 values</span></div>
+        <div class="rtop"><span class="rid">R6</span><span class="rtitle">Every date on the list reads one day early</span><span class="blast l">93 left</span></div>
         <p class="rbody">The site moved to Eastern while these values are stored at UTC midnight, so they render as the previous day. Confirmed by eye, not inferred: unit <code>21408-1/1</code> stores <code>2026-04-23T00:00:00Z</code> and the list shows <strong>4/22/2026</strong>. This is what the whole run is for.</p>
-        <div class="fix"><span class="lab">Fix</span><span class="txt">Run the backfill. All 24 date columns are now <em>Date Only</em>, and a Date-Only column receives site-local midnight from the connector — proven by the August writes, which landed at 04:00/05:00Z with the DST offset correct per date. Verify afterwards by re-counting stored time-of-day, never by run status.</span></div>
+        <p class="rbody">🟢 <strong>Fixed 2026-09-08 — measured over REST, not inferred from run status.</strong> The run wrote <strong>1,013 rows</strong> and the list went 1,052 → <strong>1,117</strong> (+65, exactly the new orders <code>22143</code>–<code>22155</code>). Stored time-of-day now splits on DST as predicted: <code>Planned Tanking Date</code> <strong>552 at 04:00Z + 416 at 05:00Z</strong>, <code>OrdOrderDate</code> <strong>782 + 229, all 1,011 correct</strong>.</p>
+        <p class="rbody"><strong>What closes it is the crosstab: rows the run touched AND still at <code>00:00:00Z</code> = ZERO.</strong> So there is no mapping defect. The <strong>93</strong> values still at UTC midnight sit entirely inside the <strong>104 rows the run never touched</strong> — <code>R15</code>'s orphans, 68 <code>Active</code> / 36 <code>Delivered</code>. ⚠️ <strong><code>21408-1/1</code>, the unit cited above as the proof of this bug, is one of them</strong> (last modified 09-05, before the run). Its stale value is not a failure — <strong>the run cannot reach it, and re-running will not fix it.</strong> Only <code>X2</code> can. Full numbers in <code>docs/run-verification-2026-09-08.md</code>.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Done for every reachable row. All 24 date columns are <em>Date Only</em>, and a Date-Only column receives site-local midnight from the connector. Verified by re-counting stored time-of-day over REST — never by run status, and never from a CSV export, which carries the rendered date rather than the stored instant.</span></div>
       </div>
 
       <div class="risk m">
@@ -412,6 +414,15 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
       </div>
 
       <div class="risk m">
+        <div class="rtop"><span class="rid">R22</span><span class="rtitle"><code>RevModelDescription</code> stores a raw lookup reference instead of its value</span><span class="blast m">979 rows</span></div>
+        <p class="rbody">🔴 <strong>Found 2026-09-08 in the run's own output.</strong> 979 of 1,117 rows now hold about 110 characters of JSON as literal text where a short string belongs:</p>
+        <p class="rbody"><code>[{"@odata.type":"#Microsoft.Azure.Connectors.SharePoint.SPListExpandedReference","Id":5,"Value":"MALT"}]</code></p>
+        <p class="rbody">The intended value is <code>MALT</code>. The mapping passes the <strong>whole expanded-lookup array</strong> rather than its <code>Value</code>. Confirmed at scale rather than on one row, and it is the <em>write</em>-side twin of the export-side trap already documented in <code>R19</code> (<code>SUBWAY</code> against <code>["SUBWAY"]</code>) — the same shape of mistake, caught in the other direction.</p>
+        <p class="rbody"><strong>Bounded, though.</strong> It is the only one of the 29 new parent columns affected; every other sampled <code>Rev*</code>/<code>Mdl*</code> value is a clean scalar (<code>MdlModelID</code> 1,008 · <code>RevkVA</code> 1,006 · <code>OrdOrderNumber</code> 1,013 populated). No date, count or status column is involved, so it does not touch what the run existed to fix.</p>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Read <code>…?['ModelDescription']?['Value']</code> instead of the reference, then re-write that one column. Do it <strong>before</strong> <code>R7</code> strips the BO mapping, so both edits ride in one paste rather than two. Until then the column reads as garbage on screen — cosmetic, but it is on 88% of rows and will be noticed.</span></div>
+      </div>
+
+      <div class="risk m">
         <div class="rtop"><span class="rid">R19</span><span class="rtitle">Deleting the duplicated columns from <code>Models</code> loses data on three of them</span><span class="blast m">304 values</span></div>
         <p class="rbody">Fourteen spec columns exist on both lists — twelve by name, plus <code>kVA and kV</code>/<code>kVA</code> and <code>Description</code>/<code>Model Description</code> — and the revision is authoritative, so removing the <code>Models</code> copies is right in principle. But three are <strong>better populated on <code>Models</code></strong>: <code>Core Type</code> 285 vs 103, <code>Oil Type</code> 334 vs 266, <code>Model Type</code> 390 vs 336. Deleting those drops 182, 68 and 54 values that exist nowhere else.</p>
         <p class="rbody">⚠️ <strong>The disagreement counts were mostly noise — corrected 2026-09-05.</strong> A naive comparison reports 522 conflicts; <strong>405 are cosmetic</strong>. Two causes: multi-choice columns export as a JSON array (<code>SUBWAY</code> against <code>["SUBWAY"]</code>), and French vs English decimal separators plus stray spaces (<code>7,875x13,25</code> against <code>7.875x13.25</code>). <strong>Only 117 are real.</strong></p>
@@ -452,7 +463,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
         <div class="rtop"><span class="rid">R15</span><span class="rtitle">104 orphan rows, not 71 — but most of them have a cause</span><span class="blast l">11 real</span></div>
         <p class="rbody"><strong>Re-diffed 2026-09-05.</strong> Workbook → list: <strong>71 missing</strong>, of which 65 are the new orders <code>22143</code>–<code>22155</code> that the run creates. The old "expect 72 → ~7" prediction holds, and the six survivors are now named, so the post-run re-diff has something exact to check: <code>20877R1-1/1</code>, <code>P1_001-1/1</code>, <code>P20001-1/1</code>, <code>P20002-1/1</code>, <code>P20004-1/2</code>, <code>P20004-2/2</code>.</p>
         <p class="rbody">List → workbook is the direction that had drifted. The recorded 71 is now <strong>104</strong> — but split by <code>Item Status</code> it collapses: <strong>36</strong> correctly <code>Delivered</code>, <strong>57</strong> whose delivery values are fabricated rather than evidence of shipping (see R14), and <strong>11</strong> genuinely unexplained.</p>
-        <div class="fix"><span class="lab">Fix</span><span class="txt">The 11 are not random. <strong>Eight are all order <code>22021</code></strong> — units 1, 5, 6, 7, 8, 9, 10 and 12 of 20, a partial-order mismatch, so it is one order to look at rather than eight rows. The other three carry an <strong><code>E</code> prefix</strong> (<code>E21010-1/2</code>, <code>E21010-2/2</code>, <code>E21014-1/1</code>) that appears nowhere in this repo — every note about prefixed keys discusses <code>P</code>. <strong>Ask what <code>E</code> means before assuming it is junk.</strong> That is a far smaller job than "71 orphan rows waiting".</span></div>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">The 11 are not random. <strong>Eight are all order <code>22021</code></strong> — units 1, 5, 6, 7, 8, 9, 10 and 12 of 20, a partial-order mismatch, so it is one order to look at rather than eight rows. The other three carry an <strong><code>E</code> prefix</strong> (<code>E21010-1/2</code>, <code>E21010-2/2</code>, <code>E21014-1/1</code>) that appears nowhere in this repo — every note about prefixed keys discusses <code>P</code>. <strong>Answered 2026-09-08 — <code>E</code> means <code>Order Type = ETS</code>.</strong> From the <code>Order</code> export: <strong>all 12</strong> orders typed <code>ETS</code> start with <code>E</code>, and 12 of the 13 <code>E</code>-prefixed orders are ETS (the 13th is a <code>Repair</code>); the run's raw inputs corroborate it, <code>E21006-2/2</code> carrying <code>OrdOrderType</code> <code>ETS</code>. So they are legitimate orders, not junk — and <code>E21006-2/2</code> is a <strong>fourth</strong> such unit beyond the three named here. That is a far smaller job than "71 orphan rows waiting".</span></div>
       </div>
 
       <div class="risk l">
