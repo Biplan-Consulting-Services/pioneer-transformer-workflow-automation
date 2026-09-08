@@ -44,6 +44,15 @@
      list before this file was written (Location, Core Status, Production Line,
      Frame, Item Status, BO, and the stage statuses).
 
+   ⚠️ OMITTING A FIELD IS NOT THE SAME AS SENDING NULL
+     Learned the hard way on the first run of this script: three rows came back
+     with Frame = "Plaspak" because the payloads simply left Frame out, and
+     SharePoint then applied the COLUMN DEFAULT. The transfer flow does not hit
+     this because it sends every mapped field explicitly, null included.
+     NULLS below is therefore the list of fields that must be sent AS NULL
+     rather than omitted, for any row where the workbook has no value.
+     See scripts/fix_created_units.js, which repaired those three rows.
+
    SAFE TO RE-RUN: it checks each Title first and skips anything already
    present, so it cannot create duplicates. UNDO is at the bottom.
 */
@@ -134,6 +143,12 @@
                         "P20004-1/2": "PIONEER TRANSFORMERS",
                         "P20004-2/2": "PIONEER TRANSFORMERS" };
 
+  // Fields that carry a column DEFAULT on Order Items and must therefore be
+  // sent as an explicit null when the workbook has no value -- omitting them
+  // lets SharePoint fill in the default. Frame is the one that caught us.
+  const NULLS = ["Frame", "Location", "Status", "CoreStatus", "ProductionLine",
+                 "CoilWinder", "Winder", "BO"];
+
   const J = async (u) => (await fetch(u, {headers:{Accept:"application/json;odata=nometadata"}})).json();
   const dg = await (await fetch(base + "/_api/contextinfo", {method:"POST",
                     headers:{Accept:"application/json;odata=nometadata"}})).json();
@@ -197,6 +212,7 @@
   for (const [title, row] of Object.entries(UNITS)) {
     if (present.has(title)) { console.log("unit " + title + " already exists - skipped"); continue; }
     const body = Object.assign({}, row);
+    for (const f of NULLS) if (!(f in body)) body[f] = null;   // never omit these
     const oref = UNIT_ORDER[title];
     const oid  = (typeof oref === "number") ? oref : madeOrders[oref];
     if (oid) body.OrderNumberId = oid;
