@@ -255,7 +255,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<script id="app-state" type="application/json">{"status":{"P1":"done","P2":"done","P3":"done","P5":"done","P4":"done","C1":"done","C2":"done","D1":"done","D2":"done","D3":"done","D6":"done","D4":"todo","D5":"todo","R1":"done","R2":"todo","R3":"todo","R4":"todo","R5":"todo","R6":"todo","R7":"todo","X1":"todo","X2":"todo","X3":"todo","X4":"todo","X5":"todo","X6":"todo","N1":"done","N2":"done","N4":"done","N3":"todo","N5":"todo","N6":"todo","N7":"todo"},"v":1}</script>
+<script id="app-state" type="application/json">{"status":{"P1":"done","P2":"done","P3":"done","P5":"done","P4":"done","C1":"done","C2":"done","D1":"done","D2":"done","D3":"done","D6":"done","D4":"done","D5":"done","R1":"done","R2":"done","R3":"done","R4":"todo","R5":"todo","R6":"todo","R7":"todo","X1":"todo","X2":"todo","X3":"todo","X4":"todo","X5":"todo","X6":"todo","N1":"done","N2":"done","N4":"done","N3":"todo","N5":"todo","N6":"todo","N7":"todo"},"v":1}</script>
 
 <div class="wrap">
 
@@ -390,7 +390,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--rule);
       <div class="risk m">
         <div class="rtop"><span class="rid">R9</span><span class="rtitle">Committing 40 minutes to five untested mappings</span><span class="blast m">the whole run</span></div>
         <p class="rbody">Five brand-new expressions go straight into a production run with no smaller trial. One wrong internal name writes nothing, silently — exactly how <code>Planned Delivery Date</code> failed once already by being retyped instead of read from <code>/fields</code>.</p>
-        <div class="fix"><span class="lab">Fix</span><span class="txt">Drop <code>Top Count</code> to <code>10</code>, run, and read the write action's raw inputs in run history to confirm the new keys carry sane values. <strong>Then restore it to 5000 and re-verify</strong> — a forgotten threshold is its own documented incident.</span></div>
+        <div class="fix"><span class="lab">Fix</span><span class="txt">Cap the run to a couple of items, run, and read the write action's raw inputs in run history to confirm the new keys carry sane values. <strong>Then restore the full set and re-verify</strong> — a forgotten test cap is its own documented incident. ⚠️ <strong>Corrected 2026-09-08: there is no <code>Top Count</code> parameter</strong>, which is what this card and steps <code>P2</code>/<code>D4</code>/<code>D5</code> used to name. Paging is <code>runtimeConfiguration.paginationPolicy.minimumItemCount</code>; the item cap is set on the run itself.</span></div>
       </div>
 
       <div class="risk m">
@@ -503,8 +503,8 @@ const PHASES = [
 const STEPS = [
   {id:"P1",ph:0,r:0,gate:1,t:"Confirm the flow reads Formulaires/FRM10-12.xlsx",
    why:"The workbook moved to Revue/Formulaires/. Confirm the Excel action still resolves to it — nothing below matters if the flow is reading a dead file.",deps:[]},
-  {id:"P2",ph:0,r:1,t:"Confirm Top Count is 5000",
-   why:"It was dropped to 10 for testing once and a run went out at that setting.",deps:[]},
+  {id:"P2",ph:0,r:1,t:"Confirm paging is set to 5000",
+   why:"There is no Top Count parameter - that name was wrong. Paging is runtimeConfiguration.paginationPolicy.minimumItemCount, confirmed 5000 in the exported definition. What the old wording was guarding against is real though: a run once went out capped at a test size.",deps:[]},
   {id:"P3",ph:0,r:2,gate:1,t:"Add toLower() to the 24 EC guards",
    why:"CONFIRMED MISSING from the export - toLower() appears 4 times, all on unmapped stages. 6 rows in the 09-04 workbook will throw. Paste sheet: docs/a5c-tolower-paste-sheet.md.",deps:["P5"]},
   {id:"P4",ph:0,r:3,t:"Export Order Items, Order, Model Revisions",
@@ -525,10 +525,10 @@ const STEPS = [
    why:"Paste sheet: docs/a5-d3-bo-transfer-paste-sheet.md. Joined on Order -> Order Items.Title, never from TableOrders.BO. Do not blind-map the BO{n} OK booleans - BO1 OK is False on 988 of 1014.",deps:["P5"]},
   {id:"D6",ph:2,r:5,t:"Add the Family fill pass from FRM10-12",
    why:"Model Revisions.Family is blank on 329 of 391. Fetch it from FRM10-12 and write it back - checking first that the Choice allows fill-in, or every value outside A/B1/B2/C is rejected.",deps:["P5"]},
-  {id:"D4",ph:2,r:3,gate:1,t:"Smoke test at Top Count 10",
-   why:"Read the raw inputs in run history and confirm the new keys carry real values.",deps:["D1","D2","D3","D6"]},
-  {id:"D5",ph:2,r:4,gate:1,t:"Restore Top Count to 5000 and re-verify",
-   why:"And re-verify it. A forgotten threshold is its own documented incident.",deps:["D4"]},
+  {id:"D4",ph:2,r:3,gate:1,t:"Smoke test on a minimal item count",
+   why:"Cap the run to a couple of items, then read the write action's RAW INPUTS in run history - never the run status. This matters more since v006: it changed how every parent record is read, from Get item to a cached Get items filtered in memory. If that key form is wrong the 5 Mdl and 24 Rev columns land BLANK with no error at all.",deps:["D1","D2","D3","D6"]},
+  {id:"D5",ph:2,r:4,gate:1,t:"Restore the full item count and re-verify",
+   why:"Put the run back to the full set before R3 and re-verify it is back. A forgotten test cap is its own documented incident - a run has gone out at a test size before.",deps:["D4"]},
 
   {id:"R1",ph:3,r:0,t:"Confirm the workbook cutoff is in force",
    why:"Staff already know it is the cutoff period, so this is a confirmation rather than an announcement - check nobody has saved FRM10-12 since the last refresh.",deps:[]},
