@@ -20,13 +20,13 @@ snapshotted here.**
 | **v002** | 2026-09-07 15:12 | `pulled` | — | P3 toLower applied | 50 | 58 | 28 | 0 | `121f21ea7b9d` |
 | **v003** | 2026-09-07 16:06 | `superseded` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `8c20b0184ad8` |
 | **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `9cbacfebd261` |
-| **v005** | 2026-09-08 00:04 | `local` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `f248c30bc06e` |
-| **v006** | 2026-09-08 00:35 | `local` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `7da243951712` |
+| **v005** | 2026-09-08 00:04 | `superseded` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `f248c30bc06e` |
+| **v006** | 2026-09-08 00:35 | `applied` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `7da243951712` |
 
 ## Right now
 
-- **Live:** v004 — D3 BO transfer
-- **Pending (authored, not applied):** v005, v006
+- **Live:** v006 — v006 fetch-once + review fixes + Mdl-Rev columns
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 

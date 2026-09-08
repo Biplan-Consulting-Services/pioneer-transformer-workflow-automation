@@ -226,3 +226,54 @@ impossible to attribute.
 
 v006 is worth pasting even if v007 waits: §1 is actively writing wrong models today, and §2 means
 nobody currently knows how many rows the last run actually skipped.
+
+---
+
+## ✅ APPLIED AS v006 — 2026-09-08 00:45, confirmed by hash
+
+The user took the combined change rather than the recommended split. Pasted, exported, and
+`flow_version.py intake` matched the definition hash exactly. **Live is v006**; v005 folded in
+and is marked `superseded`.
+
+Validated against the returned export — not against what was authored:
+
+| | |
+|---|---|
+| top-level actions | 6 → **11** |
+| in-loop connector actions | 9 → **5** (2 of them exclusive/conditional) |
+| **every-row calls** | **9 → 3** · ~9,171 → **~3,100** per run |
+| `CreateOrderItem` / `UpdateOrderItem` | **122 / 130** `item/*` |
+| new columns | **5 `Mdl*` + 24 `Rev*`** |
+| §1 variable leak | ✅ both reset to null per iteration, before `Condition` |
+| §2 silent skips | ✅ both `else` branches record to `SkippedUnits` |
+| §3a redundant call | ✅ `GetResolvedOrder` deleted, no dangling reference |
+| §4 caveat | ✅ the 5 shared fields read Excel; `OrderStatus` is the constant `Active` |
+| §5 `Family` | ✅ blank-guarded |
+| `toLower` / `'EC'` / `connectionReferences` | 34 / 0 / 2 — all unchanged |
+
+### Two bugs the verification caught before the paste
+
+Both from deleting an action without repointing every read of it:
+
+- **`UpdateOrderItem`'s `id`** still read `Get_Order_items`. **Every update would have failed.**
+- **`ResolvedModelCode` and `ResolvedModelRevisionID`** still read `GetModels1`. Every revision
+  would have resolved to null.
+
+The repoint is now one text pass over the whole document, and `apply_v006_restructure.py` fails
+the build if any deleted action name still appears anywhere. That assertion is the reason this
+did not ship broken — the per-field diff looked perfectly healthy.
+
+### One assumption still resting on the smoke test
+
+Records now come from `Get items` (a collection) rather than `Get item` (single). I kept the
+connector's flattened key form — `?['Model/Id']`, `?['Family/Value']`, `?['ModelRevision/Id']` —
+because that is the form the pre-existing working code already used for `?['ModelRevision/Id']`.
+**Statically that is consistent; empirically it is unconfirmed for the collection case.** One
+iteration's raw inputs settles it, and the `Mdl*` / `Rev*` values are where it would show.
+
+### What §2 buys, concretely
+
+`SkippedUnits` now accumulates a line per dropped row with the reason and the match count. After
+the next run, read that variable: it is the first time this flow will be able to say **which**
+rows it skipped rather than leaving the count to be inferred from a diff.
+
