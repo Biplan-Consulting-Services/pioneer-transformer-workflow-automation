@@ -13,7 +13,18 @@ pointing back at `Order`, `Models` and `Model Revisions`. **I could not read the
 absent from the list export's `ListSchema` record entirely, and the tenant timed out on the REST
 call. So they are deliberately left as placeholders below rather than guessed.
 
-Run this first and substitute the real values:
+**Re-attempted 2026-09-07, still blocked, and now understood.** The export cannot supply these:
+its `ListSchema` record carries **90 fields and none of type `Lookup`** — SharePoint omits lookup
+columns from an export's schema as well as its data. And the REST call below **hangs on this
+tenant**: two 45-second timeouts on 2026-09-05 and two more on 2026-09-07, while every
+`_api/v2.0/…` endpoint answers immediately.
+
+✅ **The route that works, ~30 seconds:** SharePoint → `Order Items` → **List settings** → click
+the lookup column → the URL ends `…&Field=<InternalName>`. That is the internal name, read from
+the platform rather than guessed. Do that for the `Order`, `Models` and `Model Revisions` lookups
+and paste them here.
+
+Or run this, if the endpoint ever starts responding:
 
 ```
 /_api/web/lists/getbytitle('Order Items')/fields

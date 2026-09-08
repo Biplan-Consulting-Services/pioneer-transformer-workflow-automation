@@ -149,10 +149,18 @@ had — hence a dedicated place to plan it before touching production.
   1. A SharePoint *Export to CSV* writes a single enormous `ListSchema={...}` **record first**, then
      the real header row. Skip the first *record* (not the first line — the schema contains
      newlines) or a CSV reader takes the schema as your column names.
-  2. **Lookup columns do not serialise.** `Order Items.Model`, `.Model Revision` and `.Order Number`
-     come back blank — 2 to 4 populated out of 1052. The `_TextField` mirrors carry the real values
-     (986/1052). Use those for any analysis, and remember they are only as fresh as the last
-     TextField sync run.
+  2. **Lookup columns are absent from the export entirely — values *and* schema.** Sharpened
+     2026-09-07: the `ListSchema` record lists **90 fields and not one of type `Lookup`**
+     (26 Text · 24 DateTime · 15 Boolean · 15 Choice · 4 Number · 3 Computed · 2 Note). Only the
+     `_TextField` mirrors appear. So an export tells you neither a lookup's values *nor its
+     internal name*.
+     - For **values**, use the `_TextField` mirrors (986/1052), remembering they are only as
+       fresh as the last TextField sync run — which has been off since 2026-08-21.
+     - For **internal names**, an export cannot help. ⚠️ And `_api/web/lists/…/fields` **hangs on
+       this tenant** — reproduced 2026-09-05 and again 2026-09-07, two 45-second timeouts each
+       time, while every `_api/v2.0/…` endpoint responds fine. Read the name from **list settings
+       → click the column → the `Field=` parameter in the URL** instead. That is the one route
+       confirmed to work.
 
   The export also follows **the currently selected view**, not the list. The first Order Items
   export of 2026-09-05 was the BO Tracking view — 3 rows, 23 columns — and looked like a real
