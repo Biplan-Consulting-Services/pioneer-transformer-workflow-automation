@@ -315,3 +315,65 @@ would have destroyed data had the sync flows already run.
 either the tracked `.pq` is ahead of/behind the live workbook, or `TableOrders` currently errors
 on refresh. Worth a look, separately from this view.
 
+---
+
+## ✅ CREATED 2026-09-08 — `FRM10-12 Layout`, verified by read-back
+
+| | |
+|---|---|
+| view | `FRM10-12 Layout` |
+| id | `4556adb6-cf21-4174-93fc-58eafd1cc2ee` |
+| url | `/sites/PioneerPlanificatio/Lists/Order Items/FRM1012 Layout.aspx` |
+| ViewFields requested / stored | **79 / 79** |
+| order matches position-by-position | ✅ |
+| missing · extra | none · none |
+| default view | **no** — the existing default is untouched |
+| row limit | 100 |
+| lookup-class fields | **5 of the 12 threshold** |
+
+All 79 internal names were preflighted against the live list before anything was created; zero
+missing.
+
+### 🔴 Correction to `create_frm1012_view.js` — the create call in it does not work
+
+The script POSTs to `/views` with a `{parameters: {__metadata: "SP.ViewCreationInformation", …}}`
+body. On this tenant that returns **400 `InvalidClientQueryException`** — *"An entry without a
+type name was found"* — with both `odata=nometadata` and `odata=verbose` accepts.
+
+**What works:** POST the `SP.View` entity **directly**, no `parameters` wrapper, then add the
+fields one at a time.
+
+```js
+// create
+POST .../views
+  Accept:       application/json;odata=verbose
+  Content-Type: application/json;odata=verbose
+  body: { "__metadata":{"type":"SP.View"},
+          "Title":"FRM10-12 Layout", "ViewQuery":"", "RowLimit":100, "PersonalView":false }
+  -> 201
+
+// then, because a new view arrives with a default field set
+POST .../views/getbytitle('FRM10-12 Layout')/viewfields/removeallviewfields
+POST .../views/getbytitle('FRM10-12 Layout')/viewfields/addviewfield('<InternalName>')   x79
+```
+
+`removeallviewfields` first is **load-bearing** — without it the created view's default columns
+stay at the front and the FRM10-12 order never appears.
+
+The script's *safety* design was right and was used as written: preflight every name, count
+lookup-class fields against the 12 threshold, refuse an existing title, and read back with
+`$expand=ViewFields` rather than trusting the POSTs.
+
+### What staff will see today
+
+**36 of the 79 columns render blank**, and that is expected rather than broken:
+
+- **28 are the parent-sync columns** created empty on 2026-09-07. The `Ord*` ones fill on the
+  next transfer run (v005+); `Mdl*` and `Rev*` fill when the fetch-once restructure lands.
+- **4 native columns** — `Configuration`, `Section_x0020_Qty`, `Info_x002b_`,
+  `Technical_x0020_Notes` — are mapped as of v004 and fill on the next run.
+- **4 are blank on both sides**, so nothing is lost.
+
+So the layout is right now and fills in as the runs happen. Worth telling staff that, so the
+empty columns read as "not yet" rather than "broken".
+
