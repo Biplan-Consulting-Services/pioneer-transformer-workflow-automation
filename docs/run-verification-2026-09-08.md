@@ -133,8 +133,13 @@ a hypothesis into a fact: those 93 stale dates are unreachable-by-design, not a 
 |---|---|---|---|---|
 | `P1_001-1/1` | 1128 | 562 (new) | Bobinage | ✅ |
 | `P20001-1/1` | 1129 | 563 (new) | Tanking | ✅ |
-| `P20004-1/2` | 1130 | 487 | — | ✅ |
-| `P20004-2/2` | 1131 | 487 | — | ✅ |
+| `P20004-1/2` | 1130 | 487 → **488** ¹ | — | ✅ |
+| `P20004-2/2` | 1131 | 487 → **488** ¹ | — | ✅ |
+
+¹ Both were repointed to Order **488** (`ERMCO`) per the user, and the duplicate row **487**
+(`PIONEER TRANSFORMERS`) was deleted by the user later on 2026-09-08. Re-verified over REST:
+exactly one `P20004` row remains in `Order` — Id 488, ClientId 120 — and both units carry
+`OrderNumberId 488` / `ClientId 120`, so there is **no dangling lookup**.
 
 Every date landed at `04:00:00Z`, so the bare-date rule holds for hand-written rows too, not only
 flow-written ones.

@@ -1,8 +1,12 @@
 # Runbook — what to do when you wake up
 
-Written 2026-09-08 ~10:00 while you slept. Everything below is ready; nothing here
-needs thinking, only running and reading. **Total hands-on time: about 20 minutes**,
-plus two decisions only you can make.
+Written 2026-09-08 ~10:00 while you slept, updated after your two answers.
+Everything below is ready; nothing here needs thinking, only running and reading.
+**Total hands-on time: about 20 minutes.**
+
+✅ **Both open decisions are now closed** — `Extérieur` is finished goods waiting outside
+to ship, and you deleted the duplicate `P20004` Order row. Nothing in this runbook needs
+a judgement call any more; every script runs end-to-end with zero rows held back.
 
 ## Already done and verified — no action needed
 
@@ -11,6 +15,7 @@ plus two decisions only you can make.
 | **R22** — `RevModelDescription` | ✅ **979 rows fixed, 0 blobs remain.** Verified against the parent `Model Revisions`: **979/979 match exactly**, 0 differing, 0 case-only differences. |
 | **4 skipped live units** | ✅ created and verified (Ids 1128–1131), all dates at `04:00:00Z` |
 | **`P20004` → ERMCO** | ✅ units 1130/1131 repointed to Order 488, Client ERMCO |
+| **`P20004` duplicate** | ✅ **you deleted Order 487.** Verified over REST: exactly one `P20004` Order row remains (Id **488**, ClientId 120 = ERMCO) and both units already point at it — **no dangling lookup**. The only duplicated order number in all 445 is gone, so the flow stops skipping those 2 units and `N3` no longer inherits the ambiguity. |
 | **N5 — version history** | ✅ already capped: versioning on, `MajorVersionLimit` **50** |
 
 ## Run these three, in this order
@@ -33,9 +38,36 @@ delivery date). All 104 orphans meet it; 36 already read Delivered.
 - **flagged, included:** 9 still read archive `Status = EC` — `21803-4/8` plus eight `22021-*`
 - 🔑 those eight `22021-*` are **exactly R15's "genuinely unexplained" eight**. Delivered and archived. R15 is closed.
 
-### 2 · `scripts/x1_clear_fabricated_stages.js` — 1,120 stage-clears
+### 2 · `scripts/x1_clear_fabricated_stages.js` — 1,141 stage-clears
 
-Clears the fabricated Tanking/Delivery completions. Keeps 203. **Holds back 52.**
+Clears the fabricated Tanking/Delivery completions: **834 tanking + 307 delivery.**
+Keeps **234** (141 tanking + 93 delivery). **Holds back nothing** — `REVIEW` prints 0.
+
+Your `Extérieur` ruling — *"completed and waiting outside to be shipped"* — resolved the
+52 held-back rows, and it split them in **opposite** directions, which is exactly why it
+was worth one question rather than a guess:
+
+| | ruling | rows | verdict |
+|---|---|---|---|
+| **Tanking** | production is complete ⇒ the unit is **past** tanking | 31 | **KEEP** |
+| **Delivery** | still *waiting* to ship ⇒ delivery is **not** complete | 21 | **CLEAR** |
+
+Guessing either way would have been wrong on one of the two stages.
+
+🔑 **And FRM11's own code independently agrees on the tanking half** — I checked after your
+answer rather than just taking it. `power-query/FRM11/Rows to purge.pq`, live production M
+code written by nobody on this project, computes:
+
+```
+"Already Tanked" = List.Contains({"XT","TE","FI","LI"}, [Location.1])
+                   or ([Location.1] = "TA" and Text.Contains([Status.1],"TE"))
+```
+
+`XT` is `Extérieur`, sitting in that set beside `TE`/`FI`/`LI` — **the exact past-tanking set
+this script keeps.** FRM11 stops tracking a tank once the unit hits `XT`, because by then the
+tank is already on it. So the ruling isn't only your word; the tank-tracking workbook has
+encoded it all along — and it rules out the opposite reading I'd considered, a unit parked
+outside *waiting* on a supplier's tank, which would have put `XT` **before** tanking.
 
 Fabrication is proven three independent ways, so this isn't a judgement call:
 - `Tanking End Date` is a **byte-copy of `Planned Tanking Date` on 921 of 975** rows
@@ -51,20 +83,6 @@ Creates `Step Status` (Text) and `Status Date` (Date Only), then splits the comp
 
 - code table read from **FRM10-12's own `List` sheet** (`TableValidationStatusCode`), not inferred
 - **all 247 parse; all 19 ambiguous `Jui` rows resolve to *juillet*** from each unit's own real stage dates — most landing on the *exact* same day. **None need a human**, against the roadmap's plan to flag 9
-
-## Two decisions only you can make
-
-**1 · The 52 held-back rows are all one question.** Every single one is `Location = Extérieur`
-— the only location outside the production sequence
-(`IS→BO→ST→AS→FO→TA→TE→FI→LI`). A unit could be outside waiting for a supplier to
-fabricate its tank (**before** tanking, per FRM11) or finished and stored outside (**after**).
-
-> **Is `Extérieur` before or after tanking?** One word settles all 52.
-
-**2 · `P20004` still has two Order rows** — 487 (Pioneer Transformers) and 488 (ERMCO). It's
-the only duplicated order number in all 445. Until one goes, the flow will keep skipping
-those two units, and **N3 inherits the same problem** since it resolves parents by key.
-Id **487** is the candidate: wrong client, and now zero units attached. Say the word and I'll retire it.
 
 ## N3 — ready to paste and validate
 

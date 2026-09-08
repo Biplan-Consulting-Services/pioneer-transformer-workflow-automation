@@ -5,6 +5,15 @@
       will wrongly clear the delivery of 68 genuinely-shipped units. The script
       refuses to apply if it detects X2 has not run.
 
+      ⚠️ THE EXTÉRIEUR RULING MADE THIS ORDER MORE LOAD-BEARING, NOT LESS.
+      24 of X2's 66 units still read Location = Extérieur (X2's own breakdown:
+      Extérieur 24, Finition 14, blank 11, Test 9, Tanking 8, Four 2). Under the
+      OLD code Extérieur was REVIEW, so running X1 first would merely have left
+      those 24 alone -- wrong, but harmless. Now Extérieur delivery CLEARS, so
+      running X1 first would actively wipe the delivery of 24 units the archive
+      proves were shipped. Do not skip the guard, and do not run these two out
+      of order.
+
    HOW TO RUN
      1. Open, signed in:
         https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/currentuser
@@ -19,7 +28,34 @@
      Production sequence, from the flow's own MappedLocation table:
        Isolation -> Bobinage -> Stacking -> Assemblage -> Four -> Tanking
                  -> Test -> Finition -> Livraison
-     so "past tanking" = Test, Finition, Livraison.
+     so "past tanking" = Test, Finition, Livraison, and -- per the ruling below --
+     Extérieur.
+
+   EXTÉRIEUR -- ruled 2026-09-08, in the user's words:
+     "it's completed and waiting outside to be shipped"
+
+     That single answer resolves the two stages in OPPOSITE directions, which is
+     why it was worth asking rather than guessing:
+       Tanking  -> production is COMPLETE, so the unit is PAST tanking  => KEEP
+       Delivery -> it is still WAITING to be shipped, so delivery is not
+                   complete and its "Completed" is fabricated like the rest
+                                                                        => CLEAR
+     Guessing either way would have been wrong on one of the two stages.
+
+     🔑 FRM11's own M code INDEPENDENTLY AGREES on the tanking half. Its
+     "Rows to purge" query -- power-query/FRM11/Rows to purge.pq, live
+     production code, written by nobody in this project -- computes:
+
+       "Already Tanked" = List.Contains({"XT","TE","FI","LI"}, [Location.1])
+                          or ([Location.1] = "TA" and Text.Contains([Status.1],"TE"))
+
+     XT is Extérieur, and it sits in that set beside TE/FI/LI -- the exact
+     past-tanking set this script keeps. FRM11 stops tracking a tank once the
+     unit reaches XT because the tank is already on it. So the ruling is not
+     just the user's word: the tank-tracking workbook has encoded it all along.
+     (And it rules out the opposite reading I had considered -- a unit parked
+     outside WAITING for a supplier's tank -- which would have put XT before
+     tanking, not after.)
 
    NO UNIT LIST IS EMBEDDED, on purpose. The rule is a pure function of
    Location, so the script derives the whole population from the live list. That
@@ -51,12 +87,13 @@
      Automate connector that leaves the old value, which is why 844 stale
      Pending statuses survived the run.)
 
-   HELD BACK FOR A HUMAN -- 52 rows, one question
-     Every REVIEW row is Location = Extérieur (31 tanking + 21 delivery).
-     Extérieur is not in the production sequence -- a unit could be outside
-     waiting for its tank to be fabricated by a supplier (BEFORE tanking, per
-     FRM11) or finished and stored outside (AFTER). One answer settles all 52.
-     Until then they are left exactly as they are.
+   NOTHING IS HELD BACK ANY MORE
+     The 52 rows this script used to leave for a human were all Location =
+     Extérieur, and the ruling above resolves every one of them -- 31 tanking to
+     KEEP, 21 delivery to CLEAR. REVIEW is expected to print 0.
+     Entrepôt and Réparation stay wired as REVIEW on purpose: no row carries
+     either location today, but if one appears later it is genuinely off-sequence
+     and this script must not guess at it.
 */
 
 (async () => {
@@ -65,9 +102,12 @@
   const OI    = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
   const CONC  = 8;
 
-  const PAST_TANK   = new Set(["Test","Finition","Livraison"]);
+  // Extérieur = finished goods waiting outside to ship (user, 2026-09-08):
+  //   past tanking  -> in PAST_TANK, so its Tanking is KEPT
+  //   not shipped   -> NOT in OFF_SEQ, so its Delivery falls through and is CLEARED
+  const PAST_TANK   = new Set(["Test","Finition","Livraison","Extérieur"]);
   const AT_OR_BEFORE= new Set(["","Isolation","Bobinage","Stacking","Assemblage","Four","Tanking"]);
-  const OFF_SEQ     = new Set(["Extérieur","Entrepôt","Réparation"]);
+  const OFF_SEQ     = new Set(["Entrepôt","Réparation"]);
 
   const J = async (u) => (await fetch(u,{headers:{Accept:"application/json;odata=nometadata"}})).json();
   let url = base + "/_api/web/lists(guid'" + OI + "')/items?$select=Id,Title,ItemStatus,Location," +
@@ -112,7 +152,7 @@
   console.log("  CLEAR  Tanking : " + cnt("Tanking"));
   console.log("  CLEAR  Delivery: " + cnt("Delivery"));
   console.log("  KEEP           : " + keep.length);
-  console.log("  REVIEW (left as-is): " + review.length +
+  console.log("  REVIEW (left as-is): " + review.length + "   <- expect 0" +
               "  by location: " + JSON.stringify(review.reduce((m,r)=>{m[r[2]]=(m[r[2]]||0)+1;return m;},{})));
   console.log("  sample to clear: " + work.slice(0,3).map(w=>w.Title+"/"+w.stage+" was ["+w.from.s+","+String(w.from.e).slice(0,10)+"]").join(" | "));
 
@@ -158,6 +198,6 @@
   const dely = after.filter(r=>(r.DeliveryStatus||"")!=="").length;
   console.log("\n--- verification (trust this, not the write results) ---");
   console.log("rows still violating the rule: " + stillBad.length + "   (expect 0)");
-  console.log("Tanking Status populated : " + tank + "   (was 975; expect ~141 = 110 keep + 31 review)");
-  console.log("Delivery Status populated: " + dely + "   (was 400; expect ~114 = 93 keep + 21 review)");
+  console.log("Tanking Status populated : " + tank + "   (was 975; expect 141 = 110 in-sequence + 31 Extérieur, all KEEP)");
+  console.log("Delivery Status populated: " + dely + "   (was 400; expect 93 = Livraison + a delivery date)");
 })();

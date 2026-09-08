@@ -311,14 +311,17 @@ whole backfill existed to fix. Verified after the run: `Planned Tanking Date` 55
 
 ### 4 · Resolve-by-key must handle an **ambiguous** parent, not just a missing one
 
-`P20004` appears **twice** in `Order` — Id 487 (`PIONEER TRANSFORMERS`) and Id 488 (`ERMCO`). It is
-the only duplicated order number in all 445 rows, and its two units are **exactly** the two the
-transfer flow could not explain skipping. `first(…)` on that filter is a coin toss between two
-different clients.
+✅ **The instance is fixed — the rule stays.** `P20004` used to appear **twice** in `Order`,
+Id 487 (`PIONEER TRANSFORMERS`) and Id 488 (`ERMCO`), the only duplicated order number in all
+445 rows, and its two units were **exactly** the two the transfer flow could not explain
+skipping. The user deleted **487** on 2026-09-08; verified over REST that one `P20004` row
+remains (488, ERMCO) and both units point at it. `Order` has no duplicate order number today.
 
-N3 resolves parents by key for every one of its flows, so it inherits this. Do not take
-`first()`; count the matches and **flag anything other than exactly one** rather than guessing —
-the same discipline `R2` already demands for the SA twin.
+**Build the guard anyway.** Nothing prevents a second `P20004` from being typed tomorrow — the
+column has no uniqueness constraint, and this one survived undetected long enough to silently
+skip two units on every run. So do not take `first(…)`: count the matches and **flag anything
+other than exactly one** rather than guessing between two different clients. Same discipline
+`R2` already demands for the SA twin.
 
 ### 5 · The synced columns are `Text` on purpose — keep them that way
 
