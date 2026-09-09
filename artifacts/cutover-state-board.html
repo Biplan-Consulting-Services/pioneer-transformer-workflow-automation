@@ -231,16 +231,16 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <span><b>Cutover</b> Thursday 2026-09-10, evening</span>
       <span><b>Transfer flow</b> v006 live · v007 staged</span>
       <span><b>Order Items</b> 1,117 rows · 165 columns</span>
-      <span><b>Compiled</b> 2026-09-09 02:40</span>
+      <span><b>Compiled</b> 2026-09-09 02:40 · <b>updated</b> 04:05</span>
     </div>
   </header>
 
   <div class="tally">
-    <div class="tal you"><div class="n">4</div><div class="l">Waiting on you</div></div>
-    <div class="tal me"><div class="n">5</div><div class="l">Tonight's deliverables</div></div>
+    <div class="tal you"><div class="n">6</div><div class="l">Waiting on you</div></div>
+    <div class="tal ok"><div class="n">5<span style="font-size:15px">&nbsp;/&nbsp;5</span></div><div class="l">Tonight's work, done</div></div>
     <div class="tal ok"><div class="n">6</div><div class="l">Settled, needs nothing</div></div>
     <div class="tal no"><div class="n">1</div><div class="l">Loses data Thursday</div></div>
-    <div class="tal"><div class="n">16</div><div class="l">Viewer columns to convert</div></div>
+    <div class="tal"><div class="n">16</div><div class="l">Viewer columns, all resolved</div></div>
   </div>
 
   <div class="alert">
@@ -272,7 +272,7 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
   <section>
     <div class="shead">
       <h2>Who holds what</h2>
-      <span class="cnt">Ticks save to this page</span>
+      <span class="cnt">Ticks save to this page · updated 04:05</span>
     </div>
     <p class="intro">Split by who can move it, not by phase — that is the only distinction
       that matters on the morning of a cutover. Nothing in the first lane can be done by an
@@ -324,41 +324,88 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
               counts unchanged, rest of the definition byte-identical.</div></div>
         </div>
 
+        <div class="it" data-id="SYNC">
+          <button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t"><span class="id">viewer</span>Sync the conversions into the viewer workbook
+            <span class="gate soft">read the diff first</span></div>
+            <div class="w"><code>Sync-PowerQuery.ps1 -WorkbookPath ./viewer/workbook/FRM10-12.xlsx
+              -CreateMissing</code>, then re-run with <code>-Apply</code>.
+              🔴 <b><code>-CreateMissing</code> is required</b> — two of the four queries are new,
+              and without it they are reported <code>notFound</code> and <b>skipped silently</b>:
+              the sync succeeds and the conversions never land.</div></div>
+        </div>
+
+        <div class="it" data-id="FRLBL">
+          <button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t"><span class="id">30 s</span>Verify three French UI labels</div>
+            <div class="w">The last banner nobody owns. Open the classic view-settings page
+              <b>in French</b> and confirm section 7's labels read exactly
+              « Regrouper par », « Réduits », « Limite d'éléments ». They were reasoned, never
+              read — and staff will search the screen for those exact words.</div></div>
+        </div>
+
       </div>
     </div>
 
-    <div class="lane me">
-      <div class="lanehead"><span class="tag">Mine tonight</span>
-        <span class="sub">delivered as files and diffs; nothing pasted, nothing run</span></div>
+    <div class="lane done">
+      <div class="lanehead"><span class="tag">Done overnight</span>
+        <span class="sub">files, diffs and staged JSON — nothing pasted, nothing run, nothing deployed</span></div>
       <div class="items">
 
         <div class="it fixed"><span class="box">✓</span>
           <div><div class="t">v007 authored, validated, staged</div>
-            <div class="w">Refuses to run unless it finds the exact defective expression, so a
-              hand edit in the designer stops it rather than being overwritten.</div></div></div>
+            <div class="w">One mapping on both write actions; 122/130 counts unchanged, rest of
+              the definition byte-identical. The script refuses to run unless it finds the exact
+              defective expression, so a hand edit in the designer stops it rather than being
+              silently overwritten.</div></div></div>
 
-        <div class="it" data-id="M2"><button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t">Re-verify the three N3 flows</div>
-            <div class="w">Field counts 18 / 5 / 24 against the current schema, every source
-              name still resolving, no bare <code>select()</code>.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span>
+          <div><div class="t">Three N3 flows re-verified</div>
+            <div class="w"><code>scripts/verify_n3_flows.py</code> — 18/5/24 field counts hold,
+              every target is one of the 48 columns N2 actually created, all 16 Choice/Lookup
+              sources read <code>?['Value']</code>, change-guard counts match field counts,
+              pagination 5000, no bare <code>select()</code>.</div></div></div>
 
-        <div class="it" data-id="M3"><button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t">The viewer conversions, as a <code>.pq</code> diff</div>
-            <div class="w">Delivered as a diff to read — <b>no
-              <code>Sync-PowerQuery.ps1 -Apply</code></b>, which writes into the workbook and is
-              yours to trigger.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span>
+          <div><div class="t">Viewer conversions written as a reviewable diff</div>
+            <div class="w">Two new queries (<code>ValueConversions.pq</code>,
+              <code>LocationCodes.pq</code>) plus 14 retypes in <code>ColumnMap.pq</code>.
+              <b>Not applied</b> — no <code>-Apply</code>, no refresh, no deployment. Full
+              reasoning in <code>FRM10-12/docs/viewer-value-conversions-2026-09-09.md</code>.</div></div></div>
 
-        <div class="it" data-id="M4"><button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t">Archive the superseded cutover docs, write one clean runbook</div>
-            <div class="w">Six documents describe the cutover and disagree; the only one with
-              real switchover mechanics is stamped <em>do not work from this document</em>.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span>
+          <div><div class="t">One runbook; the five that disagreed are in <code>archive/</code></div>
+            <div class="w"><code>docs/CUTOVER-RUNBOOK.md</code>, undated because there is only
+              one. Two things rescued from the 2026-09-01 plan that nothing else records: the
+              deploy-in-place decision and the three named refresh owners.</div></div></div>
 
-        <div class="it" data-id="M5"><button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t">Draft the staff guide in full</div>
-            <div class="w">A finished example rather than notes, so tomorrow is a review rather
-              than a writing session. Banner resolved, the two backwards instructions
-              corrected.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span>
+          <div><div class="t">Staff guide finished, EN and FR</div>
+            <div class="w">A review rather than a writing session tomorrow. The two backwards
+              instructions are now correct, and a new <em>What looks different</em> section
+              covers the fields that changed from a typed letter to a checkbox or
+              dropdown.</div></div></div>
 
+      </div>
+    </div>
+
+    <div class="lane done">
+      <div class="lanehead"><span class="tag">Also found</span>
+        <span class="sub">checks that had never been run</span></div>
+      <div class="items">
+        <div class="it fixed"><span class="box">✓</span>
+          <div><div class="t">The viewer's tracked <code>.pq</code> is in sync with its workbook</div>
+            <div class="w">Exported all 26 queries from <code>viewer/workbook/FRM10-12.xlsx</code>
+              and diffed against the repo: <b>byte-identical apart from trailing newlines</b>.
+              This is the check whose absence caused roadmap 44 in the other tree — the viewer
+              tree is clean, so syncing it will not install a query that fails on
+              refresh.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span>
+          <div><div class="t">The marker conversions are exact, not approximate</div>
+            <div class="w">Row-level join over the 1,013 units in both sources: the boolean
+              agrees with the workbook marker on every row of all ten columns. The list's higher
+              counts are the 104 orphans, 92 True on all four R-columns — confirmed rather than
+              assumed.</div></div></div>
       </div>
     </div>
 
