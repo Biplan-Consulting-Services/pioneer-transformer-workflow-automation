@@ -19,6 +19,13 @@ is genuinely the only route back.
 |---|---|
 | `… X4 orders created.json` | **deleting** the listed Order ids — they did not exist before |
 | `… X2 delivered.undo.json` | **restoring** the listed previous values onto those item ids |
+| `… X1 stage-clears.undo.json` | **restoring** 573 stage values across 536 items — ⚠️ puts *known-bad* data back, see the file's own `warning` |
+
+🔴 **The X1 file must be applied grouped by item.** It holds one entry per
+(item, stage) and 37 items appear twice. A per-entry loop issues two concurrent
+PATCHes to the same item and SharePoint rejects the second with 409 Conflict —
+that is what broke X1's first run. The UNDO block at the bottom of
+`x1_clear_fabricated_stages.js` already groups; don't rewrite it.
 
 Read the direction from the file's own `undo` field rather than assuming — creates and
 updates reverse differently, and getting it backwards on a create makes 66 new rows.
