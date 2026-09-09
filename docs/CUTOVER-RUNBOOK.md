@@ -220,9 +220,21 @@ stop maintaining FRM10-12. This is the step with a party outside the building.
 between "live copy" and "frozen snapshot". Both sentences are drafted; the wrong one has
 staff making decisions on stale data.
 
-**5.3 · Strip the pre-publication banners from the guides** —
-`staff-guide-sharepoint.md`, `staff-guide-sharepoint-fr.md`, `views-guide-sharepoint.md`,
-`views-guide-sharepoint-fr.md`.
+**5.3 · Clear the pre-publication banners.** There are three kinds and they need three
+different things — "strip the banners" is not one action.
+
+| guide | banner | what it needs |
+|---|---|---|
+| `staff-guide-sharepoint.md` · `-fr.md` | 📋 *Draft for review* | **Review with Soleil, then delete the box.** Rewritten 2026-09-09: the two "don't type in the Excel file" instructions are now correct rather than backwards, and a new *What looks different* section covers the fields that changed from a typed letter to a checkbox or dropdown. |
+| `views-guide-sharepoint.md` · `-fr.md` | *Where things stand today (2026-09-04)* | **Content fix, not a deletion.** It says FRM10-12 is still live and staff keep using it as before. True until Thursday, false the moment the cutover completes. Replace, don't remove — staff still need a "where things stand" line. |
+| `views-guide-sharepoint-fr.md` only | ⚠️ *AVANT PUBLICATION — vérifier trois libellés* | 🔴 **Verify first, then delete.** Not strippable on its own authority — it flags three French UI labels in section 7 that were reasoned, never read. |
+
+For that last one: open the classic view-settings page **in French** and confirm the three
+labels read exactly **« Regrouper par »**, **« Réduits »**, **« Limite d'éléments »**. About
+30 seconds in the browser, and it is the only banner in the set that nobody currently owns.
+It matters more than it looks — staff will search the screen for those exact words, and a
+guide naming a button that does not exist makes them doubt the parts that are right. The
+rest of section 7 is verified and depends on no label.
 
 ---
 
