@@ -97,6 +97,17 @@
 */
 
 (async () => {
+  // ⚠️ INTERNAL NAMES, resolved from the live list 2026-09-09 -- do not "correct" these.
+  // Every stage's END date is internally  <Stage>Date , NOT <Stage>EndDate: the columns
+  // were created as "Coiling Date"/"Tanking Date"/... and renamed to "... End Date" when
+  // the Start Dates were added, and a SharePoint rename does not change the internal
+  // name. The Start Dates, created later, really are <Stage>StartDate.
+  //   Tanking End Date  -> TankingDate        Delivery End Date -> DeliveryDate
+  // This script previously used TankingEndDate/DeliveryEndDate; the read 400'd with
+  // "The field or property 'DeliveryEndDate' does not exist." and, because the paging
+  // loop did  j.value||[] , that surfaced as "rows in list: 0" and 66 phantom missing
+  // titles rather than an error.
+
   const APPLY = false;                    // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const OI    = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
@@ -111,9 +122,16 @@
 
   const J = async (u) => (await fetch(u,{headers:{Accept:"application/json;odata=nometadata"}})).json();
   let url = base + "/_api/web/lists(guid'" + OI + "')/items?$select=Id,Title,ItemStatus,Location," +
-            "TankingStatus,TankingEndDate,DeliveryStatus,DeliveryEndDate&$top=500";
+            "TankingStatus,TankingDate,DeliveryStatus,DeliveryDate&$top=500";
   let rows = [], g = 0;
   while (url && g++ < 10) { const j = await J(url); rows = rows.concat(j.value||[]); url = j["odata.nextLink"]||null; }
+
+  if (rows.length === 0) {
+    console.error("ABORT: the list read returned 0 rows. That is a broken query, not an "
+                + "empty list -- check the $select field names against the live column "
+                + "list. Refusing to continue.");
+    return;
+  }
   console.log("rows read: " + rows.length);
 
   // ---- guard: has X2 run? it should leave 104 units at Livraison / Delivered
@@ -132,19 +150,19 @@
   for (const r of rows) {
     const loc = (r.Location || "").trim();
     // Tanking
-    if ((r.TankingStatus || "") !== "" || r.TankingEndDate) {
+    if ((r.TankingStatus || "") !== "" || r.TankingDate) {
       if (PAST_TANK.has(loc))           keep.push([r.Title,"Tanking","past tanking"]);
       else if (OFF_SEQ.has(loc))        review.push([r.Title,"Tanking",loc]);
       else if (AT_OR_BEFORE.has(loc))   work.push({Id:r.Id,Title:r.Title,stage:"Tanking",
-                                            from:{s:r.TankingStatus,e:r.TankingEndDate}});
+                                            from:{s:r.TankingStatus,e:r.TankingDate}});
       else                              review.push([r.Title,"Tanking","unknown location "+loc]);
     }
     // Delivery
-    if ((r.DeliveryStatus || "") !== "" || r.DeliveryEndDate) {
-      if (loc === "Livraison" && r.DeliveryEndDate) keep.push([r.Title,"Delivery","LI + date"]);
+    if ((r.DeliveryStatus || "") !== "" || r.DeliveryDate) {
+      if (loc === "Livraison" && r.DeliveryDate) keep.push([r.Title,"Delivery","LI + date"]);
       else if (OFF_SEQ.has(loc))                    review.push([r.Title,"Delivery",loc]);
       else                                          work.push({Id:r.Id,Title:r.Title,stage:"Delivery",
-                                                        from:{s:r.DeliveryStatus,e:r.DeliveryEndDate}});
+                                                        from:{s:r.DeliveryStatus,e:r.DeliveryDate}});
     }
   }
   const cnt = (st) => work.filter(w=>w.stage===st).length;
@@ -168,8 +186,12 @@
   let ok=0, fail=0; const errs=[];
   const patch = async (w) => {
     const body = {__metadata:{type:et}};
-    body[w.stage+"Status"]  = null;
-    body[w.stage+"EndDate"] = null;
+    body[w.stage+"Status"] = null;
+    // NOT w.stage+"EndDate" -- the end-date column is internally <Stage>Date. A blanket
+    // find/replace of the read fields would have missed this one, because the write
+    // field name is BUILT here rather than written out. It would have failed at write
+    // time, on the run that clears 1,141 values.
+    body[w.stage+"Date"]   = null;
     const r = await fetch(base+"/_api/web/lists(guid'"+OI+"')/items("+w.Id+")",{method:"POST",
       headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=verbose",
                "X-RequestDigest":dg.FormDigestValue,"X-HTTP-Method":"MERGE","IF-MATCH":"*"},
@@ -185,13 +207,13 @@
   for (const e of errs) console.error("  " + e);
 
   // ---------------------------------------------------------- verification
-  let u2 = base+"/_api/web/lists(guid'"+OI+"')/items?$select=Id,Location,TankingStatus,TankingEndDate,DeliveryStatus,DeliveryEndDate&$top=500";
+  let u2 = base+"/_api/web/lists(guid'"+OI+"')/items?$select=Id,Location,TankingStatus,TankingDate,DeliveryStatus,DeliveryDate&$top=500";
   let after=[], g2=0;
   while (u2 && g2++<10) { const j=await J(u2); after=after.concat(j.value||[]); u2=j["odata.nextLink"]||null; }
   const stillBad = after.filter(r => {
     const loc=(r.Location||"").trim();
-    const tBad = ((r.TankingStatus||"")!=="" || r.TankingEndDate) && AT_OR_BEFORE.has(loc);
-    const dBad = ((r.DeliveryStatus||"")!=="" || r.DeliveryEndDate) && !(loc==="Livraison" && r.DeliveryEndDate) && !OFF_SEQ.has(loc);
+    const tBad = ((r.TankingStatus||"")!=="" || r.TankingDate) && AT_OR_BEFORE.has(loc);
+    const dBad = ((r.DeliveryStatus||"")!=="" || r.DeliveryDate) && !(loc==="Livraison" && r.DeliveryDate) && !OFF_SEQ.has(loc);
     return tBad || dBad;
   });
   const tank = after.filter(r=>(r.TankingStatus||"")!=="").length;

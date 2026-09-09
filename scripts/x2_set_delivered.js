@@ -47,6 +47,17 @@
 */
 
 (async () => {
+  // ⚠️ INTERNAL NAMES, resolved from the live list 2026-09-09 -- do not "correct" these.
+  // Every stage's END date is internally  <Stage>Date , NOT <Stage>EndDate: the columns
+  // were created as "Coiling Date"/"Tanking Date"/... and renamed to "... End Date" when
+  // the Start Dates were added, and a SharePoint rename does not change the internal
+  // name. The Start Dates, created later, really are <Stage>StartDate.
+  //   Tanking End Date  -> TankingDate        Delivery End Date -> DeliveryDate
+  // This script previously used TankingEndDate/DeliveryEndDate; the read 400'd with
+  // "The field or property 'DeliveryEndDate' does not exist." and, because the paging
+  // loop did  j.value||[] , that surfaced as "rows in list: 0" and 66 phantom missing
+  // titles rather than an error.
+
   const APPLY = false;                     // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const OI    = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
@@ -79,9 +90,16 @@
 
   const J = async (u) => (await fetch(u,{headers:{Accept:"application/json;odata=nometadata"}})).json();
   let url = base + "/_api/web/lists(guid'" + OI +
-    "')/items?$select=Id,Title,ItemStatus,Location,DeliveryStatus,DeliveryEndDate&$top=500";
+    "')/items?$select=Id,Title,ItemStatus,Location,DeliveryStatus,DeliveryDate&$top=500";
   let rows = [], g = 0;
   while (url && g++ < 10) { const j = await J(url); rows = rows.concat(j.value||[]); url = j["odata.nextLink"]||null; }
+  if (rows.length === 0) {
+    console.error("ABORT: the list read returned 0 rows. That is a broken query, not an "
+                + "empty list -- check the $select field names against the live column "
+                + "list. Refusing to continue.");
+    return;
+  }
+
   const byT = {}; for (const r of rows) byT[r.Title] = r;
 
   const plan = [], missing = [];
@@ -89,7 +107,7 @@
     const r = byT[t];
     if (!r) { missing.push(t); continue; }
     plan.push({Id:r.Id, Title:t, to:d, from:{ItemStatus:r.ItemStatus, Location:r.Location,
-      DeliveryStatus:r.DeliveryStatus, DeliveryEndDate:r.DeliveryEndDate}});
+      DeliveryStatus:r.DeliveryStatus, DeliveryDate:r.DeliveryDate}});
   }
   console.log("rows in list: " + rows.length + " | to change: " + plan.length +
               (missing.length ? " | TITLE NOT FOUND: " + JSON.stringify(missing) : ""));
@@ -117,7 +135,7 @@
   let ok=0, fail=0; const errs=[];
   for (const p of plan) {
     const body = {__metadata:{type:et}, ItemStatus:"Delivered", Location:"Livraison",
-                  DeliveryStatus:"Completed", DeliveryEndDate:p.to};
+                  DeliveryStatus:"Completed", DeliveryDate:p.to};
     const w = await fetch(base+"/_api/web/lists(guid'"+OI+"')/items("+p.Id+")",{method:"POST",
       headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=verbose",
                "X-RequestDigest":dg.FormDigestValue,"X-HTTP-Method":"MERGE","IF-MATCH":"*"},
@@ -129,12 +147,12 @@
 
   // ---------------------------------------------------------- verification
   const ids = new Set(plan.map(p=>p.Id));
-  let u2 = base+"/_api/web/lists(guid'"+OI+"')/items?$select=Id,Title,ItemStatus,Location,DeliveryStatus,DeliveryEndDate&$top=500";
+  let u2 = base+"/_api/web/lists(guid'"+OI+"')/items?$select=Id,Title,ItemStatus,Location,DeliveryStatus,DeliveryDate&$top=500";
   let after=[], g2=0;
   while (u2 && g2++<10) { const j=await J(u2); after=after.concat(j.value||[]); u2=j["odata.nextLink"]||null; }
   const mine = after.filter(r=>ids.has(r.Id));
   const bad = mine.filter(r => r.ItemStatus!=="Delivered" || r.Location!=="Livraison" ||
-                               r.DeliveryStatus!=="Completed" || !r.DeliveryEndDate);
+                               r.DeliveryStatus!=="Completed" || !r.DeliveryDate);
   console.log("\n--- verification (trust this, not the write results) ---");
   console.log("rows checked: " + mine.length + " | not fully updated: " + bad.length + "  (expect 0)");
   for (const r of bad.slice(0,5)) console.error("  " + JSON.stringify(r));
@@ -158,7 +176,7 @@
              .ListItemEntityTypeFullName;
   for (const p of PREV) {
     const body={__metadata:{type:et}, ItemStatus:p.ItemStatus, Location:p.Location,
-                DeliveryStatus:p.DeliveryStatus, DeliveryEndDate:p.DeliveryEndDate};
+                DeliveryStatus:p.DeliveryStatus, DeliveryDate:p.DeliveryDate};
     const w=await fetch(base+"/_api/web/lists(guid'"+OI+"')/items("+p.Id+")",{method:"POST",
       headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=verbose",
                "X-RequestDigest":dg.FormDigestValue,"X-HTTP-Method":"MERGE","IF-MATCH":"*"},

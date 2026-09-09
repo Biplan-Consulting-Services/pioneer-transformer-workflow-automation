@@ -174,7 +174,40 @@ had — hence a dedicated place to plan it before touching production.
        → click the column → the `Field=` parameter in the URL** instead. That is the one route
        confirmed to work.
 
-  3. **Calculated columns come back BLANK in a CSV export, but populate fine over REST.**
+  3. 🔴 **On `Order Items`, every stage's END date is internally `<Stage>Date`, not
+     `<Stage>EndDate`.** Read off the live list 2026-09-09, all eight stages:
+
+     | display | internal | | display | internal |
+     |---|---|---|---|---|
+     | Coiling End Date | `CoilingDate` | | Tanking End Date | `TankingDate` |
+     | Stacking End Date | `StackingDate` | | Testing End Date | `TestingDate` |
+     | Assembly End Date | `AssemblyDate` | | Finishing End Date | `FinishingDate` |
+     | Drying End Date | `DryingDate` | | Delivery End Date | `DeliveryDate` |
+
+     The columns were created as "Coiling Date"/"Tanking Date"/… and renamed to "… End
+     Date" when the Start Dates were added — **a SharePoint rename does not change the
+     internal name.** The Start Dates, created later, genuinely are `<Stage>StartDate`, so
+     the two halves of the same pair follow different rules.
+
+     ⚠️ **The transfer flow does not validate these.** A5b stopped it writing the stage
+     statuses, so `TankingStatus`/`TankingDate`/`DeliveryStatus`/`DeliveryDate` are absent
+     from the 130 names the flow proves on every run. X1 and X2 were the first things to
+     touch them, and both had `<Stage>EndDate` — never caught, because neither had ever
+     been executed.
+
+     🔑 **Two lessons, both cheap:**
+     - A failed `$select` returns 400 and the usual `rows.concat(j.value||[])` turns that
+       into **zero rows** — which reads as "nothing to do", not "broken query". X1/X2 now
+       abort on a zero-row read. Never let a bulk-write script confuse the two.
+     - A blanket find/replace is not enough: X1 built its write field as
+       `w.stage + "EndDate"`, so the name never appeared as a literal. Grep for the
+       *fragment*, not the whole name.
+
+     The 48 parent columns are **not** at risk — `n2_create_columns.js` set their internal
+     names outright via `createfieldasxml`, which the UI cannot do. The suspect set is the
+     ~117 columns from the manual build.
+
+  4. **Calculated columns come back BLANK in a CSV export, but populate fine over REST.**
      Found 2026-09-08: `Bo Sort Date` and `test calculated column` read as empty on **all 1,117
      rows** of the post-run export, which looks exactly like "the run failed to fill them". Over
      `_api/web/lists(...)/items` both are populated on **every** row — `Bo Sort Date` equals
