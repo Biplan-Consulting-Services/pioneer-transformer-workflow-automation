@@ -137,6 +137,27 @@
       },
       "appliedAt": "2026-09-08T00:46:25-04:00",
       "source": "v006.json"
+    },
+    {
+      "v": 7,
+      "captured": "2026-09-09T02:19:33-04:00",
+      "state": "local",
+      "parent": 6,
+      "note": "v007 R22 RevModelDescription mapping correction",
+      "sha256": "ee848873f252c285b775aa4a78e48d26c5ebec9431cae7711bafdf2590584f34",
+      "fingerprint": {
+        "toLower": 34,
+        "ecUpper": 0,
+        "actions": 11,
+        "CreateOrderItem": 122,
+        "UpdateOrderItem": 130,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v007__2026-09-09T02-19__local__v007-R22-RevModelDescription-mapping-correction.json"
+      },
+      "appliedAt": null,
+      "source": "v007.json"
     }
   ]
 }

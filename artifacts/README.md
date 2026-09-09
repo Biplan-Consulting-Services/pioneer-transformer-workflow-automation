@@ -64,3 +64,27 @@ The historical snapshot this recovery was built from (live version `1788643514-a
 2026-09-07 14:07), kept for provenance. It carries a minimal document wrapper so it opens directly
 in a browser — which is **why it is not the publish source**. Prefer
 `risk-register-tracker.html`.
+
+## `cutover-state-board.html` — the state-and-decisions companion
+
+The **Order Items Cutover State** board,
+`https://claude.ai/code/artifact/3300b1d1-dc81-40a6-9d03-34a185649767`.
+
+A companion to the risk tracker rather than a replacement: the tracker is the *risk register*
+with its dependency graph, this is *where things stand and what has been settled*. Built
+2026-09-09 the night before the Thursday cutover, because three status registers disagreed and
+the only document with real switchover mechanics was stamped `SUPERSEDED`.
+
+Same publish contract as the tracker — **a body fragment**, `data-asset` marks on the title,
+font links and `style`, and the same explicitly-assembled `serialize()`. Read that file's notes
+above before touching this one; the two-opposite-contracts trap applies identically. Verified
+zero shell tags on publish.
+
+It is deliberately **simpler than the tracker**: the content is static HTML and only the tick
+state is dynamic, so `serialize()` has no JS-rendered regions to reset. Ticks live in
+`app-state` and are re-applied on load, which is authoritative over whatever classes the
+captured body carries.
+
+Figures on it are measured, not carried forward — `FRM10-12_2026-09-04_23h08m.xlsx` for the
+workbook side, the 2026-09-08 list exports for the SharePoint side, joined row-level on
+`Unit ID` over the 1,013 units present in both.

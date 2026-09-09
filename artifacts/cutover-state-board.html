@@ -1,0 +1,802 @@
+<title>Order Items Cutover State</title>
+<link data-asset rel="preconnect" href="https://fonts.googleapis.com">
+<link data-asset rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link data-asset rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap">
+
+<style data-asset>
+:root{
+  --paper:#F5F6F4; --panel:#FFFFFF;
+  --ink:#1B2229; --ink-2:#4A5560; --ink-3:#78838E;
+  --rule:#DDE0DE; --rule-2:#EAECEA;
+  --copper:#A9541F; --copper-soft:#F2E5DC;
+  --crit:#A8271F; --crit-bg:#FAE9E7;
+  --high:#8A5A08; --high-bg:#FBF0DC;
+  --med:#2F5D74;  --med-bg:#E4EEF3;
+  --done:#1F6B4A; --done-bg:#E2F0E8;
+  --doing:#9A6206; --doing-bg:#FBEEDA;
+  --wait-bg:#F0F1EF;
+  --shadow:0 1px 2px rgba(27,34,41,.05), 0 4px 14px rgba(27,34,41,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#13181D; --panel:#1A2027;
+    --ink:#E6EAEC; --ink-2:#A9B4BD; --ink-3:#7C8892;
+    --rule:#2B333B; --rule-2:#232B32;
+    --copper:#D98A50; --copper-soft:#2C2119;
+    --crit:#F08074; --crit-bg:#33201E;
+    --high:#DFAE55; --high-bg:#2E2617;
+    --med:#7FB6D0;  --med-bg:#1B2A33;
+    --done:#63C295; --done-bg:#172A22;
+    --doing:#E0A94F; --doing-bg:#2C2416;
+    --wait-bg:#20272E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#13181D; --panel:#1A2027;
+  --ink:#E6EAEC; --ink-2:#A9B4BD; --ink-3:#7C8892;
+  --rule:#2B333B; --rule-2:#232B32;
+  --copper:#D98A50; --copper-soft:#2C2119;
+  --crit:#F08074; --crit-bg:#33201E;
+  --high:#DFAE55; --high-bg:#2E2617;
+  --med:#7FB6D0;  --med-bg:#1B2A33;
+  --done:#63C295; --done-bg:#172A22;
+  --doing:#E0A94F; --doing-bg:#2C2416;
+  --wait-bg:#20272E;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 26px 80px}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+a{color:var(--copper)}
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:2px solid var(--ink);padding-bottom:18px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--copper);font-weight:600;margin:0 0 10px}
+h1{font-family:"Barlow Condensed",Impact,sans-serif;font-weight:700;
+  font-size:clamp(38px,6.2vw,64px);line-height:.94;margin:0 0 12px;
+  text-wrap:balance;text-transform:uppercase}
+.standfirst{font-size:17px;color:var(--ink-2);max-width:64ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3)}
+.meta b{color:var(--ink-2);font-weight:500}
+
+/* ---------- tally ---------- */
+.tally{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+  background:var(--rule);border:1px solid var(--rule);margin:28px 0 38px}
+.tal{background:var(--panel);padding:15px 17px}
+.tal .n{font-family:"IBM Plex Mono",monospace;font-size:30px;font-weight:600;
+  line-height:1;font-variant-numeric:tabular-nums}
+.tal .l{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);margin-top:7px;line-height:1.45}
+.tal.you .n{color:var(--doing)} .tal.me .n{color:var(--med)}
+.tal.ok .n{color:var(--done)} .tal.no .n{color:var(--crit)}
+
+/* ---------- lead alert ---------- */
+.alert{border:1px solid var(--crit);border-left-width:5px;background:var(--crit-bg);
+  padding:22px 24px;margin-bottom:46px}
+.alert h2{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  letter-spacing:.02em;font-size:24px;margin:0 0 10px;color:var(--crit)}
+.alert p{margin:0 0 11px;max-width:74ch}
+.alert p:last-child{margin-bottom:0}
+.alert .caveat{font-size:13.5px;color:var(--ink-2);border-top:1px solid rgba(168,39,31,.28);
+  padding-top:11px;margin-top:14px}
+
+/* ---------- sections ---------- */
+section{margin-bottom:52px}
+.shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  border-bottom:1px solid var(--ink);padding-bottom:8px;margin-bottom:8px}
+.shead h2{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  font-size:28px;font-weight:700;margin:0;letter-spacing:.01em}
+.shead .cnt{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
+  letter-spacing:.08em;text-transform:uppercase}
+.intro{color:var(--ink-2);max-width:72ch;margin:0 0 22px;font-size:14.5px}
+
+/* ---------- ledger ---------- */
+.lane{margin-bottom:26px}
+.lanehead{display:flex;align-items:center;gap:10px;margin:0 0 9px}
+.lanehead .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.11em;text-transform:uppercase;padding:3px 9px;border:1px solid currentColor}
+.lane.you .tag{color:var(--doing);background:var(--doing-bg)}
+.lane.me .tag{color:var(--med);background:var(--med-bg)}
+.lane.done .tag{color:var(--done);background:var(--done-bg)}
+.lanehead .sub{font-size:13px;color:var(--ink-3)}
+.items{border:1px solid var(--rule);background:var(--panel);box-shadow:var(--shadow)}
+.it{display:grid;grid-template-columns:30px 1fr;gap:0 13px;padding:13px 16px;
+  border-bottom:1px solid var(--rule-2);align-items:start}
+.it:last-child{border-bottom:none}
+.it .box{width:19px;height:19px;border:1.5px solid var(--ink-3);background:transparent;
+  cursor:pointer;padding:0;margin-top:2px;display:grid;place-items:center;
+  font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1;color:transparent}
+.it .box:hover{border-color:var(--copper)}
+.it.tick .box{background:var(--done);border-color:var(--done);color:#fff}
+.it.tick .t{text-decoration:line-through;text-decoration-thickness:1px;color:var(--ink-3)}
+.it.tick .w{opacity:.62}
+.it .t{font-weight:600;font-size:14.5px;line-height:1.4}
+.it .t .id{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  color:var(--copper);margin-right:8px}
+.it .w{color:var(--ink-2);font-size:13.5px;margin-top:4px;max-width:82ch}
+.it .w code{font-size:12.5px;background:var(--wait-bg);padding:1px 4px}
+.it.fixed{grid-template-columns:30px 1fr}
+.it.fixed .box{border:none;background:transparent;color:var(--done);cursor:default;
+  font-size:15px}
+.gate{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10px;
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--crit);
+  background:var(--crit-bg);border:1px solid var(--crit);padding:1px 6px;margin-left:8px;
+  vertical-align:1px}
+.gate.soft{color:var(--high);background:var(--high-bg);border-color:var(--high)}
+
+/* ---------- decisions ---------- */
+.decs{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.dec{background:var(--panel);padding:20px 22px}
+.dec h3{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  font-size:20px;margin:0 0 4px;letter-spacing:.01em;text-wrap:balance}
+.dec .said{color:var(--ink-2);font-size:14px;margin:0 0 14px;max-width:78ch}
+.dec .said em{color:var(--ink);font-style:italic}
+.conseq{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.conseq li{display:grid;grid-template-columns:74px 1fr;gap:12px;font-size:13.5px;
+  align-items:baseline}
+.conseq .k{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;text-align:right;padding-top:2px}
+.conseq .k.kill{color:var(--crit)} .conseq .k.add{color:var(--done)}
+.conseq .k.keep{color:var(--med)} .conseq .k.drop{color:var(--ink-3)}
+.conseq .v{color:var(--ink-2)}
+.conseq .v b{color:var(--ink);font-weight:600}
+
+/* ---------- tables ---------- */
+.tscroll{overflow-x:auto;border:1px solid var(--rule);background:var(--panel);
+  box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:720px}
+th{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);text-align:left;font-weight:600;
+  padding:11px 14px;border-bottom:1px solid var(--rule);white-space:nowrap;
+  background:var(--panel);position:sticky;top:0}
+td{padding:10px 14px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.col{font-weight:600;white-space:nowrap}
+td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  white-space:nowrap;color:var(--ink-2)}
+.grouprow td{background:var(--wait-bg);font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);
+  font-weight:600;padding:8px 14px}
+.mk{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:13px;
+  border:1px solid var(--copper);color:var(--copper);background:var(--copper-soft);
+  padding:1px 7px;display:inline-block;min-width:22px;text-align:center}
+.verdict{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;white-space:nowrap;
+  display:inline-block}
+.verdict.ok{color:var(--done);background:var(--done-bg);border:1px solid var(--done)}
+.verdict.err{color:var(--crit);background:var(--crit-bg);border:1px solid var(--crit)}
+.verdict.lost{color:var(--crit);background:var(--crit-bg);border:1px solid var(--crit)}
+.verdict.na{color:var(--ink-3);background:var(--wait-bg);border:1px solid var(--rule)}
+
+.tnote{font-size:13px;color:var(--ink-2);margin:14px 0 0;max-width:80ch}
+.tnote b{color:var(--ink)}
+
+/* ---------- sequence ---------- */
+.seq{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.stage{background:var(--panel);display:grid;grid-template-columns:118px 1fr;gap:0}
+.stage .sl{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+  font-weight:700;font-size:17px;letter-spacing:.04em;padding:15px 16px;
+  border-right:1px solid var(--rule);color:var(--copper);background:var(--wait-bg)}
+.stage ol{margin:0;padding:14px 18px 14px 34px;display:grid;gap:6px;font-size:13.5px}
+.stage li::marker{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3)}
+.stage li b{font-weight:600}
+.stage .warn{color:var(--crit);font-weight:600}
+
+/* ---------- questions ---------- */
+.qs{display:grid;gap:14px}
+.q{border:1px solid var(--rule);border-left:4px solid var(--high);background:var(--panel);
+  padding:17px 20px;box-shadow:var(--shadow)}
+.q h3{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;font-size:19px;
+  margin:0 0 6px;letter-spacing:.01em}
+.q p{margin:0;color:var(--ink-2);font-size:13.5px;max-width:80ch}
+.q p + p{margin-top:8px}
+
+/* ---------- savebar ---------- */
+.savebar{position:sticky;bottom:0;margin-top:44px;background:var(--panel);
+  border:1px solid var(--rule);padding:10px 16px;font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px;color:var(--ink-3);letter-spacing:.04em;box-shadow:var(--shadow)}
+
+footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);line-height:1.8}
+
+@media (max-width:640px){
+  .wrap{padding:28px 16px 64px}
+  .stage{grid-template-columns:1fr}
+  .stage .sl{border-right:none;border-bottom:1px solid var(--rule);padding:10px 16px}
+  .conseq li{grid-template-columns:1fr;gap:1px}
+  .conseq .k{text-align:left}
+}
+</style>
+
+<script id="app-state" type="application/json">{"tick":{},"v":1}</script>
+
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow">Pioneer Transformer · Order Items migration</p>
+    <h1>Order Items Cutover State</h1>
+    <p class="standfirst">Where the migration actually stands, and every decision that is
+      settled — so the last night before cutover is spent running things, not re-deciding
+      them.</p>
+    <div class="meta">
+      <span><b>Cutover</b> Thursday 2026-09-10, evening</span>
+      <span><b>Transfer flow</b> v006 live · v007 staged</span>
+      <span><b>Order Items</b> 1,117 rows · 165 columns</span>
+      <span><b>Compiled</b> 2026-09-09 02:40</span>
+    </div>
+  </header>
+
+  <div class="tally">
+    <div class="tal you"><div class="n">4</div><div class="l">Waiting on you</div></div>
+    <div class="tal me"><div class="n">5</div><div class="l">Tonight's deliverables</div></div>
+    <div class="tal ok"><div class="n">6</div><div class="l">Settled, needs nothing</div></div>
+    <div class="tal no"><div class="n">1</div><div class="l">Loses data Thursday</div></div>
+    <div class="tal"><div class="n">16</div><div class="l">Viewer columns to convert</div></div>
+  </div>
+
+  <div class="alert">
+    <h2>Two columns lose their third state when the workbook goes quiet</h2>
+    <p><code>Engineering Required</code> and <code>LDs</code> are Yes/No columns on
+      SharePoint, and Yes/No cannot hold “never answered”. The workbook draws the
+      distinction and the list does not:</p>
+    <p class="mono" style="font-size:13px;color:var(--ink-2)">
+      Engineering Required &nbsp;·&nbsp; workbook <b>N 340 · Y 266 · blank 412</b> (+1 <code>indéterrminé</code>)
+      &nbsp;→&nbsp; list <b>True 264 · False 853</b><br>
+      LDs &nbsp;·&nbsp; workbook <b>Y 127 · N 34 · blank 858</b>
+      &nbsp;→&nbsp; list <b>True 127 · False 990</b>
+    </p>
+    <p>“Answered No” and “never answered” both land on <code>False</code>. No conversion in
+      the viewer can separate them again, because the information is already gone at the
+      destination — <b>FRM10-12 is the only surviving copy</b>, and staff stop maintaining it
+      Thursday. The 412 unanswered <code>Engineering Required</code> values are the ones at
+      risk; <code>N</code> was typed deliberately on 340 rows, so blank is not shorthand for No.</p>
+    <p>✅ <b>Captured anyway</b>, so the decision stays open either way:
+      <code>reports/three-state-capture 2026-09-09.csv</code> — all 1,019 units with both
+      columns in their original three-state form.</p>
+    <p class="caveat">⚠️ Read from a CSV export, and this repo's own rule is never to conclude
+      from an export alone — calculated columns and lookups both read as empty there. One
+      REST check on a known-blank order settles it before anyone treats the third state as
+      unrecoverable.</p>
+  </div>
+
+  <!-- ============ WHO HOLDS WHAT ============ -->
+  <section>
+    <div class="shead">
+      <h2>Who holds what</h2>
+      <span class="cnt">Ticks save to this page</span>
+    </div>
+    <p class="intro">Split by who can move it, not by phase — that is the only distinction
+      that matters on the morning of a cutover. Nothing in the first lane can be done by an
+      agent; everything in the second is in progress tonight.</p>
+
+    <div class="lane you">
+      <div class="lanehead"><span class="tag">Yours</span>
+        <span class="sub">needs a browser session, a judgement call, or a person</span></div>
+      <div class="items">
+
+        <div class="it" data-id="X2">
+          <button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t"><span class="id">X2</span>Run <code>x2_set_delivered.js</code> — 66 rows
+            <span class="gate">run first</span></div>
+            <div class="w">Marks the archived-and-delivered units <code>Delivered</code> and
+              rewrites their stale <code>Location</code>. Dry-run by default; read the summary,
+              then set <code>APPLY = true</code>. Two rows excluded for you —
+              <code>21792-3/5</code> and <code>21792-4/5</code>, whose archive delivery date is
+              in the future.</div></div>
+        </div>
+
+        <div class="it" data-id="X1">
+          <button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t"><span class="id">X1</span>Run <code>x1_clear_fabricated_stages.js</code> — 1,141 stage-clears
+            <span class="gate">after X2</span></div>
+            <div class="w">834 tanking + 307 delivery cleared, 234 kept, nothing held back.
+              <b>X1 keys on <code>Location</code>, which X2 corrects</b> — run it first and it
+              clears the delivery of 68 genuinely shipped units. Clears to blank, never
+              <code>Pending</code>.</div></div>
+        </div>
+
+        <div class="it" data-id="N8">
+          <button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t"><span class="id">N8</span>Run <code>n8_split_status.js</code> — 2 columns, 247 rows</div>
+            <div class="w">Splits the composite <code>TE-Se-4</code> into
+              <code>Step Status</code> + <code>Status Date</code>. All 247 parse and all 19
+              ambiguous <code>Jui</code> rows resolve on their own. <b>Idempotent — and it must
+              be re-run after the final transfer run</b>, which rewrites <code>Status</code> and
+              would leave the split pair silently stale.</div></div>
+        </div>
+
+        <div class="it" data-id="V7">
+          <button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t"><span class="id">v007</span>Paste the transfer-flow fix
+            <span class="gate">before the final run</span></div>
+            <div class="w">Staged and validated at
+              <code>_outbox/PASTE-ME.json</code>. One mapping,
+              <code>item/RevModelDescription</code>, on both write actions — 122/130 field
+              counts unchanged, rest of the definition byte-identical.</div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="lane me">
+      <div class="lanehead"><span class="tag">Mine tonight</span>
+        <span class="sub">delivered as files and diffs; nothing pasted, nothing run</span></div>
+      <div class="items">
+
+        <div class="it fixed"><span class="box">✓</span>
+          <div><div class="t">v007 authored, validated, staged</div>
+            <div class="w">Refuses to run unless it finds the exact defective expression, so a
+              hand edit in the designer stops it rather than being overwritten.</div></div></div>
+
+        <div class="it" data-id="M2"><button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t">Re-verify the three N3 flows</div>
+            <div class="w">Field counts 18 / 5 / 24 against the current schema, every source
+              name still resolving, no bare <code>select()</code>.</div></div></div>
+
+        <div class="it" data-id="M3"><button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t">The viewer conversions, as a <code>.pq</code> diff</div>
+            <div class="w">Delivered as a diff to read — <b>no
+              <code>Sync-PowerQuery.ps1 -Apply</code></b>, which writes into the workbook and is
+              yours to trigger.</div></div></div>
+
+        <div class="it" data-id="M4"><button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t">Archive the superseded cutover docs, write one clean runbook</div>
+            <div class="w">Six documents describe the cutover and disagree; the only one with
+              real switchover mechanics is stamped <em>do not work from this document</em>.</div></div></div>
+
+        <div class="it" data-id="M5"><button class="box" aria-label="Mark done">✓</button>
+          <div><div class="t">Draft the staff guide in full</div>
+            <div class="w">A finished example rather than notes, so tomorrow is a review rather
+              than a writing session. Banner resolved, the two backwards instructions
+              corrected.</div></div></div>
+
+      </div>
+    </div>
+
+    <div class="lane done">
+      <div class="lanehead"><span class="tag">Settled</span>
+        <span class="sub">verified, not assumed — no action left</span></div>
+      <div class="items">
+        <div class="it fixed"><span class="box">✓</span><div><div class="t">R22 data repaired</div>
+          <div class="w">979 of 979 rows match the parent <code>Model Revisions</code> exactly.
+            Only the <em>mapping</em> was still wrong, and that is v007.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span><div><div class="t"><code>test calculated column</code> hidden</div>
+          <div class="w">You hid it on the list.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span><div><div class="t">Staff edit rights</div>
+          <div class="w">Everyone with site access can edit the lists — confirmed at site
+            level, which is where it is granted.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span><div><div class="t">P4 pre-run export</div>
+          <div class="w">Not a gap. The lists get re-exported immediately before the final run,
+            which is when a rollback copy is actually worth having.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span><div><div class="t">N5 version history capped</div>
+          <div class="w">Versioning on, <code>MajorVersionLimit</code> 50.</div></div></div>
+        <div class="it fixed"><span class="box">✓</span><div><div class="t"><code>P20004</code> duplicate deleted</div>
+          <div class="w">One Order row remains, both units point at it, no dangling
+            lookup.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DECISIONS ============ -->
+  <section>
+    <div class="shead">
+      <h2>What is decided</h2>
+      <span class="cnt">6 · settled 2026-09-08 → 09</span>
+    </div>
+    <p class="intro">Each decision is recorded with what it <em>removed</em>, because two items
+      on the previous plan were not merely unnecessary — one of them would have broken the
+      final run.</p>
+
+    <div class="decs">
+
+      <div class="dec">
+        <h3>The transfer flow runs once more, then is deleted</h3>
+        <p class="said">Not made create-only, not kept as maintenance. <em>“I want it to be
+          rerunable so that I can re-upload the data on the cutoff date. After that I'm
+          removing the flow — it will never be used again.”</em></p>
+        <ul class="conseq">
+          <li><span class="k kill">Killed</span><span class="v"><b>Create-only.</b> The final
+            run's entire job is to <b>update</b> the 1,117 existing rows with staff's last
+            edits. Create-only guts that branch — it would have created new rows and silently
+            skipped every update, defeating the sync it was meant to protect.</span></li>
+          <li><span class="k kill">Killed</span><span class="v"><b>R7</b>, removing the BO
+            mapping and the 5 <code>Order</code> companion writes. That only matters if a
+            future run could overwrite SharePoint-native edits. There is no future run, and
+            the final run <em>should</em> carry BO across.</span></li>
+          <li><span class="k add">Promoted</span><span class="v"><b>N3, the three parent sync
+            flows.</b> Today the transfer flow refreshes the 48 parent columns on every run.
+            Once it is deleted, nothing does — a parent rename would leave the copies stale
+            silently and permanently. N3 is the replacement for that maintenance, not an
+            enhancement.</span></li>
+          <li><span class="k keep">Kept</span><span class="v">The
+            <code>RevModelDescription</code> fix, and it is now <b>urgent rather than
+            tidy</b>: the final run rewrites that column on ~1,000 rows and the live mapping
+            re-installs the 110-character JSON blob on 979 of them — undoing the R22 repair as
+            its last act.</span></li>
+        </ul>
+      </div>
+
+      <div class="dec">
+        <h3>Four consumers keep pulling through FRM10-12, by design</h3>
+        <p class="said">FRM09, FRM11, FRM13 and BO Manager all read FRM10-12's
+          <code>TableOrders</code>. The viewer is shape-identical, so only the
+          <code>Index</code> row moves; one named owner covers all four and knows to refresh
+          the viewer first. The queries get rebuilt against the four SharePoint lists later.</p>
+        <ul class="conseq">
+          <li><span class="k drop">Dropped</span><span class="v">My silent-failure objection.
+            It over-weighted the risk of a managed, owned, single-owner procedure with a
+            known refresh order.</span></li>
+          <li><span class="k keep">Path</span><span class="v"><code>Index</code> currently
+            resolves to <code>Formulaires/</code>; the viewer goes back to
+            <code>Revue/</code> at the switch. One row, no M changes.</span></li>
+        </ul>
+      </div>
+
+      <div class="dec">
+        <h3>Blank is a value until FRM10-12 says otherwise</h3>
+        <p class="said">Per column, read out of the workbook rather than one rule applied
+          across all of them — some columns use blank as false, others as a genuine third
+          state.</p>
+        <ul class="conseq">
+          <li><span class="k add">Result</span><span class="v"><b>Ten marker columns round-trip
+            exactly.</b> Joined across all 1,013 matched units: the boolean agrees with the
+            workbook marker on every row, <b>zero disagreements</b>. Blank is simply
+            false there.</span></li>
+          <li><span class="k kill">Result</span><span class="v"><b>Three columns cannot.</b>
+            <code>Frame</code> is a three-value Choice, <code>Engineering Required</code> and
+            <code>LDs</code> are three-state — and the latter two are already flattened at the
+            destination.</span></li>
+        </ul>
+      </div>
+
+      <div class="dec">
+        <h3><code>CSA</code> is left exactly as it is</h3>
+        <p class="said"><em>“Don't look too far, it's probably just an old unused column. I'll
+          validate that later at the end of the workflow automation, when I've gone through
+          every department.”</em></p>
+        <ul class="conseq">
+          <li><span class="k add">Backed by</span><span class="v">0 non-blank on all
+            <b>1,019</b> workbook rows and <code>False</code> on all <b>1,117</b> list rows.
+            No marker is guessed into the conversion.</span></li>
+        </ul>
+      </div>
+
+      <div class="dec">
+        <h3>The cutover documents get archived and rewritten clean</h3>
+        <p class="said">Six documents currently describe the cutover and they disagree with
+          each other; three separate status registers disagree about what is done. The guides
+          get reviewed together tomorrow against one finished draft.</p>
+        <ul class="conseq">
+          <li><span class="k kill">Note</span><span class="v">The status registers are stale in
+            both directions — the risk register still reads <code>P4: done</code> when it was
+            never taken, and reads <code>X1/X2/N8: todo</code>, which is now correct only
+            because they have not been run yet.</span></li>
+        </ul>
+      </div>
+
+      <div class="dec">
+        <h3>Out of scope for this cutover</h3>
+        <p class="said">Deferred deliberately, not forgotten.</p>
+        <ul class="conseq">
+          <li><span class="k drop">Deferred</span><span class="v"><b>N6 / N7</b>, the Estimated
+            Delivery column and its nightly refresh — they would put wrong promised dates in
+            front of customers.</span></li>
+          <li><span class="k drop">Deferred</span><span class="v">The <b>Model Revisions Choice
+            cleanup</b> — it phases out already-bad data and nothing depends on it.</span></li>
+          <li><span class="k drop">Deferred</span><span class="v"><code>OrdOrderFolder</code> —
+            a hyperlink is an object on both read and write, the shape was never sourced, and
+            a wrong one either fails every row or writes nothing. It is one folder link on a
+            column no staff view shows.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ CONVERSIONS ============ -->
+  <section>
+    <div class="shead">
+      <h2>The viewer's value conversions</h2>
+      <span class="cnt">16 columns typed <code>logical</code> in ColumnMap</span>
+    </div>
+    <p class="intro">The viewer reads the origin lists directly, so parent-column population
+      does not apply — what needs attention is value <em>shape</em>. Workbook counts are from
+      <code>TableOrders</code> at 2026-09-04 (1,019 units); list counts from the
+      <code>Order Items</code> export at 2026-09-08 (1,117 rows). The agreement column is a
+      row-level join over the 1,013 units present in both.</p>
+
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr><th>Column</th><th>Workbook holds</th><th>List stores</th><th>Blank means</th>
+            <th>Conversion</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr class="grouprow"><td colspan="6">Markers — boolean is a faithful two-state encoding, verified 1,013 / 1,013</td></tr>
+          <tr><td class="col">Tank</td><td class="num">R = 74</td><td class="num">True 165</td>
+            <td>false</td><td><span class="mk">R</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">ISO Stack</td><td class="num">R = 108</td><td class="num">True 199</td>
+            <td>false</td><td><span class="mk">R</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">ISO Coil</td><td class="num">R = 159</td><td class="num">True 250</td>
+            <td>false</td><td><span class="mk">R</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">Lead Assembly</td><td class="num">R = 98</td><td class="num">True 190</td>
+            <td>false</td><td><span class="mk">R</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">Temperature Rise</td><td class="num">x = 4</td><td class="num">True 5</td>
+            <td>false</td><td><span class="mk">x</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">Impulse</td><td class="num">x = 4</td><td class="num">True 5</td>
+            <td>false</td><td><span class="mk">x</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">Partial D</td><td class="num">x = 3</td><td class="num">True 4</td>
+            <td>false</td><td><span class="mk">x</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">Oil Analysis</td><td class="num">x = 2</td><td class="num">True 3</td>
+            <td>false</td><td><span class="mk">x</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">DB</td><td class="num">x = 8</td><td class="num">True 8</td>
+            <td>false</td><td><span class="mk">x</span></td><td><span class="verdict ok">exact</span></td></tr>
+          <tr><td class="col">SFRA</td><td class="num">Y = 5</td><td class="num">True 5</td>
+            <td>false</td><td><span class="mk">Y</span></td><td><span class="verdict ok">exact</span></td></tr>
+
+          <tr class="grouprow"><td colspan="6">Type errors — <code>type logical</code> is wrong about what the list actually stores</td></tr>
+          <tr><td class="col">Frame</td>
+            <td class="num">Reçu 135 · Plaspak 87 · 0 68 · blank 729</td>
+            <td class="num">Choice — Reçu 223 · Plaspak 87 · 0 72 · blank 735</td>
+            <td>a fourth value</td>
+            <td>keep as Choice text</td>
+            <td><span class="verdict err">errors today</span></td></tr>
+          <tr><td class="col">Witness/Other</td>
+            <td class="num">free text — 2 rows</td><td class="num">Text — <code>oil gas analysis</code> ×2</td>
+            <td>no value</td><td>retype as text</td>
+            <td><span class="verdict err">loses text</span></td></tr>
+
+          <tr class="grouprow"><td colspan="6">Three-state — already flattened at the destination, before the viewer sees it</td></tr>
+          <tr><td class="col">Engineering Required</td>
+            <td class="num">N 340 · Y 266 · blank 412 · indéterrminé 1</td>
+            <td class="num">True 264 · False 853</td>
+            <td><b>never answered</b></td>
+            <td>unrecoverable from the list</td>
+            <td><span class="verdict lost">data lost</span></td></tr>
+          <tr><td class="col">LDs</td>
+            <td class="num">Y 127 · N 34 · blank 858</td>
+            <td class="num">True 127 · False 990</td>
+            <td><b>not N</b> — N is typed on 34 rows</td>
+            <td>unrecoverable from the list</td>
+            <td><span class="verdict lost">data lost</span></td></tr>
+
+          <tr class="grouprow"><td colspan="6">No conversion needed</td></tr>
+          <tr><td class="col">SA Job</td><td class="num">not in the workbook</td>
+            <td class="num">Boolean — True 43</td><td>false</td>
+            <td>genuinely boolean</td><td><span class="verdict ok">correct</span></td></tr>
+          <tr><td class="col">CSA</td><td class="num">blank on all 1,019</td>
+            <td class="num">False on all 1,117</td><td>—</td>
+            <td>leave alone</td><td><span class="verdict na">dead column</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="tnote"><b>Why the list counts run higher on the marker columns.</b> Checked
+      rather than assumed: the excess is entirely the <b>104 orphan rows</b> that exist on the
+      list but not in the workbook, <b>92 of which carry True on all four</b> R-columns. They
+      are the archived units X2 marks <code>Delivered</code>. After conversion they will
+      display <code>R</code> — expected for archived units, and worth one glance rather than a
+      fix.</p>
+
+    <p class="tnote"><b><code>Location</code> also needs inverting</b> — the list stores
+      display names (<code>Extérieur</code>) and FRM11's purge rule tests two-letter codes
+      <code>{XT, TE, FI, LI}</code>. Invert the transfer flow's forward map and round-trip it
+      over every distinct live value. BO Manager needs the same. <code>Status</code> needs
+      nothing: it is already stored in <code>TE-Se-4</code> code form, and that format must
+      survive — FRM11 parses it.</p>
+  </section>
+
+  <!-- ============ SEQUENCE ============ -->
+  <section>
+    <div class="shead">
+      <h2>The switchover, in order</h2>
+      <span class="cnt">replaces six disagreeing documents</span>
+    </div>
+    <p class="intro">Ordering constraints only — each step's detail lives in the runbook. Three
+      of these orderings are load-bearing and are marked; the rest are convenience.</p>
+
+    <div class="seq">
+      <div class="stage"><div class="sl">Before</div><ol>
+        <li>Run <b>X2</b>, then <b>X1</b> — <span class="warn">X1 keys on the
+          <code>Location</code> X2 corrects</span></li>
+        <li>Run <b>N8</b></li>
+        <li>Re-export all four lists — the only data rollback</li>
+        <li>Staff <b>save and close</b> FRM10-12 — anything unsaved never reaches SharePoint</li>
+        <li>Refresh FRM10-12 <b>via the Office Script button only</b> —
+          <span class="warn">never Refresh All; it strips six native formula columns</span></li>
+        <li>Paste <b>v007</b></li>
+      </ol></div>
+
+      <div class="stage"><div class="sl">Run</div><ol>
+        <li>Final transfer-flow run, full table — click once, from the detail page</li>
+        <li>Verify stored time-of-day is 04:00 / 05:00Z — <span class="warn">a healthy run
+          still reports Failed, so never verify by status</span></li>
+        <li><b>Delete the transfer flow</b></li>
+        <li>Re-run <b>N8</b> — <span class="warn">the run rewrites <code>Status</code>, so the
+          split columns must re-sync</span></li>
+      </ol></div>
+
+      <div class="stage"><div class="sl">Viewer</div><ol>
+        <li>Sync the <code>.pq</code> conversions and refresh</li>
+        <li>Verify <code>TableOrders</code> against all four consumers</li>
+        <li>Move the viewer to <code>Revue/</code> and repoint the <code>Index</code> row</li>
+      </ol></div>
+
+      <div class="stage"><div class="sl">Flows</div><ol>
+        <li>Paste trigger <b>v002</b> and enable — <span class="warn">only after every bulk
+          write; each would otherwise fire one run per row</span></li>
+        <li>Watch 15 minutes; if any run passes ten, turn it straight back off</li>
+        <li>Paste the three <b>N3</b> flows, one at a time</li>
+        <li>Retire the two TextField syncs</li>
+      </ol></div>
+
+      <div class="stage"><div class="sl">Staff</div><ol>
+        <li>Warn the supplier-report producers <b>before</b> the email — eight outside
+          companies read FRM11, which goes stale the moment staff stop maintaining
+          FRM10-12</li>
+        <li>Send the cutover email</li>
+        <li>Strip the pre-publication banners from the guides</li>
+      </ol></div>
+    </div>
+  </section>
+
+  <!-- ============ OPEN ============ -->
+  <section>
+    <div class="shead">
+      <h2>Still open</h2>
+      <span class="cnt">3 · none blocking tonight</span>
+    </div>
+    <div class="qs">
+      <div class="q">
+        <h3>Is the third state worth preserving?</h3>
+        <p>If “never answered” matters for <code>Engineering Required</code>, the fix is a
+          source change — a Choice column, or a companion flag — not a viewer conversion. The
+          values are captured either way, so this can be decided after cutover.</p>
+        <p>Worth one REST read on a known-blank order first, to confirm the export is not
+          simply rendering a null as <code>False</code>.</p>
+      </div>
+      <div class="q">
+        <h3>The cutover email</h3>
+        <p>The link placeholder <code>[LIEN]</code> is still blank, and the wording forks
+          between “live copy” and “frozen snapshot”. Both sentences are drafted; picking the
+          wrong one has staff making decisions on stale data.</p>
+      </div>
+      <div class="q">
+        <h3>The Power App fan-out becomes the critical path</h3>
+        <p>Once the transfer flow is deleted, the sales app's Save is the only thing creating
+          <code>Order Items</code> rows for new orders. <code>power-apps/</code> is still an
+          empty <code>.gitkeep</code> — unexported, undocumented, and the tenant is its only
+          copy. Not Thursday's work, but it should not stay invisible.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="savebar" id="savebar"><span>Progress saves to this page.</span></div>
+
+  <footer>
+    Sources · <code>docs/roadmap.md</code> · <code>docs/RUNBOOK-2026-09-08-morning.md</code> ·
+    <code>docs/r22-mapping-correction-2026-09-08.md</code> ·
+    <code>FRM10-12/viewer/power-query/ColumnMap.pq</code><br>
+    Measured against <code>FRM10-12_2026-09-04_23h08m.xlsx</code> and the 2026-09-08 list
+    exports. Companion to the <b>Order Items Migration Risks</b> tracker.
+  </footer>
+
+</div>
+
+<script>
+const stateEl = document.getElementById("app-state");
+let STATE;
+try { STATE = JSON.parse(stateEl.textContent) || {}; } catch (e) { STATE = {}; }
+if (!STATE.tick) STATE.tick = {};
+
+let canSave = true, timer = null;
+
+function apply(){
+  document.querySelectorAll(".it[data-id]").forEach(el => {
+    el.classList.toggle("tick", !!STATE.tick[el.dataset.id]);
+    const b = el.querySelector(".box");
+    if (b) b.setAttribute("aria-pressed", STATE.tick[el.dataset.id] ? "true" : "false");
+  });
+}
+
+document.querySelectorAll(".it[data-id] .box").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const id = btn.closest(".it").dataset.id;
+    if (STATE.tick[id]) delete STATE.tick[id]; else STATE.tick[id] = 1;
+    apply();
+    if (!canSave) return;
+    clearTimeout(timer);
+    timer = setTimeout(save, 1100);
+    note("Saving…");
+  });
+});
+
+function note(msg){
+  const b = document.getElementById("savebar");
+  b.innerHTML = "";
+  const s = document.createElement("span");
+  s.textContent = msg;
+  b.appendChild(s);
+}
+
+const REST_NOTE = "Progress saves to this page.";
+
+// publish() takes a COMPLETE document, doctype first -- NOT a body fragment. The
+// Artifact *tool* takes the opposite, a fragment, and mixing the two contracts is
+// what once stripped this page family's title, font links and stylesheet: they are
+// authored at the top of the body, a fragment publish normalises them up into the
+// head, and the next save -- reading the body alone -- no longer sees them. Two
+// clicks, no error, unstyled page. So assemble the document explicitly here:
+// gather assets by their data-asset marks wherever they now sit, put them in the
+// head, and capture the body without them, which makes the round trip a fixed point.
+function serialize(){
+  note(REST_NOTE);
+  stateEl.textContent = JSON.stringify(STATE);
+
+  const NL = String.fromCharCode(10);
+  const assets = [...document.querySelectorAll("title, [data-asset]")];
+  const headHTML = assets.map(el => el.outerHTML).join(NL).trim();
+
+  // Take the body from a CLONE with the assets removed, rather than mutating the
+  // live page: an asset left in the body would be emitted twice, and swapping in
+  // placeholder nodes permanently accumulates them in the captured string.
+  const clone = document.body.cloneNode(true);
+  [...clone.querySelectorAll("title, [data-asset]")].forEach(el => el.remove());
+  let bodyHTML = clone.innerHTML;
+
+  // Every shell tag below is BUILT from character codes, never written literally.
+  // The guard two lines down strips shell tags out of the body capture, and the
+  // body capture contains this very script -- a literal tag here would be stripped
+  // from the published copy, disabling the shell and quietly publishing a fragment
+  // again. The lookahead matters too: without it "head" prefix-matches <header>.
+  const LT = String.fromCharCode(60), GT = String.fromCharCode(62);
+  const tag = n => LT + n + GT;
+  const close = n => LT + "/" + n + GT;
+  bodyHTML = bodyHTML.replace(/<\/?(?:!doctype|html|head|body)(?=[\s>\/])[^>]*>/gi, "");
+  bodyHTML = bodyHTML.trim();   // else each save appends a few blank lines, unbounded
+
+  return tag("!doctype html") + NL +
+    tag("html") + NL +
+    tag("head") + NL +
+    '<meta charset="utf-8">' + NL +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' + NL +
+    headHTML + NL +
+    close("head") + NL +
+    tag("body") + NL +
+    bodyHTML + NL +
+    close("body") + NL +
+    close("html") + NL;
+}
+
+async function save(){
+  const api = await claude.use("artifact");
+  if (!api){ canSave = false; note("Progress is not saved in this view."); return; }
+  try {
+    await api.publish(serialize());
+    note("Saved.");
+  } catch (e){
+    const c = e && e.code;
+    if (c === "not_granted" || c === "not_writer"){
+      canSave = false; note("View only — your ticks are not saved.");
+    } else if (c === "conflict"){
+      note("Someone else saved first — reloading their version.");
+    } else {
+      note("Could not save. Your ticks are still shown here.");
+    }
+  }
+}
+
+apply();
+claude.use("artifact").then(api => {
+  if (!api){ canSave = false; note("Progress is not saved in this view."); }
+});
+</script>

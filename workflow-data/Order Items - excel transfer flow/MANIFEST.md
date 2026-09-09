@@ -22,11 +22,12 @@ snapshotted here.**
 | **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `9cbacfebd261` |
 | **v005** | 2026-09-08 00:04 | `superseded` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `f248c30bc06e` |
 | **v006** | 2026-09-08 00:35 | `applied` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `7da243951712` |
+| **v007** | 2026-09-09 02:19 | `local` | v006 | v007 R22 RevModelDescription mapping correction | 122 | 130 | 34 | 0 | `ee848873f252` |
 
 ## Right now
 
 - **Live:** v006 — v006 fetch-once + review fixes + Mdl-Rev columns
-- **Pending (authored, not applied):** none
+- **Pending (authored, not applied):** v007
 
 ## Reading the columns
 
