@@ -108,7 +108,7 @@
   // loop did  j.value||[] , that surfaced as "rows in list: 0" and 66 phantom missing
   // titles rather than an error.
 
-  const APPLY = false;                   // <-- set true to actually write
+  const APPLY = true;                   // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const OI    = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
   // 4, not 8. Even with one write per item, ~1,100 MERGEs in a burst draws
@@ -268,6 +268,58 @@
   const dely = after.filter(r=>(r.DeliveryStatus||"")!=="").length;
   console.log("\n--- verification (trust this, not the write results) ---");
   console.log("rows still violating the rule: " + stillBad.length + "   (expect 0)");
-  console.log("Tanking Status populated : " + tank + "   (was 975; expect 141 = 110 in-sequence + 31 Extérieur, all KEEP)");
-  console.log("Delivery Status populated: " + dely + "   (was 400; expect 93 = Livraison + a delivery date)");
+  // These two are informational. The AUTHORITATIVE check is the line above -- it
+  // re-derives the rule against live data, so it cannot go stale. The counts below
+  // are baselines from 2026-09-08 and will drift as Locations change: X2 alone moved
+  // Livraison from 93 to 102. Expect tank + dely to equal the KEEP count printed in
+  // the tiers, and treat a mismatch there as the signal, not these numbers.
+  console.log("Tanking Status populated : " + tank + "   (was 975 on 09-08)");
+  console.log("Delivery Status populated: " + dely + "   (was 400 on 09-08)");
+  console.log("tank + dely = " + (tank + dely) + "   (should equal KEEP = " + keep.length + ")"
+              + (tank + dely === keep.length ? "  OK" : "  <-- MISMATCH, investigate"));
 })();
+
+/* ---------------------------------------------------------------- UNDO ----
+   Restores the Status/End Date pairs this script cleared. Paste the array from
+   rollback/2026-09-09 X1 stage-clears.undo.json in place of [] below.
+
+   ⚠️ Think before running this. X1 cleared values that three independent proofs
+   say were fabricated -- end dates byte-copied from the Planned dates, completions
+   dated in the future, deliveries recorded while the unit was still in the winding
+   shop. Restoring puts known-bad data back. The realistic use is a targeted subset,
+   not the whole array.
+
+   🔴 GROUPED BY ITEM, deliberately. The UNDO array has one entry per (item, stage),
+   so a unit with both stages appears twice -- and two concurrent PATCHes to one item
+   is exactly the 409 Conflict that broke the first X1 run. Do not "simplify" this
+   back into a per-entry loop.
+
+(async () => {
+  const base="https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
+  const OI="d6468ec5-c7b5-44a3-8ce0-f81f059b671d";
+  const PREV = [];   // <- paste the "data" array from the rollback JSON here
+  const J=async u=>(await fetch(u,{headers:{Accept:"application/json;odata=nometadata"}})).json();
+  const dg=await (await fetch(base+"/_api/contextinfo",{method:"POST",
+                  headers:{Accept:"application/json;odata=nometadata"}})).json();
+  const et=(await J(base+"/_api/web/lists(guid'"+OI+"')?$select=ListItemEntityTypeFullName"))
+             .ListItemEntityTypeFullName;
+
+  const byItem = new Map();
+  for (const p of PREV) {
+    if (!byItem.has(p.Id)) byItem.set(p.Id, {Id:p.Id, Title:p.Title, body:{__metadata:{type:et}}});
+    byItem.get(p.Id).body[p.stage+"Status"] = p.s;
+    byItem.get(p.Id).body[p.stage+"Date"]   = p.e;
+  }
+  console.log(PREV.length + " stage-values across " + byItem.size + " items");
+
+  let ok=0, fail=0;
+  for (const it of byItem.values()) {
+    const w=await fetch(base+"/_api/web/lists(guid'"+OI+"')/items("+it.Id+")",{method:"POST",
+      headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=verbose",
+               "X-RequestDigest":dg.FormDigestValue,"X-HTTP-Method":"MERGE","IF-MATCH":"*"},
+      body:JSON.stringify(it.body)});
+    if (w.ok) ok++; else { fail++; console.error(it.Title+" -> "+w.status); }
+  }
+  console.log("restored ok="+ok+" failed="+fail+"  (of "+byItem.size+" items)");
+})();
+---------------------------------------------------------------------------- */
