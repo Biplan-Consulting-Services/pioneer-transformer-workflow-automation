@@ -1,382 +1,382 @@
-﻿row_id,model_revision,column,current_value,tier,action,proposed_value,preserve_to_notes,why
-18,MR-HYQU-0005-V1,Model Description,ANNEX,DECIDE,set,?,Model Description was 'ANNEX',not in the canonical Model Description list
-20,M-HYQU-0006,Model Description,ANNEX,DECIDE,set,?,Model Description was 'ANNEX',not in the canonical Model Description list
-21,MR-HYQU-0007-V1,Model Description,ANNEX,DECIDE,set,?,Model Description was 'ANNEX',not in the canonical Model Description list
-22,M-HYQU-0001,Model Description,ANNEX,DECIDE,set,?,Model Description was 'ANNEX',not in the canonical Model Description list
-95,MR-HYQU-0026-V1,Model Description,ANNEX,DECIDE,set,?,Model Description was 'ANNEX',not in the canonical Model Description list
-132,MR-HYQU-0063-V1,Model Description,Goujon,DECIDE,set,?,Model Description was 'Goujon',not in the canonical Model Description list
-121,MR-HYQU-0078-V1,Model Description,LTC,DECIDE,remove selection; Notes += 'LTC',,Model Description was 'LTC',"LTC goes in Notes - but it is the ONLY description on these rows, so they end up with no subtype"
-123,MR-HYQU-0080-V1,Model Description,LTC,DECIDE,remove selection; Notes += 'LTC',,Model Description was 'LTC',"LTC goes in Notes - but it is the ONLY description on these rows, so they end up with no subtype"
-124,MR-HYQU-0081-V1,Model Description,LTC,DECIDE,remove selection; Notes += 'LTC',,Model Description was 'LTC',"LTC goes in Notes - but it is the ONLY description on these rows, so they end up with no subtype"
-189,MR-HYQU-0065-V1,Model Description,LTC,DECIDE,remove selection; Notes += 'LTC',,Model Description was 'LTC',"LTC goes in Notes - but it is the ONLY description on these rows, so they end up with no subtype"
-195,MR-HYQU-0071-V1,Model Description,LTC,DECIDE,remove selection; Notes += 'LTC',,Model Description was 'LTC',"LTC goes in Notes - but it is the ONLY description on these rows, so they end up with no subtype"
-196,MR-HYQU-0072-V1,Model Description,LTC,DECIDE,remove selection; Notes += 'LTC',,Model Description was 'LTC',"LTC goes in Notes - but it is the ONLY description on these rows, so they end up with no subtype"
-383,MR-HYQU-0079-V1,Model Description,LTC,DECIDE,remove selection; Notes += 'LTC',,Model Description was 'LTC',"LTC goes in Notes - but it is the ONLY description on these rows, so they end up with no subtype"
-297,MR-HYQU-0083-V1,Model Description,PLAQUE ANCRAGE,DECIDE,set,?,Model Description was 'PLAQUE ANCRAGE',not in the canonical Model Description list
-37,MR-PITR-0001-V1,Model Description,PROTOTYPE,DECIDE,set,?,Model Description was 'PROTOTYPE',not in the canonical Model Description list
-18,MR-HYQU-0005-V1,Model Type,ANNEX,DECIDE,set,?,Model Type was 'ANNEX',not in the canonical Model Type list
-20,M-HYQU-0006,Model Type,ANNEX,DECIDE,set,?,Model Type was 'ANNEX',not in the canonical Model Type list
-21,MR-HYQU-0007-V1,Model Type,ANNEX,DECIDE,set,?,Model Type was 'ANNEX',not in the canonical Model Type list
-22,M-HYQU-0001,Model Type,ANNEX,DECIDE,set,?,Model Type was 'ANNEX',not in the canonical Model Type list
-95,MR-HYQU-0026-V1,Model Type,ANNEX,DECIDE,set,?,Model Type was 'ANNEX',not in the canonical Model Type list
-121,MR-HYQU-0078-V1,Model Type,LTC,DECIDE,split,Notes += 'LTC'; Model Type = ?,Model Type was 'LTC',LTC goes in Notes. leaves Model Type needing a real value
-123,MR-HYQU-0080-V1,Model Type,LTC,DECIDE,split,Notes += 'LTC'; Model Type = ?,Model Type was 'LTC',LTC goes in Notes. leaves Model Type needing a real value
-124,MR-HYQU-0081-V1,Model Type,LTC,DECIDE,split,Notes += 'LTC'; Model Type = ?,Model Type was 'LTC',LTC goes in Notes. leaves Model Type needing a real value
-195,MR-HYQU-0071-V1,Model Type,LTC,DECIDE,split,Notes += 'LTC'; Model Type = ?,Model Type was 'LTC',LTC goes in Notes. leaves Model Type needing a real value
-196,MR-HYQU-0072-V1,Model Type,LTC,DECIDE,split,Notes += 'LTC'; Model Type = ?,Model Type was 'LTC',LTC goes in Notes. leaves Model Type needing a real value
-383,MR-HYQU-0079-V1,Model Type,LTC,DECIDE,split,Notes += 'LTC'; Model Type = ?,Model Type was 'LTC',LTC goes in Notes. leaves Model Type needing a real value
-189,MR-HYQU-0065-V1,Model Type,POWER LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-332,MR-HITA-0001-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-333,MR-HITA-0002-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-334,MR-HITA-0003-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-335,MR-HYQU-0084-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-336,MR-HYQU-0085-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-342,MR-HYQU-0090-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-343,MR-HYQU-0091-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-406,MRSA-HYQU-0071-V1,Model Type,POWER-LTC,DECIDE,split,Notes += 'LTC'; Description = POWER-S or POWER-W?; Model Type = ?,Model Type was 'POWER-LTC',LTC goes in Notes. POWER-? is ambiguous between POWER-S and POWER-W
-387,M-HYQU-0093,Model Description,MINPAD-1HP,MECHANICAL,remove selection; ensure Model Type,1PH PAD (MINIPAD),Model Description was 'MINPAD-1HP',a Model Type value sitting in Description
-36,MR-HYQU-0015-V1,Model Description,MINPAD-1PH,MECHANICAL,remove selection; ensure Model Type,1PH PAD (MINIPAD),Model Description was 'MINPAD-1PH',a Model Type value sitting in Description
-3,MR-ENMA-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-4,MR-ENMA-0024-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-5,MR-ENMA-0030-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-6,MR-ENMA-0033-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-7,MR-ENMA-0035-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-8,MR-ENMA-0036-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-9,MR-ENMA-0041-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-13,MR-TOHY-0009-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-15,MR-TOHY-0011-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-16,MR-ALPO-0009-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-57,MR-ENMA-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-58,MR-ENMA-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-59,MR-ENMA-0008-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-60,MR-ENMA-0009-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-61,MR-ENMA-0010-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-62,MR-ENMA-0011-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-63,MR-ENMA-0012-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-64,MR-ENMA-0047-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-65,MR-ENMA-0013-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-66,MR-ENMA-0048-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-67,MR-ENMA-0049-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-68,M-ENMA-0014,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-69,M-ENMA-0042,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-70,MR-ENMA-0015-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-71,MR-ENMA-0016-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-72,M-ENMA-0050,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-73,M-ENMA-0051,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-74,MR-ENMA-0017-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-75,MR-ENMA-0018-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-76,MR-ENMA-0052-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-77,MR-ENMA-0053-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-78,MR-MAGA-0008-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-79,MR-MAGA-0009-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-80,MR-MAGA-0010-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-81,MR-MAGA-0011-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-82,MR-KBAU-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-83,MR-LGEN-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-84,MR-LGEN-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-85,MR-LGEN-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-86,MR-LGEN-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-87,MR-LGEN-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-88,MR-XCEN-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-89,M-XCEN-0002,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-90,MR-XCEN-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-92,MR-XCEN-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-96,MR-MAGA-0012-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-117,MR-MAGA-0013-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-130,MR-MAGA-0014-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-131,MR-MAGA-0015-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-133,MR-EPCO-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-134,MR-ALPO-0010-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-135,MR-GEPO-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-136,MR-GEPO-0002-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-137,MR-GEPO-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-138,MR-GEPO-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-139,MR-GEPO-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-140,MR-GEPO-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-141,MR-GEPO-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-142,MR-GEPO-0008-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-143,MR-GEPO-0009-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-144,MR-GEPO-0010-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-145,MR-GEPO-0011-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-146,MR-GEPO-0012-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-147,MR-GEPO-0013-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-150,MR-GEPO-0016-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-153,MR-EPCO-0002-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-154,MR-AUEN-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-155,M-AUEN-0002,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-156,MR-AUEN-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-157,MR-AUEN-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-158,MR-AUEN-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-159,MR-AUEN-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-160,MR-AUEN-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-161,MR-AUEN-0008-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-162,MR-AUEN-0009-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-163,MR-AUEN-0010-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-164,MR-AUEN-0011-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-165,MR-AUEN-0012-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-169,MR-MAGA-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-179,MR-EPCO-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-180,MR-EPCO-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-181,MR-EPCO-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-182,MR-EPCO-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-185,MR-FIEN-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-203,M-ENTE-0001,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-204,MR-ENMA-0019-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-206,MR-ENMA-0021-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-207,MR-ENMA-0022-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-208,MR-ENMA-0023-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-211,MR-ENMA-0026-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-212,MR-ENMA-0027-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-213,MR-ENMA-0028-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-215,MR-ENMA-0031-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-217,MR-ENMA-0034-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-218,MR-ENMA-0037-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-220,MR-ENMA-0039-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-221,MR-ENMA-0040-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-222,MR-ENMA-0043-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-223,MR-ENMA-0044-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-238,MR-TOHY-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-239,M-TOHY-0002,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-241,MR-TOHY-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-242,MR-TOHY-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-243,MR-TOHY-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-244,MR-TOHY-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-265,MR-ALPO-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-266,MR-ALPO-0002-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-268,MR-ALPO-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-269,MR-ALPO-0005-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-270,MR-ALPO-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-271,MR-ALPO-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-275,MR-XCEN-0008-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-276,MR-XCEN-0009-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-279,MR-TOHY-0032-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-280,MR-TOHY-0033-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-281,MR-NAEL-0002-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-282,M-NAEL-0003,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-285,MR-NAEL-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-286,MR-NAEL-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-307,MR-XCEN-0010-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-314,MR-ELPA-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-315,MR-ELPA-0002-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-316,MR-KORT-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-317,MR-KORT-0002-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-318,MR-KORT-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-319,MR-KORT-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-320,M-KORT-0005,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-330,MR-KEEL-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-347,MR-PSEG-0003-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-348,MR-PSEG-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-351,MR-PSEG-0007-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-355,MR-PSEG-0011-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-356,MR-PSEG-0012-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-357,MR-PSEG-0013-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-359,MR-PSEG-0015-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-360,MR-PSEG-0016-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-363,MR-PSEG-0019-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-364,MR-PSEG-0020-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-365,MR-PSEG-0021-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-376,MR-MAGA-0006-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-379,MR-EXEL-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-380,MR-PITR-0004-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-381,MR-EPBC-0002-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-382,MR-EPBC-0001-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-415,MR-ENMA-0056-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-416,MR-ENMA-0057-V1,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
-39,M-HYQU-0016,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-41,M-HYQU-0017,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-43,MR-HYQU-0018-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-44,MR-HYQU-0019-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-46,MR-HYQU-0020-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-48,MR-HYQU-0021-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-50,MR-HYQU-0022-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-51,MR-HYQU-0023-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-53,MR-HYQU-0024-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-94,MR-HYQU-0025-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-97,MR-HYQU-0027-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-99,MR-HYQU-0028-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-105,MR-HYQU-0029-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-106,MR-HYQU-0037-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-107,M-HYQU-0030,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-108,MR-HYQU-0058-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-109,MR-HYQU-0031-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-110,MR-HYQU-0032-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-112,MR-HYQU-0033-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-118,MR-HYQU-0035-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-119,MR-HYQU-0036-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-126,MR-HYQU-0062-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-201,MR-FIEN-0003-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-202,M-FIEN-0002,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-295,MR-CAIN-0001-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-300,MR-GOSO-0001-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-310,MR-TECO-0002-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-323,MR-RIED-0001-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-326,MR-MULT-0002-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-327,MR-UNUT-0001-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-331,MR-HYQU-0003-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-377,MR-FIEN-0004-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-385,MR-LISA-0005-V1,Model Description,PADMOUNT,MECHANICAL,remove selection; ensure Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description
-184,MR-SCTE-0001-V1,Model Description,SPARE PARTS,MECHANICAL,set,SPAREPARTS,,case/word-order variant of a real description
-370,MR-GTWO-0001-V1,Model Description,SPARE PARTS,MECHANICAL,set,SPAREPARTS,,case/word-order variant of a real description
-406,MRSA-HYQU-0071-V1,Model Description,SUBSTATION + LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION + LTC',LTC goes in Notes; the SUBSTATION part is a real description
-332,MR-HITA-0001-V1,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes; the SUBSTATION part is a real description
-333,MR-HITA-0002-V1,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes; the SUBSTATION part is a real description
-334,MR-HITA-0003-V1,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes; the SUBSTATION part is a real description
-335,MR-HYQU-0084-V1,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes; the SUBSTATION part is a real description
-336,MR-HYQU-0085-V1,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes; the SUBSTATION part is a real description
-342,MR-HYQU-0090-V1,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes; the SUBSTATION part is a real description
-343,MR-HYQU-0091-V1,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes; the SUBSTATION part is a real description
-23,MR-HYQU-0043-V1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',SUBWAY has no phase variants in the canonical list
-27,MR-HYQU-0074-V1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',SUBWAY has no phase variants in the canonical list
-28,MR-HYQU-0075-V1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',SUBWAY has no phase variants in the canonical list
-128,MR-HYQU-0011-V1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',SUBWAY has no phase variants in the canonical list
-17,MR-HYQU-0040-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-198,MR-OTHY-0010-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-226,MR-OTHY-0001-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-227,MR-OTHY-0011-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-228,MR-OTHY-0002-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-229,MR-OTHY-0003-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-231,MR-OTHY-0004-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-232,MR-OTHY-0005-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-234,MR-OTHY-0007-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-235,MR-OTHY-0008-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-236,MR-OTHY-0009-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-298,MR-PITR-0002-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-299,MR-PITR-0003-V1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',case/word-order variant of a real description
-10,MR-LGEN-0002-V1,Model Description,ZIG ZAG,MECHANICAL,set,ZIG-ZAG,,case/word-order variant of a real description
-132,MR-HYQU-0063-V1,Model Type,0,MECHANICAL,clear,,Model Type was '0',not a real value -- 'None' is a REAL option and is left untouched
-297,MR-HYQU-0083-V1,Model Type,0,MECHANICAL,clear,,Model Type was '0',not a real value -- 'None' is a REAL option and is left untouched
-17,MR-HYQU-0040-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-198,MR-OTHY-0010-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-226,MR-OTHY-0001-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-227,MR-OTHY-0011-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-228,MR-OTHY-0002-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-229,MR-OTHY-0003-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-231,MR-OTHY-0004-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-232,MR-OTHY-0005-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-234,MR-OTHY-0007-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-235,MR-OTHY-0008-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-236,MR-OTHY-0009-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-298,MR-PITR-0002-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-299,MR-PITR-0003-V1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-199,MR-LITE-0001-V1,Model Type,FLAT FRONT,MECHANICAL,move to Model Description,FLAT FRONT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-113,MR-HYQU-0060-V1,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-187,MR-HYQU-0082-V1,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-313,MR-LGEN-0008-V1,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-114,MR-HYQU-0076-V1,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-115,MR-HYQU-0077-V1,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-384,MR-HYQU-0094-V1,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-388,MR-HYQU-0095-V1,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-410,MRSA-HYQU-0076-V1,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-411,MRSA-HYQU-0077-V1,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-36,MR-HYQU-0015-V1,Model Type,MINPAD,MECHANICAL,set,1PH PAD (MINIPAD),Model Type was 'MINPAD',shorthand
-387,M-HYQU-0093,Model Type,MINPAD,MECHANICAL,set,1PH PAD (MINIPAD),Model Type was 'MINPAD',shorthand
-39,M-HYQU-0016,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-41,M-HYQU-0017,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-43,MR-HYQU-0018-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-44,MR-HYQU-0019-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-46,MR-HYQU-0020-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-48,MR-HYQU-0021-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-50,MR-HYQU-0022-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-51,MR-HYQU-0023-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-53,MR-HYQU-0024-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-94,MR-HYQU-0025-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-97,MR-HYQU-0027-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-99,MR-HYQU-0028-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-105,MR-HYQU-0029-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-106,MR-HYQU-0037-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-107,M-HYQU-0030,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-108,MR-HYQU-0058-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-109,MR-HYQU-0031-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-110,MR-HYQU-0032-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-112,MR-HYQU-0033-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-118,MR-HYQU-0035-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-119,MR-HYQU-0036-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-126,MR-HYQU-0062-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-201,MR-FIEN-0003-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-202,M-FIEN-0002,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-295,MR-CAIN-0001-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-300,MR-GOSO-0001-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-310,MR-TECO-0002-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-323,MR-RIED-0001-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-326,MR-MULT-0002-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-327,MR-UNUT-0001-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-331,MR-HYQU-0003-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-377,MR-FIEN-0004-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-385,MR-LISA-0005-V1,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',shorthand
-296,MR-CRSC-0001-V1,Model Type,PARTS,MECHANICAL,move to Model Description,PARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-386,MR-WIHI-0001-V1,Model Type,PARTS,MECHANICAL,move to Model Description,PARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-337,MR-ENBR-0001-V1,Model Type,POWER-S,MECHANICAL,move to Model Description,POWER-S,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-152,MR-PIRE-0001-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-166,MR-CENO-0001-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-167,MR-CENO-0002-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-183,MR-ALST-0001-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-277,MR-LISA-0001-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-288,MR-LISA-0002-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-289,MR-LISA-0003-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-290,MR-LISA-0004-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-301,MR-TECO-0001-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-311,MR-TECO-0003-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-312,MR-POWE-0001-V1,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-37,MR-PITR-0001-V1,Model Type,PROTO MINIPAD,MECHANICAL,set,1PH PAD (MINIPAD),Model Type was 'PROTO MINIPAD',shorthand; 'PROTO' -> Notes
-184,MR-SCTE-0001-V1,Model Type,SPARE PARTS,MECHANICAL,move to Model Description,SPAREPARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-370,MR-GTWO-0001-V1,Model Type,SPARE PARTS,MECHANICAL,move to Model Description,SPAREPARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-2,MR-TOHY-0018-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-12,MR-TOHY-0034-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-14,MR-TOHY-0010-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-23,MR-HYQU-0043-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-24,M-HYQU-0008,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-26,M-HYQU-0009,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-27,MR-HYQU-0074-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-28,MR-HYQU-0075-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-30,M-HYQU-0012,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-32,MR-HYQU-0013-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-33,MR-HYQU-0047-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-35,M-HYQU-0014,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-116,MR-HYQU-0034-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-128,MR-HYQU-0011-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-129,MR-HYQU-0010-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 resolves 1PH vs 3PH deterministically
-247,MR-TOHY-0012-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-248,MR-TOHY-0013-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-251,MR-TOHY-0016-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-252,MR-TOHY-0017-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-253,MR-TOHY-0019-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-254,M-TOHY-0020,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-258,MR-TOHY-0025-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-259,MR-TOHY-0026-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-261,MR-TOHY-0028-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-378,MR-REDE-0001-V1,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 resolves 1PH vs 3PH deterministically
-100,MR-MEEN-0001-V1,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of a real type
-101,MR-MEEN-0002-V1,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of a real type
-102,MR-MEEN-0003-V1,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of a real type
-103,MR-MEEN-0004-V1,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of a real type
-104,MR-MEEN-0005-V1,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of a real type
-10,MR-LGEN-0002-V1,Model Type,ZIG ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-120,MR-HYQU-0061-V1,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-168,MR-HYQU-0039-V1,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-178,MR-LGEN-0001-V1,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-186,MR-HYQU-0073-V1,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-190,MR-HYQU-0066-V1,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-237,MR-HYQU-0038-V1,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-340,MR-HYQU-0088-V1,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-188,MR-HYQU-0064-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-191,MR-HYQU-0067-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-192,MR-HYQU-0068-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-193,MR-HYQU-0069-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-194,MR-HYQU-0070-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-309,MR-HYQU-0002-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-338,MR-HYQU-0086-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-339,MR-HYQU-0087-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-341,MR-HYQU-0089-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-344,M-HYQU-0092,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-397,MRSA-HYQU-0064-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-398,MRSA-HYQU-0066-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-399,MRSA-HYQU-0069-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-400,MRSA-HYQU-0096-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-401,MRSA-HYQU-0065-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-402,MRSA-HYQU-0067-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-403,MRSA-HYQU-0070-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-404,MRSA-HYQU-0097-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-405,MRSA-HYQU-0082-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-407,MRSA-HYQU-0068-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-408,MRSA-HYQU-0092-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-409,MRSA-HYQU-0002-V1,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+﻿row_id,model_revision,phases,column,current_value,tier,action,proposed_value,preserve_to_notes,why
+51,MR-HYQU-0023-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
+105,MR-HYQU-0029-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
+109,MR-HYQU-0031-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
+118,MR-HYQU-0035-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
+119,MR-HYQU-0036-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
+235,MR-OTHY-0008-V1,,Model Description,VAULT-1PH,DECIDE,set,,Model Description was 'VAULT-1PH',"Phases is '(blank)', so the phase cannot be resolved from the data"
+236,MR-OTHY-0009-V1,,Model Description,VAULT-1PH,DECIDE,set,,Model Description was 'VAULT-1PH',"Phases is '(blank)', so the phase cannot be resolved from the data"
+298,MR-PITR-0002-V1,3,Model Description,VAULT-1PH,DECIDE,set,,Model Description was 'VAULT-1PH',CONTRADICTION: the value says VAULT-1PH but Phases=3. Candidates: 1PH-VAULT
+121,MR-HYQU-0078-V1,3,Model Type,LTC,DECIDE,move LTC to Notes; retype,None,Model Type was 'LTC',"LTC belongs in Notes (rule 3). Model Type is then undecided, and 'None' is the value for that -- confirm rather than assume."
+123,MR-HYQU-0080-V1,3,Model Type,LTC,DECIDE,move LTC to Notes; retype,None,Model Type was 'LTC',"LTC belongs in Notes (rule 3). Model Type is then undecided, and 'None' is the value for that -- confirm rather than assume."
+124,MR-HYQU-0081-V1,3,Model Type,LTC,DECIDE,move LTC to Notes; retype,None,Model Type was 'LTC',"LTC belongs in Notes (rule 3). Model Type is then undecided, and 'None' is the value for that -- confirm rather than assume."
+195,MR-HYQU-0071-V1,3,Model Type,LTC,DECIDE,move LTC to Notes; retype,None,Model Type was 'LTC',"LTC belongs in Notes (rule 3). Model Type is then undecided, and 'None' is the value for that -- confirm rather than assume."
+196,MR-HYQU-0072-V1,3,Model Type,LTC,DECIDE,move LTC to Notes; retype,None,Model Type was 'LTC',"LTC belongs in Notes (rule 3). Model Type is then undecided, and 'None' is the value for that -- confirm rather than assume."
+383,MR-HYQU-0079-V1,3,Model Type,LTC,DECIDE,move LTC to Notes; retype,None,Model Type was 'LTC',"LTC belongs in Notes (rule 3). Model Type is then undecided, and 'None' is the value for that -- confirm rather than assume."
+51,MR-HYQU-0023-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
+105,MR-HYQU-0029-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
+109,MR-HYQU-0031-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
+118,MR-HYQU-0035-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
+119,MR-HYQU-0036-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
+189,MR-HYQU-0065-V1,3,Model Type,POWER LTC,DECIDE,move LTC to Notes; retype,None,Model Type was 'POWER LTC',"LTC belongs in Notes (rule 3). Model Type is then undecided, and 'None' is the value for that -- confirm rather than assume."
+387,M-HYQU-0093,1,Model Description,MINPAD-1HP,MECHANICAL,remove selection; set Model Type,1PH PAD (MINIPAD),Model Description was 'MINPAD-1HP',a Model Type value sitting in Description. Phases=1 confirms '1PH PAD (MINIPAD)'
+36,MR-HYQU-0015-V1,1,Model Description,MINPAD-1PH,MECHANICAL,remove selection; set Model Type,1PH PAD (MINIPAD),Model Description was 'MINPAD-1PH',a Model Type value sitting in Description. Phases=1 confirms '1PH PAD (MINIPAD)'
+3,MR-ENMA-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+4,MR-ENMA-0024-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+5,MR-ENMA-0030-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+6,MR-ENMA-0033-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+7,MR-ENMA-0035-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+8,MR-ENMA-0036-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+9,MR-ENMA-0041-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+13,MR-TOHY-0009-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+15,MR-TOHY-0011-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+16,MR-ALPO-0009-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+57,MR-ENMA-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+58,MR-ENMA-0007-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+59,MR-ENMA-0008-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+60,MR-ENMA-0009-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+61,MR-ENMA-0010-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+62,MR-ENMA-0011-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+63,MR-ENMA-0012-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+64,MR-ENMA-0047-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+65,MR-ENMA-0013-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+66,MR-ENMA-0048-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+67,MR-ENMA-0049-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+68,M-ENMA-0014,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+69,M-ENMA-0042,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+70,MR-ENMA-0015-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+71,MR-ENMA-0016-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+72,M-ENMA-0050,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+73,M-ENMA-0051,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+74,MR-ENMA-0017-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+75,MR-ENMA-0018-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+76,MR-ENMA-0052-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+77,MR-ENMA-0053-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+78,MR-MAGA-0008-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+79,MR-MAGA-0009-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+80,MR-MAGA-0010-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+81,MR-MAGA-0011-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+82,MR-KBAU-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+83,MR-LGEN-0003-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+84,MR-LGEN-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+85,MR-LGEN-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+86,MR-LGEN-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+87,MR-LGEN-0007-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+88,MR-XCEN-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+89,M-XCEN-0002,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+90,MR-XCEN-0003-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+92,MR-XCEN-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+96,MR-MAGA-0012-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+117,MR-MAGA-0013-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+130,MR-MAGA-0014-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+131,MR-MAGA-0015-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+133,MR-EPCO-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+134,MR-ALPO-0010-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+135,MR-GEPO-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+136,MR-GEPO-0002-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+137,MR-GEPO-0003-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+138,MR-GEPO-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+139,MR-GEPO-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+140,MR-GEPO-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+141,MR-GEPO-0007-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+142,MR-GEPO-0008-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+143,MR-GEPO-0009-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+144,MR-GEPO-0010-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+145,MR-GEPO-0011-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+146,MR-GEPO-0012-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+147,MR-GEPO-0013-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+150,MR-GEPO-0016-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+153,MR-EPCO-0002-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+154,MR-AUEN-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+155,M-AUEN-0002,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+156,MR-AUEN-0003-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+157,MR-AUEN-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+158,MR-AUEN-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+159,MR-AUEN-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+160,MR-AUEN-0007-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+161,MR-AUEN-0008-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+162,MR-AUEN-0009-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+163,MR-AUEN-0010-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+164,MR-AUEN-0011-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+165,MR-AUEN-0012-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+169,MR-MAGA-0007-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+179,MR-EPCO-0003-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+180,MR-EPCO-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+181,MR-EPCO-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+182,MR-EPCO-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+185,MR-FIEN-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+203,M-ENTE-0001,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+204,MR-ENMA-0019-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+206,MR-ENMA-0021-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+207,MR-ENMA-0022-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+208,MR-ENMA-0023-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+211,MR-ENMA-0026-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+212,MR-ENMA-0027-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+213,MR-ENMA-0028-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+215,MR-ENMA-0031-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+217,MR-ENMA-0034-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+218,MR-ENMA-0037-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+220,MR-ENMA-0039-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+221,MR-ENMA-0040-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+222,MR-ENMA-0043-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+223,MR-ENMA-0044-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+238,MR-TOHY-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+239,M-TOHY-0002,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+241,MR-TOHY-0003-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+242,MR-TOHY-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+243,MR-TOHY-0005-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+244,MR-TOHY-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+265,MR-ALPO-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+266,MR-ALPO-0002-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+268,MR-ALPO-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+269,MR-ALPO-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+270,MR-ALPO-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+271,MR-ALPO-0007-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+275,MR-XCEN-0008-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+276,MR-XCEN-0009-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+279,MR-TOHY-0032-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+280,MR-TOHY-0033-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+281,MR-NAEL-0002-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+282,M-NAEL-0003,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+285,MR-NAEL-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+286,MR-NAEL-0007-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+307,MR-XCEN-0010-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+314,MR-ELPA-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+315,MR-ELPA-0002-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+316,MR-KORT-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+317,MR-KORT-0002-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+318,MR-KORT-0003-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+319,MR-KORT-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+320,M-KORT-0005,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+330,MR-KEEL-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+347,MR-PSEG-0003-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+348,MR-PSEG-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+351,MR-PSEG-0007-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+355,MR-PSEG-0011-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+356,MR-PSEG-0012-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+357,MR-PSEG-0013-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+359,MR-PSEG-0015-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+360,MR-PSEG-0016-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+363,MR-PSEG-0019-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+364,MR-PSEG-0020-V1,,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+365,MR-PSEG-0021-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+376,MR-MAGA-0006-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+379,MR-EXEL-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+380,MR-PITR-0004-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+381,MR-EPBC-0002-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+382,MR-EPBC-0001-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+415,MR-ENMA-0056-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+416,MR-ENMA-0057-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
+39,M-HYQU-0016,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+41,M-HYQU-0017,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+43,MR-HYQU-0018-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+44,MR-HYQU-0019-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+46,MR-HYQU-0020-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+48,MR-HYQU-0021-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+50,MR-HYQU-0022-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+53,MR-HYQU-0024-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+94,MR-HYQU-0025-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+97,MR-HYQU-0027-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+99,MR-HYQU-0028-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+106,MR-HYQU-0037-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+107,M-HYQU-0030,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+108,MR-HYQU-0058-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+110,MR-HYQU-0032-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+112,MR-HYQU-0033-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+126,MR-HYQU-0062-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+201,MR-FIEN-0003-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+202,M-FIEN-0002,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+295,MR-CAIN-0001-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+300,MR-GOSO-0001-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+310,MR-TECO-0002-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+323,MR-RIED-0001-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+326,MR-MULT-0002-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+327,MR-UNUT-0001-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+331,MR-HYQU-0003-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+377,MR-FIEN-0004-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+385,MR-LISA-0005-V1,3,Model Description,PADMOUNT,MECHANICAL,remove selection; set Model Type,3PH PAD (PADMOUNT),Model Description was 'PADMOUNT',a Model Type value sitting in Description. Phases=3 confirms '3PH PAD (PADMOUNT)'
+184,MR-SCTE-0001-V1,0,Model Description,SPARE PARTS,MECHANICAL,set,SPAREPARTS,,case/spacing variant of 'SPAREPARTS'
+370,MR-GTWO-0001-V1,0,Model Description,SPARE PARTS,MECHANICAL,set,SPAREPARTS,,case/spacing variant of 'SPAREPARTS'
+406,MRSA-HYQU-0071-V1,3,Model Description,SUBSTATION + LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION + LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+332,MR-HITA-0001-V1,3,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+333,MR-HITA-0002-V1,3,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+334,MR-HITA-0003-V1,3,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+335,MR-HYQU-0084-V1,3,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+336,MR-HYQU-0085-V1,3,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+342,MR-HYQU-0090-V1,3,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+343,MR-HYQU-0091-V1,3,Model Description,SUBSTATION LTC,MECHANICAL,set + note,SUBSTATION   (Notes += 'LTC'),Model Description was 'SUBSTATION LTC',LTC goes in Notes (rule 3); the SUBSTATION part is a real description
+23,MR-HYQU-0043-V1,1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',Phases=1 confirms 'SUBWAY'
+27,MR-HYQU-0074-V1,1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',Phases=1 confirms 'SUBWAY'
+28,MR-HYQU-0075-V1,1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',Phases=1 confirms 'SUBWAY'
+128,MR-HYQU-0011-V1,1,Model Description,SUBWAY-1PH,MECHANICAL,set,SUBWAY,Model Description was 'SUBWAY-1PH',Phases=1 confirms 'SUBWAY'
+17,MR-HYQU-0040-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+198,MR-OTHY-0010-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+226,MR-OTHY-0001-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+227,MR-OTHY-0011-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+228,MR-OTHY-0002-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+229,MR-OTHY-0003-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+231,MR-OTHY-0004-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+232,MR-OTHY-0005-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+234,MR-OTHY-0007-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+299,MR-PITR-0003-V1,1,Model Description,VAULT-1PH,MECHANICAL,set,1PH-VAULT,Model Description was 'VAULT-1PH',Phases=1 confirms '1PH-VAULT'
+10,MR-LGEN-0002-V1,3,Model Description,ZIG ZAG,MECHANICAL,set,ZIG-ZAG,,case/spacing variant of 'ZIG-ZAG'
+132,MR-HYQU-0063-V1,0,Model Type,0,MECHANICAL,clear,,Model Type was '0',not a real value ('None' is a REAL option and is left untouched)
+297,MR-HYQU-0083-V1,0,Model Type,0,MECHANICAL,clear,,Model Type was '0',not a real value ('None' is a REAL option and is left untouched)
+17,MR-HYQU-0040-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+198,MR-OTHY-0010-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+226,MR-OTHY-0001-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+227,MR-OTHY-0011-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+228,MR-OTHY-0002-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+229,MR-OTHY-0003-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+231,MR-OTHY-0004-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+232,MR-OTHY-0005-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+234,MR-OTHY-0007-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+235,MR-OTHY-0008-V1,,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+236,MR-OTHY-0009-V1,,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+298,MR-PITR-0002-V1,3,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+299,MR-PITR-0003-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+199,MR-LITE-0001-V1,3,Model Type,FLAT FRONT,MECHANICAL,move to Model Description,FLAT FRONT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+113,MR-HYQU-0060-V1,3,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+187,MR-HYQU-0082-V1,3,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+313,MR-LGEN-0008-V1,3,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+114,MR-HYQU-0076-V1,3,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+115,MR-HYQU-0077-V1,3,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+384,MR-HYQU-0094-V1,3,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+388,MR-HYQU-0095-V1,3,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+410,MRSA-HYQU-0076-V1,3,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+411,MRSA-HYQU-0077-V1,3,Model Type,MALT + SA,MECHANICAL,move to Model Description,MALT + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+36,MR-HYQU-0015-V1,1,Model Type,MINPAD,MECHANICAL,set,1PH PAD (MINIPAD),Model Type was 'MINPAD',Phases=1 confirms '1PH PAD (MINIPAD)'
+387,M-HYQU-0093,1,Model Type,MINPAD,MECHANICAL,set,1PH PAD (MINIPAD),Model Type was 'MINPAD',Phases=1 confirms '1PH PAD (MINIPAD)'
+39,M-HYQU-0016,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+41,M-HYQU-0017,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+43,MR-HYQU-0018-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+44,MR-HYQU-0019-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+46,MR-HYQU-0020-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+48,MR-HYQU-0021-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+50,MR-HYQU-0022-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+53,MR-HYQU-0024-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+94,MR-HYQU-0025-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+97,MR-HYQU-0027-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+99,MR-HYQU-0028-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+106,MR-HYQU-0037-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+107,M-HYQU-0030,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+108,MR-HYQU-0058-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+110,MR-HYQU-0032-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+112,MR-HYQU-0033-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+126,MR-HYQU-0062-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+201,MR-FIEN-0003-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+202,M-FIEN-0002,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+295,MR-CAIN-0001-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+300,MR-GOSO-0001-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+310,MR-TECO-0002-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+323,MR-RIED-0001-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+326,MR-MULT-0002-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+327,MR-UNUT-0001-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+331,MR-HYQU-0003-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+377,MR-FIEN-0004-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+385,MR-LISA-0005-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
+296,MR-CRSC-0001-V1,0,Model Type,PARTS,MECHANICAL,move to Model Description,PARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+386,MR-WIHI-0001-V1,,Model Type,PARTS,MECHANICAL,move to Model Description,PARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+337,MR-ENBR-0001-V1,3,Model Type,POWER-S,MECHANICAL,move to Model Description,POWER-S,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+152,MR-PIRE-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+166,MR-CENO-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+167,MR-CENO-0002-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+183,MR-ALST-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+277,MR-LISA-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+288,MR-LISA-0002-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+289,MR-LISA-0003-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+290,MR-LISA-0004-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+301,MR-TECO-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+311,MR-TECO-0003-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+312,MR-POWE-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+37,MR-PITR-0001-V1,1,Model Type,PROTO MINIPAD,MECHANICAL,set,1PH PAD (MINIPAD),Model Type was 'PROTO MINIPAD',Phases=1 confirms '1PH PAD (MINIPAD)'
+184,MR-SCTE-0001-V1,0,Model Type,SPARE PARTS,MECHANICAL,move to Model Description,SPAREPARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+370,MR-GTWO-0001-V1,0,Model Type,SPARE PARTS,MECHANICAL,move to Model Description,SPAREPARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+2,MR-TOHY-0018-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+12,MR-TOHY-0034-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+14,MR-TOHY-0010-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+23,MR-HYQU-0043-V1,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+24,M-HYQU-0008,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+26,M-HYQU-0009,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+27,MR-HYQU-0074-V1,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+28,MR-HYQU-0075-V1,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+30,M-HYQU-0012,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+32,MR-HYQU-0013-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+33,MR-HYQU-0047-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+35,M-HYQU-0014,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+116,MR-HYQU-0034-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+128,MR-HYQU-0011-V1,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+129,MR-HYQU-0010-V1,1,Model Type,SUBMERSIBLE,MECHANICAL,set,1PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=1 confirms '1PH SUBMERSIBLE'
+247,MR-TOHY-0012-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+248,MR-TOHY-0013-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+251,MR-TOHY-0016-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+252,MR-TOHY-0017-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+253,MR-TOHY-0019-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+254,M-TOHY-0020,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+258,MR-TOHY-0025-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+259,MR-TOHY-0026-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+261,MR-TOHY-0028-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+378,MR-REDE-0001-V1,3,Model Type,SUBMERSIBLE,MECHANICAL,set,3PH SUBMERSIBLE,Model Type was 'SUBMERSIBLE',Phases=3 confirms '3PH SUBMERSIBLE'
+100,MR-MEEN-0001-V1,3,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of 'SUBSTATION'
+101,MR-MEEN-0002-V1,3,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of 'SUBSTATION'
+102,MR-MEEN-0003-V1,3,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of 'SUBSTATION'
+103,MR-MEEN-0004-V1,3,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of 'SUBSTATION'
+104,MR-MEEN-0005-V1,3,Model Type,Substation,MECHANICAL,set,SUBSTATION,,case/spacing variant of 'SUBSTATION'
+10,MR-LGEN-0002-V1,3,Model Type,ZIG ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+120,MR-HYQU-0061-V1,3,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+168,MR-HYQU-0039-V1,3,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+178,MR-LGEN-0001-V1,3,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+186,MR-HYQU-0073-V1,3,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+190,MR-HYQU-0066-V1,3,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+237,MR-HYQU-0038-V1,3,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+340,MR-HYQU-0088-V1,3,Model Type,ZIG-ZAG,MECHANICAL,move to Model Description,ZIG-ZAG,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+188,MR-HYQU-0064-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+191,MR-HYQU-0067-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+192,MR-HYQU-0068-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+193,MR-HYQU-0069-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+194,MR-HYQU-0070-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+309,MR-HYQU-0002-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+338,MR-HYQU-0086-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+339,MR-HYQU-0087-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+341,MR-HYQU-0089-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+344,M-HYQU-0092,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+397,MRSA-HYQU-0064-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+398,MRSA-HYQU-0066-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+399,MRSA-HYQU-0069-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+400,MRSA-HYQU-0096-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+401,MRSA-HYQU-0065-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+402,MRSA-HYQU-0067-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+403,MRSA-HYQU-0070-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+404,MRSA-HYQU-0097-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+405,MRSA-HYQU-0082-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+407,MRSA-HYQU-0068-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+408,MRSA-HYQU-0092-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+409,MRSA-HYQU-0002-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+18,MR-HYQU-0005-V1,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+20,M-HYQU-0006,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+21,MR-HYQU-0007-V1,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+22,M-HYQU-0001,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+95,MR-HYQU-0026-V1,,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+132,MR-HYQU-0063-V1,0,Model Description,Goujon,PHASE-OUT,keep value; keep option,Goujon,,"no clear replacement -- 1 row. A stud/bolt -- plausibly PARTS, but not confidently."
+121,MR-HYQU-0078-V1,3,Model Description,LTC,PHASE-OUT,keep value; keep option,LTC,,"no clear replacement -- 7 rows where LTC is the ONLY description. LTC moves to Notes for new models, but removing it here would leave these rows with no subtype, so the option stays until they are re-typed."
+123,MR-HYQU-0080-V1,3,Model Description,LTC,PHASE-OUT,keep value; keep option,LTC,,"no clear replacement -- 7 rows where LTC is the ONLY description. LTC moves to Notes for new models, but removing it here would leave these rows with no subtype, so the option stays until they are re-typed."
+124,MR-HYQU-0081-V1,3,Model Description,LTC,PHASE-OUT,keep value; keep option,LTC,,"no clear replacement -- 7 rows where LTC is the ONLY description. LTC moves to Notes for new models, but removing it here would leave these rows with no subtype, so the option stays until they are re-typed."
+189,MR-HYQU-0065-V1,3,Model Description,LTC,PHASE-OUT,keep value; keep option,LTC,,"no clear replacement -- 7 rows where LTC is the ONLY description. LTC moves to Notes for new models, but removing it here would leave these rows with no subtype, so the option stays until they are re-typed."
+195,MR-HYQU-0071-V1,3,Model Description,LTC,PHASE-OUT,keep value; keep option,LTC,,"no clear replacement -- 7 rows where LTC is the ONLY description. LTC moves to Notes for new models, but removing it here would leave these rows with no subtype, so the option stays until they are re-typed."
+196,MR-HYQU-0072-V1,3,Model Description,LTC,PHASE-OUT,keep value; keep option,LTC,,"no clear replacement -- 7 rows where LTC is the ONLY description. LTC moves to Notes for new models, but removing it here would leave these rows with no subtype, so the option stays until they are re-typed."
+383,MR-HYQU-0079-V1,3,Model Description,LTC,PHASE-OUT,keep value; keep option,LTC,,"no clear replacement -- 7 rows where LTC is the ONLY description. LTC moves to Notes for new models, but removing it here would leave these rows with no subtype, so the option stays until they are re-typed."
+297,MR-HYQU-0083-V1,0,Model Description,PLAQUE ANCRAGE,PHASE-OUT,keep value; keep option,PLAQUE ANCRAGE,,no clear replacement -- 1 row. An anchor plate -- same.
+37,MR-PITR-0001-V1,1,Model Description,PROTOTYPE,PHASE-OUT,keep value; keep option,PROTOTYPE,,no clear replacement -- 1 row.
+18,MR-HYQU-0005-V1,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+20,M-HYQU-0006,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+21,MR-HYQU-0007-V1,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+22,M-HYQU-0001,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+95,MR-HYQU-0026-V1,,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+332,MR-HITA-0001-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
+333,MR-HITA-0002-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
+334,MR-HITA-0003-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
+335,MR-HYQU-0084-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
+336,MR-HYQU-0085-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
+342,MR-HYQU-0090-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
+343,MR-HYQU-0091-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
+406,MRSA-HYQU-0071-V1,3,Model Type,POWER-LTC,PHASE-OUT,keep value; keep option,POWER-LTC,,"no clear replacement -- 9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S and POWER-W, so there is no clear replacement. All 9 are Phases=3."
