@@ -1,0 +1,2242 @@
+{
+  "$schema": "https://power-automate-tools.local/flow-editor.json#",
+  "connectionReferences": {
+    "shared_sharepointonline": {
+      "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1813/1.0.1813.4769/sharepointonline/icon.png",
+      "brandColor": "",
+      "tier": "Standard",
+      "apiName": "sharepointonline",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    }
+  },
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      },
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_an_item_is_created_or_modified": {
+        "recurrence": {
+          "interval": 1,
+          "frequency": "Minute"
+        },
+        "splitOn": "@triggerOutputs()?['body/value']",
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetOnUpdatedItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        }
+      }
+    },
+    "actions": {
+      "Condition": {
+        "actions": {},
+        "runAfter": {
+          "Get_Model": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {
+            "Set_variable_16": {
+              "type": "SetVariable",
+              "inputs": {
+                "name": "vUpdateOrderItem",
+                "value": true
+              }
+            }
+          }
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['OrderNumber/Value']",
+                "@triggerBody()?['Order_Number_TextField']"
+              ]
+            },
+            {
+              "equals": [
+                "@outputs('Get_Client')?['body/Client_ID']",
+                "@triggerBody()?['Client_ID_TextField']"
+              ]
+            },
+            {
+              "equals": [
+                "@outputs('Get_Model')?['body/ModelID']",
+                "@triggerBody()?['Model_ID_TextField']"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['ModelRevision/Value']",
+                "@triggerBody()?['Model_Revision_ID_TextField']"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Get_Client": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "3bcf7d97-0862-404d-ab3f-eeaa358c05d8",
+            "id": "@triggerBody()?['Client/Id']"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetItem",
+            "connectionName": "shared_sharepointonline"
+          }
+        }
+      },
+      "Get_Model": {
+        "runAfter": {
+          "Get_Client": [
+            "Succeeded"
+          ]
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "b43a5140-0f9d-4ac1-9019-43b897074224",
+            "id": "@triggerBody()?['Model/Id']"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetItem",
+            "connectionName": "shared_sharepointonline"
+          }
+        }
+      },
+      "Initialize_vCoilingStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vCoilingStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['CoilingStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vCoilingEndDateValue": {
+        "runAfter": {
+          "Initialize_vCoilingStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vCoilingEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['CoilingDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vStackingStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vStackingStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['StackingStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vStackingEndDateValue": {
+        "runAfter": {
+          "Initialize_vStackingStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vStackingEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['StackingDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vAssemblyStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vAssemblyStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['AssemblyStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vAssemblyEndDateValue": {
+        "runAfter": {
+          "Initialize_vAssemblyStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vAssemblyEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['AssemblyDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vDryingStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vDryingStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['DryingStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vDryingEndDateValue": {
+        "runAfter": {
+          "Initialize_vDryingStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vDryingEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['DryingDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vTankingStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vTankingStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['TankingStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vTankingEndDateValue": {
+        "runAfter": {
+          "Initialize_vTankingStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vTankingEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['TankingDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vTestingStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vTestingStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['TestingStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vTestingEndDateValue": {
+        "runAfter": {
+          "Initialize_vTestingStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vTestingEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['TestingDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vFinishingStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vFinishingStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['FinishingStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vFinishingEndDateValue": {
+        "runAfter": {
+          "Initialize_vFinishingStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vFinishingEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['FinishingDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vDeliveryStartDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vDeliveryStartDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['DeliveryStartDate']"
+            }
+          ]
+        }
+      },
+      "Initialize_vDeliveryEndDateValue": {
+        "runAfter": {
+          "Initialize_vDeliveryStartDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vDeliveryEndDateValue",
+              "type": "string",
+              "value": "@triggerBody()?['DeliveryDate']"
+            }
+          ]
+        }
+      },
+      "Condition_1": {
+        "actions": {
+          "Set_variable": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vCoilingStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17": {
+            "runAfter": {
+              "Set_variable": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vStackingStatusValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['CoilingStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['CoilingStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_2": {
+        "actions": {
+          "Set_variable_1": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vCoilingEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_2": {
+            "runAfter": {
+              "Set_variable_1": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['CoilingStatus/Value']",
+                "Completed"
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['CoilingDate'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_1": {
+        "actions": {
+          "Set_variable_2": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vStackingStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_1": {
+            "runAfter": {
+              "Set_variable_2": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vAssemblyStatusValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['StackingStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['StackingStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_2": {
+        "actions": {
+          "Set_variable_3": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vAssemblyStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_4": {
+            "runAfter": {
+              "Set_variable_3": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vDryingStatusValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['AssemblyStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['AssemblyStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_3": {
+        "actions": {
+          "Set_variable_4": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDryingStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_6": {
+            "runAfter": {
+              "Set_variable_4": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vTankingStatusValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['DryingStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['DryingStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_4": {
+        "actions": {
+          "Set_variable_5": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTankingStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_8": {
+            "runAfter": {
+              "Set_variable_5": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vTestingStatusValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['TankingStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['TankingStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_5": {
+        "actions": {
+          "Set_variable_6": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTestingStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_10": {
+            "runAfter": {
+              "Set_variable_6": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vFinishingStatusValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['TestingStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['TestingStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_6": {
+        "actions": {
+          "Set_variable_7": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vFinishingStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_12": {
+            "runAfter": {
+              "Set_variable_7": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vDeliveryStatusValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['FinishingStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['FinishingStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_7": {
+        "actions": {
+          "Set_variable_8": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDeliveryStartDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_14": {
+            "runAfter": {
+              "Set_variable_8": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_vDeliveryEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['DeliveryStartDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['DeliveryStatus/Value']",
+                "In Progress"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_1_1": {
+        "actions": {
+          "Set_variable_9": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vStackingEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_3": {
+            "runAfter": {
+              "Set_variable_9": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['StackingDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['StackingStatus/Value']",
+                "Completed"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_2_1": {
+        "actions": {
+          "Set_variable_10": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vAssemblyEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_5": {
+            "runAfter": {
+              "Set_variable_10": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_2": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['AssemblyDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['AssemblyStatus/Value']",
+                "Completed"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_3_1": {
+        "actions": {
+          "Set_variable_11": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDryingEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_7": {
+            "runAfter": {
+              "Set_variable_11": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_3": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['DryingDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['DryingStatus/Value']",
+                "Completed"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_4_1": {
+        "actions": {
+          "Set_variable_12": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTankingEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_9": {
+            "runAfter": {
+              "Set_variable_12": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_4": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['TankingDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['TankingStatus/Value']",
+                "Completed"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_5_1": {
+        "actions": {
+          "Set_variable_13": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTestingEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_11": {
+            "runAfter": {
+              "Set_variable_13": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_5": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['TestingDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['TestingStatus/Value']",
+                "Completed"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_6_1": {
+        "actions": {
+          "Set_variable_14": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vFinishingEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_13": {
+            "runAfter": {
+              "Set_variable_14": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_6": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['FinishingDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['FinishingStatus/Value']",
+                "Completed"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_1_7_1": {
+        "actions": {
+          "Set_variable_15": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDeliveryEndDateValue",
+              "value": "@convertFromUtc(utcNow(), 'Eastern Standard Time')"
+            }
+          },
+          "Set_variable_17_15": {
+            "runAfter": {
+              "Set_variable_15": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_7": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@empty(triggerBody()?['DeliveryDate'])",
+                "@true"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['DeliveryStatus/Value']",
+                "Completed"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_3": {
+        "actions": {
+          "Update_item": {
+            "type": "OpenApiConnection",
+            "inputs": {
+              "parameters": {
+                "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                "id": "@triggerBody()?['ID']",
+                "item/Order_Number_TextField": "@triggerBody()?['OrderNumber/Value']",
+                "item/CoilingStartDate": "@if(equals(variables('vCoilingStartDateValue'), ''), null, variables('vCoilingStartDateValue'))",
+                "item/CoilingDate": "@if(equals(variables('vCoilingEndDateValue'), ''), null, variables('vCoilingEndDateValue'))",
+                "item/StackingStatus/Value": "@if(equals(variables('vStackingStatusValue'), ''), null, variables('vStackingStatusValue'))",
+                "item/StackingStartDate": "@if(equals(variables('vStackingStartDateValue'), ''), null, variables('vStackingStartDateValue'))",
+                "item/StackingDate": "@if(equals(variables('vStackingEndDateValue'), ''), null, variables('vStackingEndDateValue'))",
+                "item/AssemblyStatus/Value": "@if(equals(variables('vAssemblyStatusValue'), ''), null, variables('vAssemblyStatusValue'))",
+                "item/AssemblyStartDate": "@if(equals(variables('vAssemblyStartDateValue'), ''), null, variables('vAssemblyStartDateValue'))",
+                "item/AssemblyDate": "@if(equals(variables('vAssemblyEndDateValue'), ''), null, variables('vAssemblyEndDateValue'))",
+                "item/DryingStatus/Value": "@if(equals(variables('vDryingStatusValue'), ''), null, variables('vDryingStatusValue'))",
+                "item/DryingStartDate": "@if(equals(variables('vDryingStartDateValue'), ''), null, variables('vDryingStartDateValue'))",
+                "item/DryingDate": "@if(equals(variables('vDryingEndDateValue'), ''), null, variables('vDryingEndDateValue'))",
+                "item/TankingStatus/Value": "@if(equals(variables('vTankingStatusValue'), ''), null, variables('vTankingStatusValue'))",
+                "item/TankingStartDate": "@if(equals(variables('vTankingStartDateValue'), ''), null, variables('vTankingStartDateValue'))",
+                "item/TankingDate": "@if(equals(variables('vTankingEndDateValue'), ''), null, variables('vTankingEndDateValue'))",
+                "item/TestingStatus/Value": "@if(equals(variables('vTestingStatusValue'), ''), null, variables('vTestingStatusValue'))",
+                "item/TestingStartDate": "@if(equals(variables('vTestingStartDateValue'), ''), null, variables('vTestingStartDateValue'))",
+                "item/TestingDate": "@if(equals(variables('vTestingEndDateValue'), ''), null, variables('vTestingEndDateValue'))",
+                "item/FinishingStatus/Value": "@if(equals(variables('vFinishingStatusValue'), ''), null, variables('vFinishingStatusValue'))",
+                "item/FinishingStartDate": "@if(equals(variables('vFinishingStartDateValue'), ''), null, variables('vFinishingStartDateValue'))",
+                "item/FinishingDate": "@if(equals(variables('vFinishingEndDateValue'), ''), null, variables('vFinishingEndDateValue'))",
+                "item/DeliveryStatus/Value": "@if(equals(variables('vDeliveryStatusValue'), ''), null, variables('vDeliveryStatusValue'))",
+                "item/DeliveryStartDate": "@if(equals(variables('vDeliveryStartDateValue'), ''), null, variables('vDeliveryStartDateValue'))",
+                "item/DeliveryDate": "@if(equals(variables('vDeliveryEndDateValue'), ''), null, variables('vDeliveryEndDateValue'))",
+                "item/Client_ID_TextField": "@outputs('Get_Client')?['body/Client_ID']",
+                "item/Model_ID_TextField": "@outputs('Get_Model')?['body/ModelID']",
+                "item/Model_Revision_ID_TextField": "@triggerBody()?['ModelRevision/Value']"
+              },
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "operationId": "PatchItem",
+                "connectionName": "shared_sharepointonline"
+              }
+            }
+          }
+        },
+        "runAfter": {
+          "Condition": [
+            "Succeeded"
+          ],
+          "Condition_5": [
+            "Succeeded"
+          ],
+          "Condition_5_1": [
+            "Succeeded"
+          ],
+          "Condition_5_2": [
+            "Succeeded"
+          ],
+          "Condition_5_3": [
+            "Succeeded"
+          ],
+          "Condition_5_4": [
+            "Succeeded"
+          ],
+          "Condition_5_5": [
+            "Succeeded"
+          ],
+          "Condition_5_6": [
+            "Succeeded"
+          ],
+          "Condition_5_7": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "or": [
+            {
+              "equals": [
+                "@variables('vUpdateOrderItem')",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Initialize_variable": {
+        "runAfter": {},
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vUpdateOrderItem",
+              "type": "boolean",
+              "value": false
+            }
+          ]
+        }
+      },
+      "Initialize_vStackingStatusValue": {
+        "runAfter": {
+          "Initialize_vCoilingEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vStackingStatusValue",
+              "type": "string",
+              "value": "@triggerBody()?['StackingStatus/Value']"
+            }
+          ]
+        }
+      },
+      "Initialize_vAssemblyStatusValue": {
+        "runAfter": {
+          "Initialize_vStackingEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vAssemblyStatusValue",
+              "type": "string",
+              "value": "@triggerBody()?['AssemblyStatus/Value']"
+            }
+          ]
+        }
+      },
+      "Initialize_vDryingStatusValue": {
+        "runAfter": {
+          "Initialize_vAssemblyEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vDryingStatusValue",
+              "type": "string",
+              "value": "@triggerBody()?['DryingStatus/Value']"
+            }
+          ]
+        }
+      },
+      "Initialize_vTankingStatusValue": {
+        "runAfter": {
+          "Initialize_vDryingEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vTankingStatusValue",
+              "type": "string",
+              "value": "@triggerBody()?['TankingStatus/Value']"
+            }
+          ]
+        }
+      },
+      "Initialize_vTestingStatusValue": {
+        "runAfter": {
+          "Initialize_vTankingEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vTestingStatusValue",
+              "type": "string",
+              "value": "@triggerBody()?['TestingStatus/Value']"
+            }
+          ]
+        }
+      },
+      "Initialize_vFinishingStatusValue": {
+        "runAfter": {
+          "Initialize_vTestingEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vFinishingStatusValue",
+              "type": "string",
+              "value": "@triggerBody()?['FinishingStatus/Value']"
+            }
+          ]
+        }
+      },
+      "Initialize_vDeliveryStatusValue": {
+        "runAfter": {
+          "Initialize_vFinishingEndDateValue": [
+            "Succeeded"
+          ]
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vDeliveryStatusValue",
+              "type": "string",
+              "value": "@triggerBody()?['DeliveryStatus/Value']"
+            }
+          ]
+        }
+      },
+      "Condition_4": {
+        "actions": {
+          "Set_variable_18": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vStackingStatusValue",
+              "value": "Pending"
+            }
+          },
+          "Set_variable_17_2_1": {
+            "runAfter": {
+              "Set_variable_18": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_2": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "or": [
+                {
+                  "equals": [
+                    "@triggerBody()?['CoilingStatus/Value']",
+                    "Completed"
+                  ]
+                },
+                {
+                  "equals": [
+                    "@triggerBody()?['CoilingStatus/Value']",
+                    "N/A"
+                  ]
+                }
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['StackingStatus/Value'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_4_1": {
+        "actions": {
+          "Set_variable_19": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vAssemblyStatusValue",
+              "value": "Pending"
+            }
+          },
+          "Set_variable_17_2_2": {
+            "runAfter": {
+              "Set_variable_19": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_1_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "or": [
+                {
+                  "equals": [
+                    "@triggerBody()?['StackingStatus/Value']",
+                    "Completed"
+                  ]
+                },
+                {
+                  "equals": [
+                    "@triggerBody()?['StackingStatus/Value']",
+                    "N/A"
+                  ]
+                }
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['AssemblyStatus/Value'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_4_2": {
+        "actions": {
+          "Set_variable_20": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDryingStatusValue",
+              "value": "Pending"
+            }
+          },
+          "Set_variable_17_2_3": {
+            "runAfter": {
+              "Set_variable_20": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_2_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "or": [
+                {
+                  "equals": [
+                    "@triggerBody()?['AssemblyStatus/Value']",
+                    "Completed"
+                  ]
+                },
+                {
+                  "equals": [
+                    "@triggerBody()?['AssemblyStatus/Value']",
+                    "N/A"
+                  ]
+                }
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['DryingStatus/Value'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_4_3": {
+        "actions": {
+          "Set_variable_21": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTankingStatusValue",
+              "value": "Pending"
+            }
+          },
+          "Set_variable_17_2_4": {
+            "runAfter": {
+              "Set_variable_21": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_3_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "or": [
+                {
+                  "equals": [
+                    "@triggerBody()?['DryingStatus/Value']",
+                    "Completed"
+                  ]
+                },
+                {
+                  "equals": [
+                    "@triggerBody()?['DryingStatus/Value']",
+                    "N/A"
+                  ]
+                }
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['TankingStatus/Value'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_4_4": {
+        "actions": {
+          "Set_variable_22": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTestingStatusValue",
+              "value": "Pending"
+            }
+          },
+          "Set_variable_17_2_5": {
+            "runAfter": {
+              "Set_variable_22": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_4_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "or": [
+                {
+                  "equals": [
+                    "@triggerBody()?['TankingStatus/Value']",
+                    "Completed"
+                  ]
+                },
+                {
+                  "equals": [
+                    "@triggerBody()?['TankingStatus/Value']",
+                    "N/A"
+                  ]
+                }
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['TestingStatus/Value'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_4_5": {
+        "actions": {
+          "Set_variable_23": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vFinishingStatusValue",
+              "value": "Pending"
+            }
+          },
+          "Set_variable_17_2_6": {
+            "runAfter": {
+              "Set_variable_23": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_5_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "or": [
+                {
+                  "equals": [
+                    "@triggerBody()?['TestingStatus/Value']",
+                    "Completed"
+                  ]
+                },
+                {
+                  "equals": [
+                    "@triggerBody()?['TestingStatus/Value']",
+                    "N/A"
+                  ]
+                }
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['FinishingStatus/Value'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_4_6": {
+        "actions": {
+          "Set_variable_24": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDeliveryStatusValue",
+              "value": "Pending"
+            }
+          },
+          "Set_variable_17_2_7": {
+            "runAfter": {
+              "Set_variable_24": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_6_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "or": [
+                {
+                  "equals": [
+                    "@triggerBody()?['FinishingStatus/Value']",
+                    "Completed"
+                  ]
+                },
+                {
+                  "equals": [
+                    "@triggerBody()?['FinishingStatus/Value']",
+                    "N/A"
+                  ]
+                }
+              ]
+            },
+            {
+              "equals": [
+                "@empty(triggerBody()?['DeliveryStatus/Value'])",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5": {
+        "actions": {
+          "Set_variable_25": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vCoilingStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_26": {
+            "runAfter": {
+              "Set_variable_25": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vCoilingEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_1": {
+            "runAfter": {
+              "Set_variable_26": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_4": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['CoilingStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5_1": {
+        "actions": {
+          "Set_variable_27": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vStackingStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_28": {
+            "runAfter": {
+              "Set_variable_27": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vStackingEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_2": {
+            "runAfter": {
+              "Set_variable_28": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_4_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['StackingStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5_2": {
+        "actions": {
+          "Set_variable_29": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vAssemblyStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_30": {
+            "runAfter": {
+              "Set_variable_29": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vAssemblyEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_3": {
+            "runAfter": {
+              "Set_variable_30": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_4_2": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['AssemblyStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5_3": {
+        "actions": {
+          "Set_variable_31": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDryingStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_32": {
+            "runAfter": {
+              "Set_variable_31": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDryingEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_4": {
+            "runAfter": {
+              "Set_variable_32": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_4_3": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['DryingStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5_4": {
+        "actions": {
+          "Set_variable_33": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTankingStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_34": {
+            "runAfter": {
+              "Set_variable_33": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTankingEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_5": {
+            "runAfter": {
+              "Set_variable_34": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_4_4": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['TankingStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5_5": {
+        "actions": {
+          "Set_variable_35": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTestingStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_36": {
+            "runAfter": {
+              "Set_variable_35": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vTestingEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_6": {
+            "runAfter": {
+              "Set_variable_36": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_4_5": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['TestingStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5_6": {
+        "actions": {
+          "Set_variable_37": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vFinishingStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_38": {
+            "runAfter": {
+              "Set_variable_37": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vFinishingEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_7": {
+            "runAfter": {
+              "Set_variable_38": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_4_6": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['FinishingStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      },
+      "Condition_5_7": {
+        "actions": {
+          "Set_variable_39": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDeliveryStartDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_40": {
+            "runAfter": {
+              "Set_variable_39": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vDeliveryEndDateValue",
+              "value": "@null"
+            }
+          },
+          "Set_variable_17_2_1_8": {
+            "runAfter": {
+              "Set_variable_40": [
+                "Succeeded"
+              ]
+            },
+            "type": "SetVariable",
+            "inputs": {
+              "name": "vUpdateOrderItem",
+              "value": true
+            }
+          }
+        },
+        "runAfter": {
+          "Condition_1_7_1": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {}
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['DeliveryStatus/Value']",
+                "N/A"
+              ]
+            }
+          ]
+        },
+        "type": "If"
+      }
+    },
+    "outputs": {}
+  }
+}

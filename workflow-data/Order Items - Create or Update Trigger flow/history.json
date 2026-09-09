@@ -1,0 +1,30 @@
+{
+  "flow": {
+    "folder": "Order Items - Create or Update Trigger flow",
+    "displayName": "Order Items - Create or Update Trigger",
+    "id": "e777c5eb-6a04-d9b6-268b-9f09aaaa6c1c",
+    "site": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio"
+  },
+  "versions": [
+    {
+      "v": 1,
+      "captured": "2026-09-09T00:36:31-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "baseline pulled from tenant, pre Status Date auto-stamp",
+      "sha256": "d38cf45052951ca2e1bedcc834eee48af85917049013cd2b6539cca547e153ca",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 59,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v001__2026-09-09T00-36__pulled__baseline-pulled-from-tenant-pre-Status-Date-auto.json",
+        "package": "v001__2026-09-09T00-36__pulled__baseline-pulled-from-tenant-pre-Status-Date-auto.zip"
+      },
+      "appliedAt": "2026-09-09T00:36:31-04:00",
+      "source": "OrderItems-CreateorUpdateTigger_20260909043323.zip"
+    }
+  ]
+}

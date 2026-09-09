@@ -253,10 +253,19 @@ def main():
                 if tier == "MECHANICAL" and tgt:
                     add(r, "Model Type", tv, "MECHANICAL", "set", tgt, why)
                 elif canon(tv) in {canon(d) for d in DESCRIPTIONS}:
+                    # RULE 7 (user, 2026-09-09): these keep their value too. I had been
+                    # proposing to RELOCATE them into Model Description -- which preserves
+                    # the information, but still empties Model Type, and the user's answer
+                    # covers that case as well: "they should be keep until thay are phased
+                    # out." So no relocation. The value stays where it is and becomes a
+                    # temporary Model Type option; the user is making them unselectable in
+                    # the creation/modification app, which is the right layer for that.
                     real = next(d for d in DESCRIPTIONS if canon(d) == canon(tv))
-                    add(r, "Model Type", tv, "MECHANICAL", "move to Model Description", real,
-                        "a Description value, not a Type; Description is MultiChoice so "
-                        "nothing is lost")
+                    add(r, "Model Type", tv, "KEEP", "keep value; keep option", tv,
+                        "%r is really a Description value, but relocating it would empty "
+                        "Model Type -- kept until phased out (it is a valid Description, "
+                        "so %r is where it belongs eventually)" % (tv, real),
+                        preserve="")
                 else:
                     # Rule 4 + rule 6: keep the value AND the option. A wrong-but-
                     # informative value outranks a correct-but-empty one.
@@ -349,14 +358,29 @@ def main():
                                  for x in work if x["tier"] == "KEEP").most_common():
         print("   %-18s %-16s %3d rows" % (col, cur, n))
 
-    print("\nOption-list changes on Model Revisions:")
-    for fld, final in (("Model_x0020_Type", list(MODEL_TYPES) + list(PHASE_OUT_TYPES)),
-                       ("Description", list(DESCRIPTIONS) + list(PHASE_OUT_DESCRIPTIONS))):
+    # The option list must contain every value that SURVIVES, or a strict Choice rejects
+    # it on write -- and the Order Items copy rejects it too. So it is derived from the
+    # data, never hand-listed: canonical vocabulary + every KEEP value still in place.
+    print("\nOption-list changes on Model Revisions (temporary additions marked):")
+    survivors = {"Model Type": set(), "Model Description": set()}
+    for x in work:
+        if x["tier"] == "KEEP":
+            survivors[x["column"]].add(x["current_value"])
+    for fld, canonical, col in (("Model_x0020_Type", MODEL_TYPES, "Model Type"),
+                                ("Description", DESCRIPTIONS, "Model Description")):
         cur = sch[fld]["choices"]
-        print("   %-22s remove: %-22s add: %s"
-              % (sch[fld]["disp"],
-                 ", ".join(c for c in cur if c not in final) or "(none)",
-                 ", ".join(c for c in final if c not in cur) or "(none)"))
+        final = list(canonical) + sorted(survivors[col] - set(canonical))
+        adds = [c for c in final if c not in cur]
+        print("   %s" % sch[fld]["disp"])
+        print("      remove          : %s" % (", ".join(c for c in cur if c not in final) or "(none)"))
+        print("      add TEMPORARILY : %s" % (", ".join(sorted(survivors[col] - set(canonical))) or "(none)"))
+        print("      total options   : %d  (%d canonical + %d awaiting phase-out)"
+              % (len(final), len(canonical), len(final) - len(canonical)))
+        if adds:
+            print("      -> these are known-wrong values kept only so a strict Choice does not")
+            print("         reject the rows that still carry them. The user is making them")
+            print("         unselectable in the creation/modification app, so no NEW row can")
+            print("         pick one; each option retires when its usage reaches zero.")
 
 
 if __name__ == "__main__":
