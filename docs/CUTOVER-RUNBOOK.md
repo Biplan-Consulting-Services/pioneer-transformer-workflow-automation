@@ -197,7 +197,12 @@ Since v006 changed how every parent record is read — from `Get item` to a cach
 `Get items` filtered in memory — confirm the flattened `Name`/`Value` key form still works.
 If it does not, the 5 `Mdl` and 24 `Rev` columns land **blank with no error at all**.
 
-**2.3 · Re-diff both directions.** Expect **71 → 0**.
+**2.3 · Re-diff both directions.** Expect **0**.
+
+As of the 2026-09-09 18:00 audit the workbook has **three** units with no `Order Items` row
+— `20877R1-1/1`, `P20002-1/1` and `P21911_A-1/1`. All three have an `Order` row, so
+`CheckOrderMatch` passes and the run **creates** them. (`P21911_A-1/1` appeared during the
+day and needs no action; its order already existed.)
 
 The six named survivors are all resolved as of 2026-09-09, and the reason they were
 missing is worth keeping: `CheckOrderMatch` is `length(Get_Orders) == 1` — *exactly* one.
@@ -400,6 +405,26 @@ creating `Order Items` rows for new orders. `power-apps/` is still an empty `.gi
 component is unexported, undocumented, and the tenant is its only copy, at the moment it
 becomes the most business-critical piece of the system. Not Thursday's work. Should not stay
 invisible.
+
+## 🔴 Two things the pre-cutover audit left open
+
+Full write-up: `pre-cutover-audit-2026-09-09.md`. Everything else came out clean — no
+workbook column is dropped, and the viewer reproduces all 76 data columns in the identical
+order.
+
+**1 · `Order Folder` — 106 links that will not survive.** `Order.Order Folder` is populated
+on **106 of 449** orders; `Order Items.Order - Order Folder` on **0 of 1,124**. Excluded on
+purpose (roadmap 38 — a hyperlink is an object on both read and write and the shape was
+never sourced), but the window closes when the flow is deleted at 2.4: N3 excludes it too.
+Source the shape from one real trigger payload before the run, or accept losing them and
+say so.
+
+**2 · Date storage.** A large set of dates sit at UTC midnight (`00:00:00Z`) rather than the
+Eastern-midnight convention — **all 139** `Tanking End Date` values, and 93 apiece on
+Coiling / Stacking / Assembly / Drying End Date. Harmless if those columns are Date-Only;
+an off-by-one-day display if any is DateTime-with-time. One check settles it: read the
+`Format` of `Tanking End Date` from `_api/v2.0/sites/root/lists/<id>/columns`. If it needs
+fixing, do it **after** the run, which rewrites most of them from Excel.
 
 ## Evidence, if you want it
 
