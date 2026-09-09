@@ -91,6 +91,28 @@ to cover every row, and `with a Status Date too` to be lower by the number of ba
   and `P20002` (Id 566). Both units existed **only** in FRM10-12 and would have ceased to
   exist at cutover, silently. See 2.3.
 
+### 1.1e · Hide two columns from staff views — done 2026-09-09
+
+Decision, user 2026-09-09. Both stay in the list; they are removed from **views** only.
+
+| column | why hidden |
+|---|---|
+| `Step Status Stamped` | machine state, not data. It holds the value `Step Status` had when `Status Date` was last stamped, and trigger `v002` compares the two to tell a real change from a re-save. A staff edit either does nothing or silently breaks the auto-stamp. |
+| `Status` (the composite) | **no longer editable in any meaningful sense.** The viewer *derives* it from `Step Status` + `Status Date`, and the flow that used to write it is deleted at cutover. Typing into it produces a value that goes nowhere — which is exactly what produced the `b2` / `B3` rows. |
+
+`Step Status` + `Status Date` are now the only editable status surface.
+
+⚠️ **Do not delete either.** `v002` reads and writes the mirror; FRM11 depends on the
+composite's format. And do not make the mirror Required or read-only — the flow must write
+it.
+
+🔴 **Hidden columns drop out of CSV exports.** Proven today: hiding `test calculated
+column` took the `Order Items` export from 143 columns to 142. So from now on:
+
+- an export is **not** evidence that these two columns are absent or empty
+- the `StepStatusStamped == StepStatus` check before enabling `v002` (4.1) must be done
+  **over REST**, not from an export
+
 ### 1.2 · 🔴 Prove the viewer BEFORE the run — the last reversible moment
 
 Do this once N8 has run (1.1c) and **before** anything in Stage 2.
@@ -117,6 +139,7 @@ N8 gives it that. So it can be fully exercised while everything is still undoabl
 | check | expect |
 |---|---|
 | the refresh completes without a `ColumnMap.MissingColumns` error | it names any column that moved |
+| `Status` still arrives in Power Query **after being hidden** | hiding is per-*view*; `SharePoint.Tables` reads the *list*, so it should be unaffected — but a `MissingColumns` error naming `Status` is what it looks like if that assumption is wrong |
 | `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` | `R`, not `TRUE` |
 | the five test columns · `SFRA` | `x` · `Y` |
 | `Frame` | `Reçu` / `Plaspak`, and **no error** — this one used to throw |
@@ -286,6 +309,15 @@ force it**.
 
 **4.1 · Paste trigger `v002` and enable.** X3 (131 → 11 actions) plus the Status Date
 auto-stamp. Watch 15 minutes; **if any run passes ten minutes, turn it straight back off.**
+
+🔴 **Before enabling, confirm over REST that `StepStatusStamped` equals `StepStatus` on
+every row.** N8 wrote them equal precisely so the auto-stamp sees no change on the 249 rows
+it just back-filled. If the mirror is blank or has drifted, every one of those rows looks
+like a change and gets re-stamped to **today** — destroying 246 real historical dates in a
+single pass, silently, because every value it writes is well-formed.
+
+Over REST, not from an export: the mirror is hidden (1.1e) and hidden columns do not appear
+in exports.
 
 **4.2 · Paste the three N3 flows, one at a time** — they share a throughput bucket.
 
