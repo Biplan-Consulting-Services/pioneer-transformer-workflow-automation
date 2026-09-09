@@ -64,10 +64,19 @@ Fabrication is proven three independent ways, so this is not a judgement call:
 "completed" tanking dates are **in the future**; and `Delivery = Completed` appears with
 `Location = Bobinage` on 29 rows.
 
-**1.1c · `scripts/n8_split_status.js` — creates 2 columns, fills 247 rows.** Splits the
-composite `Status` (`TE-Se-4` → `Terminé` + `2026-09-04`). All 247 parse; all 19 ambiguous
-`Jui` rows resolve to *juillet* from each unit's own stage dates, so none need a human.
-The code table is read from FRM10-12's own `List` sheet, not inferred.
+**1.1c · `scripts/n8_split_status.js` — creates the columns, fills ~249 rows.** Splits the
+composite `Status` (`TE-Se-4` → `Terminé` + `2026-09-04`). The code table is read from
+FRM10-12's own `List` sheet, not inferred, and all 19 ambiguous `Jui` rows resolve to
+*juillet* from each unit's own stage dates, so none need a human.
+
+⚠️ **The count moves — read the dry run, don't match it to a number here.** It was 247 on
+09-08 and 249 on 09-09, because staff keep typing. What must be **0** is `PROBLEMS`.
+
+A third value shape turned up on 2026-09-09 and is now handled: a **bare step prefix with
+no date** (`b2`, `B3`, on `21832-1/11`, `21995-1/2`, `21998-3/3`). Those set `Step Status`
+and leave `Status Date` **blank** — there is nothing to derive a date from, and inventing
+one is the exact class of value X1 spent the day deleting. So expect `with Step Status set`
+to cover every row, and `with a Status Date too` to be lower by the number of bare rows.
 
 > ⚠️ **N8 must be run again after the final transfer run** — see 2.4. The flow rewrites the
 > composite `Status` and leaves the split pair stale, silently.

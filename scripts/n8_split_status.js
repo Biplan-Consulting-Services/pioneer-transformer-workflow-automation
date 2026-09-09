@@ -154,8 +154,27 @@
   for (const r of rows) {
     const raw = (r.Status || "").trim();
     if (!raw) continue;
+    // A BARE STEP PREFIX with no date stamp -- "b2", "B3". Found 2026-09-09 on 3 rows
+    // (21832-1/11, 21995-1/2, 21998-3/3), all coil stages. Staff recorded WHICH stage the
+    // unit is at without dating it, which is a legitimate thing to have written: the step
+    // is real information and the date simply was not given.
+    //
+    // So take the step and leave Status Date blank. Inventing a date would be worse than
+    // leaving it empty -- there is nothing to derive one from, and a fabricated stage date
+    // is exactly the class of value X1 spent today deleting.
+    //
+    // Case-insensitive on purpose: two of the three are lowercase ("b2") and the code
+    // table is uppercase.
+    const bare = /^([A-Za-z][A-Za-z0-9])$/.exec(raw);
+    if (bare) {
+      const bpre = bare[1].toUpperCase(), bstep = PREFIX[bpre];
+      if (!bstep) { problems.push([r.Title, raw, "unknown bare prefix "+bpre]); continue; }
+      plan.push({Id:r.Id, Title:r.Title, raw, step:bstep, date:null, note:"", bare:true});
+      continue;
+    }
+
     const m = /^([A-Za-z0-9]{2})-([A-Za-zéÉ]{2,4})-(\d{1,2})$/.exec(raw);
-    if (!m) { problems.push([r.Title, raw, "does not match PREFIX-Month-Day"]); continue; }
+    if (!m) { problems.push([r.Title, raw, "does not match PREFIX-Month-Day or a bare prefix"]); continue; }
     const pre = m[1].toUpperCase(), mon = m[2].toLowerCase(), day = parseInt(m[3],10);
     const step = PREFIX[pre];
     if (!step) { problems.push([r.Title, raw, "unknown status prefix "+pre]); continue; }
@@ -183,14 +202,24 @@
   }
 
   const byStep = {}, byMonth = {};
-  for (const p of plan) { byStep[p.step]=(byStep[p.step]||0)+1; byMonth[p.date.slice(0,7)]=(byMonth[p.date.slice(0,7)]||0)+1; }
+  for (const p of plan) {
+    byStep[p.step]=(byStep[p.step]||0)+1;
+    const k = p.date ? p.date.slice(0,7) : "(no date given)";
+    byMonth[k]=(byMonth[k]||0)+1;
+  }
   console.log("\n=== parse ===");
   console.log("  rows with a Status : " + (plan.length + problems.length));
   console.log("  parsed             : " + plan.length);
   console.log("  PROBLEMS           : " + problems.length);
   console.log("  by step status     : " + JSON.stringify(byStep));
   console.log("  by month           : " + JSON.stringify(byMonth));
-  const jui = plan.filter(p=>p.note);
+  const bareRows = plan.filter(p=>p.bare);
+  if (bareRows.length) {
+    console.log("  bare prefix, no date: " + bareRows.length
+                + "   (Step Status set, Status Date left blank -- no date was given)");
+    for (const p of bareRows) console.log("     " + p.Title + " " + JSON.stringify(p.raw) + " -> " + p.step);
+  }
+  const jui = plan.filter(p=>p.note && !p.bare);
   console.log("  'jui' rows resolved: " + jui.length);
   for (const p of jui.slice(0,6)) console.log("     " + p.Title + " " + p.raw + " -> " + p.date + "  " + p.note);
   for (const p of problems) console.warn("  PROBLEM " + p[0] + " " + JSON.stringify(p[1]) + " : " + p[2]);
@@ -268,12 +297,17 @@
   let after=[], g2=0;
   while (u2 && g2++<10) { const j=await J(u2); after=after.concat(j.value||[]); u2=j["odata.nextLink"]||null; }
   const withStatus = after.filter(r=>(r.Status||"").trim()!=="");
-  const filled = withStatus.filter(r=>(r.StepStatus||"")!=="" && r.StatusDate);
+  // A dateless row is correctly split when Step Status is set and Status Date is blank,
+  // so the two are counted separately rather than demanding both on every row.
+  const stepSet = withStatus.filter(r=>(r.StepStatus||"")!=="");
+  const filled  = withStatus.filter(r=>(r.StepStatus||"")!=="" && r.StatusDate);
   const mirrored = withStatus.filter(r=>(r.StepStatus||"")===(r.StepStatusStamped||""));
   const badTime = after.filter(r=>r.StatusDate && !/T0[45]:00:00Z$/.test(r.StatusDate));
   console.log("\n--- verification (trust this, not the write results) ---");
   console.log("rows with a composite Status : " + withStatus.length);
-  console.log("...now split into both fields: " + filled.length + "   (expect the same number)");
+  console.log("...with Step Status set      : " + stepSet.length + "   (expect the same number)");
+  console.log("...with a Status Date too    : " + filled.length
+              + "   (expect the same MINUS the bare-prefix rows, which have no date)");
   console.log("StatusDate NOT stored at 04:00Z/05:00Z: " + badTime.length + "   (expect 0)");
   console.log("StepStatusStamped == StepStatus       : " + mirrored.length + " / " + withStatus.length +
               "   (must be ALL, or the auto-stamp flow overwrites these dates)");
