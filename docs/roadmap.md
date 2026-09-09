@@ -3,6 +3,24 @@
 **Start here.** This ties together the other docs in this repo into one picture. Read this
 first, then follow the links into whichever workstream you're picking up.
 
+> ## ▶ For the cutover itself, read `CUTOVER-RUNBOOK.md` instead
+>
+> Added 2026-09-09. Five documents used to describe the cutover and they disagreed with each
+> other; they are now in `archive/` and there is exactly one current runbook. **This roadmap
+> remains the master list of the 44 work items and the best record of *why* each exists — it
+> is not a status report**, and several of its ticks are known wrong in both directions
+> (`P4` reads done and was never taken).
+>
+> The live status board is `../artifacts/cutover-state-board.html`
+> (https://claude.ai/code/artifact/3300b1d1-dc81-40a6-9d03-34a185649767).
+>
+> 🔴 **One decision reverses items 21 and the create-only plan below.** The transfer flow
+> runs **once more, then is deleted** (user, 2026-09-09). So: do **not** make it create-only
+> — that guts the update branch, which is the entire purpose of a final sync — and do **not**
+> strip the BO mapping or the five `Order` companion writes, since there is no future run to
+> protect against. Item 17's N3 flows move the other way and become **essential**: once the
+> flow is gone, nothing else refreshes the 48 parent columns.
+
 > ## ⚠️ STATE AS OF 2026-09-04 — the block below is a PLAN, not a status report
 > **The 2026-09-01 cutover did not complete, and this is a PARALLEL RUN.** Read
 > `build-nights/BUILD-NIGHT-2026-09-03.md` (KEY FACTS) for verified live state; it supersedes
@@ -26,10 +44,10 @@ first, then follow the links into whichever workstream you're picking up.
 > the transfer flow. And **72 workbook rows have no `Order Items` row at all**, so they would
 > vanish from every view at cutover; run the backfill and re-diff before deciding that date.
 >
-> `cutover-plan-2026-09-02.md` is **superseded** — wrong premise, and it contains a mapping bug.
+> `archive/cutover-plan-2026-09-02.md` is **superseded** — wrong premise, and it contains a mapping bug.
 > Don't work from it.
 
-> **The 2026-09-01 plan, kept for its decisions:** `cutover-runbook-2026-09-01.md` splits the work
+> **The 2026-09-01 plan, kept for its decisions:** `archive/cutover-runbook-2026-09-01.md` splits the work
 > into five parallel tracks (Power Automate / SharePoint UI / Power Apps / repo / docs) so separate
 > sessions can be pointed straight at it, and it carries the 2026-09-01 decisions: 7 new
 > `Order Items` columns (5 for viewer parity plus
@@ -629,7 +647,7 @@ correctness problem for shift times, not only a cosmetic one for dates.
 ## Deferred out of the 2026-09-01 cutover — decided, not forgotten
 
 Each of these was consciously cut from the overnight window, not overlooked. Full context in
-`cutover-runbook-2026-09-01.md`.
+`archive/cutover-runbook-2026-09-01.md`.
 
 - **Date-urgency conditional formatting on `Planned Tanking Date`** (deferred 2026-09-04 by the
   user, after two failed attempts). Intent: yellow when tanking is within 14 days, red when

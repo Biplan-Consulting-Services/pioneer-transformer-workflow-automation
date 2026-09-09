@@ -1,6 +1,6 @@
 # Track C — sales-app fan-out, paste-ready Power Fx
 
-Build night 2026-09-01. Companion to `cutover-runbook-2026-09-01.md` Track C.
+Build night 2026-09-01. Companion to `archive/cutover-runbook-2026-09-01.md` Track C.
 Written by session `claude-02` assisting the user; Track D is owned by
 `pioneer-transformer-build-night`.
 

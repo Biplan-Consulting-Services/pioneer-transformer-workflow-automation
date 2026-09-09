@@ -608,7 +608,7 @@ total progress** rather than hand-typed. The question raised was whether that be
 **`Active` is load-bearing as a filter, not just a label.** Verified 2026-09-05 across the repo —
 the Production Floor view, Planning, BO Tracking, the demo cheat sheet's troubleshooting step, the
 reconciliation pass and the archiving sweep **all** filter on `Item Status = Active`
-(`cutover-runbook-2026-09-01.md:394,447` · `cutover-plan-2026-09-02.md:220` ·
+(`archive/cutover-runbook-2026-09-01.md:394,447` · `archive/cutover-plan-2026-09-02.md:220` ·
 `demo-cheat-sheet-2026-09-01.md:147` · `archiving-plan.md:42,72`).
 
 Replacing `Active` with step values makes **every one of those filters silently match nothing** —

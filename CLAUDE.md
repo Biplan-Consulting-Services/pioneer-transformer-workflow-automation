@@ -22,10 +22,22 @@ step, and it needs the same kind of careful, staged design FRM10-12's list migra
 had — hence a dedicated place to plan it before touching production.
 
 ## Folder layout
-- `docs/roadmap.md` — **start here**: ties the other docs together into one picture of
-  what's planned and in what order.
+- `docs/CUTOVER-RUNBOOK.md` — **the cutover itself.** Undated on purpose: there is exactly
+  one, and it is that file. Five earlier documents described the cutover and disagreed with
+  each other; they now live in `docs/archive/` with a note saying what each was for and what
+  was carried forward. **Do not work from a file in `archive/`.**
+- `docs/roadmap.md` — **start here for everything else**: ties the other docs together into
+  one picture of what's planned and in what order. It is the master list of the 44 work
+  items and the best record of *why* each exists — but it is **not a status report**, and
+  several ticks are known wrong in both directions.
 - `docs/` — the description document (`infrastructure-overview.md`), the build plans
   (`order-items-build-plan.md`, `phase1-plan.md`), and other planning notes.
+- `artifacts/` — local sources for the published Artifact pages, kept so a corrupted or
+  unreachable live page can be recovered. `cutover-state-board.html` is the live
+  state-and-decisions board; `risk-register-tracker.html` is the risk register. Read
+  `artifacts/README.md` before editing either — they publish as **body fragments** while the
+  in-page `publish()` takes a **whole document**, and mixing the two contracts has silently
+  destroyed a page's styling before.
 - `docs/diagrams/` — exported diagram images/source files (the Mermaid diagrams embedded in
   `infrastructure-overview.md` are the primary/current copy; export here if a tool needs a
   static image).

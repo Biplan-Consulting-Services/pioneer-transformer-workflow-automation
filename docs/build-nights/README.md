@@ -30,7 +30,7 @@ who found each and how.
 **The boards outrank the repo docs on live state**, and by a wide margin on 2026-09-04. The docs
 were written ahead of steps that were then cut, so several describe an intended end state as
 though it had happened. Night 2 corrected the load-bearing ones in place — see the
-`cutover-runbook-2026-09-01.md` header, `FRM10-12/CLAUDE.md`'s `viewer/` entry, and the
+`../archive/cutover-runbook-2026-09-01.md` header, `FRM10-12/CLAUDE.md`'s `viewer/` entry, and the
 do-not-circulate banners on both staff guides — but treat any uncorrected doc as a plan, not a
 status report.
 

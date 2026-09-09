@@ -284,7 +284,7 @@ all 2xx. The `AADSTS700016` PnP block is about a **third-party multi-tenant AAD 
 general schema-change block.
 
 **Docs that need correcting (🟠 D, D.6):** `order-items-manual-build-checklist.md:3-11` ·
-`order-items-build-plan.md:130-148` · `roadmap.md:107-113` · `cutover-runbook-2026-09-01.md:344`
+`order-items-build-plan.md:130-148` · `roadmap.md:107-113` · `../archive/cutover-runbook-2026-09-01.md:344`
 — all four tell the next person schema changes must be hand-clicked in the UI. Tonight that
 would have cost an hour instead of two minutes.
 
@@ -1164,11 +1164,11 @@ permission rule in this session.
 3. `BUILD-NIGHT-STATUS.md` KEY FACTS — "the viewer deploys IN PLACE" and "the transfer flow must
    never run after D5" are **conditional on a step that never ran**, now marked as preconditions
    rather than descriptions of today.
-4. `cutover-runbook-2026-09-01.md` header — "A6 never ran" and "the sales app was never edited",
+4. `../archive/cutover-runbook-2026-09-01.md` header — "A6 never ran" and "the sales app was never edited",
    both false; corrected with 🟢 B's live REST numbers, original kept below for its reasoning.
    Plus the **four-views** note (`Overview`, built 06:37 Sep 1, in no doc).
 5. **PnP/REST, four docs** (`order-items-manual-build-checklist.md`,
-   `order-items-build-plan.md`, `roadmap.md`, `cutover-runbook-2026-09-01.md:386`) — flagged by
+   `order-items-build-plan.md`, `roadmap.md`, `../archive/cutover-runbook-2026-09-01.md:386`) — flagged by
    🟢 B. `AADSTS700016` is specific to the **PnP Management Shell**; site-context REST does
    schema changes fine (19 field creates + 73 item updates, all 2xx). Each now says to test a
    GET on `_api/web/lists/getbytitle('Order Items')/fields` before hand-clicking.
@@ -1932,7 +1932,7 @@ that points at KEY FACTS, and the original kept below it for its decisions, whic
 good.
 
 That makes **six** documents where the same false claim had propagated: `FRM10-12/CLAUDE.md`,
-`cutover-runbook-2026-09-01.md`, `BUILD-NIGHT-STATUS.md` (KEY FACTS), both staff guides, and now
+`../archive/cutover-runbook-2026-09-01.md`, `BUILD-NIGHT-STATUS.md` (KEY FACTS), both staff guides, and now
 `roadmap.md`. **Worth noting the pattern for next time: every one of them was written *ahead* of
 the step it described, in the same overnight window, and none was revisited when the step was
 cut.** Docs written in advance of an action need a revisit pass when the action does not happen —

@@ -12,7 +12,7 @@
 > `_api/web/lists/getbytitle('Order Items')/fields`. If it returns, you can script the change.
 > Hand-building remains a valid fallback, not the only option. Four docs told the next person
 > otherwise for three weeks — this one, `order-items-build-plan.md`, `roadmap.md` and
-> `cutover-runbook-2026-09-01.md`; all four are corrected as of 2026-09-03.
+> `archive/cutover-runbook-2026-09-01.md`; all four are corrected as of 2026-09-03.
 
 **Why this doc exists:** the original plan was a PnP PowerShell script to build this list.
 That route is blocked — the `ermcopower` tenant hasn't granted admin consent for the PnP

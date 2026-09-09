@@ -3,7 +3,7 @@
 Track A (`claude-83`). **Untracked — Track D needs to commit this.** Every claim states how it
 was verified so it can be re-run rather than trusted.
 
-Corrects `order-items-power-automate-flows.md` and `cutover-runbook-2026-09-01.md`, **both of
+Corrects `order-items-power-automate-flows.md` and `archive/cutover-runbook-2026-09-01.md`, **both of
 which are written as though the Sep 1 transfer run never happened. It did.**
 
 ## Read this first
@@ -312,7 +312,7 @@ anywhere in this repo.**
 
 ### 🔴 9.1 The `toLower()` guard was never applied
 
-`cutover-runbook-2026-09-01.md` §D0 diagnosed the failure at **01:45 on Sep 1**, five hours before
+`archive/cutover-runbook-2026-09-01.md` §D0 diagnosed the failure at **01:45 on Sep 1**, five hours before
 the run, and wrote the fix down as an instruction — *"The fix — apply to all six mapped stages"*.
 Nothing records it as carried out, and the export proves it was not.
 

@@ -362,7 +362,7 @@ nothing is uncommitted. Whoever picks Track C up next — read this, then the sp
 Newest at the bottom. Format: `HH:MM | track | what happened`
 
 ```
-01:30 | D | Runbook committed + pushed. Earlier cutover-plan-2026-09-02.md marked SUPERSEDED
+01:30 | D | Runbook committed + pushed. Earlier ../archive/cutover-plan-2026-09-02.md marked SUPERSEDED
             (wrong premise + a mapping bug that silently writes blanks).
 01:35 | D | D0 DONE. Scanned TableOrders (B5:CE985, 82 cols, 980 rows) via sheet XML — no Excel
             opened, nothing locked. 9 landmines, ALL in Coiling Date, all the EC marker:
