@@ -1,0 +1,14 @@
+{
+  "when": "2026-09-09 ~16:45 EDT",
+  "script": "scripts/x4_create_missing_orders.js",
+  "list": "Order",
+  "listId": "6fe35dfe-2b7d-455a-abe3-056abb386733",
+  "action": "create",
+  "undo": "DELETE these ids — they did not exist before this run",
+  "why": "20877R1-1/1 and P20002-1/1 exist only in FRM10-12. Their orders were absent from the Order list, so CheckOrderMatch (length == 1) returned 0 and the transfer flow skipped both units silently. Creating the orders lets Thursday's run create the units.",
+  "verified": "Order rows 447 -> 449; each order number returns exactly 1 row, so CheckOrderMatch passes for both.",
+  "data": [
+    {"num": "20877R1", "Id": 565},
+    {"num": "P20002",  "Id": 566}
+  ]
+}
