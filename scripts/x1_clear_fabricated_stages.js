@@ -108,10 +108,12 @@
   // loop did  j.value||[] , that surfaced as "rows in list: 0" and 66 phantom missing
   // titles rather than an error.
 
-  const APPLY = false;                    // <-- set true to actually write
+  const APPLY = false;                   // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const OI    = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
-  const CONC  = 8;
+  // 4, not 8. Even with one write per item, ~1,100 MERGEs in a burst draws
+  // throttling (the 500s seen on ids 171/195/200/204/208). Retries cover the rest.
+  const CONC  = 4;
 
   // Extérieur = finished goods waiting outside to ship (user, 2026-09-08):
   //   past tanking  -> in PAST_TANK, so its Tanking is KEPT
@@ -197,27 +199,59 @@
                     headers:{Accept:"application/json;odata=nometadata"}})).json();
   const et = (await J(base+"/_api/web/lists(guid'"+OI+"')?$select=ListItemEntityTypeFullName"))
                .ListItemEntityTypeFullName;
-  let ok=0, fail=0; const errs=[];
-  const patch = async (w) => {
-    const body = {__metadata:{type:et}};
-    body[w.stage+"Status"] = null;
-    // NOT w.stage+"EndDate" -- the end-date column is internally <Stage>Date. A blanket
-    // find/replace of the read fields would have missed this one, because the write
-    // field name is BUILT here rather than written out. It would have failed at write
-    // time, on the run that clears 1,141 values.
-    body[w.stage+"Date"]   = null;
-    const r = await fetch(base+"/_api/web/lists(guid'"+OI+"')/items("+w.Id+")",{method:"POST",
-      headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=verbose",
-               "X-RequestDigest":dg.FormDigestValue,"X-HTTP-Method":"MERGE","IF-MATCH":"*"},
-      body:JSON.stringify(body)});
-    if (r.ok) ok++; else { fail++; if (errs.length<5) errs.push(w.Title+"/"+w.stage+": "+r.status+" "+(await r.text()).slice(0,140)); }
-  };
-  console.log("\nwriting " + work.length + " stage-clears ...");
-  for (let i=0;i<work.length;i+=CONC) {
-    await Promise.all(work.slice(i,i+CONC).map(patch));
-    if (i % 200 === 0) console.log("  " + Math.min(i+CONC, work.length) + "/" + work.length);
+  // ---- ONE WRITE PER ITEM, not per (item, stage) --------------------------
+  // `work` holds one entry per stage, so a unit needing BOTH Tanking and Delivery
+  // cleared produced TWO PATCHes to the same item. Run concurrently, SharePoint
+  // rejects the second with 409 Conflict -- item-level save conflict, which
+  // IF-MATCH:"*" does not help with, because it is a lock and not an etag mismatch.
+  // Observed 2026-09-09: ids 27, 28, 30, 50, 118, 126, 127, 144, 146 ... every one
+  // of them a unit appearing twice in the UNDO block.
+  // Both stages go in one body, so an item is written exactly once.
+  const byItem = new Map();
+  for (const w of work) {
+    if (!byItem.has(w.Id)) byItem.set(w.Id, {Id:w.Id, Title:w.Title, stages:[]});
+    byItem.get(w.Id).stages.push(w.stage);
   }
-  console.log("written ok=" + ok + " failed=" + fail);
+  const items = [...byItem.values()];
+
+  let ok=0, fail=0; const errs=[];
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const patch = async (it) => {
+    const body = {__metadata:{type:et}};
+    for (const st of it.stages) {
+      body[st+"Status"] = null;
+      // NOT st+"EndDate" -- the end-date column is internally <Stage>Date. A blanket
+      // find/replace of the read fields would have missed this one, because the write
+      // field name is BUILT here rather than written out.
+      body[st+"Date"]   = null;
+    }
+    // 409/500/429 here are transient -- save conflict or throttling, not a bad
+    // request. Retry with backoff rather than reporting a failure the operator then
+    // has to chase by hand across 1,100 rows.
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      const r = await fetch(base+"/_api/web/lists(guid'"+OI+"')/items("+it.Id+")",{method:"POST",
+        headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=verbose",
+                 "X-RequestDigest":dg.FormDigestValue,"X-HTTP-Method":"MERGE","IF-MATCH":"*"},
+        body:JSON.stringify(body)});
+      if (r.ok) { ok++; return; }
+      const retryable = (r.status === 409 || r.status === 429 || r.status >= 500);
+      if (!retryable || attempt === 4) {
+        fail++;
+        if (errs.length < 8) errs.push(it.Title+" ["+it.stages.join("+")+"]: "+r.status+" "
+                                       +(await r.text()).slice(0,140));
+        return;
+      }
+      await sleep(250 * Math.pow(2, attempt - 1) + Math.random()*200);
+    }
+  };
+  console.log("\nwriting " + work.length + " stage-clears across "
+              + items.length + " items (" + (work.length - items.length)
+              + " items need both stages) ...");
+  for (let i=0;i<items.length;i+=CONC) {
+    await Promise.all(items.slice(i,i+CONC).map(patch));
+    if (i % 200 === 0) console.log("  " + Math.min(i+CONC, items.length) + "/" + items.length);
+  }
+  console.log("written ok=" + ok + " failed=" + fail + "   (of " + items.length + " items)");
   for (const e of errs) console.error("  " + e);
 
   // ---------------------------------------------------------- verification
