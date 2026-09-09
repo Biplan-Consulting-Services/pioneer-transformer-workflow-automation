@@ -77,6 +77,9 @@ The code table is read from FRM10-12's own `List` sheet, not inferred.
 1. **Re-export all four lists** — `Order Items`, `Order`, `Models`, `Model Revisions`. This
    is the only data rollback, and taking it *now* rather than days ago is the point.
 2. **Staff save and close FRM10-12.** Anything unsaved never reaches SharePoint.
+   🔴 **From desktop Excel only.** A browser save corrupted this workbook on 2026-09-09 —
+   Excel Online cannot run Power Query and damages the file on every save regardless of
+   what was edited. Mechanism and recovery in `../FRM10-12/CLAUDE.md`.
 3. **Refresh FRM10-12 via the Office Script button only.**
    🔴 Never `Refresh All`, never COM `RefreshAll`. `TableOrders` reads the sheet table it
    writes back to, and its second step strips six native formula columns
