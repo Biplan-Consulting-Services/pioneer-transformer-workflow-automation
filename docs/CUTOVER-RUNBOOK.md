@@ -72,6 +72,16 @@ The code table is read from FRM10-12's own `List` sheet, not inferred.
 > ⚠️ **N8 must be run again after the final transfer run** — see 2.4. The flow rewrites the
 > composite `Status` and leaves the split pair stale, silently.
 
+### 1.1d · Two one-off cleanups — done 2026-09-09
+
+- **Blank rows deleted.** `Order Items` Ids **1132** and **1133** carried no `Unit ID`,
+  no order and nothing but column defaults — "New item" saved empty twice. They were
+  invisible to X1/X2/N8 (no stage data, no composite `Status`) but would have shown as
+  blank rows in every staff view and been pulled into the viewer's `TableOrders`.
+- **The two missing Orders created.** `x4_create_missing_orders.js` → `20877R1` (Id 565)
+  and `P20002` (Id 566). Both units existed **only** in FRM10-12 and would have ceased to
+  exist at cutover, silently. See 2.3.
+
 ### 1.2 · Freeze the source
 
 1. **Re-export all four lists** — `Order Items`, `Order`, `Models`, `Model Revisions`. This
@@ -113,9 +123,21 @@ Since v006 changed how every parent record is read — from `Get item` to a cach
 `Get items` filtered in memory — confirm the flattened `Name`/`Value` key form still works.
 If it does not, the 5 `Mdl` and 24 `Rev` columns land **blank with no error at all**.
 
-**2.3 · Re-diff both directions.** Expect **71 → 6**. The six are already named:
-`20877R1-1/1`, `P1_001-1/1`, `P20001-1/1`, `P20002-1/1`, `P20004-1/2`, `P20004-2/2`.
-Anything else appearing is a **new** problem.
+**2.3 · Re-diff both directions.** Expect **71 → 0**.
+
+The six named survivors are all resolved as of 2026-09-09, and the reason they were
+missing is worth keeping: `CheckOrderMatch` is `length(Get_Orders) == 1` — *exactly* one.
+Four failed it with **0** Order matches and two with **2** (the `P20004` duplicate), which
+is why one list of six looked like a single mystery when it was two.
+
+| unit | was | resolved by |
+|---|---|---|
+| `P1_001-1/1` · `P20001-1/1` | 0 matches | Orders created 2026-09-08; units by `create_missing_units.js` (Ids 1128–1129) |
+| `P20004-1/2` · `P20004-2/2` | 2 matches | duplicate Order 487 deleted; units Ids 1130–1131 |
+| `20877R1-1/1` · `P20002-1/1` | 0 matches | **`x4_create_missing_orders.js`, 2026-09-09** — Orders 565 / 566 |
+
+🔴 **Anything appearing here is a new problem.** A non-zero count no longer has a known
+explanation, which is the point of driving it to zero before the run.
 
 **2.4 · Delete the transfer flow.** Keep the `.zip` — it is the only artifact that
 re-imports.

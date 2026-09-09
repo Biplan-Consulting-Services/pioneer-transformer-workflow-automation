@@ -17,9 +17,11 @@
        0 matches : 20877R1-1/1, P1_001-1/1, P20001-1/1, P20002-1/1
        2 matches : P20004-1/2, P20004-2/2   (the duplicate Order, since deleted)
 
-     Four have since resolved on their own -- P1_001 and P20001 got Order rows,
-     and deleting Order 487 took P20004 from 2 matches to 1. In each case the
-     Power App fan-out then created the unit. These two are the remainder, both
+     Four have since resolved -- P1_001 and P20001 got Order rows, and deleting
+     Order 487 took P20004 from 2 matches to 1. Their units were then created by
+     scripts/create_missing_units.js on 2026-09-08 (Ids 1128-1131), NOT by the
+     Power App fan-out; both landed after that morning's 05:57 export, which is
+     why they looked new in the 09-09 diff. These two are the remainder, both
      still at 0 matches:
 
        20877R1  -- no Order row, and none under plain "20877" either
@@ -29,6 +31,11 @@
      Items becomes the reference they stop existing, silently. Creating the
      Orders lets Thursday's run create the units, and the re-diff comes out at 0
      instead of 2.
+
+   RESULT -- applied 2026-09-09 16:4x
+     20877R1 -> Order Id 565 · P20002 -> Order Id 566. Read-back confirmed 449
+     Order rows and exactly 1 row per number, so CheckOrderMatch passes for both.
+     UNDO: [{"num":"20877R1","Id":565},{"num":"P20002","Id":566}]
 
    WHERE THE VALUES COME FROM
      Straight off the units' own rows in the workbook's TableOrders
@@ -52,7 +59,7 @@
 */
 
 (async () => {
-  const APPLY = false;                     // <-- set true to actually write
+  const APPLY = false;                    // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
 
   // Keyed by DISPLAY name. Translated to internal names below.
