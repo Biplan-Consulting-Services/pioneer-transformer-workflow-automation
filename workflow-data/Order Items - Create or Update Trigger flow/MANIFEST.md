@@ -17,11 +17,12 @@ snapshotted here.**
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-09 00:36 | `pulled` | — | baseline pulled from tenant, pre Status Date auto-stamp | — | — | 0 | 0 | `d38cf4505295` |
+| **v002** | 2026-09-09 00:48 | `local` | v001 | X3 strip 2c stage-stamping + Status Date auto-stamp | — | — | 0 | 0 | `dbf100618e75` |
 
 ## Right now
 
 - **Live:** v001 — baseline pulled from tenant, pre Status Date auto-stamp
-- **Pending (authored, not applied):** none
+- **Pending (authored, not applied):** v002
 
 ## Reading the columns
 

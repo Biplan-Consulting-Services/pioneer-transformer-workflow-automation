@@ -147,9 +147,17 @@ cutover: the 48 parent columns are already populated (`MdlModelID` 1,008 · `Rev
 
 ## Still open for cutover
 
-- 🔴 **No read-only viewer copy of FRM10-12 exists.** The `Index` list has 24 entries and none
-  is a viewer. Your cutover email promises one. There *are* `(new)` entries for FRM11 and all
-  seven supplier reports — someone is preparing a parallel set. **What is that?**
+- 🔴 **No read-only viewer copy of FRM10-12 exists, and nothing is preparing one.** The `Index`
+  list has 24 entries and none is a viewer, while the cutover email promises staff one. This has
+  to be built.
+  - ✅ **The `(new)` entries are dead** — resolved 2026-09-09. `Index` carries `(new)`-suffixed
+    rows for FRM11 and all seven supplier reports, which looked like someone staging a parallel
+    replacement set. **Nothing references them**: the whole `power-query/` tree asks for exactly
+    `Archive active`, `BO Manager`, `FRM10-12`, `FRM11`, `FRM13-Auto`, `Temps Standard` and the
+    `Rapport …` titles — zero hits for `(new)`. The user confirms they are an old unused line.
+    So there is no second migration to coordinate with, and no viewer in progress. Ignore them.
+  - ⚠️ Which means the viewer is **ours to create** before the cutover email goes out, and it
+    is the one promise in that email with nothing behind it yet.
 - 🔴 **FRM11 / FRM13 / FRM09** still read FRM10-12's `TableOrders`. Nobody sends a supplier
   report from FRM11 after cutover until it is repointed via `Index`.
 - ⚠️ **`Order Items` has no unique permissions** (`HasUniqueRoleAssignments: false`) — staff edit

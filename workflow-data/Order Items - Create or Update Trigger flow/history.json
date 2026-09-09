@@ -25,6 +25,25 @@
       },
       "appliedAt": "2026-09-09T00:36:31-04:00",
       "source": "OrderItems-CreateorUpdateTigger_20260909043323.zip"
+    },
+    {
+      "v": 2,
+      "captured": "2026-09-09T00:48:58-04:00",
+      "state": "local",
+      "parent": 1,
+      "note": "X3 strip 2c stage-stamping + Status Date auto-stamp",
+      "sha256": "dbf100618e75b12884fc39d2af7eb06054bb4f5987e359aab9e9bf6368587a20",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 7,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v002__2026-09-09T00-48__local__X3-strip-2c-stage-stamping-Status-Date-auto-stam.json"
+      },
+      "appliedAt": null,
+      "source": "trigger_v002.json"
     }
   ]
 }

@@ -100,8 +100,26 @@
       'Required="FALSE" Group="Status Split" Format="Dropdown" FillInChoice="FALSE"><CHOICES>' +
       CHOICES.map(c => "<CHOICE>" + esc(c) + "</CHOICE>").join("") +
       '</CHOICES></Field>',
-    '<Field Type="DateTime" Format="DateOnly" DisplayName="Status Date" Name="StatusDate" StaticName="StatusDate" Required="FALSE" Group="Status Split" />'
+    '<Field Type="DateTime" Format="DateOnly" DisplayName="Status Date" Name="StatusDate" StaticName="StatusDate" Required="FALSE" Group="Status Split" />',
+    // 🔑 THE MIRROR, and it is load-bearing -- see the block comment below.
+    '<Field Type="Text" DisplayName="Step Status Stamped" Name="StepStatusStamped" StaticName="StepStatusStamped" Required="FALSE" Group="Status Split" MaxLength="40" />'
   ];
+
+  /* WHY A THIRD COLUMN, AND WHY N8 MUST FILL IT
+     The Status Date auto-stamp has to answer "did Step Status just change?", and a
+     SharePoint trigger hands over the item's CURRENT state only -- there is no previous
+     value, and a trigger condition cannot see one either. So the flow compares Step
+     Status against a text mirror of what it last stamped. That is not a new trick here:
+     the trigger flow ALREADY does exactly this for four fields, comparing
+     OrderNumber/Value against Order_Number_TextField and so on. Same idiom, one more
+     field.
+
+     🔴 And N8 must write it, or the first run of that flow DESTROYS this migration.
+     If Step Status is filled and Step Status Stamped is left empty, then on the next
+     touch of each of these 247 rows the flow sees a change, stamps TODAY, and the
+     migrated status dates -- the whole point of N8 -- are gone. Writing the mirror here
+     means every migrated row starts already in agreement, so the stamp stays quiet until
+     a human actually changes a status. */
 
   const J = async (u) => (await fetch(u,{headers:{Accept:"application/json;odata=nometadata"}})).json();
   const dg = await (await fetch(base+"/_api/contextinfo",{method:"POST",
@@ -198,7 +216,7 @@
   }
   const back = await J(base + "/_api/v2.0/sites/root/lists/" + OI + "/columns");
   const now = new Set((back.value||[]).map(c=>c.name));
-  if (!now.has("StepStatus") || !now.has("StatusDate")) {
+  if (!now.has("StepStatus") || !now.has("StatusDate") || !now.has("StepStatusStamped")) {
     console.error("  columns not present after create - stopping before the write"); return; }
   console.log("  read-back: both columns present");
 
@@ -233,7 +251,11 @@
     const r = await fetch(base+"/_api/web/lists(guid'"+OI+"')/items("+p.Id+")",{method:"POST",
       headers:{Accept:"application/json;odata=nometadata","Content-Type":"application/json;odata=verbose",
                "X-RequestDigest":digest,"X-HTTP-Method":"MERGE","IF-MATCH":"*"},
-      body: JSON.stringify({__metadata:{type:et}, StepStatus:p.step, StatusDate:p.date})});
+      // StepStatusStamped is written EQUAL to StepStatus on purpose: it starts the row
+      // already in agreement, so the auto-stamp flow does not see a change and overwrite
+      // the date this script just migrated.
+      body: JSON.stringify({__metadata:{type:et}, StepStatus:p.step, StatusDate:p.date,
+                            StepStatusStamped:p.step})});
     if (r.ok) ok++; else { fail++; if (errs.length<5) errs.push(p.Title+": "+r.status+" "+(await r.text()).slice(0,140)); }
   };
   console.log("\npopulating " + plan.length + " rows ...");
@@ -242,16 +264,19 @@
   for (const e of errs) console.error("  " + e);
 
   // ---------------------------------------------------------- verification
-  let u2 = base+"/_api/web/lists(guid'"+OI+"')/items?$select=Id,Title,Status,StepStatus,StatusDate&$top=500";
+  let u2 = base+"/_api/web/lists(guid'"+OI+"')/items?$select=Id,Title,Status,StepStatus,StatusDate,StepStatusStamped&$top=500";
   let after=[], g2=0;
   while (u2 && g2++<10) { const j=await J(u2); after=after.concat(j.value||[]); u2=j["odata.nextLink"]||null; }
   const withStatus = after.filter(r=>(r.Status||"").trim()!=="");
   const filled = withStatus.filter(r=>(r.StepStatus||"")!=="" && r.StatusDate);
+  const mirrored = withStatus.filter(r=>(r.StepStatus||"")===(r.StepStatusStamped||""));
   const badTime = after.filter(r=>r.StatusDate && !/T0[45]:00:00Z$/.test(r.StatusDate));
   console.log("\n--- verification (trust this, not the write results) ---");
   console.log("rows with a composite Status : " + withStatus.length);
   console.log("...now split into both fields: " + filled.length + "   (expect the same number)");
   console.log("StatusDate NOT stored at 04:00Z/05:00Z: " + badTime.length + "   (expect 0)");
+  console.log("StepStatusStamped == StepStatus       : " + mirrored.length + " / " + withStatus.length +
+              "   (must be ALL, or the auto-stamp flow overwrites these dates)");
   for (const r of badTime.slice(0,3)) console.error("  " + r.Title + " " + r.StatusDate);
 })();
 
