@@ -173,7 +173,23 @@ are reported `notFound` and skipped silently. The filename *is* the query name i
 script. Full detail and the evidence for every conversion:
 `../FRM10-12/docs/viewer-value-conversions-2026-09-09.md`.
 
-**3.2 · Refresh the viewer and check the conversions landed.** `Tank` should read `R`, not
+**3.2 · Refresh the viewer and check the conversions landed.**
+
+> ✅ **Column names already verified, 2026-09-09.** All 44 `Order Items` and 13 `Orders`
+> `SourceField` entries in `ColumnMap.pq` exist on the live lists. `SharePoint.Tables`
+> with `Implementation = "2.0"` returns **display** names — proved by the viewer's own
+> `GetLookupId([Order Number])` where the internal name is `OrderNumber` — so ColumnMap
+> is right to use `"Coiling End Date"` rather than `CoilingDate`.
+>
+> 🔑 **The `<Stage>Date` trap that broke X1/X2 does not reach the viewer.** That is an
+> *internal* name problem, and only the REST scripts and Power Automate use internal
+> names. But note the flip side: the viewer is coupled to the **mutable** half. Internal
+> names are frozen forever; a display name can be renamed by anyone in list settings, and
+> a rename is what created the trap in the first place. It fails loudly at least —
+> `ApplyColumnMap` validates up front and names the missing columns.
+>
+> ⚠️ Export artifact, so nobody re-raises it: a CSV export percent-encodes `#` in headers
+> (`Protector & Switchgear Item %23`). Decode before comparing. `Tank` should read `R`, not
 `TRUE`; `Location` should read `XT`, not `Extérieur`; `Frame` should read `Plaspak` without
 erroring.
 
