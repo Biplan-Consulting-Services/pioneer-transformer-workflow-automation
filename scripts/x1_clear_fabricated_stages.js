@@ -165,6 +165,20 @@
                                                         from:{s:r.DeliveryStatus,e:r.DeliveryDate}});
     }
   }
+  // ---- assertion: no genuinely-shipped unit may lose its delivery ----------
+  // This is the whole reason X2 runs first, and until now it was only ever argued,
+  // never checked. A Delivered unit appearing in the CLEAR set means either X2 left a
+  // stale Location behind or the keep rule has drifted -- both silent, both destructive
+  // across ~100 real shipments. Cheap to assert, so assert it.
+  const deliveredIds = new Set(rows.filter(r => r.ItemStatus === "Delivered").map(r => r.Id));
+  const clash = work.filter(w => w.stage === "Delivery" && deliveredIds.has(w.Id));
+  console.log("\nDelivered units in the CLEAR set: " + clash.length + "   (expect 0)");
+  if (clash.length) {
+    console.error("*** STOPPING -- these are Delivered and would lose their delivery: ***");
+    for (const c of clash.slice(0, 20)) console.error("    " + c.Title);
+    return;
+  }
+
   const cnt = (st) => work.filter(w=>w.stage===st).length;
   console.log("\n=== tiers ===");
   console.log("  CLEAR  Tanking : " + cnt("Tanking"));

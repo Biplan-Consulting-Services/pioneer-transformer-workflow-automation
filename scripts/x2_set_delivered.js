@@ -58,7 +58,7 @@
   // loop did  j.value||[] , that surfaced as "rows in list: 0" and 66 phantom missing
   // titles rather than an error.
 
-  const APPLY = false;                     // <-- set true to actually write
+  const APPLY = true;                     // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const OI    = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
 
