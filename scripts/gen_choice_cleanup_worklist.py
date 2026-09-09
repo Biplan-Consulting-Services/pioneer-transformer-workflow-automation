@@ -76,22 +76,31 @@ DESCRIPTIONS = [
     "PARTS", "SPAREPARTS",
     "SUBSTATION", "SUBST-STACK",
     "SUBWAY", "1PH-VAULT", "3PH-VAULT",                # network
+    "LTC",                                             # see the LTC note below
 ]
+
+# ------------------------------------------------------------------------ LTC
+# The user's two statements about LTC pointed opposite ways:
+#   (a) "If Model has LTC it should be in the notes and not as a model type or description"
+#   (b) "the description is a multiselect ... to permit the combination of things like LTC
+#        and other descriptions"
+# Asked rather than assumed, and (b) is the ruling: LTC IS a valid description, and the
+# multiselect exists precisely so a transformer can be SUBSTATION *and* LTC at once.
+#
+# That makes the fix cleaner and strictly non-destructive: a free-text "SUBSTATION LTC"
+# becomes TWO PROPER SELECTIONS rather than a Notes rewrite. No Notes are touched, no
+# value is dropped, and LTC is a PERMANENT option, not a phase-out.
+LTC = "LTC"
 
 # Rule 4: no clear replacement -> keep the value and keep the option, flagged for retirement.
 PHASE_OUT_TYPES = {
-    "ANNEX":     "5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.",
-    "POWER-LTC": "9 rows. LTC belongs in Notes, but POWER-? is ambiguous between POWER-S "
-                 "and POWER-W, so there is no clear replacement. All 9 are Phases=3.",
+    "ANNEX": "5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.",
 }
 PHASE_OUT_DESCRIPTIONS = {
     "ANNEX":          "5 rows, the same rows as the Model Type ANNEX.",
     "PROTOTYPE":      "1 row.",
     "Goujon":         "1 row. A stud/bolt -- plausibly PARTS, but not confidently.",
     "PLAQUE ANCRAGE": "1 row. An anchor plate -- same.",
-    "LTC":            "7 rows where LTC is the ONLY description. LTC moves to Notes for new "
-                      "models, but removing it here would leave these rows with no subtype, "
-                      "so the option stays until they are re-typed.",
 }
 
 TYPE_SET = set(MODEL_TYPES) | set(PHASE_OUT_TYPES)
@@ -222,10 +231,32 @@ def main():
             elif JUNK.match(tv):
                 add(r, "Model Type", tv, "MECHANICAL", "clear", "",
                     "not a real value ('None' is a REAL option and is left untouched)")
-            elif "LTC" in tv.upper():
-                add(r, "Model Type", tv, "DECIDE", "move LTC to Notes; retype", "None",
-                    "LTC belongs in Notes (rule 3). Model Type is then undecided, and "
-                    "'None' is the value for that -- confirm rather than assume.")
+            elif LTC in canon(tv):
+                # LTC is a DESCRIPTION, never a Type. Decompose instead of rewriting Notes.
+                rest = canon(tv).replace(LTC, "").replace("AND", "").strip()
+                add(r, "Model Type", tv, "MECHANICAL", "set", "None",
+                    "LTC is a Description, not a Type; 'None' is the real "
+                    "'not yet decided' value until engineering assigns one")
+                add(r, "Model Description", "(from Model Type %r)" % tv, "MECHANICAL",
+                    "add selection", LTC,
+                    "the multiselect exists for exactly this -- LTC alongside other "
+                    "descriptions", preserve="")
+                if rest:
+                    real = next((d for d in DESCRIPTIONS if canon(d) == rest), None)
+                    if real:
+                        add(r, "Model Description", "(from Model Type %r)" % tv, "MECHANICAL",
+                            "add selection", real,
+                            "the %s part of %r is a real description" % (real, tv), preserve="")
+                    elif rest == "POWER":
+                        add(r, "Model Description", "(from Model Type %r)" % tv, "DECIDE",
+                            "add selection", "POWER-S or POWER-W?",
+                            "POWER-? is ambiguous and Phases=%s does not distinguish them"
+                            % (phases or "(blank)"), preserve="")
+                    else:
+                        add(r, "Model Description", "(from Model Type %r)" % tv, "DECIDE",
+                            "add selection", "?",
+                            "the remainder %r of %r is not a known description" % (rest, tv),
+                            preserve="")
             else:
                 tgt, tier, why = resolve(TYPE_ALIAS, tv, phases)
                 if tier:
@@ -258,16 +289,21 @@ def main():
                 add(r, "Model Description", v, tier or "MECHANICAL",
                     "remove selection; set Model Type", tgt or "?",
                     "a Model Type value sitting in Description. %s" % (why or ""))
-            elif "LTC" in canon(v) and canon(v) != "LTC":
-                base = canon(v).replace("LTC", "").replace("AND", "")
+            elif LTC in canon(v) and canon(v) != LTC:
+                # e.g. "SUBSTATION LTC" / "SUBSTATION + LTC": one free-text string that
+                # should have been two selections all along. Nothing goes to Notes.
+                base = canon(v).replace(LTC, "").replace("AND", "")
                 real = next((d for d in DESCRIPTIONS if canon(d) == base), None)
                 if real:
-                    add(r, "Model Description", v, "MECHANICAL", "set + note",
-                        "%s   (Notes += 'LTC')" % real,
-                        "LTC goes in Notes (rule 3); the %s part is a real description" % real)
+                    add(r, "Model Description", v, "MECHANICAL",
+                        "replace with two selections", "%s + %s" % (real, LTC),
+                        "one free-text string that should have been two selections -- "
+                        "which is what the multiselect is for; nothing is lost")
                 else:
-                    add(r, "Model Description", v, "DECIDE", "split", "?",
-                        "contains LTC but the remainder %r is not a known description" % base)
+                    add(r, "Model Description", v, "DECIDE",
+                        "replace with two selections", "? + %s" % LTC,
+                        "the LTC half is clear; the remainder %r is not a known description"
+                        % base)
             else:
                 tgt, tier, why = resolve(DESC_ALIAS, v, phases)
                 if tier:
