@@ -194,8 +194,24 @@ explanation, which is the point of driving it to zero before the run.
 re-imports.
 
 **2.5 · Re-run `n8_split_status.js`.** Idempotent: column creation skips what exists, the
-populate pass recomputes and overwrites. The run in 1.1c is for the pre-run state; this one
-re-syncs the split columns against what the final run just wrote.
+populate pass recomputes and overwrites.
+
+🔴 **Not optional, and the ordering is load-bearing.** Verified against `v007` itself: the
+flow writes `item/Status = @item()?['Status']` — the raw composite from Excel — on both
+branches, and touches `StepStatus` / `StatusDate` / `StepStatusStamped` on **neither**. So
+the run rewrites the composite and leaves the split pair stale.
+
+That now matters twice over, because **the viewer derives `Status` from the split pair**
+(`../FRM10-12/viewer/power-query/StatusStampCodes.pq`). The sequence has to be:
+
+```
+2.1  run         →  Status rewritten from Excel, split pair now stale
+2.5  re-run N8   →  split pair re-synced from the new Status
+3.x  viewer      →  derives Status from the split pair
+```
+
+Refresh the viewer between 2.1 and 2.5 and it shows yesterday's stamp — silently, because
+every value is well-formed. Stage 3 already sits after 2.5; keep it that way.
 
 ---
 
