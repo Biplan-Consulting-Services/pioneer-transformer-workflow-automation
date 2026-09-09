@@ -82,7 +82,49 @@ The code table is read from FRM10-12's own `List` sheet, not inferred.
   and `P20002` (Id 566). Both units existed **only** in FRM10-12 and would have ceased to
   exist at cutover, silently. See 2.3.
 
-### 1.2 · Freeze the source
+### 1.2 · 🔴 Prove the viewer BEFORE the run — the last reversible moment
+
+Do this once N8 has run (1.1c) and **before** anything in Stage 2.
+
+**Why here and not in Stage 3.** The point of no return is **2.4, deleting the transfer
+flow** — not the run. Up to that point every failure is recoverable: the flow can be
+re-run, the lists re-exported, the workbook re-refreshed. After it, a broken viewer means
+FRM09 / FRM11 / FRM13 / BO Manager have no maintained source and no way back except
+rebuilding the flow from its `.zip`.
+
+The viewer only needs `Order Items` to be in its final *shape*, not its final *data* — and
+N8 gives it that. So it can be fully exercised while everything is still undoable.
+
+```powershell
+./viewer/scripts/Sync-PowerQuery.ps1 -WorkbookPath ./viewer/workbook/FRM10-12.xlsx -CreateMissing
+# read the report, then re-run with -Apply, then refresh the viewer workbook
+```
+
+🔴 `-CreateMissing` or the three new queries (`ValueConversions`, `LocationCodes`,
+`StatusStampCodes`) are reported `notFound` and **skipped silently**.
+
+**What must be true before you proceed to Stage 2:**
+
+| check | expect |
+|---|---|
+| the refresh completes without a `ColumnMap.MissingColumns` error | it names any column that moved |
+| `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` | `R`, not `TRUE` |
+| the five test columns · `SFRA` | `x` · `Y` |
+| `Frame` | `Reçu` / `Plaspak`, and **no error** — this one used to throw |
+| `Location` | `XT`, not `Extérieur` |
+| `Status` | `TE-Se-4` form, rebuilt from `Step Status` + `Status Date` |
+| `TableOrders` column count and order | unchanged — the four consumers key on shape |
+
+⚠️ **None of this M has ever been executed.** The structural checks confirm it parses and
+that the logic is right in a model; they cannot confirm Power Query accepts it. Most
+likely to bite: `Table.ReplaceValue` with two function arguments, `Step Status` /
+`Status Date` not arriving under those exact names, and `Status Date` coming through as
+`datetime` rather than `date`. All three fail loudly at refresh.
+
+**If it fails:** stop. Do not proceed to Stage 2. Nothing is lost — the viewer is a repo
+workbook, the lists are untouched, and the cutover simply moves.
+
+### 1.3 · Freeze the source
 
 1. **Re-export all four lists** — `Order Items`, `Order`, `Models`, `Model Revisions`. This
    is the only data rollback, and taking it *now* rather than days ago is the point.
@@ -96,7 +138,7 @@ The code table is read from FRM10-12's own `List` sheet, not inferred.
    (`Estimated Delivery Date`, `Price CAD`/`USD`/`Price`, `Navigation Order`,
    `Navigation Model`). A generic refresh re-lands the table without them.
 
-### 1.3 · Paste `v007`
+### 1.4 · Paste `v007`
 
 `workflow-data/Order Items - excel transfer flow/_outbox/PASTE-ME.json`.
 
@@ -161,17 +203,10 @@ re-syncs the split columns against what the final run just wrote.
 > to `Formulaires/`. So a wrong row does not error — it silently reads an abandoned
 > workbook. **This row has never actually been read.** Read it before and after.
 
-**3.1 · Sync the value conversions into the viewer workbook.**
-
-```powershell
-./viewer/scripts/Sync-PowerQuery.ps1 -WorkbookPath ./viewer/workbook/FRM10-12.xlsx -CreateMissing
-# read the report, then re-run with -Apply
-```
-
-🔴 `-CreateMissing` is **required** — two of the four queries are new, and without it they
-are reported `notFound` and skipped silently. The filename *is* the query name in this
-script. Full detail and the evidence for every conversion:
-`../FRM10-12/docs/viewer-value-conversions-2026-09-09.md`.
+**3.1 · Already done in 1.2.** The sync and the conversion checks happen *before* the run,
+because that is the last point at which a failure costs nothing. Re-refresh here so the
+viewer picks up what the final run wrote, but the M itself is already proven. Evidence for
+every conversion: `../FRM10-12/docs/viewer-value-conversions-2026-09-09.md`.
 
 **3.2 · Refresh the viewer and check the conversions landed.**
 
