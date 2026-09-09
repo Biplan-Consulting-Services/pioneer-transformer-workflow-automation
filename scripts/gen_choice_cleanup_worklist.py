@@ -93,8 +93,25 @@ DESCRIPTIONS = [
 LTC = "LTC"
 
 # Rule 4: no clear replacement -> keep the value and keep the option, flagged for retirement.
+#
+# ⚠️ RULE 6, and it corrected me: "i dont want wrong types to be put to none. they should
+# keep it (as i said it will be phased out in the future)." I had been proposing Model
+# Type = None for the LTC-bearing types. Wrong -- 'None' means "not yet decided", so
+# writing it over a known-but-nonstandard value DESTROYS information and misrepresents the
+# row as undecided. A wrong-but-informative value outranks a correct-but-empty one. These
+# keep their value untouched and their option alive until the shop retypes them.
 PHASE_OUT_TYPES = {
-    "ANNEX": "5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.",
+    "ANNEX":     "5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.",
+    "LTC":       "6 rows. LTC is a Description, not a Type -- but the row still records "
+                 "something true, so it keeps it until the shop assigns a real type.",
+    "POWER-LTC": "8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and "
+                 "POWER-W and Phases=3 does not distinguish them, so there is no clear "
+                 "replacement. Kept as-is.",
+    "POWER LTC": "1 row. The spacing variant of POWER-LTC; kept with it rather than "
+                 "normalised, since the whole value is being retired anyway.",
+    "PADMOUNT":  "5 rows where Phases is BLANK, so 3PH cannot be confirmed from data. "
+                 "The other 28 PADMOUNT rows ARE confirmed at Phases=3 and are fixed. "
+                 "The option retires once the shop validates these 5.",
 }
 PHASE_OUT_DESCRIPTIONS = {
     "ANNEX":          "5 rows, the same rows as the Model Type ANNEX.",
@@ -224,60 +241,34 @@ def main():
         phases = str(r.get("Phases") or "").strip()
 
         # ------------------------------------------------------------ Model Type
+        # Order matters: try to RESOLVE first, and only fall back to keeping the value.
+        # PHASE_OUT_TYPES must never pre-empt resolution -- checking it first made all 33
+        # PADMOUNT rows "keep", including the 28 that Phases=3 confirms are fixable.
         if tv and tv not in set(MODEL_TYPES):
-            if tv in PHASE_OUT_TYPES:
-                add(r, "Model Type", tv, "PHASE-OUT", "keep value; keep option", tv,
-                    "no clear replacement -- %s" % PHASE_OUT_TYPES[tv], preserve="")
-            elif JUNK.match(tv):
+            if JUNK.match(tv):
                 add(r, "Model Type", tv, "MECHANICAL", "clear", "",
                     "not a real value ('None' is a REAL option and is left untouched)")
-            elif LTC in canon(tv):
-                # LTC is a DESCRIPTION, never a Type. Decompose instead of rewriting Notes.
-                rest = canon(tv).replace(LTC, "").replace("AND", "").strip()
-                add(r, "Model Type", tv, "MECHANICAL", "set", "None",
-                    "LTC is a Description, not a Type; 'None' is the real "
-                    "'not yet decided' value until engineering assigns one")
-                add(r, "Model Description", "(from Model Type %r)" % tv, "MECHANICAL",
-                    "add selection", LTC,
-                    "the multiselect exists for exactly this -- LTC alongside other "
-                    "descriptions", preserve="")
-                if rest:
-                    real = next((d for d in DESCRIPTIONS if canon(d) == rest), None)
-                    if real:
-                        add(r, "Model Description", "(from Model Type %r)" % tv, "MECHANICAL",
-                            "add selection", real,
-                            "the %s part of %r is a real description" % (real, tv), preserve="")
-                    elif rest == "POWER":
-                        add(r, "Model Description", "(from Model Type %r)" % tv, "DECIDE",
-                            "add selection", "POWER-S or POWER-W?",
-                            "POWER-? is ambiguous and Phases=%s does not distinguish them"
-                            % (phases or "(blank)"), preserve="")
-                    else:
-                        add(r, "Model Description", "(from Model Type %r)" % tv, "DECIDE",
-                            "add selection", "?",
-                            "the remainder %r of %r is not a known description" % (rest, tv),
-                            preserve="")
             else:
                 tgt, tier, why = resolve(TYPE_ALIAS, tv, phases)
-                if tier:
-                    add(r, "Model Type", tv, tier, "set", tgt, why)
+                if tier == "MECHANICAL" and tgt:
+                    add(r, "Model Type", tv, "MECHANICAL", "set", tgt, why)
                 elif canon(tv) in {canon(d) for d in DESCRIPTIONS}:
                     real = next(d for d in DESCRIPTIONS if canon(d) == canon(tv))
                     add(r, "Model Type", tv, "MECHANICAL", "move to Model Description", real,
                         "a Description value, not a Type; Description is MultiChoice so "
                         "nothing is lost")
                 else:
-                    add(r, "Model Type", tv, "DECIDE", "set", "?",
-                        "not in the canonical list and no alias matches")
+                    # Rule 4 + rule 6: keep the value AND the option. A wrong-but-
+                    # informative value outranks a correct-but-empty one.
+                    add(r, "Model Type", tv, "KEEP", "keep value; keep option", tv,
+                        why or ("no clear replacement -- %s" % PHASE_OUT_TYPES.get(tv, "")),
+                        preserve="")
 
         # ----------------------------------------------------- Model Description
         for v in dv:
             if v in set(DESCRIPTIONS):
                 continue
-            if v in PHASE_OUT_DESCRIPTIONS:
-                add(r, "Model Description", v, "PHASE-OUT", "keep value; keep option", v,
-                    "no clear replacement -- %s" % PHASE_OUT_DESCRIPTIONS[v], preserve="")
-            elif JUNK.match(v):
+            if JUNK.match(v):
                 add(r, "Model Description", v, "MECHANICAL", "remove selection", "",
                     "not a real value")
             elif v == "NETWORK" and tv == "NETWORK":
@@ -286,9 +277,15 @@ def main():
             elif canon(v) in {canon(t) for t in MODEL_TYPES} or canon(v) in ("PADMOUNT", "MINPAD", "MINPAD1PH", "MINPAD1HP"):
                 tgt, tier, why = resolve(TYPE_ALIAS, v.replace("-1HP", "").replace("-1PH", "")
                                          if v.upper().startswith("MINPAD") else v, phases)
-                add(r, "Model Description", v, tier or "MECHANICAL",
-                    "remove selection; set Model Type", tgt or "?",
-                    "a Model Type value sitting in Description. %s" % (why or ""))
+                if tgt:
+                    add(r, "Model Description", v, "MECHANICAL",
+                        "remove selection; set Model Type", tgt,
+                        "a Model Type value sitting in Description. %s" % (why or ""))
+                else:
+                    add(r, "Model Description", v, "KEEP", "keep value; keep option", v,
+                        "a Model Type value sitting in Description, but %s -- kept for the "
+                        "shop to validate rather than guessed" % (why or "unresolvable"),
+                        preserve="")
             elif LTC in canon(v) and canon(v) != LTC:
                 # e.g. "SUBSTATION LTC" / "SUBSTATION + LTC": one free-text string that
                 # should have been two selections all along. Nothing goes to Notes.
@@ -306,11 +303,15 @@ def main():
                         % base)
             else:
                 tgt, tier, why = resolve(DESC_ALIAS, v, phases)
-                if tier:
-                    add(r, "Model Description", v, tier, "set", tgt, why)
+                if tier == "MECHANICAL" and tgt:
+                    add(r, "Model Description", v, "MECHANICAL", "set", tgt, why)
+                elif v in PHASE_OUT_DESCRIPTIONS:
+                    add(r, "Model Description", v, "KEEP", "keep value; keep option", v,
+                        "no clear replacement -- %s" % PHASE_OUT_DESCRIPTIONS[v], preserve="")
                 else:
-                    add(r, "Model Description", v, "DECIDE", "set", "?",
-                        "not in the canonical list and no alias matches")
+                    add(r, "Model Description", v, "KEEP", "keep value; keep option", v,
+                        why or "not in the canonical list and no alias matches; kept per "
+                               "rule 4, and put to the shop for validation", preserve="")
 
     stamp = "2026-09-08"
     outp = os.path.join(ROOT, "reports", "Model Revisions choice cleanup %s.csv" % stamp)
@@ -342,9 +343,10 @@ def main():
         print("        %s" % why)
     print("\n   %d questions covering %d rows." % (len(seen), sum(seen.values())))
 
-    print("\nPHASE-OUT -- value and option both retained until usage reaches zero:")
+    print("\nKEEP -- value AND option retained (rules 4 and 6). The shop validates these,")
+    print("        then the option retires. NOTHING is written for them.")
     for (col, cur), n in Counter((x["column"], x["current_value"])
-                                 for x in work if x["tier"] == "PHASE-OUT").most_common():
+                                 for x in work if x["tier"] == "KEEP").most_common():
         print("   %-18s %-16s %3d rows" % (col, cur, n))
 
     print("\nOption-list changes on Model Revisions:")

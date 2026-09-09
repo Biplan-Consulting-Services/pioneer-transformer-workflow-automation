@@ -1,41 +1,39 @@
 ﻿row_id,model_revision,phases,column,current_value,tier,action,proposed_value,preserve_to_notes,why
-189,MR-HYQU-0065-V1,3,Model Description,(from Model Type 'POWER LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-332,MR-HITA-0001-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-333,MR-HITA-0002-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-334,MR-HITA-0003-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-335,MR-HYQU-0084-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-336,MR-HYQU-0085-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-342,MR-HYQU-0090-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-343,MR-HYQU-0091-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-406,MRSA-HYQU-0071-V1,3,Model Description,(from Model Type 'POWER-LTC'),DECIDE,add selection,POWER-S or POWER-W?,,POWER-? is ambiguous and Phases=3 does not distinguish them
-51,MR-HYQU-0023-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
-105,MR-HYQU-0029-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
-109,MR-HYQU-0031-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
-118,MR-HYQU-0035-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
-119,MR-HYQU-0036-V1,,Model Description,PADMOUNT,DECIDE,remove selection; set Model Type,?,Model Description was 'PADMOUNT',"a Model Type value sitting in Description. Phases is '(blank)', so the phase cannot be resolved from the data"
-235,MR-OTHY-0008-V1,,Model Description,VAULT-1PH,DECIDE,set,,Model Description was 'VAULT-1PH',"Phases is '(blank)', so the phase cannot be resolved from the data"
-236,MR-OTHY-0009-V1,,Model Description,VAULT-1PH,DECIDE,set,,Model Description was 'VAULT-1PH',"Phases is '(blank)', so the phase cannot be resolved from the data"
-298,MR-PITR-0002-V1,3,Model Description,VAULT-1PH,DECIDE,set,,Model Description was 'VAULT-1PH',CONTRADICTION: the value says VAULT-1PH but Phases=3. Candidates: 1PH-VAULT
-51,MR-HYQU-0023-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
-105,MR-HYQU-0029-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
-109,MR-HYQU-0031-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
-118,MR-HYQU-0035-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
-119,MR-HYQU-0036-V1,,Model Type,PADMOUNT,DECIDE,set,,Model Type was 'PADMOUNT',"Phases is '(blank)', so the phase cannot be resolved from the data"
-121,MR-HYQU-0078-V1,3,Model Description,(from Model Type 'LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-123,MR-HYQU-0080-V1,3,Model Description,(from Model Type 'LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-124,MR-HYQU-0081-V1,3,Model Description,(from Model Type 'LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-195,MR-HYQU-0071-V1,3,Model Description,(from Model Type 'LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-196,MR-HYQU-0072-V1,3,Model Description,(from Model Type 'LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-383,MR-HYQU-0079-V1,3,Model Description,(from Model Type 'LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-189,MR-HYQU-0065-V1,3,Model Description,(from Model Type 'POWER LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-332,MR-HITA-0001-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-333,MR-HITA-0002-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-334,MR-HITA-0003-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-335,MR-HYQU-0084-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-336,MR-HYQU-0085-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-342,MR-HYQU-0090-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-343,MR-HYQU-0091-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
-406,MRSA-HYQU-0071-V1,3,Model Description,(from Model Type 'POWER-LTC'),MECHANICAL,add selection,LTC,,the multiselect exists for exactly this -- LTC alongside other descriptions
+18,MR-HYQU-0005-V1,3,Model Description,ANNEX,KEEP,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+20,M-HYQU-0006,3,Model Description,ANNEX,KEEP,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+21,MR-HYQU-0007-V1,3,Model Description,ANNEX,KEEP,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+22,M-HYQU-0001,3,Model Description,ANNEX,KEEP,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+95,MR-HYQU-0026-V1,,Model Description,ANNEX,KEEP,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
+132,MR-HYQU-0063-V1,0,Model Description,Goujon,KEEP,keep value; keep option,Goujon,,"no clear replacement -- 1 row. A stud/bolt -- plausibly PARTS, but not confidently."
+51,MR-HYQU-0023-V1,,Model Description,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"a Model Type value sitting in Description, but Phases is '(blank)', so the phase cannot be resolved from the data -- kept for the shop to validate rather than guessed"
+105,MR-HYQU-0029-V1,,Model Description,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"a Model Type value sitting in Description, but Phases is '(blank)', so the phase cannot be resolved from the data -- kept for the shop to validate rather than guessed"
+109,MR-HYQU-0031-V1,,Model Description,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"a Model Type value sitting in Description, but Phases is '(blank)', so the phase cannot be resolved from the data -- kept for the shop to validate rather than guessed"
+118,MR-HYQU-0035-V1,,Model Description,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"a Model Type value sitting in Description, but Phases is '(blank)', so the phase cannot be resolved from the data -- kept for the shop to validate rather than guessed"
+119,MR-HYQU-0036-V1,,Model Description,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"a Model Type value sitting in Description, but Phases is '(blank)', so the phase cannot be resolved from the data -- kept for the shop to validate rather than guessed"
+297,MR-HYQU-0083-V1,0,Model Description,PLAQUE ANCRAGE,KEEP,keep value; keep option,PLAQUE ANCRAGE,,no clear replacement -- 1 row. An anchor plate -- same.
+37,MR-PITR-0001-V1,1,Model Description,PROTOTYPE,KEEP,keep value; keep option,PROTOTYPE,,no clear replacement -- 1 row.
+235,MR-OTHY-0008-V1,,Model Description,VAULT-1PH,KEEP,keep value; keep option,VAULT-1PH,,"Phases is '(blank)', so the phase cannot be resolved from the data"
+236,MR-OTHY-0009-V1,,Model Description,VAULT-1PH,KEEP,keep value; keep option,VAULT-1PH,,"Phases is '(blank)', so the phase cannot be resolved from the data"
+298,MR-PITR-0002-V1,3,Model Description,VAULT-1PH,KEEP,keep value; keep option,VAULT-1PH,,CONTRADICTION: the value says VAULT-1PH but Phases=3. Candidates: 1PH-VAULT
+18,MR-HYQU-0005-V1,3,Model Type,ANNEX,KEEP,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+20,M-HYQU-0006,3,Model Type,ANNEX,KEEP,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+21,MR-HYQU-0007-V1,3,Model Type,ANNEX,KEEP,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+22,M-HYQU-0001,3,Model Type,ANNEX,KEEP,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+95,MR-HYQU-0026-V1,,Model Type,ANNEX,KEEP,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
+51,MR-HYQU-0023-V1,,Model Type,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"Phases is '(blank)', so the phase cannot be resolved from the data"
+105,MR-HYQU-0029-V1,,Model Type,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"Phases is '(blank)', so the phase cannot be resolved from the data"
+109,MR-HYQU-0031-V1,,Model Type,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"Phases is '(blank)', so the phase cannot be resolved from the data"
+118,MR-HYQU-0035-V1,,Model Type,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"Phases is '(blank)', so the phase cannot be resolved from the data"
+119,MR-HYQU-0036-V1,,Model Type,PADMOUNT,KEEP,keep value; keep option,PADMOUNT,,"Phases is '(blank)', so the phase cannot be resolved from the data"
+189,MR-HYQU-0065-V1,3,Model Type,POWER LTC,KEEP,keep value; keep option,POWER LTC,,"no clear replacement -- 1 row. The spacing variant of POWER-LTC; kept with it rather than normalised, since the whole value is being retired anyway."
+332,MR-HITA-0001-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
+333,MR-HITA-0002-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
+334,MR-HITA-0003-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
+335,MR-HYQU-0084-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
+336,MR-HYQU-0085-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
+342,MR-HYQU-0090-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
+343,MR-HYQU-0091-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
+406,MRSA-HYQU-0071-V1,3,Model Type,POWER-LTC,KEEP,keep value; keep option,POWER-LTC,,"no clear replacement -- 8 rows (+1 as 'POWER LTC'). POWER-? is ambiguous between POWER-S and POWER-W and Phases=3 does not distinguish them, so there is no clear replacement. Kept as-is."
 387,M-HYQU-0093,1,Model Description,MINPAD-1HP,MECHANICAL,remove selection; set Model Type,1PH PAD (MINIPAD),Model Description was 'MINPAD-1HP',a Model Type value sitting in Description. Phases=1 confirms '1PH PAD (MINIPAD)'
 36,MR-HYQU-0015-V1,1,Model Description,MINPAD-1PH,MECHANICAL,remove selection; set Model Type,1PH PAD (MINIPAD),Model Description was 'MINPAD-1PH',a Model Type value sitting in Description. Phases=1 confirms '1PH PAD (MINIPAD)'
 3,MR-ENMA-0005-V1,3,Model Description,NETWORK,MECHANICAL,remove selection,,Model Description was 'NETWORK',"duplicates Model Type, which already reads NETWORK"
@@ -253,12 +251,12 @@
 298,MR-PITR-0002-V1,3,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 299,MR-PITR-0003-V1,1,Model Type,C2,MECHANICAL,move to Model Description,C2,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 199,MR-LITE-0001-V1,3,Model Type,FLAT FRONT,MECHANICAL,move to Model Description,FLAT FRONT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-121,MR-HYQU-0078-V1,3,Model Type,LTC,MECHANICAL,set,None,Model Type was 'LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-123,MR-HYQU-0080-V1,3,Model Type,LTC,MECHANICAL,set,None,Model Type was 'LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-124,MR-HYQU-0081-V1,3,Model Type,LTC,MECHANICAL,set,None,Model Type was 'LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-195,MR-HYQU-0071-V1,3,Model Type,LTC,MECHANICAL,set,None,Model Type was 'LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-196,MR-HYQU-0072-V1,3,Model Type,LTC,MECHANICAL,set,None,Model Type was 'LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-383,MR-HYQU-0079-V1,3,Model Type,LTC,MECHANICAL,set,None,Model Type was 'LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
+121,MR-HYQU-0078-V1,3,Model Type,LTC,MECHANICAL,move to Model Description,LTC,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+123,MR-HYQU-0080-V1,3,Model Type,LTC,MECHANICAL,move to Model Description,LTC,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+124,MR-HYQU-0081-V1,3,Model Type,LTC,MECHANICAL,move to Model Description,LTC,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+195,MR-HYQU-0071-V1,3,Model Type,LTC,MECHANICAL,move to Model Description,LTC,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+196,MR-HYQU-0072-V1,3,Model Type,LTC,MECHANICAL,move to Model Description,LTC,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
+383,MR-HYQU-0079-V1,3,Model Type,LTC,MECHANICAL,move to Model Description,LTC,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 113,MR-HYQU-0060-V1,3,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 187,MR-HYQU-0082-V1,3,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 313,MR-LGEN-0008-V1,3,Model Type,MALT,MECHANICAL,move to Model Description,MALT,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
@@ -300,15 +298,6 @@
 385,MR-LISA-0005-V1,3,Model Type,PADMOUNT,MECHANICAL,set,3PH PAD (PADMOUNT),Model Type was 'PADMOUNT',Phases=3 confirms '3PH PAD (PADMOUNT)'
 296,MR-CRSC-0001-V1,0,Model Type,PARTS,MECHANICAL,move to Model Description,PARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 386,MR-WIHI-0001-V1,,Model Type,PARTS,MECHANICAL,move to Model Description,PARTS,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-189,MR-HYQU-0065-V1,3,Model Type,POWER LTC,MECHANICAL,set,None,Model Type was 'POWER LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-332,MR-HITA-0001-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-333,MR-HITA-0002-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-334,MR-HITA-0003-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-335,MR-HYQU-0084-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-336,MR-HYQU-0085-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-342,MR-HYQU-0090-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-343,MR-HYQU-0091-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
-406,MRSA-HYQU-0071-V1,3,Model Type,POWER-LTC,MECHANICAL,set,None,Model Type was 'POWER-LTC',"LTC is a Description, not a Type; 'None' is the real 'not yet decided' value until engineering assigns one"
 337,MR-ENBR-0001-V1,3,Model Type,POWER-S,MECHANICAL,move to Model Description,POWER-S,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 152,MR-PIRE-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 166,MR-CENO-0001-V1,3,Model Type,POWER-W,MECHANICAL,move to Model Description,POWER-W,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
@@ -384,16 +373,3 @@
 407,MRSA-HYQU-0068-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 408,MRSA-HYQU-0092-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
 409,MRSA-HYQU-0002-V1,3,Model Type,ZIG-ZAG + SA,MECHANICAL,move to Model Description,ZIG-ZAG + SA,,"a Description value, not a Type; Description is MultiChoice so nothing is lost"
-18,MR-HYQU-0005-V1,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
-20,M-HYQU-0006,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
-21,MR-HYQU-0007-V1,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
-22,M-HYQU-0001,3,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
-95,MR-HYQU-0026-V1,,Model Description,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,"no clear replacement -- 5 rows, the same rows as the Model Type ANNEX."
-132,MR-HYQU-0063-V1,0,Model Description,Goujon,PHASE-OUT,keep value; keep option,Goujon,,"no clear replacement -- 1 row. A stud/bolt -- plausibly PARTS, but not confidently."
-297,MR-HYQU-0083-V1,0,Model Description,PLAQUE ANCRAGE,PHASE-OUT,keep value; keep option,PLAQUE ANCRAGE,,no clear replacement -- 1 row. An anchor plate -- same.
-37,MR-PITR-0001-V1,1,Model Description,PROTOTYPE,PHASE-OUT,keep value; keep option,PROTOTYPE,,no clear replacement -- 1 row.
-18,MR-HYQU-0005-V1,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
-20,M-HYQU-0006,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
-21,MR-HYQU-0007-V1,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
-22,M-HYQU-0001,3,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
-95,MR-HYQU-0026-V1,,Model Type,ANNEX,PHASE-OUT,keep value; keep option,ANNEX,,no clear replacement -- 5 rows. Not in the canonical list; unclear against Core Type's 'Annexe'.
