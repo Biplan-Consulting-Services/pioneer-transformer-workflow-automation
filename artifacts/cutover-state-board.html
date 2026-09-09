@@ -231,204 +231,154 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <span><b>Cutover</b> Thursday 2026-09-10, evening</span>
       <span><b>Transfer flow</b> v006 live · v007 staged</span>
       <span><b>Order Items</b> 1,117 rows · 165 columns</span>
-      <span><b>Compiled</b> 2026-09-09 02:40 · <b>updated</b> 04:05</span>
+      <span><b>Updated</b> 2026-09-09 evening</span>
     </div>
   </header>
 
   <div class="tally">
-    <div class="tal you"><div class="n">6</div><div class="l">Waiting on you</div></div>
-    <div class="tal ok"><div class="n">5<span style="font-size:15px">&nbsp;/&nbsp;5</span></div><div class="l">Tonight's work, done</div></div>
-    <div class="tal ok"><div class="n">6</div><div class="l">Settled, needs nothing</div></div>
-    <div class="tal no"><div class="n">1</div><div class="l">Loses data Thursday</div></div>
-    <div class="tal"><div class="n">16</div><div class="l">Viewer columns, all resolved</div></div>
-  </div>
-
-  <div class="alert">
-    <h2>Two columns lose their third state when the workbook goes quiet</h2>
-    <p><code>Engineering Required</code> and <code>LDs</code> are Yes/No columns on
-      SharePoint, and Yes/No cannot hold “never answered”. The workbook draws the
-      distinction and the list does not:</p>
-    <p class="mono" style="font-size:13px;color:var(--ink-2)">
-      Engineering Required &nbsp;·&nbsp; workbook <b>N 340 · Y 266 · blank 412</b> (+1 <code>indéterrminé</code>)
-      &nbsp;→&nbsp; list <b>True 264 · False 853</b><br>
-      LDs &nbsp;·&nbsp; workbook <b>Y 127 · N 34 · blank 858</b>
-      &nbsp;→&nbsp; list <b>True 127 · False 990</b>
-    </p>
-    <p>“Answered No” and “never answered” both land on <code>False</code>. No conversion in
-      the viewer can separate them again, because the information is already gone at the
-      destination — <b>FRM10-12 is the only surviving copy</b>, and staff stop maintaining it
-      Thursday. The 412 unanswered <code>Engineering Required</code> values are the ones at
-      risk; <code>N</code> was typed deliberately on 340 rows, so blank is not shorthand for No.</p>
-    <p>✅ <b>Captured anyway</b>, so the decision stays open either way:
-      <code>reports/three-state-capture 2026-09-09.csv</code> — all 1,019 units with both
-      columns in their original three-state form.</p>
-    <p class="caveat">⚠️ Read from a CSV export, and this repo's own rule is never to conclude
-      from an export alone — calculated columns and lookups both read as empty there. One
-      REST check on a known-blank order settles it before anyone treats the third state as
-      unrecoverable.</p>
+    <div class="tal you"><div class="n">1</div><div class="l">Do this next</div></div>
+    <div class="tal ok"><div class="n">8</div><div class="l">Done, verified</div></div>
+    <div class="tal me"><div class="n">4</div><div class="l">Left before Thursday</div></div>
+    <div class="tal no"><div class="n">1</div><div class="l">Untested gate</div></div>
+    <div class="tal"><div class="n">4</div><div class="l">Rollbacks saved</div></div>
   </div>
 
   <!-- ============ WHO HOLDS WHAT ============ -->
   <section>
     <div class="shead">
-      <h2>Who holds what</h2>
-      <span class="cnt">Ticks save to this page · updated 04:05</span>
+      <h2>Do this next</h2>
+      <span class="cnt">live list &middot; ticks save to this page</span>
     </div>
-    <p class="intro">Split by who can move it, not by phase — that is the only distinction
-      that matters on the morning of a cutover. Nothing in the first lane can be done by an
-      agent; everything in the second is in progress tonight.</p>
+    <p class="intro">In order. Everything below the second heading is finished and verified;
+      nothing there is waiting on anybody.</p>
 
     <div class="lane you">
-      <div class="lanehead"><span class="tag">Yours</span>
-        <span class="sub">needs a browser session, a judgement call, or a person</span></div>
+      <div class="lanehead"><span class="tag">Next</span>
+        <span class="sub">two minutes, and it unblocks the audit while you are out</span></div>
+      <div class="items">
+        <div class="it" data-id="EXP2">
+          <button class="box" aria-label="Mark done">&#10003;</button>
+          <div><div class="t"><span class="id">1</span>Drop fresh exports + the live workbook</div>
+            <div class="w">All four lists, <b>All Items</b> view, post-N8 &rarr;
+              <code>sharepoint-lists/</code> (raw filenames are fine, I timestamp them). Plus a
+              copy of the <b>live</b> <code>Formulaires/FRM10-12.xlsx</code> &rarr;
+              <code>FRM10-12/debug/</code>.
+              <b>The workbook is the important one</b> &mdash; everything analysed so far came
+              from this morning's copies, and I have never seen the file Thursday's run
+              actually reads.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lane me">
+      <div class="lanehead"><span class="tag">Then, before Thursday</span>
+        <span class="sub">needs attention &mdash; don't rush these before leaving</span></div>
       <div class="items">
 
-        <div class="it" data-id="X2">
-          <button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t"><span class="id">X2</span>Run <code>x2_set_delivered.js</code> — 66 rows
-            <span class="gate">run first</span></div>
-            <div class="w">Marks the archived-and-delivered units <code>Delivered</code> and
-              rewrites their stale <code>Location</code>. Dry-run by default; read the summary,
-              then set <code>APPLY = true</code>. Two rows excluded for you —
-              <code>21792-3/5</code> and <code>21792-4/5</code>, whose archive delivery date is
-              in the future.</div></div>
+        <div class="it" data-id="HIDE">
+          <button class="box" aria-label="Mark done">&#10003;</button>
+          <div><div class="t"><span class="id">2</span>Hide two columns from staff views</div>
+            <div class="w"><code>Step Status Stamped</code> (machine state &mdash; v002 compares
+              it against <code>Step Status</code> to tell a real change from a re-save) and
+              <code>Status</code> (now derived by the viewer, so typing into it goes nowhere).
+              Views only &mdash; <b>do not delete either</b>.
+              &#9888;&#65039; Hidden columns vanish from CSV exports, so hide them
+              <em>after</em> step 1, or tell me.</div></div>
         </div>
 
-        <div class="it" data-id="X1">
-          <button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t"><span class="id">X1</span>Run <code>x1_clear_fabricated_stages.js</code> — 1,141 stage-clears
-            <span class="gate">after X2</span></div>
-            <div class="w">834 tanking + 307 delivery cleared, 234 kept, nothing held back.
-              <b>X1 keys on <code>Location</code>, which X2 corrects</b> — run it first and it
-              clears the delivery of 68 genuinely shipped units. Clears to blank, never
-              <code>Pending</code>.</div></div>
-        </div>
-
-        <div class="it" data-id="N8">
-          <button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t"><span class="id">N8</span>Run <code>n8_split_status.js</code> — 2 columns, 247 rows</div>
-            <div class="w">Splits the composite <code>TE-Se-4</code> into
-              <code>Step Status</code> + <code>Status Date</code>. All 247 parse and all 19
-              ambiguous <code>Jui</code> rows resolve on their own. <b>Idempotent — and it must
-              be re-run after the final transfer run</b>, which rewrites <code>Status</code> and
-              would leave the split pair silently stale.</div></div>
-        </div>
-
-        <div class="it" data-id="V7">
-          <button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t"><span class="id">v007</span>Paste the transfer-flow fix
-            <span class="gate">before the final run</span></div>
-            <div class="w">Staged and validated at
-              <code>_outbox/PASTE-ME.json</code>. One mapping,
-              <code>item/RevModelDescription</code>, on both write actions — 122/130 field
-              counts unchanged, rest of the definition byte-identical.</div></div>
-        </div>
-
-        <div class="it" data-id="SYNC">
-          <button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t"><span class="id">viewer</span>Sync the conversions into the viewer workbook
-            <span class="gate soft">read the diff first</span></div>
+        <div class="it" data-id="VGATE">
+          <button class="box" aria-label="Mark done">&#10003;</button>
+          <div><div class="t"><span class="id">3</span>Prove the viewer
+            <span class="gate">the gate</span></div>
             <div class="w"><code>Sync-PowerQuery.ps1 -WorkbookPath ./viewer/workbook/FRM10-12.xlsx
-              -CreateMissing</code>, then re-run with <code>-Apply</code>.
-              🔴 <b><code>-CreateMissing</code> is required</b> — two of the four queries are new,
-              and without it they are reported <code>notFound</code> and <b>skipped silently</b>:
-              the sync succeeds and the conversions never land.</div></div>
+              -CreateMissing</code>, then <code>-Apply</code>, then refresh.
+              &#128308; Without <code>-CreateMissing</code> the three new queries are skipped
+              <b>silently</b>. Check: <code>Tank</code> = <code>R</code> &middot;
+              <code>Frame</code> shows <code>Re&ccedil;u</code> without erroring &middot;
+              <code>Location</code> = <code>XT</code> &middot; <code>Status</code> =
+              <code>TE-Se-4</code> &middot; column count unchanged.
+              <b>This M has never been executed.</b> If it throws, stop &mdash; nothing is lost
+              and the date moves.</div></div>
         </div>
 
-        <div class="it" data-id="FRLBL">
-          <button class="box" aria-label="Mark done">✓</button>
-          <div><div class="t"><span class="id">30 s</span>Verify three French UI labels</div>
-            <div class="w">The last banner nobody owns. Open the classic view-settings page
-              <b>in French</b> and confirm section 7's labels read exactly
-              « Regrouper par », « Réduits », « Limite d'éléments ». They were reasoned, never
-              read — and staff will search the screen for those exact words.</div></div>
+        <div class="it" data-id="V7B">
+          <button class="box" aria-label="Mark done">&#10003;</button>
+          <div><div class="t"><span class="id">4</span>Paste <code>v007</code> &mdash; optional today</div>
+            <div class="w"><code>_outbox/PASTE-ME.json</code>. Safe now; the flow only runs
+              manually. Copy the JSON back into <code>_inbox/</code> afterwards so
+              <code>flow_version.py intake</code> can prove it landed &mdash; a paste cannot
+              prove itself.</div></div>
+        </div>
+
+        <div class="it" data-id="FRLBL2">
+          <button class="box" aria-label="Mark done">&#10003;</button>
+          <div><div class="t"><span class="id">5</span>Three French UI labels &mdash; 30 seconds</div>
+            <div class="w">Classic view-settings page, in French. Confirm they read exactly
+              &laquo; Regrouper par &raquo;, &laquo; R&eacute;duits &raquo;,
+              &laquo; Limite d'&eacute;l&eacute;ments &raquo;. The last banner nobody
+              owns.</div></div>
         </div>
 
       </div>
     </div>
 
     <div class="lane done">
-      <div class="lanehead"><span class="tag">Done overnight</span>
-        <span class="sub">files, diffs and staged JSON — nothing pasted, nothing run, nothing deployed</span></div>
+      <div class="lanehead"><span class="tag">Done today</span>
+        <span class="sub">each verified by read-back, never by write status</span></div>
       <div class="items">
-
-        <div class="it fixed"><span class="box">✓</span>
-          <div><div class="t">v007 authored, validated, staged</div>
-            <div class="w">One mapping on both write actions; 122/130 counts unchanged, rest of
-              the definition byte-identical. The script refuses to run unless it finds the exact
-              defective expression, so a hand edit in the designer stops it rather than being
-              silently overwritten.</div></div></div>
-
-        <div class="it fixed"><span class="box">✓</span>
-          <div><div class="t">Three N3 flows re-verified</div>
-            <div class="w"><code>scripts/verify_n3_flows.py</code> — 18/5/24 field counts hold,
-              every target is one of the 48 columns N2 actually created, all 16 Choice/Lookup
-              sources read <code>?['Value']</code>, change-guard counts match field counts,
-              pagination 5000, no bare <code>select()</code>.</div></div></div>
-
-        <div class="it fixed"><span class="box">✓</span>
-          <div><div class="t">Viewer conversions written as a reviewable diff</div>
-            <div class="w">Two new queries (<code>ValueConversions.pq</code>,
-              <code>LocationCodes.pq</code>) plus 14 retypes in <code>ColumnMap.pq</code>.
-              <b>Not applied</b> — no <code>-Apply</code>, no refresh, no deployment. Full
-              reasoning in <code>FRM10-12/docs/viewer-value-conversions-2026-09-09.md</code>.</div></div></div>
-
-        <div class="it fixed"><span class="box">✓</span>
-          <div><div class="t">One runbook; the five that disagreed are in <code>archive/</code></div>
-            <div class="w"><code>docs/CUTOVER-RUNBOOK.md</code>, undated because there is only
-              one. Two things rescued from the 2026-09-01 plan that nothing else records: the
-              deploy-in-place decision and the three named refresh owners.</div></div></div>
-
-        <div class="it fixed"><span class="box">✓</span>
-          <div><div class="t">Staff guide finished, EN and FR</div>
-            <div class="w">A review rather than a writing session tomorrow. The two backwards
-              instructions are now correct, and a new <em>What looks different</em> section
-              covers the fields that changed from a typed letter to a checkbox or
-              dropdown.</div></div></div>
-
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t">Trigger flow confirmed <b>Off</b></div>
+          <div class="w">The gate on every bulk write &mdash; it fires one run per row.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t">Blank rows 1132 / 1133 deleted</div>
+          <div class="w">No <code>Unit ID</code>, nothing but column defaults.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t"><b>X4</b> &mdash; the two missing Orders created</div>
+          <div class="w"><code>20877R1</code> &rarr; 565, <code>P20002</code> &rarr; 566. Both
+            resolve to exactly one row, so <code>CheckOrderMatch</code> passes and the run
+            creates their units. <b>Re-diff expectation is now 0</b>, not 6.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t"><b>X2</b> &mdash; 66 units marked Delivered</div>
+          <div class="w">102 total, 0 failed. Also rewrote their stale <code>Location</code>,
+            which is what X1 keys on.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t"><b>X1</b> &mdash; 1,151 fabricated stage values cleared</div>
+          <div class="w">Across two passes. <b>Rows still violating the rule: 0.</b>
+            139 + 102 = 241 = KEEP.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t"><b>N8</b> &mdash; Status split, 249 rows</div>
+          <div class="w">0 problems. <code>StatusDate</code> off the 04:00/05:00Z convention:
+            <b>0</b>. <code>StepStatusStamped == StepStatus</code> on 249/249 &mdash; the guard
+            that stops v002 overwriting 246 historical dates.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t">Four rollback files saved</div>
+          <div class="w"><code>rollback/</code> &mdash; X4, X2, X1, N8. Each states which
+            direction it reverses.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span><div><div class="t">Viewer conversions + <code>Status</code> rebuild written</div>
+          <div class="w">Committed, <b>not applied</b>. That is what step 3 tests.</div></div></div>
       </div>
     </div>
 
     <div class="lane done">
-      <div class="lanehead"><span class="tag">Also found</span>
-        <span class="sub">checks that had never been run</span></div>
+      <div class="lanehead"><span class="tag">Found today</span>
+        <span class="sub">four defects, all caught before a bad write</span></div>
       <div class="items">
-        <div class="it fixed"><span class="box">✓</span>
-          <div><div class="t">The viewer's tracked <code>.pq</code> is in sync with its workbook</div>
-            <div class="w">Exported all 26 queries from <code>viewer/workbook/FRM10-12.xlsx</code>
-              and diffed against the repo: <b>byte-identical apart from trailing newlines</b>.
-              This is the check whose absence caused roadmap 44 in the other tree — the viewer
-              tree is clean, so syncing it will not install a query that fails on
-              refresh.</div></div></div>
-        <div class="it fixed"><span class="box">✓</span>
-          <div><div class="t">The marker conversions are exact, not approximate</div>
-            <div class="w">Row-level join over the 1,013 units in both sources: the boolean
-              agrees with the workbook marker on every row of all ten columns. The list's higher
-              counts are the 104 orphans, 92 True on all four R-columns — confirmed rather than
-              assumed.</div></div></div>
-      </div>
-    </div>
-
-    <div class="lane done">
-      <div class="lanehead"><span class="tag">Settled</span>
-        <span class="sub">verified, not assumed — no action left</span></div>
-      <div class="items">
-        <div class="it fixed"><span class="box">✓</span><div><div class="t">R22 data repaired</div>
-          <div class="w">979 of 979 rows match the parent <code>Model Revisions</code> exactly.
-            Only the <em>mapping</em> was still wrong, and that is v007.</div></div></div>
-        <div class="it fixed"><span class="box">✓</span><div><div class="t"><code>test calculated column</code> hidden</div>
-          <div class="w">You hid it on the list.</div></div></div>
-        <div class="it fixed"><span class="box">✓</span><div><div class="t">Staff edit rights</div>
-          <div class="w">Everyone with site access can edit the lists — confirmed at site
-            level, which is where it is granted.</div></div></div>
-        <div class="it fixed"><span class="box">✓</span><div><div class="t">P4 pre-run export</div>
-          <div class="w">Not a gap. The lists get re-exported immediately before the final run,
-            which is when a rollback copy is actually worth having.</div></div></div>
-        <div class="it fixed"><span class="box">✓</span><div><div class="t">N5 version history capped</div>
-          <div class="w">Versioning on, <code>MajorVersionLimit</code> 50.</div></div></div>
-        <div class="it fixed"><span class="box">✓</span><div><div class="t"><code>P20004</code> duplicate deleted</div>
-          <div class="w">One Order row remains, both units point at it, no dangling
-            lookup.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span>
+          <div><div class="t">X1 and X2 wrote to columns that do not exist</div>
+            <div class="w">Every stage's end date is internally <code>&lt;Stage&gt;Date</code>,
+              not <code>&lt;Stage&gt;EndDate</code> &mdash; display names were renamed, internal
+              ones stay frozen. The failed read surfaced as <em>rows in list: 0</em> rather than
+              an error. Both now abort on a zero-row read.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span>
+          <div><div class="t">X1 collided with itself</div>
+            <div class="w">One write per (item, stage) meant a unit needing both issued two
+              concurrent PATCHes to one item &mdash; 409 Conflict. Now one write per item, with
+              backoff retry.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span>
+          <div><div class="t">A status shape nobody had documented</div>
+            <div class="w">A bare step prefix with no date (<code>b2</code>, <code>B3</code>),
+              typed straight into SharePoint and <b>wrong against the workbook</b> &mdash; one
+              of the three disagrees on the step, not just the date. Thursday's run overwrites
+              them from the workbook.</div></div></div>
+        <div class="it fixed"><span class="box">&#10003;</span>
+          <div><div class="t">The composite <code>Status</code> had no writer after cutover</div>
+            <div class="w">The flow copies it from Excel and is deleted at cutover, so it would
+              have frozen while staff carried on editing the split pair &mdash; degrading
+              silently, since FRM11 reads it via Archive active. The viewer now rebuilds
+              it.</div></div></div>
       </div>
     </div>
   </section>
