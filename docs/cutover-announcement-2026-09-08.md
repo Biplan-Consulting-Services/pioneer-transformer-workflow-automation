@@ -57,9 +57,6 @@ contrôle. Même information, mais plus de convention à retenir :
 - **Le dossier de la commande** apparaît directement sur l'unité : la colonne
   **Order - Order Folder** pointe vers l'endroit où vivent tous les documents de la
   commande.
-- **Deux colonnes disparaissent** : `Order - Order Number` et `Order - Qty`. Rien n'est
-  perdu : c'était la même information deux fois. Le numéro de commande reste dans
-  **Order Number**, la quantité dans **Qty**.
 
 **Ce qui s'en vient**
 
@@ -122,9 +119,6 @@ information, one less convention to remember:
 - **`Status`** becomes two fields: **Step Status** (the step) and **Status Date** (the date).
 - **The order's folder** now appears on the unit itself. The **Order - Order Folder**
   column points at where every document filed against that order lives.
-- **Two columns disappear**: `Order - Order Number` and `Order - Qty`. Nothing is lost:
-  they were the same information twice. The order number stays in **Order Number**, the
-  quantity in **Qty**.
 
 **What is coming**
 
