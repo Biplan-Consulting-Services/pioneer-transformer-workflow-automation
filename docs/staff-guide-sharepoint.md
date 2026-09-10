@@ -83,6 +83,31 @@ Two things worth knowing about the checkboxes:
 - **The Excel copy still shows the letters.** Tick the Tank box here and the read-only
   workbook shows `R`, exactly as before. The reports built off that file are unaffected.
 
+## Columns that come from somewhere else
+
+Some column names start with a prefix. The prefix tells you which list the value came
+from:
+
+| prefix | comes from | what lives there |
+|---|---|---|
+| **Order -** | the **Order** list | facts about the whole order: the PO, the promised date, the order type, the sales notes |
+| **Model -** | the **Models** list | facts about the model, shared by every unit built to it |
+| **Mod. Rev. -** | the **Model Revisions** list | the technical spec: voltages, core type, oil, kVA, the drawing revision |
+| **Client -** | the **Clients** list | facts about the client, such as their lead time |
+
+There are 48 of these. You will mostly meet them in **All Items**; the day-to-day views
+show only a handful.
+
+They are **copies, kept up to date automatically**. The unit shows them so you can see an
+order's PO or a model's voltage without opening another list, but the real value lives on
+the other list.
+
+**Don't type into them.** A value you type into one of these is not wrong straight away,
+which is what makes it worth warning about: it sits there looking correct until the next
+time somebody edits that order or model, and then it is silently replaced by whatever the
+other list says. If one of them is wrong, it needs fixing on the order, the model or the
+revision. Come and ask if you are not sure which.
+
 ## If you want the old layout
 
 Open the **Planning** view instead. It is the workbook's **collapsed** layout, the same

@@ -85,6 +85,31 @@ Deux choses à savoir sur les cases à cocher :
   lecture seule montre `R`, exactement comme avant. Les rapports bâtis à partir de ce
   fichier ne changent pas.
 
+## Les colonnes qui viennent d'ailleurs
+
+Certains noms de colonnes commencent par un préfixe. Le préfixe vous dit de quelle liste
+la valeur provient :
+
+| préfixe | provient de | ce qu'on y trouve |
+|---|---|---|
+| **Order -** | la liste **Order** | ce qui concerne la commande au complet : le PO, la date promise, le type de commande, les notes de vente |
+| **Model -** | la liste **Models** | ce qui concerne le modèle, commun à toutes les unités bâties dessus |
+| **Mod. Rev. -** | la liste **Model Revisions** | la spec technique : voltages, type de noyau, huile, kVA, la révision du dessin |
+| **Client -** | la liste **Clients** | ce qui concerne le client, par exemple son délai |
+
+Il y en a 48. Vous les croiserez surtout dans **All Items**; les affichages du quotidien
+n'en montrent qu'une poignée.
+
+Ce sont des **copies, tenues à jour automatiquement**. L'unité vous les montre pour que
+vous puissiez voir le PO d'une commande ou le voltage d'un modèle sans ouvrir une autre
+liste, mais la vraie valeur vit sur l'autre liste.
+
+**N'écrivez pas dedans.** Une valeur que vous tapez là n'est pas fausse tout de suite, et
+c'est justement ce qui est piégeant : elle reste affichée, l'air correcte, jusqu'à ce que
+quelqu'un modifie cette commande ou ce modèle, et là elle est remplacée sans avertissement
+par ce que dit l'autre liste. Si une de ces valeurs est fausse, ça se corrige sur la
+commande, le modèle ou la révision. Venez me voir si vous n'êtes pas certain lequel.
+
 ## Si vous préférez l'ancienne disposition
 
 Ouvrez plutôt l'affichage **Planning**. C'est la disposition **repliée** du classeur, les
