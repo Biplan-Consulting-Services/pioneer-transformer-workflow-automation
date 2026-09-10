@@ -113,7 +113,30 @@ column` took the `Order Items` export from 143 columns to 142. So from now on:
 - the `StepStatusStamped == StepStatus` check before enabling `v002` (4.1) must be done
   **over REST**, not from an export
 
-### 1.2 · 🔴 Prove the viewer BEFORE the run — the last reversible moment
+### 1.2 · ✅ Prove the viewer BEFORE the run — PASSED 2026-09-10 01:38
+
+> **Result: every conversion verified against real refreshed data.** Markers render
+> `R`/`x`/`Y`; `Frame` shows `Reçu`/`Plaspak`/`0` with **no error** (this used to be fatal);
+> `Location` returns two-letter codes; `Status` rebuilds to `TE-Se-4` form. **Zero Excel
+> errors across all 82 columns.** Shape preserved — 76 data columns in the exact order
+> `TableOrdersColumnOrder` specifies, and all six native formula columns still formulas on
+> 999 of 999 rows.
+>
+> 🔑 **Two defects the gate caught, both invisible until the M actually ran:**
+> - **`field 'BO' already exists`** — the viewer expands `BackOrders`→`BO`, but D3 added a
+>   `BO` column to `Order Items` on 09-07, three days after the viewer was written. The
+>   live workbook always had a `Removed Stale BO Column` step; the viewer never did. Fixed.
+> - **10 columns missing from Power Query** — a **stale cached schema** in the workbook, not
+>   the list. Fixed by *Data → Get Data → Query Options → Data Load → Clear Cache*, then
+>   refreshing. Worth knowing for any future viewer refresh after a column is added.
+>
+> 🔴 **Refresh only via the Office Script button** on the `Orders` sheet. Never Refresh All,
+> never COM `RefreshAll()`, never `CalculateUntilAsyncQueriesDone()` — the repo skill at
+> `../FRM10-12/.claude/skills/frm10-12-pq-workflow` names all three, and Office Scripts run
+> in an engine COM cannot invoke anyway. Its `conserveFormulas` step is what preserves the
+> six formula columns; a generic refresh blanks them.
+
+### The original gate, kept for the reasoning
 
 Do this once N8 has run (1.1c) and **before** anything in Stage 2.
 
