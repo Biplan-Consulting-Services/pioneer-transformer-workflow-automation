@@ -98,6 +98,14 @@ Deux choses à savoir sur les cases à cocher :
 - **La copie Excel affiche encore les lettres.** Cochez la case Tank ici et le classeur en
   lecture seule montre `R`, exactement comme avant. Les rapports bâtis à partir de ce
   fichier ne changent pas.
+- **Si une colonne ne fonctionne pas comme votre travail l'exige, venez me le dire.** Ces
+  choix ont été faits colonne par colonne, à partir de la façon dont le classeur était
+  utilisé, et certains vont s'avérer mauvais pour du travail que je n'ai pas vu. Une case
+  à cocher qui aurait besoin d'un troisième état, une liste déroulante à laquelle il
+  manque une option, un champ qui devrait accepter du texte libre : tout ça peut être
+  changé. C'est un réglage, pas une reconstruction. **Ne contournez pas le problème** en
+  mettant la vraie réponse ailleurs, parce qu'à ce moment-là personne ne sait que la
+  colonne est fausse.
 
 ## Les colonnes qui viennent d'ailleurs
 

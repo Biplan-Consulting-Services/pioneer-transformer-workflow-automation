@@ -95,6 +95,12 @@ Two things worth knowing about the checkboxes:
   dropdown changes is only what you can pick from now on. So if a value you need is missing from the list, that is worth reporting rather than working around.
 - **The Excel copy still shows the letters.** Tick the Tank box here and the read-only
   workbook shows `R`, exactly as before. The reports built off that file are unaffected.
+- **If a column doesn't work the way your job needs it to, come and tell me.** These
+  choices were made column by column, from how the workbook was being used, and some of
+  them will turn out to be wrong for work I didn't see. A checkbox that needs a third
+  state, a dropdown missing an option, a field that should accept free text: all of that
+  can be changed. It is a settings change, not a rebuild. **Don't work around it** by
+  putting the real answer somewhere else, because then nobody knows the column is wrong.
 
 ## Columns that come from somewhere else
 
