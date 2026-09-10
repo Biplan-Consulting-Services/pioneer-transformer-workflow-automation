@@ -52,7 +52,7 @@
 */
 
 (async () => {
-  const APPLY = false;                    // <-- set true to actually write
+  const APPLY = true;                    // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const OI_ID = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";   // Order Items
   const GENERIC_WEEKS = 26;
