@@ -79,12 +79,45 @@ def definition(doc):
     return doc.get("properties", {}).get("definition", doc.get("definition", doc))
 
 
+def canonical(node):
+    """Strip the edits the DESIGNER makes on save, so a faithful paste hashes equal.
+
+    Power Automate round-trips a pasted definition through its own serialiser. It
+    changes nothing behavioural but it does not hand back what you gave it, and the
+    hash is what decides whether a local version is `applied` or `forked`. Measured
+    on the Order flow, 2026-09-10, pasting v003 and pulling it straight back:
+
+        runAfter: {}            REMOVED   (empty is the default; it drops the key)
+        else: {"actions": {}}   ADDED     (materialises the empty else branch)
+
+    Those three lines were the entire difference, and without this every paste from
+    now on would report FORKED -- which would make the one signal this whole scheme
+    exists to give ("applied is inferred, never asserted") permanent noise, and
+    train everyone to ignore a real fork.
+
+    Only demonstrably-inert keys go here. Anything whose absence could change
+    behaviour must keep affecting the hash.
+    """
+    if isinstance(node, dict):
+        out = {}
+        for k, v in node.items():
+            if k == "runAfter" and v == {}:
+                continue
+            if k == "else" and v == {"actions": {}}:
+                continue
+            out[k] = canonical(v)
+        return out
+    if isinstance(node, list):
+        return [canonical(x) for x in node]
+    return node
+
+
 def content_sha(doc):
-    """Hash the DEFINITION only. The export wrapper carries volatile metadata, so
-    hashing the whole document would report a change when nothing behavioural
-    moved -- and this hash is what proves a paste landed."""
+    """Hash the DEFINITION only, canonicalised. The export wrapper carries volatile
+    metadata, so hashing the whole document would report a change when nothing
+    behavioural moved -- and this hash is what proves a paste landed."""
     return hashlib.sha256(
-        json.dumps(definition(doc), sort_keys=True, separators=(",", ":")).encode()
+        json.dumps(canonical(definition(doc)), sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
 
 

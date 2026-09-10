@@ -12,7 +12,7 @@
       "state": "pulled",
       "parent": null,
       "note": "empty shell built in the designer 2026-09-10 -- trigger configured on Models, one throwaway Initialize_variable action. Baseline before the N3 definition is pasted in.",
-      "sha256": "557492e82b998f60724af5a1c68b772c6ced5851287146f53e2eb072149a753f",
+      "sha256": "63ae3b8a03ed9e1d5deb7f3005e0328e9b034bd7aac5c7262d3fd70d0eb60e71",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,
@@ -31,7 +31,7 @@
       "state": "local",
       "parent": 1,
       "note": "N3 Order_Items__sync_from_Models pasted into the shell, connectionReferences kept from v001",
-      "sha256": "e31280a3f5513ec0a3bd741e41bacc92f2b8cfd75fcedfb0794780f071a81c3f",
+      "sha256": "9fb78fa19f042729aead5e253bdffdd853f92f2c8cd66f4f48e426ee71b1e664",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,

@@ -12,7 +12,7 @@
       "state": "pulled",
       "parent": null,
       "note": "empty shell built in the designer 2026-09-10, trigger configured on Order",
-      "sha256": "ef5081a3b08478bdc8905b1253ec252e2a4490c9e9d4291b090903eb427ffa50",
+      "sha256": "11cca0524a6591c44b0a455fe3c31438d9b882739cfe8ab50624d6d5614bc16f",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,
@@ -28,10 +28,10 @@
     {
       "v": 2,
       "captured": "2026-09-10T16:00:09-04:00",
-      "state": "local",
+      "state": "forked",
       "parent": 1,
       "note": "N3 Order_Items__sync_from_Order pasted into the shell, connectionReferences kept from v001",
-      "sha256": "aa9ee34d735b43ee5787307bc8dbf6946a1a14e116e2ae448c86e6c09c67d8db",
+      "sha256": "607e60ccc34d5adaffce512c4e2e5574fba96a45fa525269c20a29f595cccb4c",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,
@@ -42,15 +42,16 @@
         "definition": "v002__2026-09-10T16-00__local__N3-Order-Items-sync-from-Order-pasted-into-the-s.json"
       },
       "appliedAt": null,
-      "source": "n3-merged-Order_Items__sync_from_Order.json"
+      "source": "n3-merged-Order_Items__sync_from_Order.json",
+      "forkedAt": "2026-09-10T17:42:25-04:00"
     },
     {
       "v": 3,
       "captured": "2026-09-10T16:06:56-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 1,
       "note": "v003: OrdOrderFolder read is the bare string, not ?['Url'] -- proven by Test C",
-      "sha256": "55de185f087653ba52e3972d9bc75da12e0a3a3e0171532ca238179d3d2907d7",
+      "sha256": "afa72602caeb46c13774d44110f88a1d24596138a6b1c5f83c5e65e19cddffd7",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,
@@ -61,7 +62,27 @@
         "definition": "v003__2026-09-10T16-06__local__v003-OrdOrderFolder-read-is-the-bare-string-not-.json"
       },
       "appliedAt": null,
-      "source": "n3-merged-Order_Items__sync_from_Order.json"
+      "source": "n3-merged-Order_Items__sync_from_Order.json",
+      "forkedAt": "2026-09-10T17:42:25-04:00"
+    },
+    {
+      "v": 4,
+      "captured": "2026-09-10T17:42:25-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "pulled after pasting v003 -- confirms what is live",
+      "sha256": "afa72602caeb46c13774d44110f88a1d24596138a6b1c5f83c5e65e19cddffd7",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 2,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v004__2026-09-10T17-42__pulled__pulled-after-pasting-v003-confirms-what-is-live.json"
+      },
+      "appliedAt": "2026-09-10T17:42:25-04:00",
+      "source": "Order - Create or Update Trigger (post-v003 paste).json"
     }
   ]
 }

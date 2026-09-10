@@ -12,7 +12,7 @@
       "state": "pulled",
       "parent": null,
       "note": "baseline pulled from tenant, pre Status Date auto-stamp",
-      "sha256": "d38cf45052951ca2e1bedcc834eee48af85917049013cd2b6539cca547e153ca",
+      "sha256": "a95717bc9d7f1a25992ca3845073a55a4a0e55ee18c558b3e146774386142308",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,
@@ -32,7 +32,7 @@
       "state": "local",
       "parent": 1,
       "note": "X3 strip 2c stage-stamping + Status Date auto-stamp",
-      "sha256": "dbf100618e75b12884fc39d2af7eb06054bb4f5987e359aab9e9bf6368587a20",
+      "sha256": "fd34a013378fccaccbb90f2a0250d4b3674b711d69bf32a12896225ea8f6822e",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,
