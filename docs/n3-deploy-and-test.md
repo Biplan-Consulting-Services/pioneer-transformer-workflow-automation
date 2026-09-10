@@ -16,7 +16,7 @@ first deploy — see Part 3.
 |---|---|---|
 | 0.1 | **`Order Items` create-or-update trigger flow is OFF** | every unit N3 writes fires it once. Leave it off for the whole test, or the run history fills with noise you then have to read past. |
 | 0.2 | **The transfer flow is OFF** | it writes the same 48 parent columns from the same sources. Not harmful — same values — but a concurrent write makes a failed test ambiguous. |
-| 0.3 | `python scripts/verify_n3_flows.py` prints `RESULT: OK` | 19/5/24 fields, guards match, pagination 5000, every Choice/Lookup reads `?['Value']`. |
+| 0.3 | `python scripts/verify_n3_flows.py` prints `RESULT: OK` | 17/5/24 fields, guards match, pagination 5000, every Choice/Lookup reads `?['Value']`. |
 
 🔴 **Do not turn the N3 flows on and leave them on tonight.** Until the transfer flow is
 deleted at cutover, both own the same columns. Test, then turn them back off. Enabling for
@@ -125,7 +125,20 @@ So every fan-out is exactly 1 row, and the blast radius of a mistake is one row 
 folder is what makes it the right order — it is the only test that exercises the new URL
 column.
 
-### Test A · `Order Items - sync from Models` — the no-op test (do this one first)
+### Test A · `Order Items - sync from Models` — ✅ PASSED 2026-09-10 10:10
+
+Run graph: trigger fired, `Get units of this parent` returned **1 of 1**, `needsUpdate`
+evaluated, the condition went **False**, `Update unit` **skipped**. All 5 read expressions
+reproduce what is stored, the two lookups read with `?['Value']` included, and the guard
+suppresses correctly. Also confirms the deployment path, the polling-trigger fix and the
+`ModelId eq <ID>` fan-out.
+
+⚠️ The first attempt returned `needsUpdate: Skipped -- there are no items to repeat`,
+which is a zero-item loop, not a pass: a different Models row had been edited. A Models
+row with no units is a legitimate zero.
+
+The original instructions, for the other two flows:
+
 
 Smallest flow, 5 fields, and **all 5 already match** between `M-ATCO-0002` and unit 994. So
 the correct result is that the flow runs and *writes nothing*.
@@ -173,7 +186,8 @@ Then turn the flow OFF.
 
 ### Test C · `Order Items - sync from Order` — the one that writes
 
-19 fields. Exactly one real difference is expected:
+**17 fields** (was 19; `OrdOrderNumber` and `OrdQty` were removed 2026-09-10 as duplicates
+of the `OrderNumber` lookup and the native `Qty`). Exactly one real difference is expected:
 
 ```
 field           Order E21003R1                                   unit 994
@@ -192,7 +206,7 @@ question* below.
 
 1. Turn the flow ON.
 2. Edit `Order` `E21003R1` (list ID 520): set **`Sales Notes`** to `N3 test 2026-09-10`. It
-   is one of the 19, so this is a deliberate third difference that proves a write lands.
+   is one of the 17, so this is a deliberate second difference that proves a write lands.
 3. Read the run, then read unit 994.
 
 | expect | |
@@ -202,7 +216,7 @@ question* below.
 | `Update unit` runs **once** | one call carrying all fields — not one call per field |
 | `Order - Sales Notes` = `N3 test 2026-09-10` | the write lands |
 | **`Order - Order Folder` is a working link to `/sites/PioneerPlanificatio/Order%20Library/E21003R1`** | 🔑 **the thing this test exists for** |
-| the other 16 unchanged | |
+| the other 14 unchanged | |
 
 🔴 **`Order Folder` is the one unproven expression in all three flows.** The *write* shape
 is sourced — the connector renders a URL column as one input box, so it takes a bare string.
@@ -217,13 +231,13 @@ captured connector payload anywhere in this repo showing a Hyperlink column. So:
 
 **Run 2 — does the guard hold?** This is the more important half.
 
-4. Edit `Order` `E21003R1` again, this time changing a field that is **not** one of the 19.
+4. Edit `Order` `E21003R1` again, this time changing a field that is **not** one of the 17.
    `Lead Time` is a good choice — verified absent from `ORDER_MAP`, and it is a per-order
    override nothing downstream trusts anyway (see the repo CLAUDE.md on FRM13). Save.
 
 | expect | |
 |---|---|
-| `needsUpdate` = **false** | ✅ the guard suppresses. Every one of the 19 now matches. |
+| `needsUpdate` = **false** | ✅ the guard suppresses. Every one of the 17 now matches. |
 | `Update unit` skipped | |
 
 🔴 **If `needsUpdate` is true on run 2, the guard is permanently defeated** and every future
