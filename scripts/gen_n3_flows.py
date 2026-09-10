@@ -58,6 +58,48 @@ LISTS = {
 HOST = {"apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
         "operationId": None, "connectionName": "shared_sharepointonline"}
 
+LISTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         "sharepoint-lists")
+
+
+def choice_targets():
+    """Order Items columns that are Choice, read from the list's own schema.
+
+    🔑 DERIVED, NEVER DECLARED. A Choice column takes `item/X/Value` on the write and
+    reads back as an object, so the guard needs `?['X']?['Value']` too. Hard-coding
+    that list here would be a second copy of a fact the platform already owns, and
+    the two would drift the first time someone converts a column -- silently, because
+    a plain key into a Choice column stops landing without reporting an error.
+
+    So the shape of the flow follows the shape of the list. The cost is that this
+    reads the newest `Order Items *.csv` export, which must be re-taken AFTER any
+    column conversion -- the banner below prints which file was used and when, so a
+    stale one is visible rather than assumed.
+    """
+    import re as _re
+    pat = _re.compile(r"Order Items \d{4}-\d{2}-\d{2} \d{3,4}\.csv$", _re.I)
+    cands = sorted(f for f in os.listdir(LISTS_DIR) if pat.match(f))
+    if not cands:
+        raise SystemExit("no `Order Items <date> <time>.csv` export in %s -- the "
+                         "generator reads column types from it" % LISTS_DIR)
+    path = os.path.join(LISTS_DIR, cands[-1])
+    raw = io.open(path, encoding="utf-8-sig", newline="").read(8_000_000)
+    raw = raw.replace('\\"', '"')
+    out = set()
+    for m in _re.finditer(r"<Field\s[^>]*?(?:/>|>.*?</Field>)", raw, _re.S):
+        x = m.group(0)
+        # anchor the attribute names: Type= also matches FromBaseType=, and
+        # Name= matches StaticName= / DisplayName=
+        g = lambda k: (_re.search(r'(?<![A-Za-z])' + k + r'="([^"]*)"', x)
+                       or [None, None])[1]
+        if g("Type") == "Choice" and g("Name"):
+            out.add(g("Name"))
+    return cands[-1], out
+
+
+CHOICE_EXPORT, CHOICE_TARGETS = choice_targets()
+
+
 def host(op):
     h = dict(HOST); h["operationId"] = op; return h
 
@@ -169,13 +211,21 @@ def build(flow_name, parent, lookup_id_field, mapping):
     # 4a -- the change guard. coalesce BOTH sides to '' : null != '' in Power
     # Automate, so without it every row with a blank looks changed and the guard
     # never fires.
-    cmps = ["not(equals(coalesce(items('%s')?['%s'], ''), coalesce(%s, '')))"
-            % (loop, tgt, read_expr(src, kind)) for tgt, src, kind in mapping]
+    # The CHILD side of the comparison has a shape too. A Choice column on Order
+    # Items reads back as {"Value": "..."}, so comparing the bare field to a string
+    # is object-vs-string: never equal, guard fires on every row forever. This is
+    # the R22 lesson applied to the target instead of the source, and it is the half
+    # that gets forgotten when a column is converted.
+    cmps = ["not(equals(coalesce(items('%s')?['%s']%s, ''), coalesce(%s, '')))"
+            % (loop, tgt, "?['Value']" if tgt in CHOICE_TARGETS else "",
+               read_expr(src, kind))
+            for tgt, src, kind in mapping]
     guard = "@or(\n  " + ",\n  ".join(cmps) + "\n)"
     patch_params = {"dataset": SITE, "table": ORDER_ITEMS,
                     "id": "@items('%s')?['ID']" % loop}
     for tgt, src, kind in mapping:
-        patch_params["item/%s" % tgt] = "@" + read_expr(src, kind)
+        key = "item/%s/Value" % tgt if tgt in CHOICE_TARGETS else "item/%s" % tgt
+        patch_params[key] = "@" + read_expr(src, kind)
     return {
         "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
         "contentVersion": "1.0.0.0",

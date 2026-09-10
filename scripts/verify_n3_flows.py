@@ -20,6 +20,11 @@ Six assertions, each one a failure mode that would be silent in production:
   7. the trigger is OpenApiConnection + recurrence, not OpenApiConnectionWebhook --
      SharePoint's create-or-modified trigger POLLS; pasting a webhook shape yields a
      flow that saves cleanly and never fires
+  8. a Choice TARGET is written `item/X/Value` and read `?['X']?['Value']` in the
+     guard, and a non-Choice target is written plain -- checked against the column
+     types in the newest Order Items export, so converting a column and forgetting
+     the flow (or the reverse) is caught here instead of in production, where a
+     plain key into a Choice column simply stops landing
 
 Reads the internal names back out of `scripts/n2_create_columns.js`, which is the script
 that actually created the columns, rather than from a doc that could have drifted.
@@ -152,7 +157,25 @@ def main():
                     != "GetOnUpdatedItems"):
                 trg_bad.append("operationId is not GetOnUpdatedItems")
 
+        # 8. Choice targets need /Value on BOTH sides. Import the generator's own
+        #    reader so there is exactly one place that decides what is a Choice.
+        sys.path.insert(0, HERE)
+        from gen_n3_flows import CHOICE_TARGETS, CHOICE_EXPORT
+        shape_bad = []
+        for t in sorted(targets):
+            is_choice = t in CHOICE_TARGETS
+            has_val_key = ('"item/%s/Value"' % t) in txt
+            has_plain_key = ('"item/%s"' % t) in txt
+            guard_val = ("?['%s']?['Value']" % t) in txt
+            if is_choice and not (has_val_key and guard_val):
+                shape_bad.append("%s is Choice but %s" % (
+                    t, "write key is plain" if not has_val_key else "guard misses ?['Value']"))
+            if (not is_choice) and (has_val_key or guard_val):
+                shape_bad.append("%s is not Choice but is treated as one" % t)
+            del has_plain_key
+
         status = []
+        if shape_bad: status.append("CHOICE SHAPE: " + "; ".join(shape_bad)); ok = False
         if trg_bad: status.append("TRIGGER: " + "; ".join(trg_bad)); ok = False
         if n != want: status.append("FIELD COUNT %d != %d" % (n, want)); ok = False
         if unknown: status.append("UNKNOWN TARGETS %s" % unknown); ok = False
@@ -173,6 +196,16 @@ def main():
             print("     %d bare source reads (expected -- plain fields)" % len(bare_choice))
 
     print()
+    try:
+        sys.path.insert(0, HERE)
+        from gen_n3_flows import CHOICE_EXPORT as _ce, CHOICE_TARGETS as _ct
+        print()
+        print("column types read from: %s   (%d Choice columns on Order Items)"
+              % (_ce, len(_ct)))
+        print("  ⚠️ re-export Order Items after converting a column, or this check and")
+        print("     the generator both work from a stale picture of the list.")
+    except Exception as e:
+        print("could not read column types: %s" % e)
     print("RESULT: %s" % ("OK -- all three re-verify against the columns N2 built"
                           if ok else "PROBLEM -- do not paste"))
     return 0 if ok else 1
