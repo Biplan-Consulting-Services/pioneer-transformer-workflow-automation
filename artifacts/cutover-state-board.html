@@ -247,7 +247,7 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
   <section>
     <div class="shead">
       <h2>What is left to do</h2>
-      <span class="cnt">31 steps &middot; ticks save to this page</span>
+      <span class="cnt">32 steps &middot; ticks save to this page</span>
     </div>
     <p class="intro">In order. The ordering is load-bearing in five places and those are
       marked &#128308;. Everything below the next heading is finished: the four sync flows
@@ -265,21 +265,27 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
             <div class="w">Open the classic view-settings page <b>in French</b> and confirm they read exactly &laquo;&nbsp;Regrouper par&nbsp;&raquo;, &laquo;&nbsp;R&eacute;duits&nbsp;&raquo; and &laquo;&nbsp;Limite d&rsquo;&eacute;l&eacute;ments&nbsp;&raquo;. Section 7 of the French handbook names them and they were reasoned, never read off the screen. Thirty seconds &mdash; and staff search for those exact words, so a wrong one makes them doubt the parts that are right.</div></div>
         </div>
 
+        <div class="it" data-id="VIEWS2">
+          <button class="box" aria-label="Mark done">&#10003;</button>
+          <div><div class="t"><span class="id">2</span>Create <code>FRM10-12 Completed</code> and <code>FRM10-12 All</code></div>
+            <div class="w">&#128308; <b>Before publishing the handbook, which now names them.</b> Open <code>FRM10-12 Layout</code>, <b>Save view as</b>, change only the filter: <code>Item Status = Delivered</code> for Completed, no filter at all for All. Same 24 columns, same order. <code>Item Status</code> holds exactly two values today, Active 1022 and Delivered 102, so the split is clean. <code>FRM10-12 All</code> is what the guide sends people to when a unit seems to have vanished, which is nearly always a delivered unit dropping out of the default view. This replaces <code>All Items</code> in that role: 74 unordered columns is not a troubleshooting tool.</div></div>
+        </div>
+
         <div class="it" data-id="PUBHB">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">2</span>Publish the handbook</div>
+          <div><div class="t"><span class="id">3</span>Publish the handbook</div>
             <div class="w"><code>staff-handbook-sharepoint.md</code> and <code>-fr.md</code> onto a SharePoint page. Depends on nothing, and the email needs its link &mdash; so it is the one staff-facing thing that can genuinely be finished now.</div></div>
         </div>
 
         <div class="it" data-id="EMAILNOW">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">3</span>Send the email</div>
+          <div><div class="t"><span class="id">4</span>Send the email</div>
             <div class="w">Tensed for exactly this: <em>la migration se fait ce soir&hellip; quand vous arriverez demain matin</em> &mdash; true when sent this evening and still true read over breakfast. &#9888;&#65039; It does <b>not</b> ask anyone to save and close FRM10-12, because everyone had already left &mdash; so anything unsaved on a machine tonight will not reach SharePoint. First thing to suspect if the re-diff at step 9 turns up stale-looking units.</div></div>
         </div>
 
         <div class="it" data-id="LINKS">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">4</span>Fill the two links in the email</div>
+          <div><div class="t"><span class="id">5</span>Fill the two links in the email</div>
             <div class="w"><code>[LIEN]</code> the read-only workbook, <code>[LIEN GUIDE]</code> wherever the handbook is published. Neither was invented for you. A SharePoint page on the site is the obvious home for the handbook &mdash; staff are already there and it needs no separate permission.</div></div>
         </div>
       </div>
@@ -291,25 +297,25 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <div class="items">
         <div class="it" data-id="EXP">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">5</span>Re-export all four lists</div>
+          <div><div class="t"><span class="id">6</span>Re-export all four lists</div>
             <div class="w"><code>Order Items</code>, <code>Order</code>, <code>Models</code>, <code>Model Revisions</code>. <b>This is the only data rollback</b>, and taking it now rather than earlier is the whole point of it being step one.</div></div>
         </div>
 
         <div class="it" data-id="CLOSE">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">6</span>Staff save and close FRM10-12</div>
+          <div><div class="t"><span class="id">7</span>Staff save and close FRM10-12</div>
             <div class="w">&#128308; <b>Desktop Excel only.</b> A browser save corrupted this workbook on 09-09. Anything left unsaved never reaches SharePoint.</div></div>
         </div>
 
         <div class="it" data-id="REFRESH">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">7</span>Refresh FRM10-12 via the Office Script button</div>
+          <div><div class="t"><span class="id">8</span>Refresh FRM10-12 via the Office Script button</div>
             <div class="w">&#128308; Never <b>Refresh All</b>, never COM <code>RefreshAll</code>. <code>TableOrders</code> reads the sheet table it writes back to, and a generic refresh re-lands it without six native formula columns.</div></div>
         </div>
 
         <div class="it" data-id="V007">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">8</span>Paste transfer <code>v007</code></div>
+          <div><div class="t"><span class="id">9</span>Paste transfer <code>v007</code></div>
             <div class="w">Expect Create <b>122</b> / Update <b>130</b> <code>item/*</code>, <code>toLower(</code> <b>34</b>. Urgent rather than tidy: v006&rsquo;s mapping would re-install the R22 JSON blob on the 979 repaired rows as its last act.</div></div>
         </div>
       </div>
@@ -321,31 +327,31 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <div class="items">
         <div class="it" data-id="RUN">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">9</span>Run the flow once</div>
+          <div><div class="t"><span class="id">10</span>Run the flow once</div>
             <div class="w">Full table, from the <b>Run</b> button on the detail page, not the canvas. Click <b>once</b> &mdash; a second concurrent run conflicts.</div></div>
         </div>
 
         <div class="it" data-id="VERIFY">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">10</span>Verify by reading data, never by status</div>
+          <div><div class="t"><span class="id">11</span>Verify by reading data, never by status</div>
             <div class="w">&#128308; <b>A healthy run still reports <code>Failed</code>.</b> Check stored times are <code>04:00</code>/<code>05:00Z</code>, and read the write action&rsquo;s raw inputs.</div></div>
         </div>
 
         <div class="it" data-id="DIFF">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">11</span>Re-diff both directions &rarr; 0</div>
+          <div><div class="t"><span class="id">12</span>Re-diff both directions &rarr; 0</div>
             <div class="w">Three units get <b>created</b>: <code>20877R1-1/1</code>, <code>P20002-1/1</code>, <code>P21911_A-1/1</code> &mdash; all three have Orders. Anything else appearing here is a new problem with no known explanation.</div></div>
         </div>
 
         <div class="it" data-id="DELFLOW">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">12</span>Delete the transfer flow</div>
+          <div><div class="t"><span class="id">13</span>Delete the transfer flow</div>
             <div class="w">Keep the <code>.zip</code> &mdash; it is the only artifact that re-imports. A definition-only JSON cannot restore a flow.</div></div>
         </div>
 
         <div class="it" data-id="N8B">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">13</span>Re-run <code>n8_split_status.js</code></div>
+          <div><div class="t"><span class="id">14</span>Re-run <code>n8_split_status.js</code></div>
             <div class="w">&#128308; <b>Before any viewer refresh.</b> The run rewrites the composite <code>Status</code> from Excel and leaves the split pair stale &mdash; and the viewer now derives <code>Status</code> <em>from</em> that pair. Refresh in between and it shows yesterday&rsquo;s stamp, silently, because every value is well-formed.</div></div>
         </div>
       </div>
@@ -357,31 +363,31 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <div class="items">
         <div class="it" data-id="DELDUP">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">14</span>Delete <code>Order - Order Number</code> and <code>Order - Qty</code></div>
+          <div><div class="t"><span class="id">15</span>Delete <code>Order - Order Number</code> and <code>Order - Qty</code></div>
             <div class="w">Duplicates of the <code>OrderNumber</code> lookup and the native <code>Qty</code>. Not before now &mdash; the transfer flow writes both until its final run.</div></div>
         </div>
 
         <div class="it" data-id="N4">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">15</span>Run <code>n4_convert_choice_columns.js</code></div>
+          <div><div class="t"><span class="id">16</span>Run <code>n4_convert_choice_columns.js</code></div>
             <div class="w">Dry run first; expect <b>12</b> columns. It mirrors each parent&rsquo;s option list <em>and</em> its <code>FillInChoice</code>, so no value cleanup is needed first.</div></div>
         </div>
 
         <div class="it" data-id="REEXP">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">16</span>Re-export Order Items</div>
+          <div><div class="t"><span class="id">17</span>Re-export Order Items</div>
             <div class="w">&#128308; <b>Not optional.</b> The generator reads column types from this export to decide <code>item/X/Value</code> against <code>item/X</code>. A stale export silently produces the wrong shape, and a plain key into a Choice column stops landing without reporting anything.</div></div>
         </div>
 
         <div class="it" data-id="REGEN">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">17</span><code>gen_n3_flows.py</code>, then <code>verify_n3_flows.py</code></div>
+          <div><div class="t"><span class="id">18</span><code>gen_n3_flows.py</code>, then <code>verify_n3_flows.py</code></div>
             <div class="w">Assertion 8 fails loudly if the export is stale. Expect <b>17 / 5 / 24 / 1</b>.</div></div>
         </div>
 
         <div class="it" data-id="REPASTE">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">18</span>Re-stage and re-paste three flows</div>
+          <div><div class="t"><span class="id">19</span>Re-stage and re-paste three flows</div>
             <div class="w"><b>Order</b> (7 choice targets), <b>Models</b> (1), <b>Model Revisions</b> (4). <b>Clients is unaffected</b> &mdash; its one field is a Number.</div></div>
         </div>
       </div>
@@ -393,43 +399,43 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <div class="items">
         <div class="it" data-id="VREF">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">19</span>Refresh the viewer, check the conversions</div>
+          <div><div class="t"><span class="id">20</span>Refresh the viewer, check the conversions</div>
             <div class="w"><code>Tank</code>=<code>R</code>, <code>Location</code>=<code>XT</code>, <code>Frame</code>=<code>Plaspak</code> without erroring.</div></div>
         </div>
 
         <div class="it" data-id="VCONS">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">20</span>Verify <code>TableOrders</code> against all four consumers</div>
+          <div><div class="t"><span class="id">21</span>Verify <code>TableOrders</code> against all four consumers</div>
             <div class="w">FRM09, FRM11, FRM13, BO Manager. <b>FRM11 hardest</b> &mdash; it reads ten columns by literal string and its purge rule tests <code>Location</code> in two-letter codes.</div></div>
         </div>
 
         <div class="it" data-id="SNAP">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">21</span>Snapshot the file you are about to overwrite</div>
+          <div><div class="t"><span class="id">22</span>Snapshot the file you are about to overwrite</div>
             <div class="w">Into <code>live-workbook-data/</code>. That snapshot is the rollback for the deploy; the Index row rolls back separately.</div></div>
         </div>
 
         <div class="it" data-id="DEPLOY">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">22</span>Deploy the viewer to <code>Revue/FRM10-12.xlsx</code></div>
+          <div><div class="t"><span class="id">23</span>Deploy the viewer to <code>Revue/FRM10-12.xlsx</code></div>
             <div class="w">This overwrites the stale twin, which is why the snapshot comes first.</div></div>
         </div>
 
         <div class="it" data-id="INDEX">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">23</span>Edit the <code>Index</code> row by hand</div>
+          <div><div class="t"><span class="id">24</span>Edit the <code>Index</code> row by hand</div>
             <div class="w">Item <b>Id 8</b>, field <code>Path</code> &mdash; a Hyperlink, so the form shows two boxes. Address &rarr; <code>&hellip;/FAB/Revue/FRM10-12.xlsx</code>, i.e. just drop <code>Formulaires/</code>. <b>Keep the <code>%20</code></b>; every other row is percent-encoded. Leave Display text alone.</div></div>
         </div>
 
         <div class="it" data-id="PERM">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">24</span>Break permission inheritance on the deployed file</div>
+          <div><div class="t"><span class="id">25</span>Break permission inheritance on the deployed file</div>
             <div class="w">Staff <b>Read</b>, refresh operators <b>Edit</b>. A Power Query refresh has to save, so read-only-for-everyone breaks the very thing keeping FRM09 alive.</div></div>
         </div>
 
         <div class="it" data-id="FRM09">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">25</span>Refresh FRM09 and confirm it returns rows</div>
+          <div><div class="t"><span class="id">26</span>Refresh FRM09 and confirm it returns rows</div>
             <div class="w">&#128308; The proof the repoint worked. A wrong path <b>does not error</b> &mdash; it keeps succeeding against a workbook that has stopped changing.</div></div>
         </div>
       </div>
@@ -441,25 +447,25 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <div class="items">
         <div class="it" data-id="STAMP">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">26</span>REST-check <code>StepStatusStamped</code> = <code>StepStatus</code> on every row</div>
+          <div><div class="t"><span class="id">27</span>REST-check <code>StepStatusStamped</code> = <code>StepStatus</code> on every row</div>
             <div class="w">&#128308; If it has drifted, enabling the trigger flow re-stamps <b>246 real historical dates to today</b> &mdash; silently, because every value it writes is well-formed. Over REST, not from an export: the column is hidden, and hidden columns do not export.</div></div>
         </div>
 
         <div class="it" data-id="TRIG">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">27</span>Paste trigger <code>v002</code> and enable</div>
+          <div><div class="t"><span class="id">28</span>Paste trigger <code>v002</code> and enable</div>
             <div class="w">Watch 15 minutes. <b>If any run passes ten minutes, turn it straight back off.</b></div></div>
         </div>
 
         <div class="it" data-id="ENABLE">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">28</span>Enable the four sync flows, one at a time</div>
+          <div><div class="t"><span class="id">29</span>Enable the four sync flows, one at a time</div>
             <div class="w">They share a throughput bucket. Order &middot; Models &middot; Model Revisions &middot; Clients &mdash; all four tested on single-unit parents today.</div></div>
         </div>
 
         <div class="it" data-id="TEXTF">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">29</span>Retire the two TextField syncs</div>
+          <div><div class="t"><span class="id">30</span>Retire the two TextField syncs</div>
             <div class="w"><code>Model Revisions</code> and <code>Order</code>, off since 2026-08-21 and made redundant by N3. One staff view still displays <code>Order_Number_TextField</code> &mdash; check that view before retiring rather than after.</div></div>
         </div>
       </div>
@@ -471,13 +477,13 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       <div class="items">
         <div class="it" data-id="X5">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">30</span>Run <code>x5_backfill_order_folder.js</code></div>
+          <div><div class="t"><span class="id">31</span>Run <code>x5_backfill_order_folder.js</code></div>
             <div class="w">Fills the order-folder link on units whose order has one. Writes the <b>absolute</b> URL to match what the connector reads, so N3 does not rewrite them all once.</div></div>
         </div>
 
         <div class="it" data-id="X7">
           <button class="box" aria-label="Mark done">&#10003;</button>
-          <div><div class="t"><span class="id">31</span>Run <code>x7_verify_parent_sync.js</code> on a few units</div>
+          <div><div class="t"><span class="id">32</span>Run <code>x7_verify_parent_sync.js</code> on a few units</div>
             <div class="w">Read-back of all 46 mapped fields against the three parents; expect <code>MISMATCH 0</code>. A <code>200</code> proves a request was accepted, not that the right value landed.</div></div>
         </div>
       </div>

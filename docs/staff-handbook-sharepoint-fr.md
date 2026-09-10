@@ -42,9 +42,22 @@ vous n'aurez plus besoin de moi.
 
 **Les autres affichages**
 
-- **`BO Tracking`** montre seulement les unités qui ont un back order.
-- Vous verrez aussi des affichages que des collègues se sont bâtis. En ouvrir un ne change
-  rien pour eux, alors regardez si ça vous sert. C'est la même liste de toute façon.
+Les trois affichages FRM10-12 ont les mêmes colonnes, dans le même ordre. Seul le filtre
+change :
+
+| affichage | montre |
+|---|---|
+| **`FRM10-12 Layout`** | l'ouvrage actif : tout ce qui n'est pas encore livré |
+| **`FRM10-12 Completed`** | les unités livrées |
+| **`FRM10-12 All`** | tout, livré ou non |
+
+**`FRM10-12 All`**, c'est celui à vérifier quand une unité a l'air d'avoir disparu. Neuf
+fois sur dix elle a simplement été livrée et est sortie de `FRM10-12 Layout`.
+
+**`BO Tracking`** montre seulement les unités qui ont un back order.
+
+Vous verrez aussi des affichages que des collègues se sont bâtis. En ouvrir un ne change
+rien pour eux, alors regardez si ça vous sert. C'est la même liste de toute façon.
 
 ## Mettre une unité à jour
 
@@ -163,6 +176,8 @@ Les quatre que vous utiliserez au quotidien :
 |---|---|---|
 | **FRM10-12 Layout** | 24 | **Commencez ici.** La disposition du classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Trié par date de livraison prévue. Unités actives seulement. |
 | **BO Tracking** | 23 | Le suivi des pièces en rupture (*back order*) : seulement les unités qui ont un BO, regroupées par BO, triées par date d'encuvage prévue. |
+| **FRM10-12 Completed** | 24 | Mêmes colonnes, unités livrées seulement. |
+| **FRM10-12 All** | 24 | Mêmes colonnes, sans filtre. **À vérifier en premier quand une unité semble manquer.** |
 | **BO Tracking** | 23 | Suivi des back orders : seulement les unités qui ont un BO, regroupé par BO, trié par date d'encuvage prévue. |
 
 ### Vous allez en voir d'autres, et c'est normal

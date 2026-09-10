@@ -38,9 +38,21 @@ than to tidy up later. After the first one you will not need me.
 
 **The other views**
 
-- **`BO Tracking`** shows only units that have a back order.
-- You will also see views colleagues have built for themselves. Opening one changes
-  nothing for them, so look if it is useful. It is the same list either way.
+All three FRM10-12 views have the same columns in the same order. Only the filter differs:
+
+| view | shows |
+|---|---|
+| **`FRM10-12 Layout`** | live work: everything not yet delivered |
+| **`FRM10-12 Completed`** | units that have been delivered |
+| **`FRM10-12 All`** | everything, delivered or not |
+
+**`FRM10-12 All`** is the one to check when a unit seems to have vanished. Nine times out
+of ten it has simply been delivered and dropped out of `FRM10-12 Layout`.
+
+**`BO Tracking`** shows only units that have a back order.
+
+You will also see views colleagues have built for themselves. Opening one changes nothing
+for them, so look if it is useful. It is the same list either way.
 
 ## Updating a unit
 
@@ -146,11 +158,13 @@ look the way you expect, that's usually why: you're still on a different view. J
 
 ## 3. The views that exist
 
-The two shared ones:
+The shared ones. The three FRM10-12 views are the same columns with a different filter:
 
 | View | Columns | What it's for |
 |---|---|---|
 | **FRM10-12 Layout** | 24 | **Start here.** The workbook's layout: the same columns, in the same order you are used to. Sorted by planned delivery date. Active units only. |
+| **FRM10-12 Completed** | 24 | Same columns, delivered units only. |
+| **FRM10-12 All** | 24 | Same columns, no filter. **Check here first when a unit seems to be missing.** |
 | **BO Tracking** | 23 | Back-order tracking: only units that have a BO, grouped by BO, sorted by planned tanking date. |
 
 ### You'll see others, and that's fine
@@ -244,7 +258,8 @@ Two things about grouping that surprise almost everyone:
 Before you do, these three checks resolve the large majority of cases:
 
 1. **Check which view you're on** (top of the list). It's the number-one cause of "units are
-   missing".
+   missing", and the usual answer is that the unit was delivered, so it left
+   `FRM10-12 Layout`. Look in **`FRM10-12 All`**.
 2. **Look for a funnel icon** in the headers, a filter someone left on by accident.
 3. **Is the view grouped?** If so, see section 7, whole groups can drop off the end of a view
    without any warning that they have.

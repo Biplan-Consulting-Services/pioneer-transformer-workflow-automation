@@ -67,6 +67,8 @@ Les quatre que vous utiliserez au quotidien :
 |---|---|---|
 | **FRM10-12 Layout** | 24 | **Commencez ici.** La disposition du classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Trié par date de livraison prévue. Unités actives seulement. |
 | **BO Tracking** | 23 | Le suivi des pièces en rupture (*back order*) : seulement les unités qui ont un BO, regroupées par BO, triées par date d'encuvage prévue. |
+| **FRM10-12 Completed** | 24 | Mêmes colonnes, unités livrées seulement. |
+| **FRM10-12 All** | 24 | Mêmes colonnes, sans filtre. **À vérifier en premier quand une unité semble manquer.** |
 | **BO Tracking** | 23 | Suivi des back orders : seulement les unités qui ont un BO, regroupé par BO, trié par date d'encuvage prévue. |
 
 ### Vous allez en voir d'autres, et c'est normal

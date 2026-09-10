@@ -44,9 +44,21 @@ than to tidy up later. After the first one you will not need me.
 
 **The other views**
 
-- **`BO Tracking`** shows only units that have a back order.
-- You will also see views colleagues have built for themselves. Opening one changes
-  nothing for them, so look if it is useful. It is the same list either way.
+All three FRM10-12 views have the same columns in the same order. Only the filter differs:
+
+| view | shows |
+|---|---|
+| **`FRM10-12 Layout`** | live work: everything not yet delivered |
+| **`FRM10-12 Completed`** | units that have been delivered |
+| **`FRM10-12 All`** | everything, delivered or not |
+
+**`FRM10-12 All`** is the one to check when a unit seems to have vanished. Nine times out
+of ten it has simply been delivered and dropped out of `FRM10-12 Layout`.
+
+**`BO Tracking`** shows only units that have a back order.
+
+You will also see views colleagues have built for themselves. Opening one changes nothing
+for them, so look if it is useful. It is the same list either way.
 
 ## Updating a unit
 

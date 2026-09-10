@@ -24,6 +24,15 @@ LANES = [
    "handbook names them and they were reasoned, never read off the screen. Thirty seconds "
    "&mdash; and staff search for those exact words, so a wrong one makes them doubt the parts "
    "that are right."),
+  ("VIEWS2", "Create <code>FRM10-12 Completed</code> and <code>FRM10-12 All</code>",
+   "&#128308; <b>Before publishing the handbook, which now names them.</b> Open "
+   "<code>FRM10-12 Layout</code>, <b>Save view as</b>, change only the filter: "
+   "<code>Item Status = Delivered</code> for Completed, no filter at all for All. Same 24 "
+   "columns, same order. <code>Item Status</code> holds exactly two values today, Active "
+   "1022 and Delivered 102, so the split is clean. <code>FRM10-12 All</code> is what the "
+   "guide sends people to when a unit seems to have vanished, which is nearly always a "
+   "delivered unit dropping out of the default view. This replaces <code>All Items</code> "
+   "in that role: 74 unordered columns is not a troubleshooting tool."),
   ("PUBHB", "Publish the handbook",
    "<code>staff-handbook-sharepoint.md</code> and <code>-fr.md</code> onto a SharePoint page. "
    "Depends on nothing, and the email needs its link &mdash; so it is the one staff-facing "

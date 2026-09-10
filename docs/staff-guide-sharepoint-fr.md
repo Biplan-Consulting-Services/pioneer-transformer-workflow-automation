@@ -49,9 +49,22 @@ vous n'aurez plus besoin de moi.
 
 **Les autres affichages**
 
-- **`BO Tracking`** montre seulement les unités qui ont un back order.
-- Vous verrez aussi des affichages que des collègues se sont bâtis. En ouvrir un ne change
-  rien pour eux, alors regardez si ça vous sert. C'est la même liste de toute façon.
+Les trois affichages FRM10-12 ont les mêmes colonnes, dans le même ordre. Seul le filtre
+change :
+
+| affichage | montre |
+|---|---|
+| **`FRM10-12 Layout`** | l'ouvrage actif : tout ce qui n'est pas encore livré |
+| **`FRM10-12 Completed`** | les unités livrées |
+| **`FRM10-12 All`** | tout, livré ou non |
+
+**`FRM10-12 All`**, c'est celui à vérifier quand une unité a l'air d'avoir disparu. Neuf
+fois sur dix elle a simplement été livrée et est sortie de `FRM10-12 Layout`.
+
+**`BO Tracking`** montre seulement les unités qui ont un back order.
+
+Vous verrez aussi des affichages que des collègues se sont bâtis. En ouvrir un ne change
+rien pour eux, alors regardez si ça vous sert. C'est la même liste de toute façon.
 
 ## Mettre une unité à jour
 
