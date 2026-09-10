@@ -93,8 +93,9 @@ Smallest flow, 5 fields, and **all 5 already match** between `M-ATCO-0002` and u
 the correct result is that the flow runs and *writes nothing*.
 
 1. Turn the flow ON.
-2. Edit the `Models` row `M-ATCO-0002` — change **`Notes`**, which is not one of the 5
-   synced fields. Save.
+2. Edit the `Models` row `M-ATCO-0002` — change **`Notes`**. Verified against `MODELS_MAP`:
+   the Models flow syncs only `Estimated Effort`, `Latest Model Revision`, `Model_ID`,
+   `Modification_Status` and `Parent Model`, so `Notes` is safely outside it. Save.
 3. Open the run.
 
 | expect | meaning |
@@ -112,9 +113,17 @@ Then turn the flow OFF.
 
 ### Test B · `Order Items - sync from Model Revisions` — same test, 24 fields
 
-`MR-ATCO-0002-V1` also matches unit 994 on all 24. Same method: edit a **non-synced** field
-on the revision row (`Client` and `Spec_ID` are not among the 24 — check
-`workflow-data/n3-flows/MAPPING.md` before picking one), save, read the run.
+`MR-ATCO-0002-V1` also matches unit 994 on all 24. Same method — but **the field to edit
+is different here**, and it is worth being careful about:
+
+⚠️ On `Model Revisions`, unlike `Models`, **`Notes` and `Spec_ID` are both among the 24.**
+Editing either would make this a write test instead of a no-op test. Of the columns on that
+list, only four are not synced: `Client` (a lookup — changing it means something) and three
+dead `*_TextField` mirrors.
+
+**Edit `Pioneer_Model_Code_TextField`** on `MR-ATCO-0002-V1`. It is a mirror whose sync flow
+has been off since 2026-08-21, N3 makes it redundant, and runbook 4.3 retires it — so a
+stray value there costs nothing. Save, then read the run.
 
 Expect: 1 item, `needsUpdate` **false**, no write.
 
@@ -167,7 +176,8 @@ captured connector payload anywhere in this repo showing a Hyperlink column. So:
 **Run 2 — does the guard hold?** This is the more important half.
 
 4. Edit `Order` `E21003R1` again, this time changing a field that is **not** one of the 19.
-   `Lead Time` is a good choice. Save.
+   `Lead Time` is a good choice — verified absent from `ORDER_MAP`, and it is a per-order
+   override nothing downstream trusts anyway (see the repo CLAUDE.md on FRM13). Save.
 
 | expect | |
 |---|---|
@@ -200,8 +210,10 @@ unit 994 — decide then.**
 
 ### Cleanup
 
-With all three flows **OFF**, set `Sales Notes` on `E21003R1` back to empty and `Notes` on
-`M-ATCO-0002` back to its original value. Reverting a parent with the flow off leaves unit
+With all three flows **OFF**, revert the three test edits: `Sales Notes` on `E21003R1` back
+to empty, `Notes` on `M-ATCO-0002` back to its original value, and
+`Pioneer_Model_Code_TextField` on `MR-ATCO-0002-V1` back to what it held (or just leave that
+one — it is a dead mirror being retired at 4.3). Reverting a parent with the flow off leaves unit
 994 still holding the test string — that is fine and expected; the first real run after
 cutover corrects it.
 
