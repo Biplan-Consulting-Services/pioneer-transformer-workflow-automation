@@ -14,7 +14,7 @@ checklist at the bottom.
 
 ## FRANÇAIS
 
-**Objet : FRM10-12 — la bascule se fait ce soir. Voici ce qui change demain.**
+**Objet : FRM10-12 : la bascule se fait ce soir. Voici ce qui change demain.**
 
 Bonjour à tous,
 
@@ -24,8 +24,8 @@ référence officielle** pour le suivi des unités.
 **Ce qu'il faudra faire**
 
 Faites vos mises à jour dans la liste **`Order Items`** dans SharePoint. La vue
-**`FRM10-12 Layout`** vous présente les mêmes colonnes, dans le même ordre que dans le classeur —
-vous devriez vous y retrouver tout de suite.
+**`FRM10-12 Layout`** vous présente les mêmes colonnes, dans le même ordre que dans le
+classeur, donc vous devriez vous y retrouver tout de suite.
 
 **Ce qu'il ne faudra plus faire**
 
@@ -34,9 +34,9 @@ vous devriez vous y retrouver tout de suite.
 
 **Si vous voulez seulement consulter le classeur**
 
-Utilisez la version **FRM10-12 — lecture seule** : **[LIEN]**
+Utilisez la version **FRM10-12 (lecture seule)** : **[LIEN]**
 C'est une copie de consultation : on ne peut pas y écrire, et elle se reconstruit à partir de
-SharePoint à chaque rafraîchissement — donc **elle date du dernier rafraîchissement, pas de la
+SharePoint à chaque rafraîchissement, donc **elle date du dernier rafraîchissement, pas de la
 minute**. Pour la donnée à jour à la seconde près, c'est SharePoint.
 
 **Le guide complet** (comment saisir, comment lire les affichages) : **[LIEN GUIDE]**
@@ -46,10 +46,10 @@ minute**. Pour la donnée à jour à la seconde près, c'est SharePoint.
 Quelques colonnes cessent d'être une case où l'on tape une lettre et deviennent un vrai
 contrôle. Même information, mais plus de convention à retenir :
 
-- **Cases à cocher** — `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` (avant : `R`),
+- **Cases à cocher** : `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` (avant : `R`),
   `Temperature Rise`, `Impulse`, `Partial D`, `Oil Analysis`, `DB` (avant : `x`),
   `SFRA` (avant : `Y`).
-- **Listes déroulantes** — `Order Type`, `Order Step`, `Order Status`, `Indexing`,
+- **Listes déroulantes** : `Order Type`, `Order Step`, `Order Status`, `Indexing`,
   `WET-WETP`, `Client Date Status`, `Core Type`, `Family`, `Model Type`, `Oil Type`,
   `Modification Status`, `New model to be created`. Les valeurs existantes restent
   affichées telles quelles; c'est seulement la saisie qui est encadrée.
@@ -57,7 +57,7 @@ contrôle. Même information, mais plus de convention à retenir :
 - **Le dossier de la commande** apparaît directement sur l'unité : la colonne
   **Order - Order Folder** pointe vers l'endroit où vivent tous les documents de la
   commande.
-- **Deux colonnes disparaissent** — `Order - Order Number` et `Order - Qty`. Rien n'est
+- **Deux colonnes disparaissent** : `Order - Order Number` et `Order - Qty`. Rien n'est
   perdu : c'était la même information deux fois. Le numéro de commande reste dans
   **Order Number**, la quantité dans **Qty**.
 
@@ -65,12 +65,12 @@ contrôle. Même information, mais plus de convention à retenir :
 
 Les **délais par client** (FRM13) s'en viennent dans SharePoint. Une fois là, la **date de
 livraison estimée** et la **date due d'ingénierie** se calculeront toutes seules sur
-l'unité, au lieu d'être une formule dans le classeur. Je vous reviens là-dessus — rien à
+l'unité, au lieu d'être une formule dans le classeur. Je vous reviens là-dessus. Rien à
 faire de votre côté.
 
 **Une question, un doute, quelque chose qui cloche ?**
 
-Venez me voir tout de suite — sur Teams, ou à **soleil.anker@ermco-eci.com**. Mieux vaut poser la
+Venez me voir tout de suite, sur Teams ou à **soleil.anker@ermco-eci.com**. Mieux vaut poser la
 question deux minutes que de saisir au mauvais endroit toute la journée.
 
 Merci à tous,
@@ -80,7 +80,7 @@ Soleil Anker-Baril
 
 ## ENGLISH
 
-**Subject: FRM10-12 — the cutover happens tonight. Here is what changes tomorrow.**
+**Subject: FRM10-12: the cutover happens tonight. Here is what changes tomorrow.**
 
 Hello everyone,
 
@@ -90,7 +90,8 @@ official record** for unit tracking.
 **What to do from tomorrow**
 
 Make your updates in the **`Order Items`** list in SharePoint. The **`FRM10-12 Layout`** view shows
-the same columns, in the same order as the workbook — it should look familiar straight away.
+the same columns, in the same order as the workbook, so it should look familiar straight
+away.
 
 **What to stop doing**
 
@@ -99,9 +100,9 @@ be transferred** and will be lost.
 
 **If you just want to look at the workbook**
 
-Use the **FRM10-12 — read-only** version: **[LINK]**
+Use the **FRM10-12 (read-only)** version: **[LINK]**
 It is a reference copy: you cannot write to it, and it rebuilds from SharePoint each time it is
-refreshed — so **it is as current as the last refresh, not as current as this minute**. For
+refreshed, so **it is as current as the last refresh, not as current as this minute**. For
 up-to-the-second data, go to SharePoint.
 
 **The full guide** (how to enter data, how to read the views): **[GUIDE LINK]**
@@ -111,17 +112,17 @@ up-to-the-second data, go to SharePoint.
 A few columns stop being a cell you type a letter into and become a proper control. Same
 information, one less convention to remember:
 
-- **Checkboxes** — `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` (was `R`),
+- **Checkboxes**: `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` (was `R`),
   `Temperature Rise`, `Impulse`, `Partial D`, `Oil Analysis`, `DB` (was `x`),
   `SFRA` (was `Y`).
-- **Dropdowns** — `Order Type`, `Order Step`, `Order Status`, `Indexing`, `WET-WETP`,
+- **Dropdowns**: `Order Type`, `Order Step`, `Order Status`, `Indexing`, `WET-WETP`,
   `Client Date Status`, `Core Type`, `Family`, `Model Type`, `Oil Type`,
   `Modification Status`, `New model to be created`. Existing values keep showing exactly
   as they are; it is only new entry that is constrained.
 - **`Status`** becomes two fields: **Step Status** (the step) and **Status Date** (the date).
-- **The order's folder** now appears on the unit itself — the **Order - Order Folder**
+- **The order's folder** now appears on the unit itself. The **Order - Order Folder**
   column points at where every document filed against that order lives.
-- **Two columns disappear** — `Order - Order Number` and `Order - Qty`. Nothing is lost:
+- **Two columns disappear**: `Order - Order Number` and `Order - Qty`. Nothing is lost:
   they were the same information twice. The order number stays in **Order Number**, the
   quantity in **Qty**.
 
@@ -129,11 +130,11 @@ information, one less convention to remember:
 
 The **per-client lead times** from FRM13 are moving into SharePoint. Once they are there,
 **Estimated Delivery Date** and **Engineering Due Date** will calculate themselves on the
-unit instead of being a formula in the workbook. I will follow up — nothing for you to do.
+unit instead of being a formula in the workbook. I will follow up. Nothing for you to do.
 
 **Questions, doubts, anything that looks wrong?**
 
-Come and find me straight away — on Teams, or at **soleil.anker@ermco-eci.com**. Two minutes of
+Come and find me straight away, on Teams or at **soleil.anker@ermco-eci.com**. Two minutes of
 asking beats a whole day of entering things in the wrong place.
 
 Thanks everyone,

@@ -1,4 +1,4 @@
-# SharePoint views — how they work
+# SharePoint views: how they work
 
 *French version: `views-guide-sharepoint-fr.md`. Both have the same structure, section by
 section.*
@@ -6,7 +6,7 @@ section.*
 > **Where things stand today (2026-09-04).** We are in a **parallel run**: **FRM10-12 is still
 > live and you keep using it exactly as before.** Nothing about your daily work changes yet.
 > SharePoint is filling up alongside it so it is ready on the day we switch over properly. This
-> guide explains how to read what's there — not how to change the way you work.
+> guide explains how to read what's there, not how to change the way you work.
 
 ---
 
@@ -18,7 +18,7 @@ A **view** (*affichage*) is a **way of looking** at that list: which columns are
 order, grouped how, sorted how, and which ones are hidden.
 
 The picture to keep in mind: the list is the whole workbook. A view is a **pair of glasses**.
-Changing glasses doesn't change what's written — only what you see.
+Changing glasses doesn't change what's written, only what you see.
 
 **What follows from that, and this is the part that matters:**
 
@@ -45,26 +45,26 @@ The four you'll use day to day:
 | View | Columns | What it's for |
 |---|---|---|
 | **Production Floor** | 6 | The main shop-floor view: where every unit is right now. Grouped by `Location`, with a colour per step. Sorted by estimated delivery date. Active units only. |
-| **Planning** | 24 | The workbook's **collapsed** layout — the same columns, in the same order you see in FRM10-12 when the column groups are closed. Sorted by planned delivery date. Active units only. |
+| **Planning** | 24 | The workbook's **collapsed** layout, the same columns, in the same order you see in FRM10-12 when the column groups are closed. Sorted by planned delivery date. Active units only. |
 | **BO Tracking** | 23 | Back-order tracking: only units that have a BO, grouped by BO, sorted by planned tanking date. |
-| **All Items** | 74 | Everything, unfiltered and ungrouped. It's the default view, and the safety net — if a unit seems to be missing elsewhere, it's here. |
+| **All Items** | 74 | Everything, unfiltered and ungrouped. It's the default view, and the safety net, if a unit seems to be missing elsewhere, it's here. |
 
 ### You'll see others, and that's fine
 
-The menu also has views colleagues have made for themselves — for example
+The menu also has views colleagues have made for themselves, for example
 **`Angelique reunion du lundi`**. Someone has already made **their own copy of `Planning`** for
 their Monday meeting: start from an existing view, use "Save view as", and give it a name of
 your own.
 
-**That's section 1 in action.** Those views are **not** copies of the data — it's the same list
+**That's section 1 in action.** Those views are **not** copies of the data, it's the same list
 seen through different glasses. Opening a colleague's view disturbs nobody and changes nothing.
 
 And that's the point at which you can start adjusting: drop columns, change the sort, group it
-differently — **in your copy**, without touching the original. See section 6.
+differently, **in your copy**, without touching the original. See section 6.
 
 ## 4. Grouping
 
-In **Production Floor**, units are **grouped by `Location`** — the production step: `Bobinage`,
+In **Production Floor**, units are **grouped by `Location`**: the production step: `Bobinage`,
 `Assemblage`, `Four`, `Finition`, `Livraison`, `Réparation`, `Entrepôt`, and the others you
 already know.
 
@@ -87,7 +87,7 @@ To get back to normal: reopen the view from the menu at the top, or clear the fi
 same column menu.
 
 An active filter shows a **small funnel icon** in the header. If a list looks unexpectedly short,
-**look for the funnel** — that's nearly always the explanation.
+**look for the funnel**, that's nearly always the explanation.
 
 ## 6. What not to do
 
@@ -98,7 +98,7 @@ just for you.
 Sorting and filtering from the column headers (section 5) is safe and is not what this is about.
 What to avoid is **Edit current view** and **Save view**.
 
-**If you want a layout of your own, that's completely fine** — it's how
+**If you want a layout of your own, that's completely fine**, it's how
 `Angelique reunion du lundi` came about. The one catch is that a view made that way is **public
 by default**: it shows up in everyone's menu. That's no disaster, but if you'd rather keep it to
 yourself, or you're not sure, **come and find me** and we'll set it up together. It takes two
@@ -106,7 +106,7 @@ minutes.
 
 ## 7. If you group your view and some groups look empty
 
-**Nothing has been deleted.** The rows are still there — the view just stopped early, before it
+**Nothing has been deleted.** The rows are still there, the view just stopped early, before it
 reached them.
 
 This happens when one group is much bigger than all the others. If most units have no `Location`
@@ -121,7 +121,7 @@ Two settings prevent it:
 - **Group By → "By default, show groupings: Collapsed."** A collapsed group still shows its
   header and its count, so you can see every group and click into the one you want.
 - **Item Limit → "Display items in batches of the specified size."** *Not* "Limit the total
-  number of items returned" — that one makes the view stop at the limit with no way to see the
+  number of items returned", that one makes the view stop at the limit with no way to see the
   rest.
 
 Two things about grouping that surprise almost everyone:
@@ -130,21 +130,20 @@ Two things about grouping that surprise almost everyone:
   The order of the groups is set in the **Group By** section instead. Setting it in Sort looks
   like it should work and silently has no effect.
 - **A blank date counts as the *earliest* date.** So sorting by a date puts the unplanned items
-  at the top, not the bottom. If that's not what you want, ask — we'll set up a sort that puts
+  at the top, not the bottom. If that's not what you want, ask, we'll set up a sort that puts
   blanks last.
 
 ## 8. Something look wrong?
 
-**Come ask Soleil Anker-Baril** — on Teams, or at soleil.anker@ermco-eci.com.
+**Come ask Soleil Anker-Baril**, on Teams, or at soleil.anker@ermco-eci.com.
 
 Before you do, these three checks resolve the large majority of cases:
 
 1. **Check which view you're on** (top of the list). It's the number-one cause of "units are
    missing".
-2. **Look for a funnel icon** in the headers — a filter someone left on by accident.
-3. **Is the view grouped?** If so, see section 7 — whole groups can drop off the end of a view
+2. **Look for a funnel icon** in the headers, a filter someone left on by accident.
+3. **Is the view grouped?** If so, see section 7, whole groups can drop off the end of a view
    without any warning that they have.
 
-If it's none of those: if a unit is missing, a column is empty when it shouldn't be, or something just
-doesn't seem right — **don't work around it and don't guess.** Come and ask. It's a new system
+If it's none of those: if a unit is missing, a column is empty when it shouldn't be, or something just doesn't seem right. **Don't work around it and don't guess.** Come and ask. It's a new system
 and finding the rough edges early is genuinely helpful.

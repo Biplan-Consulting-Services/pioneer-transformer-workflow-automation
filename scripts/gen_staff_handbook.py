@@ -16,6 +16,12 @@ WHY STITCHED AND NOT REWRITTEN
   and keeps a single "something look wrong" at the end.
 
   EDIT THE SOURCE GUIDES, NOT THE HANDBOOKS. The handbooks are build output.
+
+  ⚠️ NO EM DASHES in anything staff read. They are a tell of machine-written text and
+  nobody writes a work guide with them; the user asked for them gone on 2026-09-10 and
+  `dedash_guides.py` took 84 out of the four source guides. The title and intro strings
+  BELOW are part of what staff read, so they follow the same rule. A colon or a comma
+  does the job in almost every case, and two sentences want a full stop.
 """
 import io, os, re
 
@@ -26,21 +32,21 @@ CFG = [
     dict(lang="en",
          staff="staff-guide-sharepoint.md", views="views-guide-sharepoint.md",
          out="staff-handbook-sharepoint.md",
-         title="# Order Items in SharePoint — staff handbook",
+         title="# Order Items in SharePoint: staff handbook",
          intro=("Everything you need for day-to-day unit tracking now that production tracking has\n"
                 "moved out of FRM10-12. Two parts: **doing the work**, then **the views** you do it in.\n\n"
-                "Questions, anything that looks wrong, anything at all — **Soleil Anker-Baril**, on Teams\n"
+                "Questions, anything that looks wrong, anything at all: **Soleil Anker-Baril**, on Teams\n"
                 "or at soleil.anker@ermco-eci.com. Asking is always better than guessing.\n"),
          p1="# Part 1 · Doing the work", p2="# Part 2 · The views",
          ask_staff="Something look wrong"),
     dict(lang="fr",
          staff="staff-guide-sharepoint-fr.md", views="views-guide-sharepoint-fr.md",
          out="staff-handbook-sharepoint-fr.md",
-         title="# Order Items dans SharePoint — guide du personnel",
+         title="# Order Items dans SharePoint : guide du personnel",
          intro=("Tout ce qu'il faut pour le suivi des unités au quotidien, maintenant que le suivi de\n"
                 "production sort de FRM10-12. Deux parties : **faire le travail**, puis **les affichages**\n"
                 "dans lesquels vous le faites.\n\n"
-                "Une question, quelque chose qui cloche, n'importe quoi — **Soleil Anker-Baril**, sur Teams\n"
+                "Une question, quelque chose qui cloche, n'importe quoi : **Soleil Anker-Baril**, sur Teams\n"
                 "ou à soleil.anker@ermco-eci.com. Demander vaut toujours mieux que deviner.\n"),
          p1="# Partie 1 · Faire le travail", p2="# Partie 2 · Les affichages",
          ask_staff="Quelque chose"),
