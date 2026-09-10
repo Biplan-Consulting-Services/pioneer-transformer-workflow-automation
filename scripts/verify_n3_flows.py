@@ -8,7 +8,7 @@ against the current schema rather than trusted from generation time.
 
 Six assertions, each one a failure mode that would be silent in production:
 
-  1. field counts are 17 / 5 / 24                  -- a dropped mapping writes nothing
+  1. field counts are 17 / 5 / 24 / 1                  -- a dropped mapping writes nothing
   2. every target is one of the 48 columns N2 built (by internal name, exactly)
   3. every Choice/Lookup source is read `?['Value']`  -- the R22 lesson; without it the
      raw expanded reference is stored, which is what put 110 chars of JSON on 979 rows
@@ -26,8 +26,9 @@ Six assertions, each one a failure mode that would be silent in production:
      the flow (or the reverse) is caught here instead of in production, where a
      plain key into a Choice column simply stops landing
 
-Reads the internal names back out of `scripts/n2_create_columns.js`, which is the script
-that actually created the columns, rather than from a doc that could have drifted.
+Reads the internal names back out of the scripts that actually CREATED the columns --
+`n2_create_columns.js` for the 48 parent-sync ones, `_n5_template.js` for the `Cli*` ones
+-- rather than from a doc that could have drifted.
 """
 import json, io, os, re, sys, collections
 
@@ -39,6 +40,7 @@ EXPECTED = {
     "Order_Items__sync_from_Order.definition.json": ("Ord", 17),
     "Order_Items__sync_from_Models.definition.json": ("Mdl", 5),
     "Order_Items__sync_from_Model_Revisions.definition.json": ("Rev", 24),
+    "Order_Items__sync_from_Clients.definition.json": ("Cli", 1),
 }
 
 
@@ -54,6 +56,16 @@ def n2_internal_names():
     # are an OPTIONAL backslash then a quote -- `\\?"`, not `\?"`, which is a literal
     # question mark and matches nothing.
     names = set(re.findall(r'StaticName=\\?"((?:Ord|Mdl|Rev)[A-Za-z0-9]*)\\?"', src))
+
+    # The `Cli*` columns were not created by N2 -- they come from n5, which builds
+    # them from a table of [internal, type, display, extra]. Read that the same way
+    # and for the same reason: the script that creates a column is the only source
+    # that cannot have drifted from what exists. Without this the Clients flow's one
+    # target looks like a typo and the whole run reports PROBLEM.
+    n5 = os.path.join(HERE, "_n5_template.js")
+    if os.path.exists(n5):
+        t = io.open(n5, encoding="utf-8").read()
+        names |= set(re.findall(r'\["(Cli[A-Za-z0-9]*)",\s*"(?:Number|Text|DateTime|Boolean)"', t))
     return names
 
 
@@ -206,7 +218,7 @@ def main():
         print("     the generator both work from a stale picture of the list.")
     except Exception as e:
         print("could not read column types: %s" % e)
-    print("RESULT: %s" % ("OK -- all three re-verify against the columns N2 built"
+    print("RESULT: %s" % ("OK -- all four re-verify against the columns N2 and n5 created"
                           if ok else "PROBLEM -- do not paste"))
     return 0 if ok else 1
 

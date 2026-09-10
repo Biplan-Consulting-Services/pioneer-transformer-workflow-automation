@@ -54,11 +54,10 @@ LISTS = {
     "Order":           "6fe35dfe-2b7d-455a-abe3-056abb386733",
     "Models":          "b43a5140-0f9d-4ac1-9019-43b897074224",
     "Model Revisions": "e2ff8703-b590-4648-b181-9b47cf3883ba",
-    # UNSET on purpose. n5_clients_lead_time.js prints the Clients list id on its first
-    # line; paste it here. Empty rather than guessed: a wrong list GUID produces a flow
-    # that saves, runs, and silently watches the wrong list. The Clients flow is skipped
-    # with a warning until this is filled in; the other three generate normally.
-    "Clients":         "",
+    # Read off the platform 2026-09-10 by n5_clients_lead_time.js, not guessed -- a
+    # wrong list GUID produces a flow that saves, runs, and silently watches the wrong
+    # list. The generator still skips any flow whose list id is blank.
+    "Clients":         "3bcf7d97-0862-404d-ab3f-eeaa358c05d8",
 }
 HOST = {"apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
         "operationId": None, "connectionName": "shared_sharepointonline"}

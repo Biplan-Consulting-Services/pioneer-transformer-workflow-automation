@@ -70,6 +70,14 @@ Trigger list **Model Revisions** · fan-out filter `ModelRevisionId` · **24** f
 | `RevWireHV` | `Wire_x0028_HV_x0029_` | plain | `triggerOutputs()?['body/Wire_x0028_HV_x0029_']` |
 | `RevkVA` | `kVA_x0020_and_x0020_kV` | plain | `triggerOutputs()?['body/kVA_x0020_and_x0020_kV']` |
 
+## `Order Items - sync from Clients`
+
+Trigger list **Clients** · fan-out filter `ClientId` · **1** fields
+
+| → `Order Items` | ← source internal | source kind | read expression |
+|---|---|---|---|
+| `CliLeadTimeWeeks` | `CliLeadTimeWeeks` | plain | `triggerOutputs()?['body/CliLeadTimeWeeks']` |
+
 ## Deliberately excluded
 
 Nothing, as of 2026-09-10. `OrdOrderFolder` was the last exclusion and is now mapped — the connector reads a URL column as a plain string, proven by Test C. `OrdOrderNumber` and `OrdQty` were removed rather than excluded: they duplicated the `OrderNumber` lookup and the native `Qty`.
