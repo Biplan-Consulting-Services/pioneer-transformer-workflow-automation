@@ -16,13 +16,13 @@ snapshotted here.**
 
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
-| **v001** | 2026-09-10 02:17 | `pulled` | — | empty shell built in the designer 2026-09-10 -- trigger configured on Models, one throwaway Initialize_variable action. Baseline before the N3 definition is pasted in. | — | — | 0 | 0 | `557492e82b99` |
-| **v002** | 2026-09-10 02:18 | `local` | v001 | N3 Order_Items__sync_from_Models pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `e31280a3f551` |
+| **v001** | 2026-09-10 02:17 | `pulled` | — | empty shell built in the designer 2026-09-10 -- trigger configured on Models, one throwaway Initialize_variable action. Baseline before the N3 definition is pasted in. | — | — | 0 | 0 | `63ae3b8a03ed` |
+| **v002** | 2026-09-10 02:18 | `applied` | v001 | N3 Order_Items__sync_from_Models pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `9fb78fa19f04` |
 
 ## Right now
 
-- **Live:** v001 — empty shell built in the designer 2026-09-10 -- trigger configured on Models, one throwaway Initialize_variable action. Baseline before the N3 definition is pasted in.
-- **Pending (authored, not applied):** v002
+- **Live:** v002 — N3 Order_Items__sync_from_Models pasted into the shell, connectionReferences kept from v001
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 

@@ -16,13 +16,13 @@ snapshotted here.**
 
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
-| **v001** | 2026-09-10 10:27 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Model Revisions | — | — | 0 | 0 | `4d630fa421bf` |
-| **v002** | 2026-09-10 10:27 | `local` | v001 | N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `6a2c1c3e9add` |
+| **v001** | 2026-09-10 10:27 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Model Revisions | — | — | 0 | 0 | `9661af8f0a85` |
+| **v002** | 2026-09-10 10:27 | `applied` | v001 | N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `f09199591995` |
 
 ## Right now
 
-- **Live:** v001 — empty shell built in the designer 2026-09-10, trigger configured on Model Revisions
-- **Pending (authored, not applied):** v002
+- **Live:** v002 — N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 

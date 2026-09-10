@@ -28,7 +28,7 @@
     {
       "v": 2,
       "captured": "2026-09-10T10:27:05-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 1,
       "note": "N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001",
       "sha256": "f0919959199520870c29940b0d4acd8e0f59752cdfbf6b2f934e4d264058400a",
@@ -41,7 +41,7 @@
       "files": {
         "definition": "v002__2026-09-10T10-27__local__N3-Order-Items-sync-from-Model-Revisions-pasted-.json"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-10T18:12:25-04:00",
       "source": "n3-merged-Order_Items__sync_from_Model_Revisions.json"
     }
   ]
