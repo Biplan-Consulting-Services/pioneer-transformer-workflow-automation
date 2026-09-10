@@ -5,7 +5,7 @@
 
 ## `Order Items - sync from Order`
 
-Trigger list **Order** · fan-out filter `OrderNumberId` · **18** fields
+Trigger list **Order** · fan-out filter `OrderNumberId` · **19** fields
 
 | → `Order Items` | ← source internal | source kind | read expression |
 |---|---|---|---|
@@ -27,6 +27,7 @@ Trigger list **Order** · fan-out filter `OrderNumberId` · **18** fields
 | `OrdQty` | `Qty` | plain | `triggerOutputs()?['body/Qty']` |
 | `OrdSalesNotes` | `SalesNotes` | plain | `triggerOutputs()?['body/SalesNotes']` |
 | `OrdWETWETP` | `WET_x002d_WETP` | choice | `triggerOutputs()?['body/WET_x002d_WETP']?['Value']` |
+| `OrdOrderFolder` | `Order_x0020_Folder` | url | `triggerOutputs()?['body/Order_x0020_Folder']?['Url']` |
 
 ## `Order Items - sync from Models`
 

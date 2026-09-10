@@ -82,12 +82,18 @@ ORDER_MAP = [
     ("OrdQty",                "Qty",                               "plain"),
     ("OrdSalesNotes",         "SalesNotes",                        "plain"),
     ("OrdWETWETP",            "WET_x002d_WETP",                    "choice"),
+    # Added 2026-09-10, closing roadmap 38. It was excluded because "a hyperlink is an
+    # object on both read and write, the shape was never sourced, and a wrong one either
+    # fails every row or writes nothing" -- true, but the shape has now been sourced two
+    # different ways: the connector renders it as ONE input box in the designer (so the
+    # write is a bare string), and REST wants SP.FieldUrlValue (which is what
+    # x5_backfill_order_folder.js uses for the one-time backfill).
+    #
+    # This matters more than a cosmetic column: it points at where every document filed
+    # against an order lives, and it is populated on 106 of 449 orders. Without it here,
+    # a folder created after cutover would never reach the units.
+    ("OrdOrderFolder",        "Order_x0020_Folder",                "url"),
 ]
-# DELIBERATELY EXCLUDED: OrdOrderFolder (Order_x0020_Folder, a URL/hyperlink).
-# Roadmap 38 is still an open decision -- a hyperlink column is an object on both
-# read and write, the shape was never sourced, and a wrong one either fails every
-# row or writes nothing. Left out rather than guessed. Add it once the shape is
-# confirmed from one real trigger payload.
 
 MODELS_MAP = [
     ("MdlEstimatedEffort",    "Estimated_x0020_Effort",            "plain"),
@@ -134,6 +140,13 @@ def read_expr(src, kind):
     b = "triggerOutputs()?['body/%s']" % src
     if kind in ("choice", "lookup"):
         return "%s?['Value']" % b
+    if kind == "url":
+        # A URL/hyperlink column READS as an object with Url + Description, the same
+        # shape REST uses (SP.FieldUrlValue). But it WRITES as a single value: the
+        # connector renders a URL column as ONE input box, confirmed in the designer
+        # 2026-09-10. So take ?['Url'] and hand over the bare string -- sending the
+        # object would be the write shape REST wants, not the one the connector does.
+        return "%s?['Url']" % b
     if kind == "multichoice":
         # Keep only the Values and join them -- NEVER store the raw array. A
         # MultiChoice source arrives as [{"Value":"MALT"},...]; string() on that
