@@ -115,11 +115,10 @@ They are **copies, kept up to date automatically**. The unit shows them so you c
 order's PO or a model's voltage without opening another list, but the real value lives on
 the other list.
 
-**Don't type into them.** A value you type into one of these is not wrong straight away,
-which is what makes it worth warning about: it sits there looking correct until the next
-time somebody edits that order or model, and then it is silently replaced by whatever the
-other list says. If one of them is wrong, it needs fixing on the order, the model or the
-revision. Come and ask if you are not sure which.
+**Don't type into them.** This is not where the data lives. Anything entered here is
+replaced by the value from the source list as soon as that list changes. If one of them is
+wrong, it needs fixing on the order, the model or the revision. Come and ask if you are not
+sure which.
 
 ## Please don't
 

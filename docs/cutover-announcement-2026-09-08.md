@@ -73,9 +73,9 @@ Vous verrez des colonnes nommées `Order - ...`, `Model - ...`, `Mod. Rev. - ...
 Ce sont des **copies, tenues à jour automatiquement**. L'unité les affiche pour vous
 éviter d'aller les chercher ailleurs.
 
-🔴 **N'écrivez pas dans ces colonnes.** Une valeur saisie ici paraît correcte sur le
-coup, puis elle est remplacée sans avertissement dès que la commande ou le modèle est
-modifié. Pour corriger une de ces valeurs, il faut le faire sur la commande, sur le
+🔴 **N'écrivez pas dans ces colonnes.** Ce n'est pas la source de la donnée. Toute
+valeur saisie ici sera remplacée par celle de la liste d'origine dès que cette liste sera
+modifiée. Pour corriger une de ces valeurs, il faut le faire sur la commande, sur le
 modèle ou sur la révision. Venez me voir si vous ne savez pas laquelle.
 
 **Une question, un doute, quelque chose qui cloche ?**
@@ -148,10 +148,10 @@ You will see columns named `Order - ...`, `Model - ...`, `Mod. Rev. - ...`,
 They are **copies, kept up to date automatically**. The unit shows them so you don't have
 to go looking somewhere else.
 
-🔴 **Don't type into them.** What you type does not look wrong straight away: it sits
-there looking correct until somebody edits that order or model, and then it is replaced
-without warning. If one of those values is wrong, it needs fixing on the order, the model
-or the revision. Come and ask me if you are not sure which.
+🔴 **Don't type into them.** This is not where the data lives. Anything entered here is
+replaced by the value from the source list as soon as that list changes. If one of those
+values is wrong, it needs fixing on the order, the model or the revision. Come and ask me
+if you are not sure which.
 
 **Questions, doubts, anything that looks wrong?**
 

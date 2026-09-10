@@ -125,11 +125,10 @@ Ce sont des **copies, tenues à jour automatiquement**. L'unité vous les montre
 vous puissiez voir le PO d'une commande ou le voltage d'un modèle sans ouvrir une autre
 liste, mais la vraie valeur vit sur l'autre liste.
 
-**N'écrivez pas dedans.** Une valeur que vous tapez là n'est pas fausse tout de suite, et
-c'est justement ce qui est piégeant : elle reste affichée, l'air correcte, jusqu'à ce que
-quelqu'un modifie cette commande ou ce modèle, et là elle est remplacée sans avertissement
-par ce que dit l'autre liste. Si une de ces valeurs est fausse, ça se corrige sur la
-commande, le modèle ou la révision. Venez me voir si vous n'êtes pas certain lequel.
+**N'écrivez pas dans ces colonnes.** Ce n'est pas la source de la donnée. Toute valeur
+saisie ici sera remplacée par celle de la liste d'origine dès que cette liste sera
+modifiée. Pour corriger une de ces valeurs, il faut le faire sur la commande, sur le modèle
+ou sur la révision. Venez me voir si vous ne savez pas laquelle.
 
 ## S.V.P., ne pas faire
 
