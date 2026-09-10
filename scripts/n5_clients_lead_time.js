@@ -324,6 +324,35 @@
   for (const c of plan.clients)    await mk("Clients", c);
   for (const c of plan.orderItems) await mk("Order Items", c);
 
+  // 🔴 WAIT FOR THE SCHEMA TO CATCH UP BEFORE WRITING TO THE NEW COLUMNS.
+  // createfieldasxml returns 200 and the column really is created, but the list's
+  // OData entity type is cached, so an immediate write to it fails with
+  //     The property 'CliLeadTimeWeeks' does not exist
+  // and a $select naming it returns 400. Seen on the first real run, 2026-09-10:
+  // 7 columns created, all 17 seeds rejected, nothing written.
+  //
+  // Harmless in that nothing partial lands -- but without this the script reports a
+  // total failure that reads like a bad field name, when the fix is to wait a moment.
+  if (plan.clients.length || plan.orderItems.length) {
+    const want = plan.clients.map(c => c[0]);
+    process_wait: for (let a = 1; a <= 12; a++) {
+      await new Promise(r => setTimeout(r, 2500));
+      const now = new Set(((await cols(cl.Id)) || []).map(c => c.name));
+      const missing = want.filter(n => !now.has(n));
+      if (!missing.length) {
+        console.log("schema caught up after " + (a * 2.5) + "s");
+        break process_wait;
+      }
+      console.log("  waiting for the list schema (" + missing.length + " column(s) not visible yet)…");
+      if (a === 12) {
+        console.error("columns exist but the schema has not refreshed after 30s.");
+        console.error("Nothing was seeded. Re-run this script -- creation will skip and it");
+        console.error("will go straight to seeding.");
+        return;
+      }
+    }
+  }
+
   // --------------------------------------------------------------- seed values
   let ok=0, fail=0;
   for (const s of seed) {
@@ -335,7 +364,17 @@
       {method:"POST", credentials:"include",
        headers: Object.assign({"X-HTTP-Method":"MERGE","IF-MATCH":"*"}, H),
        body: JSON.stringify(body)});
-    if (r.ok) ok++; else { fail++; console.error("  "+s.title+" -> "+r.status+" "+(await r.text()).slice(0,160)); }
+    if (r.ok) ok++;
+    else {
+      fail++;
+      const t = await r.text();
+      console.error("  " + s.title + " -> " + r.status + " " + t.slice(0,160));
+      if (t.indexOf("does not exist") >= 0) {
+        console.error("  ^ the list schema has not picked up the new column yet.");
+        console.error("    Nothing has been written. Wait a moment and re-run this script.");
+        return;
+      }
+    }
   }
   console.log("\nseeded ok=" + ok + " failed=" + fail);
 
