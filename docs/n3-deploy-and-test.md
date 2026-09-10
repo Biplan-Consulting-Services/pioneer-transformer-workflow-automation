@@ -218,7 +218,24 @@ columns are `Currency` holding the same number, and the two exports render it di
 only because the parent carries `LCID="3084"` and the child does not. See *The Price
 question* below.
 
-**Run 1 — does it write the right thing?**
+**Run 1 — ✅ PASSED 2026-09-10 16:13** (after the `?['Url']` fix, v003).
+`Update unit` returned 200 against item 994, and the unit's version history records
+exactly two changes: `Order - Order Folder` set, and `test calculated column`
+recomputed (any item update re-evaluates a calculated column). **The other 16 fields
+produced no version entry, meaning they were written identically — the write is
+idempotent.** The link was opened and works.
+
+⚠️ **The value was normalised from relative to absolute.** All 106 orders store
+`/sites/PioneerPlanificatio/Order%20Library/<num>`; the unit received
+`https://ermcopower.sharepoint.com/sites/...`. Harmless for the link, but it makes run 2
+decisive: if the connector *reads* the relative form while *writing* the absolute one,
+the guard can never settle on any order that has a folder, and every future order edit
+rewrites all of its units — silently, since each run succeeds.
+It also means `x5_backfill_order_folder.js`, which copies the relative value verbatim
+over REST, may need to write whatever shape the connector reads. Do not run X5 until
+run 2 settles it.
+
+**Run 1 — the original instructions:**
 
 1. Turn the flow ON.
 2. Edit `Order` `E21003R1` (list ID 520): set **`Sales Notes`** to `N3 test 2026-09-10`. It
