@@ -1,0 +1,389 @@
+<title>Cutover Review</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f7f5f2; --card:#fffefc; --ink:#1b1e22; --muted:#5d6670;
+  --rule:#ded8d0; --copper:#a85c2b; --copper-soft:#f0e2d6;
+  --steel:#3d4a56; --flag:#8f2f2f; --flag-soft:#f6e6e4; --ok:#2f6b4f;
+  --shadow:0 1px 2px rgba(27,30,34,.05), 0 8px 24px -16px rgba(27,30,34,.25);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#16181b; --card:#1d2024; --ink:#e9e6e1; --muted:#9aa3ad;
+  --rule:#32373d; --copper:#d98d55; --copper-soft:#3a2b20;
+  --steel:#9fb0bf; --flag:#e08b83; --flag-soft:#3a2523; --ok:#7dc0a0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}}
+:root[data-theme="dark"]{
+  --paper:#16181b; --card:#1d2024; --ink:#e9e6e1; --muted:#9aa3ad;
+  --rule:#32373d; --copper:#d98d55; --copper-soft:#3a2b20;
+  --steel:#9fb0bf; --flag:#e08b83; --flag-soft:#3a2523; --ok:#7dc0a0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:15px;line-height:1.62;margin:0;padding:0 20px 96px}
+.wrap{max-width:820px;margin:0 auto}
+code{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.875em;background:var(--copper-soft);color:var(--ink);
+  padding:.08em .34em;border-radius:3px;white-space:nowrap}
+hr{border:0;border-top:1px solid var(--rule);margin:26px 0}
+
+header{padding:52px 0 26px;border-bottom:2px solid var(--ink)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--copper);margin:0 0 12px}
+h1{font-family:Newsreader,Georgia,serif;font-weight:600;font-size:clamp(34px,6vw,52px);
+  line-height:1.04;margin:0;letter-spacing:-.015em;text-wrap:balance}
+.sub{color:var(--muted);margin:14px 0 0;max-width:60ch}
+
+.decisions{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--flag);
+  border-radius:6px;padding:22px 24px;margin:30px 0 8px;box-shadow:var(--shadow)}
+.decisions h2{font-family:"IBM Plex Sans",sans-serif;font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--flag);margin:0 0 16px;font-weight:600}
+.dec{display:flex;gap:14px;padding:13px 0;border-top:1px solid var(--rule)}
+.dec:first-of-type{border-top:0;padding-top:0}
+.dec input{margin-top:5px;accent-color:var(--copper);width:15px;height:15px;flex:none}
+.dec div{min-width:0}
+.dec b{display:block;font-weight:600}
+.dec span{color:var(--muted);font-size:13.5px}
+
+nav{position:sticky;top:0;z-index:5;background:var(--paper);
+  border-bottom:1px solid var(--rule);padding:10px 0;margin:34px 0 0;
+  display:flex;gap:6px;flex-wrap:wrap}
+nav a{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);text-decoration:none;
+  padding:6px 11px;border-radius:4px;border:1px solid transparent}
+nav a:hover,nav a:focus-visible{color:var(--ink);border-color:var(--rule);background:var(--card)}
+
+section{padding-top:38px}
+h2.sec{font-family:Newsreader,Georgia,serif;font-weight:600;font-size:29px;
+  margin:0 0 4px;letter-spacing:-.01em}
+.note{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+.file{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--copper)}
+
+.tabs{display:flex;gap:4px;margin:0 0 -1px}
+.tabs button{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.06em;
+  text-transform:uppercase;padding:9px 16px;border:1px solid var(--rule);
+  border-bottom-color:transparent;background:var(--paper);color:var(--muted);
+  cursor:pointer;border-radius:5px 5px 0 0}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--ink);font-weight:500;
+  box-shadow:inset 0 2px 0 var(--copper)}
+
+.doc{background:var(--card);border:1px solid var(--rule);border-radius:0 6px 6px 6px;
+  padding:34px 38px;box-shadow:var(--shadow);overflow-wrap:break-word}
+.doc h2{font-family:Newsreader,Georgia,serif;font-size:24px;font-weight:600;
+  margin:34px 0 10px;letter-spacing:-.01em}
+.doc h3{font-size:15px;font-weight:600;margin:26px 0 8px;
+  padding-bottom:5px;border-bottom:1px solid var(--rule)}
+.doc h4{font-size:13.5px;font-weight:600;margin:20px 0 6px;color:var(--steel)}
+.doc > :first-child{margin-top:0}
+.doc p{margin:0 0 13px;max-width:66ch}
+.doc ul,.doc ol{margin:0 0 15px;padding-left:22px;max-width:66ch}
+.doc li{margin:0 0 6px}
+.doc blockquote{margin:16px 0;padding:12px 18px;border-left:3px solid var(--copper);
+  background:var(--copper-soft);border-radius:0 5px 5px 0}
+.doc blockquote p:last-child{margin-bottom:0}
+.tw{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--ink)}
+tbody tr:last-child td{border-bottom:0}
+
+details{background:var(--card);border:1px solid var(--rule);border-radius:6px;
+  margin:0 0 12px;box-shadow:var(--shadow)}
+summary{cursor:pointer;padding:16px 22px;font-weight:600;list-style:none;
+  display:flex;justify-content:space-between;align-items:center;gap:14px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"open";font-family:"IBM Plex Mono",monospace;font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--copper);flex:none}
+details[open] summary::after{content:"close"}
+details[open] summary{border-bottom:1px solid var(--rule)}
+details .doc{border:0;box-shadow:none;border-radius:0;background:transparent}
+summary span{color:var(--muted);font-weight:400;font-size:13px}
+
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
+  color:var(--muted);font-size:13px}
+@media (max-width:600px){ .doc{padding:22px 18px} body{padding:0 14px 70px} }
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;animation:none!important} }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Pioneer Transformer · 10 September 2026</p>
+  <h1>Cutover review</h1>
+  <p class="sub">The staff email and the handbook, exactly as they stand. Read them before
+  anything is sent — three things still need a decision from you, and they are at the top.</p>
+</header>
+
+<div class="decisions">
+  <h2>Needs you before sending</h2>
+  <label class="dec"><input type="checkbox">
+    <div><b>Two links</b><span>The read-only workbook, and wherever the handbook gets
+    published. Both appear in the email as <code>[LIEN]</code> / <code>[LIEN GUIDE]</code>.
+    Neither was invented here.</span></div></label>
+  <label class="dec"><input type="checkbox">
+    <div><b>Three French UI labels</b><span>Section 7 of the French handbook names
+    « Regrouper par », « Réduits » and « Limite d'éléments ». They were reasoned, never read
+    off the screen. Open the classic view-settings page in French and confirm — 30 seconds.</span></div></label>
+  <label class="dec"><input type="checkbox">
+    <div><b>Every line of “what changes tonight” has to have actually happened</b>
+    <span>It is written ahead of the work. The dropdowns depend on <code>n4</code>, the order
+    folder on <code>x5</code> plus the Order flow, the two removed columns on a manual delete.
+    If a step slips, cut the line rather than send a promise.</span></div></label>
+</div>
+
+<nav>
+  <a href="#email">The email</a>
+  <a href="#checklist">Before sending</a>
+  <a href="#handbook">The handbook</a>
+</nav>
+
+<section id="email">
+  <h2 class="sec">The staff email</h2>
+  <p class="note">French first — the office is in Montreal, the factory in Granby, and the
+  shop-floor vocabulary is already French. <span class="file">docs/cutover-announcement-2026-09-08.md</span></p>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" aria-controls="em-fr" id="t-fr">Français</button>
+    <button role="tab" aria-selected="false" aria-controls="em-en" id="t-en">English</button>
+  </div>
+  <div class="doc" id="em-fr" role="tabpanel" aria-labelledby="t-fr"><p><strong>Objet : FRM10-12 — la bascule est active. Ne plus y saisir de données.</strong></p>
+<p>Bonjour à tous,</p>
+<p><strong>À compter de ce matin, SharePoint devient la référence officielle</strong> pour le suivi des unités. La bascule est active.</p>
+<p><strong>Ce qu&#x27;il faut faire maintenant</strong></p>
+<p>Faites vos mises à jour dans la liste <strong><code>Order Items</code></strong> dans SharePoint. La vue <strong><code>FRM10-12 Layout</code></strong> vous présente les mêmes colonnes, dans le même ordre que dans le classeur — vous devriez vous y retrouver tout de suite.</p>
+<p><strong>Ce qu&#x27;il ne faut plus faire</strong></p>
+<p><strong>N&#x27;écrivez plus dans FRM10-12.</strong> C&#x27;est un miroir maintenant. Ce que vous y taperez <strong>ne sera pas transféré</strong> et sera perdu.</p>
+<p><strong>Si vous voulez seulement consulter le classeur</strong></p>
+<p>Utilisez la version <strong>FRM10-12 — lecture seule</strong> : <strong>[LIEN]</strong> C&#x27;est une copie de consultation : on ne peut pas y écrire, et elle se reconstruit à partir de SharePoint à chaque rafraîchissement — donc <strong>elle date du dernier rafraîchissement, pas de la minute</strong>. Pour la donnée à jour à la seconde près, c&#x27;est SharePoint.</p>
+<p><strong>Le guide complet</strong> (comment saisir, comment lire les affichages) : <strong>[LIEN GUIDE]</strong></p>
+<p><strong>Ce qui change ce soir, et que vous allez voir</strong></p>
+<p>Quelques colonnes cessent d&#x27;être une case où l&#x27;on tape une lettre et deviennent un vrai contrôle. Même information, mais plus de convention à retenir :</p>
+<ul><li><strong>Cases à cocher</strong> — <code>Tank</code>, <code>ISO Stack</code>, <code>ISO Coil</code>, <code>Lead Assembly</code> (avant : <code>R</code>), <code>Temperature Rise</code>, <code>Impulse</code>, <code>Partial D</code>, <code>Oil Analysis</code>, <code>DB</code> (avant : <code>x</code>), <code>SFRA</code> (avant : <code>Y</code>).</li><li><strong>Listes déroulantes</strong> — <code>Order Type</code>, <code>Order Step</code>, <code>Order Status</code>, <code>Indexing</code>, <code>WET-WETP</code>, <code>Client Date Status</code>, <code>Core Type</code>, <code>Family</code>, <code>Model Type</code>, <code>Oil Type</code>, <code>Modification Status</code>, <code>New model to be created</code>. Les valeurs existantes restent affichées telles quelles; c&#x27;est seulement la saisie qui est encadrée.</li><li><strong><code>Status</code></strong> devient deux champs : <strong>Step Status</strong> (l&#x27;étape) et <strong>Status Date</strong> (la date).</li><li><strong>Le dossier de la commande</strong> apparaît directement sur l&#x27;unité : la colonne <strong>Order - Order Folder</strong> pointe vers l&#x27;endroit où vivent tous les documents de la commande.</li><li><strong>Deux colonnes disparaissent</strong> — <code>Order - Order Number</code> et <code>Order - Qty</code>. Rien n&#x27;est perdu : c&#x27;était la même information deux fois. Le numéro de commande reste dans <strong>Order Number</strong>, la quantité dans <strong>Qty</strong>.</li></ul>
+<p><strong>Ce qui s&#x27;en vient</strong></p>
+<p>Les <strong>délais par client</strong> (FRM13) s&#x27;en viennent dans SharePoint. Une fois là, la <strong>date de livraison estimée</strong> et la <strong>date due d&#x27;ingénierie</strong> se calculeront toutes seules sur l&#x27;unité, au lieu d&#x27;être une formule dans le classeur. Je vous reviens là-dessus — rien à faire de votre côté.</p>
+<p><strong>Une question, un doute, quelque chose qui cloche ?</strong></p>
+<p>Venez me voir tout de suite — sur Teams, ou à <strong>soleil.anker@ermco-eci.com</strong>. Mieux vaut poser la question deux minutes que de saisir au mauvais endroit toute la journée.</p>
+<p>Merci à tous, Soleil Anker-Baril</p></div>
+  <div class="doc" id="em-en" role="tabpanel" aria-labelledby="t-en" hidden><p><strong>Subject: FRM10-12 — the cutover is live. Please stop entering data in it.</strong></p>
+<p>Hello everyone,</p>
+<p><strong>As of this morning, SharePoint is the official record</strong> for unit tracking. The cutover is live.</p>
+<p><strong>What to do from now on</strong></p>
+<p>Make your updates in the <strong><code>Order Items</code></strong> list in SharePoint. The <strong><code>FRM10-12 Layout</code></strong> view shows the same columns, in the same order as the workbook — it should look familiar straight away.</p>
+<p><strong>What to stop doing</strong></p>
+<p><strong>Do not write in FRM10-12 any more.</strong> It is a mirror now. Anything you type into it <strong>will not be transferred</strong> and will be lost.</p>
+<p><strong>If you just want to look at the workbook</strong></p>
+<p>Use the <strong>FRM10-12 — read-only</strong> version: <strong>[LINK]</strong> It is a reference copy: you cannot write to it, and it rebuilds from SharePoint each time it is refreshed — so <strong>it is as current as the last refresh, not as current as this minute</strong>. For up-to-the-second data, go to SharePoint.</p>
+<p><strong>The full guide</strong> (how to enter data, how to read the views): <strong>[GUIDE LINK]</strong></p>
+<p><strong>What changes tonight, and what you will notice</strong></p>
+<p>A few columns stop being a cell you type a letter into and become a proper control. Same information, one less convention to remember:</p>
+<ul><li><strong>Checkboxes</strong> — <code>Tank</code>, <code>ISO Stack</code>, <code>ISO Coil</code>, <code>Lead Assembly</code> (was <code>R</code>), <code>Temperature Rise</code>, <code>Impulse</code>, <code>Partial D</code>, <code>Oil Analysis</code>, <code>DB</code> (was <code>x</code>), <code>SFRA</code> (was <code>Y</code>).</li><li><strong>Dropdowns</strong> — <code>Order Type</code>, <code>Order Step</code>, <code>Order Status</code>, <code>Indexing</code>, <code>WET-WETP</code>, <code>Client Date Status</code>, <code>Core Type</code>, <code>Family</code>, <code>Model Type</code>, <code>Oil Type</code>, <code>Modification Status</code>, <code>New model to be created</code>. Existing values keep showing exactly as they are; it is only new entry that is constrained.</li><li><strong><code>Status</code></strong> becomes two fields: <strong>Step Status</strong> (the step) and <strong>Status Date</strong> (the date).</li><li><strong>The order&#x27;s folder</strong> now appears on the unit itself — the <strong>Order - Order Folder</strong> column points at where every document filed against that order lives.</li><li><strong>Two columns disappear</strong> — <code>Order - Order Number</code> and <code>Order - Qty</code>. Nothing is lost: they were the same information twice. The order number stays in <strong>Order Number</strong>, the quantity in <strong>Qty</strong>.</li></ul>
+<p><strong>What is coming</strong></p>
+<p>The <strong>per-client lead times</strong> from FRM13 are moving into SharePoint. Once they are there, <strong>Estimated Delivery Date</strong> and <strong>Engineering Due Date</strong> will calculate themselves on the unit instead of being a formula in the workbook. I will follow up — nothing for you to do.</p>
+<p><strong>Questions, doubts, anything that looks wrong?</strong></p>
+<p>Come and find me straight away — on Teams, or at <strong>soleil.anker@ermco-eci.com</strong>. Two minutes of asking beats a whole day of entering things in the wrong place.</p>
+<p>Thanks everyone, Soleil Anker-Baril</p></div>
+</section>
+
+<section id="checklist">
+  <h2 class="sec">Before you send</h2>
+  <p class="note">The working checklist that travels with the email — not part of what staff receive.</p>
+  <div class="doc" style="border-radius:6px"><h3>Before you send — checklist</h3>
+<p><strong>1. 🔴 Fill in <code>[LIEN]</code> / <code>[LINK]</code> and <code>[LIEN GUIDE]</code> / <code>[GUIDE LINK]</code>.</strong> Two URLs, neither invented here: the read-only workbook, and wherever <code>staff-handbook-sharepoint.md</code> / <code>-fr.md</code> gets published (a SharePoint page on the site is the obvious home — staff are already there, and it needs no separate permission).</p>
+<p><strong>2. ✅ RESOLVED 2026-09-10 — it is a live copy, refreshed, not a frozen snapshot.</strong> The viewer rebuilds from SharePoint on every refresh, and someone owns running that refresh so FRM11 and the reports stay fresh. So the &quot;live copy&quot; wording is the correct fork.</p>
+<p>⚠️ But it is refreshed <strong>on a schedule, by a person</strong> — not continuously. The email now says that outright (&quot;as current as the last refresh, not as current as this minute&quot;), because the risk this checklist item was written about is real in a softer form: staff who believe the workbook is live will read a stale figure off it and never think to check. Naming the limit costs one clause and removes the whole failure mode.</p>
+<p><strong>2b. ⚠️ The &quot;what changes tonight&quot; section describes work that has not run yet.</strong> Added 2026-09-10 at the user&#x27;s request, so staff get a heads-up rather than a surprise. Everything in it is scheduled for tonight, but <strong>check each line actually happened before sending</strong> — the email goes out after the cutover, so nothing in it should be a forecast by the time it lands:</p>
+<div class='tw'><table><thead><tr><th>line</th><th>depends on</th></tr></thead><tbody><tr><td>checkboxes / two-field <code>Status</code></td><td>already true — done in the earlier build and N8</td></tr><tr><td>the 12 dropdowns</td><td><code>n4_convert_choice_columns.js</code> (Stage 2b)</td></tr><tr><td><code>Order - Order Folder</code> on units</td><td><code>x5_backfill_order_folder.js</code> + the Order sync flow</td></tr><tr><td>the two columns disappearing</td><td>the manual delete in Stage 2b</td></tr><tr><td>lead times / the two dates</td><td><code>n5_clients_lead_time.js</code> — deliberately written as <em>coming</em>, not done</td></tr></tbody></table></div>
+<p>If any of those slip, cut the line rather than sending a promise.</p>
+<p><strong>3. Optional line, if staff have been complaining about the dates.</strong> The run fixed ~4,700 date values that were displaying one day early. If that was visible to people, it is worth a sentence, because it builds trust in the new list:</p>
+<ul><li>FR: <em>« Au passage : les dates qui s&#x27;affichaient avec une journée de retard sont corrigées. »</em></li><li>EN: <em>&quot;One more thing: the dates that were showing a day early are now corrected.&quot;</em></li></ul>
+<p><strong>4. 🔴 Do not send this to whoever produces the supplier reports without warning them first.</strong> FRM11 reads FRM10-12&#x27;s <code>TableOrders</code> as its root source — 890 rows feeding <strong>8 supplier report sheets to 8 outside companies</strong>. Once staff stop maintaining the workbook, FRM11 goes <strong>silently stale</strong>. Nobody should send a supplier report from FRM11 until it is repointed. FRM13 and FRM09 read the same table.</p>
+<p><strong>5. Ask people to save and close FRM10-12 before they stop.</strong> Anything sitting unsaved, or saved after the final refresh, never reached SharePoint. Two units were only found this morning because they were missing entirely — worth not adding more.</p>
+<p><strong>6. ✅ DONE 2026-09-10 — the guides are consolidated and the banners are gone.</strong> <code>staff-handbook-sharepoint.md</code> and <code>-fr.md</code> merge the two guides staff would otherwise have to read separately: Part 1 doing the work (from <code>staff-guide-<em></code>), Part 2 the views (from <code>views-guide-</em></code>), one &quot;something look wrong&quot; section at the end. Text is the reviewed wording verbatim — stitched, not rewritten — with the pre-publication banners stripped. <strong>This is the <code>[LIEN GUIDE]</code> target.</strong></p>
+<p>⚠️ <strong>One item still unverified inside it</strong>, carried over from <code>views-guide-sharepoint-fr.md</code>: section 7 of the French handbook names three UI labels — <strong>« Regrouper par »</strong>, <strong>« Réduits »</strong>, <strong>« Limite d&#x27;éléments »</strong> — that were reasoned, never read off the screen. Open the classic view-settings page in French and confirm. Thirty seconds, and it matters more than it looks: staff search for those exact words, and a guide naming a button that does not exist makes them doubt the parts that are right.</p>
+<p><strong>Superseded, for reference —</strong> the originals open with a <em>&quot;NE PAS DISTRIBUER — ce guide n&#x27;est pas encore vrai&quot;</em> / do-not-distribute banner, written on 2026-09-04 because the cutover had been interrupted. It has now happened, so <strong>the banner is stale and the guides are true</strong> — the two instructions the banner flags as backwards (<em>&quot;N&#x27;écrivez pas dedans&quot;</em> and <em>&quot;tout ce qui est tapé dedans va être effacé&quot;</em>) are now exactly right. Strip the banner and the guides can go out alongside this email.</p></div>
+</section>
+
+<section id="handbook">
+  <h2 class="sec">The handbook</h2>
+  <p class="note">Four guides consolidated into one document per language: doing the work,
+  then the views. Stitched from the reviewed text rather than rewritten.
+  <span class="file">docs/staff-handbook-sharepoint.md · -fr.md</span></p>
+  <details>
+    <summary>English <span>Part 1 doing the work · Part 2 the views</span></summary>
+    <div class="doc"><h2>Order Items in SharePoint — staff handbook</h2>
+<p>Everything you need for day-to-day unit tracking now that production tracking has moved out of FRM10-12. Two parts: <strong>doing the work</strong>, then <strong>the views</strong> you do it in.</p>
+<p>Questions, anything that looks wrong, anything at all — <strong>Soleil Anker-Baril</strong>, on Teams or at soleil.anker@ermco-eci.com. Asking is always better than guessing.</p>
+<hr>
+<h2>Part 1 · Doing the work</h2>
+<h3>What changed</h3>
+<p>Production tracking has moved out of the FRM10-12 Excel file and into SharePoint. You now update your units directly in a list on this site, instead of opening the workbook. That means no more waiting for someone else to close the file, and no more lost changes.</p>
+<p>The Excel file still exists, and it still looks the same — same columns, same order, same values. It is now a <strong>read-only copy</strong> that rebuilds itself from SharePoint. Open it and read it as much as you like. Your changes go in SharePoint.</p>
+<h3>Finding your work</h3>
+<p>Open the <strong>Production Floor</strong> view (<em>affichage</em>).</p>
+<p>It shows only what matters when you are tracking an order: the unit number, the order number, where the unit is right now, who&#x27;s winding it, and when it&#x27;s due. Everything else is hidden.</p>
+<p>Units are <strong>grouped by Location</strong> — the production step: <code>Bobinage</code>, <code>Stacking</code>, <code>Assemblage</code>, <code>Four</code>, <code>Tanking</code>, <code>Test</code>, <code>Finition</code>, <code>Livraison</code>, and the others you already know. Every unit sitting at the same step appears together under one heading, and you can collapse a group you don&#x27;t care about. It reads like a board, not a spreadsheet.</p>
+<p>Each Location has its <strong>own colour</strong>, so you can see at a glance where the work is piling up.</p>
+<p>Within each group, the most urgent unit is at the top — sorted by due date.</p>
+<p>Only live work shows here. Units marked delivered or cancelled drop off the view automatically.</p>
+<h3>Updating a unit</h3>
+<p>Click the cell. Type. Move on.</p>
+<p>That&#x27;s the whole thing. There is:</p>
+<ul><li><strong>No save button</strong> — it saves as you go</li><li><strong>No refresh</strong> — everyone sees your change straight away</li><li><strong>No &quot;someone else has it open&quot;</strong> — several people can work at once</li></ul>
+<p>If you change a unit&#x27;s Location, it jumps to its new group by itself.</p>
+<h3>What looks different</h3>
+<p>Most columns work exactly as they did. A few now have a proper control instead of a cell you typed a letter into — the same information, just no longer a convention you had to remember.</p>
+<div class='tw'><table><thead><tr><th>you used to type</th><th>now</th></tr></thead><tbody><tr><td><code>R</code> in <strong>Tank</strong>, <strong>ISO Stack</strong>, <strong>ISO Coil</strong>, <strong>Lead Assembly</strong></td><td>a <strong>checkbox</strong> — tick it</td></tr><tr><td><code>x</code> in <strong>Temperature Rise</strong>, <strong>Impulse</strong>, <strong>Partial D</strong>, <strong>Oil Analysis</strong>, <strong>DB</strong></td><td>a <strong>checkbox</strong> — tick it</td></tr><tr><td><code>Y</code> in <strong>SFRA</strong></td><td>a <strong>checkbox</strong> — tick it</td></tr><tr><td><code>Reçu</code> or <code>Plaspak</code> in <strong>Frame</strong></td><td>a <strong>dropdown</strong> — pick one</td></tr><tr><td>free text in <strong>Order Type</strong>, <strong>Order Step</strong>, <strong>Order Status</strong>, <strong>Indexing</strong>, <strong>WET-WETP</strong>, <strong>Client Date Status</strong>, <strong>Core Type</strong>, <strong>Family</strong>, <strong>Model Type</strong>, <strong>Oil Type</strong>, <strong>Modification Status</strong>, <strong>New model to be created</strong></td><td>a <strong>dropdown</strong> — pick one</td></tr><tr><td>a code like <code>TE-Se-4</code> in <strong>Status</strong></td><td>two fields: <strong>Step Status</strong> (pick the step) and <strong>Status Date</strong> (pick the date)</td></tr></tbody></table></div>
+<p>Two things worth knowing about the checkboxes:</p>
+<ul><li><strong>Unticked means &quot;no&quot;.</strong> There is no third option for &quot;not decided yet&quot; — if that distinction matters for a unit, put it in <strong>Technical Notes</strong> rather than leaving the box as a hint.</li><li><strong>A dropdown does not erase what is already there.</strong> Values that predate the dropdown keep displaying exactly as they were, even the odd spellings. What the dropdown changes is only what you can pick from now on — so if a value you need is missing from the list, that is worth reporting rather than working around.</li><li><strong>The Excel copy still shows the letters.</strong> Tick the Tank box here and the read-only workbook shows <code>R</code>, exactly as before. The reports built off that file are unaffected.</li></ul>
+<h3>If you want the old layout</h3>
+<p>Open the <strong>Planning</strong> view instead. It is the workbook&#x27;s <strong>collapsed</strong> layout — the same columns, in the same order, that you see in FRM10-12 when the column groups are closed. If you need one of the detail columns you&#x27;d normally expand to reach, they are all still there in the <strong>All Items</strong> view.</p>
+<h3>Please don&#x27;t</h3>
+<p><strong>Don&#x27;t edit the Excel file any more.</strong> It&#x27;s a mirror now: it rebuilds itself from SharePoint, so anything typed into it is wiped on the next rebuild and never reaches SharePoint. You will most likely find you can&#x27;t type in it at all — it is set to read-only — but if you ever find yourself able to, that is a mistake to report, not an invitation.</p>
+<p><strong>Don&#x27;t work around a problem.</strong> See below.</p>
+<hr>
+<h2>Part 2 · The views</h2>
+<h3>1. What is a view?</h3>
+<p>In SharePoint there is <strong>one single list</strong> of units. Everybody is looking at the same data.</p>
+<p>A <strong>view</strong> (<em>affichage</em>) is a <strong>way of looking</strong> at that list: which columns are shown, in what order, grouped how, sorted how, and which ones are hidden.</p>
+<p>The picture to keep in mind: the list is the whole workbook. A view is a <strong>pair of glasses</strong>. Changing glasses doesn&#x27;t change what&#x27;s written — only what you see.</p>
+<p><strong>What follows from that, and this is the part that matters:</strong></p>
+<ul><li>Switching views <strong>changes nothing</strong>. You cannot break data by clicking on a view.</li><li>If you edit a unit in one view, <strong>the change is in the list</strong>, so everyone sees it, whichever view they happen to be using.</li><li>If a unit &quot;disappears&quot; when you switch views, it has <strong>not</strong> been deleted. It&#x27;s just filtered out by the glasses you&#x27;re wearing.</li></ul>
+<h3>2. Switching views</h3>
+<p>At the top of the list you&#x27;ll see the <strong>name of the current view</strong> with a small arrow next to it. Click it and the available views drop down. Click the one you want.</p>
+<p>That&#x27;s it. No saving, no confirmation.</p>
+<p>SharePoint <strong>remembers</strong> the last view you opened. If you come back tomorrow and the list doesn&#x27;t look the way you expect, that&#x27;s usually why: you&#x27;re still on a different view. Just switch back.</p>
+<h3>3. The views that exist</h3>
+<p>The four you&#x27;ll use day to day:</p>
+<div class='tw'><table><thead><tr><th>View</th><th>Columns</th><th>What it&#x27;s for</th></tr></thead><tbody><tr><td><strong>Production Floor</strong></td><td>6</td><td>The main shop-floor view: where every unit is right now. Grouped by <code>Location</code>, with a colour per step. Sorted by estimated delivery date. Active units only.</td></tr><tr><td><strong>Planning</strong></td><td>24</td><td>The workbook&#x27;s <strong>collapsed</strong> layout — the same columns, in the same order you see in FRM10-12 when the column groups are closed. Sorted by planned delivery date. Active units only.</td></tr><tr><td><strong>BO Tracking</strong></td><td>23</td><td>Back-order tracking: only units that have a BO, grouped by BO, sorted by planned tanking date.</td></tr><tr><td><strong>All Items</strong></td><td>74</td><td>Everything, unfiltered and ungrouped. It&#x27;s the default view, and the safety net — if a unit seems to be missing elsewhere, it&#x27;s here.</td></tr></tbody></table></div>
+<h4>You&#x27;ll see others, and that&#x27;s fine</h4>
+<p>The menu also has views colleagues have made for themselves — for example <strong><code>Angelique reunion du lundi</code></strong>. Someone has already made <strong>their own copy of <code>Planning</code></strong> for their Monday meeting: start from an existing view, use &quot;Save view as&quot;, and give it a name of your own.</p>
+<p><strong>That&#x27;s section 1 in action.</strong> Those views are <strong>not</strong> copies of the data — it&#x27;s the same list seen through different glasses. Opening a colleague&#x27;s view disturbs nobody and changes nothing.</p>
+<p>And that&#x27;s the point at which you can start adjusting: drop columns, change the sort, group it differently — <strong>in your copy</strong>, without touching the original. See section 6.</p>
+<h3>4. Grouping</h3>
+<p>In <strong>Production Floor</strong>, units are <strong>grouped by <code>Location</code></strong> — the production step: <code>Bobinage</code>, <code>Assemblage</code>, <code>Four</code>, <code>Finition</code>, <code>Livraison</code>, <code>Réparation</code>, <code>Entrepôt</code>, and the others you already know.</p>
+<ul><li>Every unit at the same step appears together, under one heading.</li><li>The heading shows the <strong>number of units</strong> in the group. That&#x27;s your workload at that step, at a glance.</li><li>Click the arrow on a heading to <strong>collapse</strong> a group you don&#x27;t care about. SharePoint remembers it.</li><li>If you change a unit&#x27;s <code>Location</code>, it <strong>jumps to its new group by itself</strong>. Nothing else to do.</li></ul>
+<h3>5. Sorting and filtering without breaking anything</h3>
+<p>Click a <strong>column header</strong> and you can sort (A→Z, newest first, and so on) or filter to particular values.</p>
+<p><strong>Those changes are yours alone, and only for the moment.</strong> They don&#x27;t change the view for anyone else and they don&#x27;t touch the data. Nobody else sees your sort.</p>
+<p>To get back to normal: reopen the view from the menu at the top, or clear the filter from the same column menu.</p>
+<p>An active filter shows a <strong>small funnel icon</strong> in the header. If a list looks unexpectedly short, <strong>look for the funnel</strong> — that&#x27;s nearly always the explanation.</p>
+<h3>6. What not to do</h3>
+<p><strong>Don&#x27;t modify a shared view, and don&#x27;t delete one.</strong> The four views above are used by everyone. If you change the columns or the sort on one of them, it changes <strong>for the whole plant</strong>, not just for you.</p>
+<p>Sorting and filtering from the column headers (section 5) is safe and is not what this is about. What to avoid is <strong>Edit current view</strong> and <strong>Save view</strong>.</p>
+<p><strong>If you want a layout of your own, that&#x27;s completely fine</strong> — it&#x27;s how <code>Angelique reunion du lundi</code> came about. The one catch is that a view made that way is <strong>public by default</strong>: it shows up in everyone&#x27;s menu. That&#x27;s no disaster, but if you&#x27;d rather keep it to yourself, or you&#x27;re not sure, <strong>come and find me</strong> and we&#x27;ll set it up together. It takes two minutes.</p>
+<h3>7. If you group your view and some groups look empty</h3>
+<p><strong>Nothing has been deleted.</strong> The rows are still there — the view just stopped early, before it reached them.</p>
+<p>This happens when one group is much bigger than all the others. If most units have no <code>Location</code> set, that one group can fill the entire view on its own, and the smaller groups get pushed off the end where you can&#x27;t see them. It looks exactly like missing data. It isn&#x27;t.</p>
+<p>It is not a rare edge case: <strong><code>Production Floor</code> grouped by <code>Location</code> has 827 units with no Location set.</strong> Any grouping where one value dominates has the same shape.</p>
+<p>Two settings prevent it:</p>
+<ul><li><strong>Group By → &quot;By default, show groupings: Collapsed.&quot;</strong> A collapsed group still shows its header and its count, so you can see every group and click into the one you want.</li><li><strong>Item Limit → &quot;Display items in batches of the specified size.&quot;</strong> <em>Not</em> &quot;Limit the total number of items returned&quot; — that one makes the view stop at the limit with no way to see the rest.</li></ul>
+<p>Two things about grouping that surprise almost everyone:</p>
+<ul><li><strong>If you group by a column, changing that column&#x27;s sort in the Sort section does nothing.</strong> The order of the groups is set in the <strong>Group By</strong> section instead. Setting it in Sort looks like it should work and silently has no effect.</li><li>**A blank date counts as the <em>earliest</em> date.** So sorting by a date puts the unplanned items at the top, not the bottom. If that&#x27;s not what you want, ask — we&#x27;ll set up a sort that puts blanks last.</li></ul>
+<hr>
+<h3>Something look wrong?</h3>
+<p><strong>Come ask Soleil Anker-Baril</strong> — on Teams, or at soleil.anker@ermco-eci.com.</p>
+<p>Before you do, these three checks resolve the large majority of cases:</p>
+<ol><li><strong>Check which view you&#x27;re on</strong> (top of the list). It&#x27;s the number-one cause of &quot;units are missing&quot;.</li><li><strong>Look for a funnel icon</strong> in the headers — a filter someone left on by accident.</li><li><strong>Is the view grouped?</strong> If so, see section 7 — whole groups can drop off the end of a view without any warning that they have.</li></ol>
+<p>If it&#x27;s none of those: if a unit is missing, a column is empty when it shouldn&#x27;t be, or something just doesn&#x27;t seem right — <strong>don&#x27;t work around it and don&#x27;t guess.</strong> Come and ask. It&#x27;s a new system and finding the rough edges early is genuinely helpful.</p></div>
+  </details>
+  <details>
+    <summary>Français <span>Partie 1 faire le travail · Partie 2 les affichages</span></summary>
+    <div class="doc"><h2>Order Items dans SharePoint — guide du personnel</h2>
+<p>Tout ce qu&#x27;il faut pour le suivi des unités au quotidien, maintenant que le suivi de production sort de FRM10-12. Deux parties : <strong>faire le travail</strong>, puis <strong>les affichages</strong> dans lesquels vous le faites.</p>
+<p>Une question, quelque chose qui cloche, n&#x27;importe quoi — <strong>Soleil Anker-Baril</strong>, sur Teams ou à soleil.anker@ermco-eci.com. Demander vaut toujours mieux que deviner.</p>
+<hr>
+<h2>Partie 1 · Faire le travail</h2>
+<h3>Ce qui change</h3>
+<p>Le suivi de production sort du fichier Excel FRM10-12 et s&#x27;en vient dans SharePoint. Vous mettez maintenant vos unités à jour directement dans une liste sur ce site, au lieu d&#x27;ouvrir le classeur. Plus besoin d&#x27;attendre que quelqu&#x27;un d&#x27;autre ferme le fichier, et plus de changements perdus.</p>
+<p>Le fichier Excel existe encore, et il a exactement la même allure — mêmes colonnes, même ordre, mêmes valeurs. C&#x27;est maintenant une <strong>copie en lecture seule</strong> qui se reconstruit toute seule à partir de SharePoint. Consultez-le tant que vous voulez. Vos changements, eux, se font dans SharePoint.</p>
+<h3>Trouver votre travail</h3>
+<p>Ouvrez l&#x27;affichage (<em>view</em>) <strong>Production Floor</strong>.</p>
+<p>Il montre seulement ce qui compte quand vous suivez une commande : le numéro d&#x27;unité, le numéro de commande, où l&#x27;unité est rendue, qui la bobine, et quand elle est due. Tout le reste est masqué.</p>
+<p>Les unités sont <strong>regroupées par Location</strong> — l&#x27;étape de production : <code>Bobinage</code>, <code>Stacking</code>, <code>Assemblage</code>, <code>Four</code>, <code>Tanking</code>, <code>Test</code>, <code>Finition</code>, <code>Livraison</code>, et les autres que vous connaissez déjà. Toutes les unités rendues à la même étape apparaissent ensemble sous un même titre, et vous pouvez replier un groupe qui ne vous concerne pas. Ça se lit comme un tableau de production, pas comme un chiffrier.</p>
+<p>Chaque Location a <strong>sa propre couleur</strong>, ce qui permet de voir d&#x27;un coup d&#x27;œil où l&#x27;ouvrage s&#x27;accumule.</p>
+<p>Dans chaque groupe, l&#x27;unité la plus pressante est en haut — trié par date due.</p>
+<p>Seul l&#x27;ouvrage actif s&#x27;affiche. Les unités marquées livrées ou annulées disparaissent de l&#x27;affichage toutes seules.</p>
+<h3>Mettre une unité à jour</h3>
+<p>Cliquez dans la case. Écrivez. Passez à la suivante.</p>
+<p>C&#x27;est tout. Il n&#x27;y a :</p>
+<ul><li><strong>Aucun bouton d&#x27;enregistrement</strong> — ça se sauvegarde à mesure</li><li><strong>Aucun rafraîchissement à faire</strong> — tout le monde voit votre changement immédiatement</li><li><strong>Aucun « quelqu&#x27;un d&#x27;autre l&#x27;a ouvert »</strong> — plusieurs personnes peuvent travailler en même temps</li></ul>
+<p>Si vous changez la Location d&#x27;une unité, elle saute d&#x27;elle-même dans son nouveau groupe.</p>
+<h3>Ce qui a l&#x27;air différent</h3>
+<p>La plupart des colonnes fonctionnent comme avant. Quelques-unes ont maintenant un vrai contrôle au lieu d&#x27;une case où vous tapiez une lettre — la même information, sauf que ce n&#x27;est plus une convention à retenir.</p>
+<div class='tw'><table><thead><tr><th>ce que vous tapiez avant</th><th>maintenant</th></tr></thead><tbody><tr><td><code>R</code> dans <strong>Tank</strong>, <strong>ISO Stack</strong>, <strong>ISO Coil</strong>, <strong>Lead Assembly</strong></td><td>une <strong>case à cocher</strong> — cochez-la</td></tr><tr><td><code>x</code> dans <strong>Temperature Rise</strong>, <strong>Impulse</strong>, <strong>Partial D</strong>, <strong>Oil Analysis</strong>, <strong>DB</strong></td><td>une <strong>case à cocher</strong> — cochez-la</td></tr><tr><td><code>Y</code> dans <strong>SFRA</strong></td><td>une <strong>case à cocher</strong> — cochez-la</td></tr><tr><td><code>Reçu</code> ou <code>Plaspak</code> dans <strong>Frame</strong></td><td>une <strong>liste déroulante</strong> — choisissez</td></tr><tr><td>du texte libre dans <strong>Order Type</strong>, <strong>Order Step</strong>, <strong>Order Status</strong>, <strong>Indexing</strong>, <strong>WET-WETP</strong>, <strong>Client Date Status</strong>, <strong>Core Type</strong>, <strong>Family</strong>, <strong>Model Type</strong>, <strong>Oil Type</strong>, <strong>Modification Status</strong>, <strong>New model to be created</strong></td><td>une <strong>liste déroulante</strong> — choisissez</td></tr><tr><td>un code comme <code>TE-Se-4</code> dans <strong>Status</strong></td><td>deux champs : <strong>Step Status</strong> (choisir l&#x27;étape) et <strong>Status Date</strong> (choisir la date)</td></tr></tbody></table></div>
+<p>Deux choses à savoir sur les cases à cocher :</p>
+<ul><li><strong>Décochée veut dire « non ».</strong> Il n&#x27;y a pas de troisième option pour « pas encore décidé » — si la nuance compte pour une unité, écrivez-la dans <strong>Technical Notes</strong> plutôt que de laisser la case décochée comme indice.</li><li><strong>Une liste déroulante n&#x27;efface pas ce qui est déjà là.</strong> Les valeurs saisies avant restent affichées telles quelles, même les orthographes bizarres. Ce que la liste encadre, c&#x27;est seulement ce que vous pouvez choisir à partir de maintenant — donc si une valeur dont vous avez besoin manque dans la liste, signalez-le plutôt que de contourner.</li><li><strong>La copie Excel affiche encore les lettres.</strong> Cochez la case Tank ici et le classeur en lecture seule montre <code>R</code>, exactement comme avant. Les rapports bâtis à partir de ce fichier ne changent pas.</li></ul>
+<h3>Si vous préférez l&#x27;ancienne disposition</h3>
+<p>Ouvrez plutôt l&#x27;affichage <strong>Planning</strong>. C&#x27;est la disposition <strong>repliée</strong> du classeur — les mêmes colonnes, dans le même ordre, que celles que vous voyez dans FRM10-12 quand les groupes de colonnes sont fermés. Si vous avez besoin d&#x27;une colonne de détail que vous ouvririez normalement, elles sont toutes encore là dans l&#x27;affichage <strong>All Items</strong>.</p>
+<h3>S.V.P., ne pas faire</h3>
+<p><strong>N&#x27;écrivez plus dans le fichier Excel.</strong> C&#x27;est un miroir maintenant : il se reconstruit à partir de SharePoint, donc tout ce qui est tapé dedans est effacé au prochain rafraîchissement et ne se rend jamais dans SharePoint. Vous allez probablement voir que vous ne pouvez plus écrire dedans du tout — il est mis en lecture seule — mais si jamais vous êtes capable, c&#x27;est une erreur à signaler, pas une invitation.</p>
+<p><strong>Ne travaillez pas autour d&#x27;un problème.</strong> Voir plus bas.</p>
+<hr>
+<h2>Partie 2 · Les affichages</h2>
+<h3>1. Un affichage, c&#x27;est quoi ?</h3>
+<p>Dans SharePoint, il y a <strong>une seule liste</strong> d&#x27;unités. Tout le monde regarde les mêmes données.</p>
+<p>Un <strong>affichage</strong> (<em>view</em>), c&#x27;est une <strong>façon de regarder</strong> cette liste : quelles colonnes on montre, dans quel ordre, regroupées comment, triées comment, et lesquelles on cache.</p>
+<p>L&#x27;image à retenir : la liste, c&#x27;est le classeur au complet. Un affichage, c&#x27;est une <strong>paire de lunettes</strong>. Changer de lunettes ne change pas ce qui est écrit — juste ce que vous voyez.</p>
+<p><strong>Ce qui découle de ça, et c&#x27;est le point important :</strong></p>
+<ul><li>Changer d&#x27;affichage <strong>ne modifie rien</strong>. Vous ne pouvez pas briser des données en cliquant sur un affichage.</li><li>Si vous modifiez une unité dans un affichage, <strong>le changement est dans la liste</strong>, donc tout le monde le voit, peu importe l&#x27;affichage qu&#x27;ils utilisent.</li><li>Si une unité « disparaît » quand vous changez d&#x27;affichage, elle n&#x27;est <strong>pas</strong> effacée. Elle est juste filtrée par les lunettes que vous portez.</li></ul>
+<h3>2. Changer d&#x27;affichage</h3>
+<p>En haut de la liste, il y a le <strong>nom de l&#x27;affichage courant</strong> avec une petite flèche à côté. Cliquez dessus : la liste des affichages disponibles apparaît. Cliquez sur celui que vous voulez.</p>
+<p>C&#x27;est tout. Pas de sauvegarde, pas de confirmation.</p>
+<p>SharePoint <strong>se souvient</strong> du dernier affichage que vous avez ouvert. Si vous revenez demain et que la liste n&#x27;a pas l&#x27;allure attendue, c&#x27;est probablement ça : vous êtes resté sur un autre affichage. Rechangez-le, c&#x27;est tout.</p>
+<h3>3. Les affichages qui existent</h3>
+<p>Les quatre que vous utiliserez au quotidien :</p>
+<div class='tw'><table><thead><tr><th>Affichage</th><th>Colonnes</th><th>À quoi il sert</th></tr></thead><tbody><tr><td><strong>Production Floor</strong></td><td>6</td><td>L&#x27;affichage principal du plancher : où chaque unité est rendue. Regroupé par <code>Location</code>, avec une couleur par étape. Trié par date de livraison estimée. Seulement les unités actives.</td></tr><tr><td><strong>Planning</strong></td><td>24</td><td>La disposition <strong>repliée</strong> du classeur — les mêmes colonnes, dans le même ordre que dans FRM10-12 quand les groupes de colonnes sont fermés. Trié par date de livraison prévue. Seulement les unités actives.</td></tr><tr><td><strong>BO Tracking</strong></td><td>23</td><td>Le suivi des pièces en rupture (<em>back order</em>) : seulement les unités qui ont un BO, regroupées par BO, triées par date d&#x27;encuvage prévue.</td></tr><tr><td><strong>All Items</strong></td><td>74</td><td>Tout, sans filtre ni regroupement. C&#x27;est l&#x27;affichage par défaut, et le filet de sécurité — si une unité vous semble manquante ailleurs, elle est ici.</td></tr></tbody></table></div>
+<h4>Vous allez en voir d&#x27;autres, et c&#x27;est normal</h4>
+<p>Dans le menu, il y a aussi des affichages que des collègues se sont créés — par exemple <strong><code>Angelique reunion du lundi</code></strong>. Quelqu&#x27;un s&#x27;est déjà fait <strong>sa propre copie de <code>Planning</code></strong> pour sa réunion du lundi : partir d&#x27;un affichage existant, faire « Enregistrer l&#x27;affichage sous », et lui donner un nom à soi.</p>
+<p><strong>C&#x27;est exactement l&#x27;idée de la section 1.</strong> Ces affichages-là ne sont <strong>pas</strong> des copies des données — c&#x27;est la même liste, regardée avec d&#x27;autres lunettes. Ouvrir celui d&#x27;un collègue ne dérange personne et ne change rien.</p>
+<p>Et c&#x27;est justement là que vous pouvez ensuite ajuster : enlever des colonnes, changer le tri, regrouper autrement — <strong>dans votre copie</strong>, sans toucher à l&#x27;affichage d&#x27;origine. Voir la section 6.</p>
+<h3>4. Les regroupements</h3>
+<p>Dans <strong>Production Floor</strong>, les unités sont <strong>regroupées par <code>Location</code></strong> — l&#x27;étape de production : <code>Bobinage</code>, <code>Assemblage</code>, <code>Four</code>, <code>Finition</code>, <code>Livraison</code>, <code>Réparation</code>, <code>Entrepôt</code>, et les autres que vous connaissez déjà.</p>
+<ul><li>Toutes les unités rendues à la même étape apparaissent ensemble, sous un même titre.</li><li>Le titre affiche le <strong>nombre d&#x27;unités</strong> dans le groupe. C&#x27;est votre charge de travail à cette étape, d&#x27;un coup d&#x27;œil.</li><li>Cliquez sur la flèche du titre pour <strong>replier</strong> un groupe qui ne vous concerne pas. SharePoint s&#x27;en souvient.</li><li>Si vous changez la <code>Location</code> d&#x27;une unité, elle <strong>saute d&#x27;elle-même</strong> dans son nouveau groupe. Vous n&#x27;avez rien d&#x27;autre à faire.</li></ul>
+<h3>5. Trier et filtrer sans rien briser</h3>
+<p>Cliquez sur un <strong>en-tête de colonne</strong> : vous pouvez trier (A→Z, plus récent d&#x27;abord, etc.) ou filtrer sur des valeurs précises.</p>
+<p><strong>Ces changements-là ne sont que pour vous, et seulement pour le moment.</strong> Ils ne modifient pas l&#x27;affichage pour les autres et ils ne touchent pas aux données. Personne d&#x27;autre ne voit votre tri.</p>
+<p>Pour revenir à la normale : rouvrez l&#x27;affichage depuis le menu du haut, ou enlevez le filtre par le même menu de colonne.</p>
+<p>Un filtre actif est indiqué par une <strong>petite icône d&#x27;entonnoir</strong> dans l&#x27;en-tête. Si une liste a l&#x27;air anormalement courte, <strong>cherchez l&#x27;entonnoir</strong> — c&#x27;est presque toujours l&#x27;explication.</p>
+<h3>6. Ce qu&#x27;il ne faut pas faire</h3>
+<p><strong>Ne modifiez pas un affichage partagé, et n&#x27;en supprimez pas.</strong> Les quatre affichages ci-dessus sont utilisés par tout le monde. Si vous changez les colonnes ou le tri de l&#x27;un d&#x27;eux, ça change <strong>pour toute l&#x27;usine</strong>, pas juste pour vous.</p>
+<p>Trier et filtrer par les en-têtes (section 5) est sans danger et n&#x27;est pas visé par cette consigne. Ce qu&#x27;il faut éviter, c&#x27;est <strong>Modifier l&#x27;affichage courant</strong> et <strong>Enregistrer l&#x27;affichage</strong>.</p>
+<p><strong>Si vous voulez votre propre disposition, c&#x27;est tout à fait permis</strong> — c&#x27;est comme ça que <code>Angelique reunion du lundi</code> a été fait. Le seul piège, c&#x27;est qu&#x27;un affichage créé comme ça est <strong>public par défaut</strong> : il apparaît dans le menu de tout le monde. Ce n&#x27;est pas grave, mais si vous voulez qu&#x27;il reste à vous, ou si vous n&#x27;êtes pas sûr, <strong>venez me voir</strong> et on le crée ensemble. C&#x27;est deux minutes.</p>
+<h3>7. Si votre affichage est regroupé et que des groupes ont l&#x27;air vides</h3>
+<p><strong>Rien n&#x27;a été effacé.</strong> Les lignes sont encore là — c&#x27;est l&#x27;affichage qui a arrêté de charger avant de les atteindre.</p>
+<p>Ça arrive quand un groupe est beaucoup plus gros que tous les autres. Si la plupart des unités n&#x27;ont pas de <code>Location</code>, ce groupe-là peut remplir l&#x27;affichage au complet à lui seul, et les plus petits groupes se font pousser en dehors, là où vous ne les voyez pas. Ça a l&#x27;air exactement comme des données disparues. Ça n&#x27;en est pas.</p>
+<p>Et ce n&#x27;est pas un cas rare : <strong><code>Production Floor</code> regroupé par <code>Location</code> a 827 unités sans Location.</strong> N&#x27;importe quel regroupement où une valeur domine a la même allure.</p>
+<p>Deux réglages l&#x27;évitent :</p>
+<ul><li>Dans <strong>Regrouper par</strong> : mettre l&#x27;affichage des regroupements à <strong>Réduits</strong>. Un groupe réduit montre quand même son titre et son nombre, donc vous voyez tous les groupes et vous cliquez dans celui que vous voulez.</li><li>Dans <strong>Limite d&#x27;éléments</strong> : choisir <strong>d&#x27;afficher les éléments par lots</strong>, et <em>non</em> de limiter le nombre total d&#x27;éléments retournés. Ce dernier fait arrêter l&#x27;affichage à la limite, sans aucun moyen de voir le reste.</li></ul>
+<p>Deux choses sur les regroupements qui surprennent à peu près tout le monde :</p>
+<ul><li><strong>Si vous regroupez par une colonne, changer le tri de cette colonne dans la section Tri ne fait rien.</strong> L&#x27;ordre des groupes se décide dans la section <strong>Regrouper par</strong>. Le mettre dans Tri a l&#x27;air de devoir marcher et n&#x27;a aucun effet.</li><li><strong>Une date vide compte comme la date la plus ancienne.</strong> Donc trier par une date met les unités non planifiées en haut, pas en bas. Si ce n&#x27;est pas ce que vous voulez, demandez — on vous fait un tri qui met les vides à la fin.</li></ul>
+<hr>
+<h3>Quelque chose cloche ?</h3>
+<p><strong>Venez voir Soleil Anker-Baril</strong> — sur Teams, ou à soleil.anker@ermco-eci.com.</p>
+<p>Avant de venir, ces trois réflexes règlent la grande majorité des cas :</p>
+<ol><li><strong>Vérifiez sur quel affichage vous êtes</strong> (en haut de la liste). C&#x27;est la cause numéro un de « il manque des unités ».</li><li><strong>Cherchez une icône d&#x27;entonnoir</strong> dans les en-têtes — un filtre laissé par accident.</li><li><strong>L&#x27;affichage est-il regroupé ?</strong> Si oui, voir la section 7 — des groupes complets peuvent tomber en dehors de l&#x27;affichage sans que rien ne l&#x27;indique.</li></ol>
+<p>Si ce n&#x27;est aucun des trois : si une unité manque, si une colonne est vide alors qu&#x27;elle devrait avoir une valeur, ou si quelque chose a l&#x27;air croche — <strong>ne travaillez pas autour et ne devinez pas.</strong> Venez me voir. C&#x27;est un système neuf et trouver les défauts de jeunesse tout de suite aide vraiment.</p></div>
+  </details>
+</section>
+
+<footer>
+  Generated from the repository by <code>scripts/gen_review_page.py</code>. Edit the
+  documents, not this page — re-run the script and republish.
+</footer>
+</div>
+
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('.tabs button'));
+  tabs.forEach(function(b){
+    b.addEventListener('click',function(){
+      tabs.forEach(function(o){
+        var sel=o===b;
+        o.setAttribute('aria-selected',sel?'true':'false');
+        document.getElementById(o.getAttribute('aria-controls')).hidden=!sel;
+      });
+    });
+  });
+})();
+</script>

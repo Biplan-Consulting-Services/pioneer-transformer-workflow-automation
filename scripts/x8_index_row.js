@@ -53,15 +53,46 @@
   const items = await J(base+"/_api/web/lists(guid'"+lst.Id+"')/items?$top=200");
   if (items.__err || !(items.value||[]).length) { console.error("ABORT: read 0 Index rows."); return; }
 
-  // The Path column's internal name is not assumed -- find whichever field on the row
-  // actually holds a path, so a renamed column does not silently read as empty.
-  const sample = items.value[0];
-  const pathKey = Object.keys(sample).find(k =>
-      /path|url|lien/i.test(k) && typeof sample[k] === "string") ||
-    Object.keys(sample).find(k => typeof sample[k] === "string" && sample[k].includes("/sites/"));
-  console.log("Index list id: " + lst.Id + "   rows: " + items.value.length
-              + "   path column: " + (pathKey || "NOT FOUND"));
-  if (!pathKey) { console.error("could not identify the path column -- inspect a row:", sample); return; }
+  // Find the column that actually holds a path. Two rules, in this order, because
+  // the obvious one is wrong:
+  //
+  //   1. A field whose VALUE looks like a path, on a row that has one. Value first,
+  //      not name -- matching on /url/i picked `ServerRedirectedEmbedUrl`, a built-in
+  //      SharePoint field that is empty on every row, so every path printed blank and
+  //      the script looked like it had worked. 2026-09-10.
+  //   2. Only then fall back to the name, and only for names SharePoint did not
+  //      invent itself.
+  const BUILTIN = /^(ServerRedirected|FileRef|FileDirRef|FileLeafRef|LinkFilename|LinkTitle|_|OData__|ContentType|GUID|Attachments|ComplianceAsset)/;
+  const looksLikePath = v => typeof v === "string" &&
+      (v.indexOf("/sites/") >= 0 || v.indexOf("://") >= 0 || v.indexOf(".xls") >= 0);
+  const candidates = new Map();
+  for (const row of items.value) {
+    for (const k of Object.keys(row)) {
+      if (BUILTIN.test(k)) continue;
+      if (looksLikePath(row[k])) candidates.set(k, (candidates.get(k) || 0) + 1);
+    }
+  }
+  let pathKey = null;
+  if (candidates.size) {
+    pathKey = [...candidates.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    console.log("path column chosen by VALUE: " + pathKey + " (looks like a path on "
+                + candidates.get(pathKey) + " of " + items.value.length + " rows)");
+  } else {
+    pathKey = Object.keys(items.value[0]).find(k =>
+        !BUILTIN.test(k) && /path|chemin|lien/i.test(k) && typeof items.value[0][k] === "string");
+    if (pathKey) console.log("path column chosen by NAME: " + pathKey
+                             + "  -- no row held anything path-shaped, which is itself odd");
+  }
+  if (!pathKey) {
+    console.error("could not identify the path column. Every non-empty text field on the "
+                  + "FRM10-12 row, so you can pick it by eye:");
+    const r0 = items.value.find(r => String(r.Title).trim() === ROW) || items.value[0];
+    for (const k of Object.keys(r0).sort())
+      if (typeof r0[k] === "string" && r0[k].trim())
+        console.error("   " + k.padEnd(34) + String(r0[k]).slice(0, 110));
+    return;
+  }
+  console.log("Index list id: " + lst.Id + "   rows: " + items.value.length);
 
   console.log("\n=== every Index row ===");
   for (const r of items.value.slice().sort((a,b)=>String(a.Title).localeCompare(String(b.Title)))) {
