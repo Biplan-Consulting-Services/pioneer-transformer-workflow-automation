@@ -13,31 +13,49 @@ Run against the snapshots taken at 17:55–17:58, after X4 / X2 / X1 / N8 had al
 **Question asked:** is any column or value missed, or badly interpreted, for the final
 transfer?
 
-**Answer: no missed column, one real gap that is already a known decision, and one open
-question about date storage.** Details below, worst first.
+**Answer: no missed column. One real gap — since solved. One open question about date
+storage.** Details below, worst first.
 
 ---
 
-## 1 · The one thing I would fix before Thursday
-
-### `Order - Order Folder` — 106 source values reaching nothing
+## 1 · `Order - Order Folder` — the one real gap, now solved
 
 `Order.Order Folder` is populated on **106 of 449** orders. `Order Items.Order - Order
 Folder` is populated on **0 of 1,124**.
 
-This is roadmap 38 and it is a deliberate omission, not an oversight: a SharePoint
-hyperlink is an object on both read and write, the shape was never sourced, and a wrong one
-either fails every row or writes nothing. It is excluded from `v007` and from the N3
-`Order` flow.
+This is roadmap 38 — a deliberate omission, not an oversight: a SharePoint hyperlink is an
+object on both read and write, the shape was never sourced, and a wrong one either fails
+every row or writes nothing. Excluded from `v007` and from the N3 `Order` flow.
 
-What is new is the **cost, measured**: 106 orders carry a folder link that will not exist
-in `Order Items` after cutover. Whether that matters depends on whether anyone follows
-those links, which I cannot tell from here.
+The cost, measured for the first time: **106 orders carry a folder link no unit can see.**
+The user confirms it matters — it points at where every document filed against an order
+lives.
 
-🔑 **The window closes Thursday.** While the transfer flow exists it could carry them once
-the shape is known; after it is deleted, N3 is the only route and it also excludes the
-column. Either source the shape from one real trigger payload before the run, or accept
-losing the links and record that.
+✅ **SOLVED, 2026-09-09 late — and my "the window closes Thursday" was wrong.** The source
+is the `Order` list, which outlives cutover, so this was never bound to the flow at all.
+
+The blocker was the *tool*, not the problem. The connector's expected shape for a URL
+column could not be established; over REST it is a documented type:
+
+```json
+{ "__metadata": { "type": "SP.FieldUrlValue" }, "Url": "...", "Description": "..." }
+```
+
+`scripts/x5_backfill_order_folder.js` does it — dry-run by default, skips anything already
+set, re-reads to verify both presence and that the URL matches its order.
+
+⚠️ **Why the column is copied rather than generated.** All 106 values are exactly
+`/sites/PioneerPlanificatio/Order%20Library/<Order Number>` — the URL carries no
+information the order number does not. But only 106 of 449 orders have a folder, so
+generating the link everywhere would hand staff a 404 on 343 orders. **The presence of the
+value is the information.** The obvious flag does not help either: *Create and Organize
+Project Information Document Folder* reads `False` on all 449 rows — it has never been
+used.
+
+Still open: keeping it fresh for **new** orders after cutover. That is N3's `Order` flow,
+which excludes the column for the same connector-shape reason. Decide separately — the
+backfilled units do not go stale, since a folder's URL never changes once the order number
+exists.
 
 ---
 
@@ -220,8 +238,9 @@ Encouraging sign: N8 wrote 246 `Status Date` values today and **all** landed at
 
 ## 9 · Decisions for you
 
-1. **`Order Folder`** — source the hyperlink shape before the run, or accept losing 106
-   links. The window closes when the flow is deleted.
+1. **`Order Folder`** — ✅ solved by `x5_backfill_order_folder.js`, and not urgent after
+   all: the source outlives cutover. Run it whenever. The remaining decision is whether N3
+   should carry the column for new orders.
 2. **Date storage** — run the one `Format` check; if it is not `DateOnly`, schedule a
    normalisation pass *after* the run.
 3. **Excel Online** — second browser save today, by a second person. The library setting
