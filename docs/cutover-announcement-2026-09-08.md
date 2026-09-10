@@ -110,10 +110,10 @@ be transferred** and will be lost.
 
 **If you just want to look at the workbook**
 
-**FRM10-12** is still there to look at: **[LINK]**
-It becomes **read-only**: you can open it and read it, but not write to it. It rebuilds from
-SharePoint each time it is refreshed, so **it is as current as the last refresh, not as current
-as this minute**. For up-to-the-second data, go to SharePoint.
+**FRM10-12** is still there: **[LINK]**
+It is **read-only** now. You can open it and read it, you just can't type in it. It is rebuilt
+from SharePoint on a schedule, so **it shows you the last refresh, not this minute**. When you
+need the current number, go to SharePoint.
 
 **The full guide** (how to enter data, how to read the views): **[GUIDE LINK]**
 
