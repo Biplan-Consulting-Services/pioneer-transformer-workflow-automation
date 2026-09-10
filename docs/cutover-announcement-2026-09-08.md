@@ -60,24 +60,23 @@ contrôle. Même information, mais plus de convention à retenir :
 
 **Les colonnes qui commencent par un préfixe**
 
-Vous allez voir des colonnes nommées `Order - ...`, `Model - ...`, `Mod. Rev. - ...`,
-`Client - ...`. Le préfixe dit d'où vient la valeur :
+Vous verrez des colonnes nommées `Order - ...`, `Model - ...`, `Mod. Rev. - ...`,
+`Client - ...`. Le préfixe indique de quelle liste la valeur provient :
 
-- **`Order -`** vient de la liste **Order** : ce qui concerne la commande au complet, le
-  PO, la date promise, le type de commande.
-- **`Model -`** vient de la liste **Models** : ce qui concerne le modèle.
-- **`Mod. Rev. -`** vient de la liste **Model Revisions** : la spec technique, voltages,
+- **`Order -`** : la liste **Order**, soit ce qui concerne la commande au complet, le PO,
+  la date promise, le type de commande.
+- **`Model -`** : la liste **Models**, ce qui concerne le modèle.
+- **`Mod. Rev. -`** : la liste **Model Revisions**, la spécification technique, voltages,
   noyau, huile, kVA.
-- **`Client -`** vient de la liste **Clients** : ce qui concerne le client.
+- **`Client -`** : la liste **Clients**, ce qui concerne le client.
 
-Ce sont des **copies, tenues à jour automatiquement**. L'unité vous les montre pour que
-vous n'ayez pas à aller les chercher ailleurs.
+Ce sont des **copies, tenues à jour automatiquement**. L'unité les affiche pour vous
+éviter d'aller les chercher ailleurs.
 
-🔴 **N'écrivez pas dedans.** Ce que vous y tapez n'a pas l'air faux tout de suite : ça
-reste affiché, l'air correct, jusqu'à ce que quelqu'un modifie cette commande ou ce
-modèle, et là c'est remplacé sans avertissement. Si une de ces valeurs est fausse, ça se
-corrige sur la commande, le modèle ou la révision. Venez me voir si vous n'êtes pas
-certain lequel.
+🔴 **N'écrivez pas dans ces colonnes.** Une valeur saisie ici paraît correcte sur le
+coup, puis elle est remplacée sans avertissement dès que la commande ou le modèle est
+modifié. Pour corriger une de ces valeurs, il faut le faire sur la commande, sur le
+modèle ou sur la révision. Venez me voir si vous ne savez pas laquelle.
 
 **Une question, un doute, quelque chose qui cloche ?**
 
