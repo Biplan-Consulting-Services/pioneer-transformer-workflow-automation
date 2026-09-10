@@ -1,0 +1,48 @@
+{
+  "flow": {
+    "folder": "Model Revisions - Create or Update Trigger",
+    "displayName": "Model Revisions - Create or Update Trigger",
+    "id": null,
+    "site": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio"
+  },
+  "versions": [
+    {
+      "v": 1,
+      "captured": "2026-09-10T10:27:05-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "empty shell built in the designer 2026-09-10, trigger configured on Model Revisions",
+      "sha256": "4d630fa421bf07e9b5277f4727cf3a730b61a64fda038c8bfb7a1106abbdfce1",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 1,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v001__2026-09-10T10-27__pulled__empty-shell-built-in-the-designer-2026-09-10-tri.json"
+      },
+      "appliedAt": "2026-09-10T10:27:05-04:00",
+      "source": "Model Revisions - Create or Update Trigger.json"
+    },
+    {
+      "v": 2,
+      "captured": "2026-09-10T10:27:05-04:00",
+      "state": "local",
+      "parent": 1,
+      "note": "N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001",
+      "sha256": "6a2c1c3e9addb6ffe4d558897388d14e62df045350a0c70aece54fcf2f7ca222",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 2,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v002__2026-09-10T10-27__local__N3-Order-Items-sync-from-Model-Revisions-pasted-.json"
+      },
+      "appliedAt": null,
+      "source": "n3-merged-Order_Items__sync_from_Model_Revisions.json"
+    }
+  ]
+}

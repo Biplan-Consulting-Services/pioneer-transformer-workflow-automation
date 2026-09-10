@@ -1,0 +1,149 @@
+{
+  "$schema": "https://power-automate-tools.local/flow-editor.json#",
+  "connectionReferences": {
+    "shared_sharepointonline": {
+      "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1813/1.0.1813.4769/sharepointonline/icon.png",
+      "brandColor": "",
+      "tier": "Standard",
+      "apiName": "sharepointonline",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    }
+  },
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      },
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_an_item_is_created_or_modified": {
+        "type": "OpenApiConnection",
+        "recurrence": {
+          "interval": 1,
+          "frequency": "Minute"
+        },
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "e2ff8703-b590-4648-b181-9b47cf3883ba"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetOnUpdatedItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        },
+        "splitOn": "@triggerOutputs()?['body/value']"
+      }
+    },
+    "actions": {
+      "Get_units_of_this_parent": {
+        "runAfter": {},
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+            "$filter": "ModelRevisionId eq @{triggerOutputs()?['body/ID']}",
+            "$top": 5000
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "Apply_to_each_unit": {
+        "foreach": "@outputs('Get_units_of_this_parent')?['body/value']",
+        "runAfter": {
+          "Get_units_of_this_parent": [
+            "Succeeded"
+          ]
+        },
+        "type": "Foreach",
+        "actions": {
+          "needsUpdate": {
+            "runAfter": {},
+            "type": "Compose",
+            "inputs": "@or(\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevCable'], ''), coalesce(triggerOutputs()?['body/Cable'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevClientModelCode'], ''), coalesce(triggerOutputs()?['body/ModelName'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevCopperLV'], ''), coalesce(triggerOutputs()?['body/Copper_x0028_LV_x0029_'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevCoreType'], ''), coalesce(triggerOutputs()?['body/Core_x0020_Type']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevDuplicateOrder'], ''), coalesce(triggerOutputs()?['body/DuplicateOrder']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevFamily'], ''), coalesce(triggerOutputs()?['body/Family']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevForm'], ''), coalesce(triggerOutputs()?['body/Form'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevJS'], ''), coalesce(triggerOutputs()?['body/JS_x0020__x0023_'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevModelDescription'], ''), coalesce(if(empty(coalesce(triggerOutputs()?['body/Description'], json('[]'))), null, join(select(coalesce(triggerOutputs()?['body/Description'], json('[]')), item()?['Value']), '; ')), ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevModelType'], ''), coalesce(triggerOutputs()?['body/Model_x0020_Type']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevModelRevionID'], ''), coalesce(triggerOutputs()?['body/ModelID'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevNotes'], ''), coalesce(triggerOutputs()?['body/Notes'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevOilAmount'], ''), coalesce(triggerOutputs()?['body/OilAmount'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevOilType'], ''), coalesce(triggerOutputs()?['body/Oil_x0020_Type']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevOvercoil'], ''), coalesce(triggerOutputs()?['body/Overcoil'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevPhases'], ''), coalesce(triggerOutputs()?['body/Phases'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevPioneerModelCode'], ''), coalesce(triggerOutputs()?['body/Model']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevPrimaryVoltage'], ''), coalesce(triggerOutputs()?['body/PrimaryVoltage'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevSecondaryVoltage'], ''), coalesce(triggerOutputs()?['body/SecondaryVoltage'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevSpecDate'], ''), coalesce(triggerOutputs()?['body/Spec_Date'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevSpecID'], ''), coalesce(triggerOutputs()?['body/SpecID'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevSpecRevision'], ''), coalesce(triggerOutputs()?['body/Spec_Revision'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevWireHV'], ''), coalesce(triggerOutputs()?['body/Wire_x0028_HV_x0029_'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['RevkVA'], ''), coalesce(triggerOutputs()?['body/kVA_x0020_and_x0020_kV'], '')))\n)"
+          },
+          "Only_if_something_changed": {
+            "runAfter": {
+              "needsUpdate": [
+                "Succeeded"
+              ]
+            },
+            "type": "If",
+            "expression": {
+              "equals": [
+                "@outputs('needsUpdate')",
+                true
+              ]
+            },
+            "actions": {
+              "Update_unit": {
+                "runAfter": {},
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                    "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                    "id": "@items('Apply_to_each_unit')?['ID']",
+                    "item/RevCable": "@triggerOutputs()?['body/Cable']",
+                    "item/RevClientModelCode": "@triggerOutputs()?['body/ModelName']",
+                    "item/RevCopperLV": "@triggerOutputs()?['body/Copper_x0028_LV_x0029_']",
+                    "item/RevCoreType": "@triggerOutputs()?['body/Core_x0020_Type']?['Value']",
+                    "item/RevDuplicateOrder": "@triggerOutputs()?['body/DuplicateOrder']?['Value']",
+                    "item/RevFamily": "@triggerOutputs()?['body/Family']?['Value']",
+                    "item/RevForm": "@triggerOutputs()?['body/Form']",
+                    "item/RevJS": "@triggerOutputs()?['body/JS_x0020__x0023_']",
+                    "item/RevModelDescription": "@if(empty(coalesce(triggerOutputs()?['body/Description'], json('[]'))), null, join(select(coalesce(triggerOutputs()?['body/Description'], json('[]')), item()?['Value']), '; '))",
+                    "item/RevModelType": "@triggerOutputs()?['body/Model_x0020_Type']?['Value']",
+                    "item/RevModelRevionID": "@triggerOutputs()?['body/ModelID']",
+                    "item/RevNotes": "@triggerOutputs()?['body/Notes']",
+                    "item/RevOilAmount": "@triggerOutputs()?['body/OilAmount']",
+                    "item/RevOilType": "@triggerOutputs()?['body/Oil_x0020_Type']?['Value']",
+                    "item/RevOvercoil": "@triggerOutputs()?['body/Overcoil']",
+                    "item/RevPhases": "@triggerOutputs()?['body/Phases']",
+                    "item/RevPioneerModelCode": "@triggerOutputs()?['body/Model']?['Value']",
+                    "item/RevPrimaryVoltage": "@triggerOutputs()?['body/PrimaryVoltage']",
+                    "item/RevSecondaryVoltage": "@triggerOutputs()?['body/SecondaryVoltage']",
+                    "item/RevSpecDate": "@triggerOutputs()?['body/Spec_Date']",
+                    "item/RevSpecID": "@triggerOutputs()?['body/SpecID']",
+                    "item/RevSpecRevision": "@triggerOutputs()?['body/Spec_Revision']",
+                    "item/RevWireHV": "@triggerOutputs()?['body/Wire_x0028_HV_x0029_']",
+                    "item/RevkVA": "@triggerOutputs()?['body/kVA_x0020_and_x0020_kV']"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "PatchItem",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {}
+  }
+}
