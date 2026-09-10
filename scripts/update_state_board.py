@@ -29,7 +29,7 @@ LANES = [
    "Depends on nothing, and the email needs its link &mdash; so it is the one staff-facing "
    "thing that can genuinely be finished now."),
   ("EMAILNOW", "Send the email",
-   "Tensed for exactly this: <em>la bascule se fait ce soir&hellip; quand vous arriverez demain "
+   "Tensed for exactly this: <em>la migration se fait ce soir&hellip; quand vous arriverez demain "
    "matin</em> &mdash; true when sent this evening and still true read over breakfast. "
    "&#9888;&#65039; It does <b>not</b> ask anyone to save and close FRM10-12, because everyone "
    "had already left &mdash; so anything unsaved on a machine tonight will not reach SharePoint. "

@@ -1,11 +1,11 @@
 # Travailler dans SharePoint : petit guide
 
-> ### 📋 Brouillon à réviser, à publier le jour de la bascule, puis effacer cet encadré
+> ### 📋 Brouillon à réviser, à publier le jour de la migration, puis effacer cet encadré
 >
-> Réécrit le 2026-09-09 pour la bascule de jeudi. L'ancien avertissement disait que les deux
+> Réécrit le 2026-09-09 pour la migration de jeudi. L'ancien avertissement disait que les deux
 > consignes « n'écrivez plus dans le fichier Excel » étaient **à l'envers**, et il avait
 > raison : pendant le fonctionnement parallèle, FRM10-12 était le seul classeur actif.
-> **À la bascule, elles deviennent justes**, donc l'avertissement est retiré et les deux
+> **À la migration, elles deviennent justes**, donc l'avertissement est retiré et les deux
 > consignes disent maintenant exactement ce qui est vrai, y compris ce que l'ancienne
 > version passait sous silence : le fichier reste *consultable* et garde sa disposition
 > habituelle.
@@ -15,7 +15,7 @@
 > tapée dans une case à une case à cocher ou à une liste déroulante, et personne ne l'avait
 > écrit nulle part.
 >
-> **Ne pas faire circuler avant que la bascule soit terminée.** D'ici là,
+> **Ne pas faire circuler avant que la migration soit terminée.** D'ici là,
 > `views-guide-sharepoint-fr.md` est ce qu'il faut dire au personnel.
 
 ## Ce qui change

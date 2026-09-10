@@ -4,7 +4,7 @@ Bilingual staff email for the FRM10-12 → SharePoint cutover. French first: the
 Montreal and the factory in Granby, and the shop-floor vocabulary is already French
 (`Bobinage`, `Encuvage`, `Reçu`, `Entrepôt`).
 
-Vocabulary matches `staff-guide-sharepoint-fr.md` deliberately — **la bascule**, **copie en
+Vocabulary matches `staff-guide-sharepoint-fr.md` deliberately: **la migration**, **copie en
 lecture seule**, **c'est un miroir maintenant** — so this email and the guide read as one voice.
 
 🔴 **One thing to fill in before sending: the link. Everything else is resolved** — see the
@@ -14,11 +14,11 @@ checklist at the bottom.
 
 ## FRANÇAIS
 
-**Objet : FRM10-12 : la bascule se fait ce soir. Voici ce qui change demain.**
+**Objet : FRM10-12 : la migration se fait ce soir. Voici ce qui change demain.**
 
 Bonjour à tous,
 
-**La bascule se fait ce soir.** Quand vous arriverez demain matin, **SharePoint sera la
+**La migration se fait ce soir.** Quand vous arriverez demain matin, **SharePoint sera la
 référence officielle** pour le suivi des unités.
 
 **Ce qu'il faudra faire**
@@ -80,11 +80,11 @@ Soleil Anker-Baril
 
 ## ENGLISH
 
-**Subject: FRM10-12: the cutover happens tonight. Here is what changes tomorrow.**
+**Subject: FRM10-12: the migration happens tonight. Here is what changes tomorrow.**
 
 Hello everyone,
 
-**The cutover happens tonight.** When you come in tomorrow morning, **SharePoint will be the
+**The migration happens tonight.** When you come in tomorrow morning, **SharePoint will be the
 official record** for unit tracking.
 
 **What to do from tomorrow**
@@ -168,7 +168,7 @@ get moved a fourth time:
   because that is runbook step 4.
 - The save-and-close was cut: by 19:00 everyone had already left, so it is an
   instruction nobody can act on — noise, and mildly alarming noise.
-- Final: *"la bascule se fait ce soir… quand vous arriverez demain matin"*. True when
+- Final: *"la migration se fait ce soir… quand vous arriverez demain matin"*. True when
   sent this evening **and** still true read over breakfast, which is the only tense that
   survives both.
 

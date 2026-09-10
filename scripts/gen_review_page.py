@@ -247,7 +247,7 @@ footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
     off the screen. Open the classic view-settings page in French and confirm — 30 seconds.</span></div></label>
   <label class="dec"><input type="checkbox">
     <div><b>Read the opening — it was retensed three times today</b>
-    <span>Final form: <em>la bascule se fait ce soir… quand vous arriverez demain matin</em>.
+    <span>Final form: <em>la migration se fait ce soir… quand vous arriverez demain matin</em>.
     True when sent this evening and still true read over breakfast, which is the only tense
     that survives both. It does <b>not</b> ask anyone to save and close FRM10-12 — everyone had
     already left, so that would be an instruction nobody could act on. The cost is real

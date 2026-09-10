@@ -24,7 +24,7 @@ section.*
 > **Où on en est aujourd'hui (2026-09-04).** On est en **fonctionnement parallèle** :
 > **FRM10-12 reste actif et vous continuez de l'utiliser comme d'habitude.** Rien ne change dans
 > votre travail quotidien pour l'instant. SharePoint se remplit en parallèle pour être prêt le
-> jour où on basculera pour de bon. Ce guide vous explique comment lire ce qui est là, pas
+> jour de la migration pour de bon. Ce guide vous explique comment lire ce qui est là, pas
 > comment changer votre façon de travailler.
 
 ---
