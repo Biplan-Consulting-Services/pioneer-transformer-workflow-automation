@@ -33,6 +33,15 @@ LANES = [
    "guide sends people to when a unit seems to have vanished, which is nearly always a "
    "delivered unit dropping out of the default view. This replaces <code>All Items</code> "
    "in that role: 74 unordered columns is not a troubleshooting tool."),
+  ("STATUSCOL", "Put <code>Step Status</code> and <code>Status Date</code> in the three FRM10-12 views",
+   "1.1e hid the composite <code>Status</code> from staff views on 09-09, because the viewer "
+   "derives it now and typing into it goes nowhere. Nothing replaced it, so the status column "
+   "staff used is currently just absent. <b><code>Step Status</code> + <code>Status Date</code> "
+   "are the only editable status surface</b>, and the handbook already tells people that, so "
+   "the views need to match. Put them where <code>Status</code> used to sit. "
+   "&#9888;&#65039; Three views now, not one: <code>FRM10-12 Layout</code>, "
+   "<code>Completed</code> and <code>All</code>. Doing this before copying Layout would have "
+   "been a single edit; worth remembering next time a view gets duplicated."),
   ("PUBHB", "Publish the handbook",
    "<code>staff-handbook-sharepoint.md</code> and <code>-fr.md</code> onto a SharePoint page. "
    "Depends on nothing, and the email needs its link &mdash; so it is the one staff-facing "

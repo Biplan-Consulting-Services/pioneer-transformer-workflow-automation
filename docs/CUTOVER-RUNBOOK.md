@@ -102,6 +102,12 @@ Decision, user 2026-09-09. Both stay in the list; they are removed from **views*
 
 `Step Status` + `Status Date` are now the only editable status surface.
 
+⚠️ **Hiding `Status` left a hole nobody filled.** The staff views lost their status column
+on 09-09 and nothing was put in its place, so `Step Status` and `Status Date` have to be
+**added to the three FRM10-12 views** before the handbook goes out, since the handbook
+tells people those two fields are where status lives now. Three views rather than one, as
+of 2026-09-10: `FRM10-12 Layout`, `FRM10-12 Completed`, `FRM10-12 All`.
+
 ⚠️ **Do not delete either.** `v002` reads and writes the mirror; FRM11 depends on the
 composite's format. And do not make the mirror Required or read-only — the flow must write
 it.
