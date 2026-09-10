@@ -280,7 +280,19 @@ captured connector payload anywhere in this repo showing a Hyperlink column. So:
 | **empty** | the connector returns the URL as a bare string, so `?['Url']` on a string is null | drop it — in `scripts/gen_n3_flows.py` make the `url` kind return the bare `b`, regenerate, re-paste |
 | literal text `{"Url":"...","Description":"..."}` | read is right, but the object reached the write box | keep `?['Url']`; the paste did not take — re-check that action's parameter |
 
-**Run 2 — does the guard hold?** This is the more important half.
+**Run 2 — ✅ PASSED 2026-09-10 16:24.** `needsUpdate` evaluated, the condition went
+**False**, `Update unit` **skipped**, run succeeded. The guard settles.
+
+🔑 **This also answers the relative-vs-absolute question.** The stored value is absolute
+and the guard found it equal to what the connector read, so the connector reads the
+absolute form as well — the normalisation is symmetric and there is no permanent
+mismatch. `x5_backfill_order_folder.js` was changed to write the absolute form too, so
+a backfilled unit does not get rewritten once by the first N3 run that touches its order.
+
+**ALL THREE FLOWS ARE NOW PROVEN.** Test A (Models, 5 fields), Test B (Model Revisions,
+24 fields, including the R22 column), Test C (Order, 17 fields, write + settle).
+
+**Run 2 — the original instructions:**
 
 4. Edit `Order` `E21003R1` again, this time changing a field that is **not** one of the 17.
    `Lead Time` is a good choice — verified absent from `ORDER_MAP`, and it is a per-order

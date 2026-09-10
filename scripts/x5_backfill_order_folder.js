@@ -31,8 +31,12 @@
    THE VALUES, measured 2026-09-09
      All 106 are exactly:
          /sites/PioneerPlanificatio/Order%20Library/<Order Number>
-     zero exceptions. The URL carries no information the order number does not
-     already have.
+     zero exceptions -- RELATIVE, note. This script writes them absolute, prefixed
+     with the site origin, because that is the shape the Power Automate connector
+     uses and therefore the shape N3 will keep them in. See the comment at the
+     folder map below.
+
+     The URL carries no information the order number does not already have.
 
      ⚠️ WHICH IS WHY THE COLUMN STILL HAS TO BE COPIED RATHER THAN GENERATED.
      Only 106 of 449 orders have a folder. Building the URL from the order number
@@ -55,6 +59,7 @@
 (async () => {
   const APPLY = false;                     // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
+  const ORIGIN = "https://ermcopower.sharepoint.com";
   const CONC  = 4;
 
   const J = async u => (await fetch(u, {headers:{Accept:"application/json;odata=nometadata"}})).json();
@@ -83,7 +88,20 @@
     const num = (o["Order_x0020_Number1"]||"").trim();
     const f = o["Order_x0020_Folder"];
     // a URL field comes back as {Url, Description} -- or null
-    const url = f && (f.Url || f.url);
+    let url = f && (f.Url || f.url);
+    // Store the ABSOLUTE form, matching what the N3 Order flow writes.
+    //
+    // The Order list holds all 106 as relative paths (/sites/PioneerPlanificatio/...),
+    // but the Power Automate connector normalises to absolute on the way through: Test C
+    // run 1 wrote https://ermcopower.sharepoint.com/sites/... to the unit, and run 2
+    // then found the guard settled, which proves the connector READS that absolute form
+    // back as well. Both measured 2026-09-10.
+    //
+    // If this backfill wrote the relative path, every unit it filled would differ from
+    // what N3 reads, so the next edit to that order would rewrite it once. Harmless but
+    // pointless churn across 106 orders' units, and it would look like a bug in the
+    // guard. Writing the same shape means the two agree from the start.
+    if (url && url.startsWith("/")) url = ORIGIN + url;
     if (url) folder.set(o.Id, {Url: url, Description: (f.Description || f.description || num), num: num});
   }
   console.log("orders read: " + orders.length + " | with a folder: " + folder.size);
