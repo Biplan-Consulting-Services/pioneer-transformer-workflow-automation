@@ -222,6 +222,39 @@ Encouraging sign: N8 wrote 246 `Status Date` values today and **all** landed at
 
 ---
 
+## 7b · ✅ The viewer's OUTPUT verified against live SharePoint — 2026-09-10
+
+Everything above checks the *inputs and the mapping*. This checks the thing that actually
+matters: does the refreshed viewer agree with the data it claims to represent. Run after
+the Office Script refresh, 999 viewer units against the 1,124-row list.
+
+```
+viewer units 999 | in the list 999 | viewer-only 0        <- nothing invented
+```
+
+| conversion | mismatches |
+|---|---|
+| all 10 marker columns (`R` / `x` / `Y` vs the boolean) | **0** of 9,990 comparisons |
+| `Location` — viewer code vs inverted list display name | **0** |
+| `Frame`, `Witness/Other` — passthrough | **0** |
+| `Status` — rebuilt from `Step Status` + `Status Date` | **0** (fell back to the stored stamp on exactly **3** — the bare-prefix rows, by design) |
+| `Engineering Required` | 1 |
+| `LDs` | 23 |
+
+### The 24 are the viewer being right
+
+Traced every one: **the viewer agrees with the `Order` list; the `Order Items` parent-sync
+copy is the stale side.** The viewer reads `Orders` directly (ColumnMap entity `"Orders"`),
+so it shows live truth, while `Order - Engineering Required` / `Order - LDs` have not been
+refreshed since the flow last ran on 09-01 — and N3, which would keep them current, is not
+deployed.
+
+The final run corrects all 24; N3 stops them drifting again. It also validates the viewer's
+design choice: reading parents directly rather than through the synced copies is exactly
+why it is ahead of them rather than behind.
+
+---
+
 ## 8 · What I could not verify
 
 - **The run itself.** There is no dry run for the transfer flow. This audit covers the
