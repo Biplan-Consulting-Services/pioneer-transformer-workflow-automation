@@ -14,23 +14,28 @@ checklist at the bottom.
 
 ## FRANÇAIS
 
-**Objet : FRM10-12 — la bascule est active. Ne plus y saisir de données.**
+**Objet : FRM10-12 — la bascule se fait ce soir. Fermez le fichier avant de partir.**
 
 Bonjour à tous,
 
-**À compter de ce matin, SharePoint devient la référence officielle** pour le suivi des unités.
-La bascule est active.
+**La bascule se fait ce soir, vers 22 h.** À partir de demain matin, **SharePoint devient la
+référence officielle** pour le suivi des unités.
 
-**Ce qu'il faut faire maintenant**
+**Ce qu'il faut faire avant de partir aujourd'hui**
+
+**Enregistrez et fermez FRM10-12.** Tout ce qui reste non enregistré ne se rendra pas dans
+SharePoint. 🔴 **Depuis Excel bureau, pas depuis le navigateur.**
+
+**À partir de demain matin**
 
 Faites vos mises à jour dans la liste **`Order Items`** dans SharePoint. La vue
 **`FRM10-12 Layout`** vous présente les mêmes colonnes, dans le même ordre que dans le classeur —
 vous devriez vous y retrouver tout de suite.
 
-**Ce qu'il ne faut plus faire**
+**Ce qu'il ne faudra plus faire**
 
-**N'écrivez plus dans FRM10-12.** C'est un miroir maintenant. Ce que vous y taperez **ne sera pas
-transféré** et sera perdu.
+**N'écrivez plus dans FRM10-12** à partir de demain. Ce sera un miroir : ce que vous y taperez
+**ne sera pas transféré** et sera perdu.
 
 **Si vous voulez seulement consulter le classeur**
 
@@ -80,21 +85,27 @@ Soleil Anker-Baril
 
 ## ENGLISH
 
-**Subject: FRM10-12 — the cutover is live. Please stop entering data in it.**
+**Subject: FRM10-12 — the cutover is tonight. Please close the file before you leave.**
 
 Hello everyone,
 
-**As of this morning, SharePoint is the official record** for unit tracking. The cutover is live.
+**The cutover happens tonight, around 10pm.** From tomorrow morning, **SharePoint is the
+official record** for unit tracking.
 
-**What to do from now on**
+**What to do before you leave today**
+
+**Save and close FRM10-12.** Anything left unsaved will not reach SharePoint. 🔴 **From desktop
+Excel, not from the browser.**
+
+**From tomorrow morning**
 
 Make your updates in the **`Order Items`** list in SharePoint. The **`FRM10-12 Layout`** view shows
 the same columns, in the same order as the workbook — it should look familiar straight away.
 
 **What to stop doing**
 
-**Do not write in FRM10-12 any more.** It is a mirror now. Anything you type into it **will not be
-transferred** and will be lost.
+**Do not write in FRM10-12 from tomorrow.** It becomes a mirror: anything you type into it **will
+not be transferred** and will be lost.
 
 **If you just want to look at the workbook**
 
@@ -157,21 +168,26 @@ risk this checklist item was written about is real in a softer form: staff who b
 workbook is live will read a stale figure off it and never think to check. Naming the limit
 costs one clause and removes the whole failure mode.
 
-**2b. ⚠️ The "what changes tonight" section describes work that has not run yet.**
-Added 2026-09-10 at the user's request, so staff get a heads-up rather than a surprise.
-Everything in it is scheduled for tonight, but **check each line actually happened before
-sending** — the email goes out after the cutover, so nothing in it should be a forecast by
-the time it lands:
+**2b. ✅ RETENSED 2026-09-10 for a send BEFORE the cutover, not after.**
+It was written as a post-cutover announcement — *"as of this morning… the cutover is live"* —
+which would have been false at 19:00. Now it says the cutover is tonight and asks people to
+**save and close FRM10-12 before they leave**, which is runbook step 4 and the one thing an
+email can do that nothing else can.
+
+That inverts what this item used to warn about. "What changes tonight" no longer describes
+work claimed as done — it is a forecast, and reads as one. So it does **not** need every line
+to have happened before sending. It does need them to happen, which is a different problem:
 
 | line | depends on |
 |---|---|
-| checkboxes / two-field `Status` | already true — done in the earlier build and N8 |
-| the 12 dropdowns | `n4_convert_choice_columns.js` (Stage 2b) |
-| `Order - Order Folder` on units | `x5_backfill_order_folder.js` + the Order sync flow |
-| the two columns disappearing | the manual delete in Stage 2b |
-| lead times / the two dates | `n5_clients_lead_time.js` — deliberately written as *coming*, not done |
+| checkboxes / two-field `Status` | already true |
+| the 12 dropdowns | `n4_convert_choice_columns.js` |
+| `Order - Order Folder` on units | `x5` + the Order sync flow |
+| the two columns disappearing | the manual delete |
+| lead times / the two dates | ✅ done today — written as *coming*, and it is |
 
-If any of those slip, cut the line rather than sending a promise.
+⚠️ If a step is abandoned rather than delayed, send a short correction tomorrow. A forecast
+that quietly never happens costs more trust than one that slips a day.
 
 **3. Optional line, if staff have been complaining about the dates.** The run fixed ~4,700 date
 values that were displaying one day early. If that was visible to people, it is worth a sentence,

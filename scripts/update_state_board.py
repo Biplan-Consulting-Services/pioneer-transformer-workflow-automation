@@ -24,6 +24,14 @@ LANES = [
    "handbook names them and they were reasoned, never read off the screen. Thirty seconds "
    "&mdash; and staff search for those exact words, so a wrong one makes them doubt the parts "
    "that are right."),
+  ("PUBHB", "Publish the handbook",
+   "<code>staff-handbook-sharepoint.md</code> and <code>-fr.md</code> onto a SharePoint page. "
+   "Depends on nothing &mdash; and the email needs its link."),
+  ("EMAILNOW", "Send the email",
+   "&#128308; <b>Retensed for a send BEFORE the cutover.</b> It now says the bascule is tonight "
+   "and asks people to <b>save and close FRM10-12 before they leave</b> &mdash; which is step 4, "
+   "and the one thing an email can do that nothing else can. Sent after 22:00 it does none of "
+   "that work."),
   ("LINKS", "Fill the two links in the email",
    "<code>[LIEN]</code> the read-only workbook, <code>[LIEN GUIDE]</code> wherever the handbook "
    "is published. Neither was invented for you. A SharePoint page on the site is the obvious "
@@ -122,10 +130,7 @@ LANES = [
    "by N3. One staff view still displays <code>Order_Number_TextField</code> &mdash; check that "
    "view before retiring rather than after."),
  ]),
- ("me", "Stage 5 &middot; Staff, and after", "the part other people are waiting on", [
-  ("EMAIL", "Send the email, publish the handbook",
-   "Both links filled. &#9888;&#65039; Every line of &ldquo;what changes tonight&rdquo; has to "
-   "have actually happened &mdash; if a step slipped, cut the line rather than send a promise."),
+ ("me", "Stage 5 &middot; Staff, and after", "after the switch", [
   ("X5", "Run <code>x5_backfill_order_folder.js</code>",
    "Fills the order-folder link on units whose order has one. Writes the <b>absolute</b> URL to "
    "match what the connector reads, so N3 does not rewrite them all once."),
@@ -166,7 +171,15 @@ def main():
         '      and the email and handbook are written.</p>\n\n%s\n\n' % (n, "\n\n".join(parts)))
 
     s = io.open(BOARD, encoding="utf-8").read()
-    i = s.index("      <h2>Do this next</h2>")
+    # Idempotent: on the first run the section is still called "Do this next";
+    # after that it is the heading this script itself writes. Anchor on either, or
+    # re-running silently fails with a substring error.
+    for head in ('      <h2>What is left to do</h2>', '      <h2>Do this next</h2>'):
+        if head in s:
+            i = s.index(head)
+            break
+    else:
+        raise SystemExit("cannot find the task-list heading in %s" % BOARD)
     j = s.index("      <h2>What is decided</h2>")
     s = s[:i] + block + s[j:]
     s = s.replace('<script id="app-state" type="application/json">{"tick":{"HIDE":1},"v":1}</script>',

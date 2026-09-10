@@ -232,7 +232,7 @@ footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
   <p class="eyebrow">Pioneer Transformer · 10 September 2026</p>
   <h1>Cutover review</h1>
   <p class="sub">The staff email and the handbook, exactly as they stand. Read them before
-  anything is sent — three things still need a decision from you, and they are at the top.</p>
+  it goes out — it is now written to be sent BEFORE tonight’s cutover, and three things still need you.</p>
 </header>
 
 <div class="decisions">
@@ -246,10 +246,13 @@ footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
     « Regrouper par », « Réduits » and « Limite d'éléments ». They were reasoned, never read
     off the screen. Open the classic view-settings page in French and confirm — 30 seconds.</span></div></label>
   <label class="dec"><input type="checkbox">
-    <div><b>Every line of “what changes tonight” has to have actually happened</b>
-    <span>It is written ahead of the work. The dropdowns depend on <code>n4</code>, the order
-    folder on <code>x5</code> plus the Order flow, the two removed columns on a manual delete.
-    If a step slips, cut the line rather than send a promise.</span></div></label>
+    <div><b>Read the retensed opening</b>
+    <span>The email now goes out <em>before</em> the cutover, not after: it says the bascule is
+    tonight and asks people to <b>save and close FRM10-12 before they leave</b> — which is
+    runbook step 4, and the one thing an email can do that nothing else can. “What changes
+    tonight” is therefore a forecast and reads as one, so it does not need every line to have
+    happened first. It does need them to happen: if a step is abandoned rather than delayed,
+    send a short correction tomorrow.</span></div></label>
 </div>
 
 <nav>
