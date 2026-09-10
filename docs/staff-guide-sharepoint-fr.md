@@ -77,6 +77,7 @@ n'est plus une convention à retenir.
 | `x` dans **Temperature Rise**, **Impulse**, **Partial D**, **Oil Analysis**, **DB** | une **case à cocher** — cochez-la |
 | `Y` dans **SFRA** | une **case à cocher** — cochez-la |
 | `Reçu` ou `Plaspak` dans **Frame** | une **liste déroulante** — choisissez |
+| du texte libre dans **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | une **liste déroulante** — choisissez |
 | un code comme `TE-Se-4` dans **Status** | deux champs : **Step Status** (choisir l'étape) et **Status Date** (choisir la date) |
 
 Deux choses à savoir sur les cases à cocher :
@@ -84,6 +85,11 @@ Deux choses à savoir sur les cases à cocher :
 - **Décochée veut dire « non ».** Il n'y a pas de troisième option pour « pas encore
   décidé » — si la nuance compte pour une unité, écrivez-la dans **Technical Notes** plutôt
   que de laisser la case décochée comme indice.
+- **Une liste déroulante n'efface pas ce qui est déjà là.** Les valeurs saisies avant
+  restent affichées telles quelles, même les orthographes bizarres. Ce que la liste
+  encadre, c'est seulement ce que vous pouvez choisir à partir de maintenant — donc si
+  une valeur dont vous avez besoin manque dans la liste, signalez-le plutôt que de
+  contourner.
 - **La copie Excel affiche encore les lettres.** Cochez la case Tank ici et le classeur en
   lecture seule montre `R`, exactement comme avant. Les rapports bâtis à partir de ce
   fichier ne changent pas.

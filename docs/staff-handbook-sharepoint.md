@@ -64,6 +64,7 @@ typed a letter into — the same information, just no longer a convention you ha
 | `x` in **Temperature Rise**, **Impulse**, **Partial D**, **Oil Analysis**, **DB** | a **checkbox** — tick it |
 | `Y` in **SFRA** | a **checkbox** — tick it |
 | `Reçu` or `Plaspak` in **Frame** | a **dropdown** — pick one |
+| free text in **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | a **dropdown** — pick one |
 | a code like `TE-Se-4` in **Status** | two fields: **Step Status** (pick the step) and **Status Date** (pick the date) |
 
 Two things worth knowing about the checkboxes:
@@ -71,6 +72,10 @@ Two things worth knowing about the checkboxes:
 - **Unticked means "no".** There is no third option for "not decided yet" — if that
   distinction matters for a unit, put it in **Technical Notes** rather than leaving the box
   as a hint.
+- **A dropdown does not erase what is already there.** Values that predate the
+  dropdown keep displaying exactly as they were, even the odd spellings. What the
+  dropdown changes is only what you can pick from now on — so if a value you need is
+  missing from the list, that is worth reporting rather than working around.
 - **The Excel copy still shows the letters.** Tick the Tank box here and the read-only
   workbook shows `R`, exactly as before. The reports built off that file are unaffected.
 

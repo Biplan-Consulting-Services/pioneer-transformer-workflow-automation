@@ -41,6 +41,33 @@ minute**. Pour la donnée à jour à la seconde près, c'est SharePoint.
 
 **Le guide complet** (comment saisir, comment lire les affichages) : **[LIEN GUIDE]**
 
+**Ce qui change ce soir, et que vous allez voir**
+
+Quelques colonnes cessent d'être une case où l'on tape une lettre et deviennent un vrai
+contrôle. Même information, mais plus de convention à retenir :
+
+- **Cases à cocher** — `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` (avant : `R`),
+  `Temperature Rise`, `Impulse`, `Partial D`, `Oil Analysis`, `DB` (avant : `x`),
+  `SFRA` (avant : `Y`).
+- **Listes déroulantes** — `Order Type`, `Order Step`, `Order Status`, `Indexing`,
+  `WET-WETP`, `Client Date Status`, `Core Type`, `Family`, `Model Type`, `Oil Type`,
+  `Modification Status`, `New model to be created`. Les valeurs existantes restent
+  affichées telles quelles; c'est seulement la saisie qui est encadrée.
+- **`Status`** devient deux champs : **Step Status** (l'étape) et **Status Date** (la date).
+- **Le dossier de la commande** apparaît directement sur l'unité : la colonne
+  **Order - Order Folder** pointe vers l'endroit où vivent tous les documents de la
+  commande.
+- **Deux colonnes disparaissent** — `Order - Order Number` et `Order - Qty`. Rien n'est
+  perdu : c'était la même information deux fois. Le numéro de commande reste dans
+  **Order Number**, la quantité dans **Qty**.
+
+**Ce qui s'en vient**
+
+Les **délais par client** (FRM13) s'en viennent dans SharePoint. Une fois là, la **date de
+livraison estimée** et la **date due d'ingénierie** se calculeront toutes seules sur
+l'unité, au lieu d'être une formule dans le classeur. Je vous reviens là-dessus — rien à
+faire de votre côté.
+
 **Une question, un doute, quelque chose qui cloche ?**
 
 Venez me voir tout de suite — sur Teams, ou à **soleil.anker@ermco-eci.com**. Mieux vaut poser la
@@ -78,6 +105,31 @@ up-to-the-second data, go to SharePoint.
 
 **The full guide** (how to enter data, how to read the views): **[GUIDE LINK]**
 
+**What changes tonight, and what you will notice**
+
+A few columns stop being a cell you type a letter into and become a proper control. Same
+information, one less convention to remember:
+
+- **Checkboxes** — `Tank`, `ISO Stack`, `ISO Coil`, `Lead Assembly` (was `R`),
+  `Temperature Rise`, `Impulse`, `Partial D`, `Oil Analysis`, `DB` (was `x`),
+  `SFRA` (was `Y`).
+- **Dropdowns** — `Order Type`, `Order Step`, `Order Status`, `Indexing`, `WET-WETP`,
+  `Client Date Status`, `Core Type`, `Family`, `Model Type`, `Oil Type`,
+  `Modification Status`, `New model to be created`. Existing values keep showing exactly
+  as they are; it is only new entry that is constrained.
+- **`Status`** becomes two fields: **Step Status** (the step) and **Status Date** (the date).
+- **The order's folder** now appears on the unit itself — the **Order - Order Folder**
+  column points at where every document filed against that order lives.
+- **Two columns disappear** — `Order - Order Number` and `Order - Qty`. Nothing is lost:
+  they were the same information twice. The order number stays in **Order Number**, the
+  quantity in **Qty**.
+
+**What is coming**
+
+The **per-client lead times** from FRM13 are moving into SharePoint. Once they are there,
+**Estimated Delivery Date** and **Engineering Due Date** will calculate themselves on the
+unit instead of being a formula in the workbook. I will follow up — nothing for you to do.
+
 **Questions, doubts, anything that looks wrong?**
 
 Come and find me straight away — on Teams, or at **soleil.anker@ermco-eci.com**. Two minutes of
@@ -104,6 +156,22 @@ that outright ("as current as the last refresh, not as current as this minute"),
 risk this checklist item was written about is real in a softer form: staff who believe the
 workbook is live will read a stale figure off it and never think to check. Naming the limit
 costs one clause and removes the whole failure mode.
+
+**2b. ⚠️ The "what changes tonight" section describes work that has not run yet.**
+Added 2026-09-10 at the user's request, so staff get a heads-up rather than a surprise.
+Everything in it is scheduled for tonight, but **check each line actually happened before
+sending** — the email goes out after the cutover, so nothing in it should be a forecast by
+the time it lands:
+
+| line | depends on |
+|---|---|
+| checkboxes / two-field `Status` | already true — done in the earlier build and N8 |
+| the 12 dropdowns | `n4_convert_choice_columns.js` (Stage 2b) |
+| `Order - Order Folder` on units | `x5_backfill_order_folder.js` + the Order sync flow |
+| the two columns disappearing | the manual delete in Stage 2b |
+| lead times / the two dates | `n5_clients_lead_time.js` — deliberately written as *coming*, not done |
+
+If any of those slip, cut the line rather than sending a promise.
 
 **3. Optional line, if staff have been complaining about the dates.** The run fixed ~4,700 date
 values that were displaying one day early. If that was visible to people, it is worth a sentence,
