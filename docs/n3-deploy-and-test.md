@@ -162,7 +162,23 @@ one. This is the R22 failure mode caught before it writes 979 rows instead of af
 
 Then turn the flow OFF.
 
-### Test B · `Order Items - sync from Model Revisions` — same test, 24 fields
+### Test B · `Order Items - sync from Model Revisions` — ✅ PASSED 2026-09-10 10:42
+
+Stronger evidence than Test A, because `needsUpdate` reported its value outright:
+**INPUTS `false`, OUTPUTS `false`**, 1 of 1 unit, `Update unit` skipped, run Succeeded.
+All 24 read expressions reproduce what is stored.
+
+🔑 **This is the run that cleared `RevModelDescription`** — the only column whose type
+does not match its parent (`Note` fed from `MultiChoice`), read with
+`join(select(...), '; ')`, and the column R22 put 110 characters of JSON into. On
+`MR-ATCO-0002-V1` the parent's `Model Description` is **empty**, so the guard compared a
+stored blank against a join over nothing — the null-vs-empty-string case. They compare
+equal. The `if(empty(...), null, join(...))` wrapper does what it was written to do.
+
+Edited `Pioneer_Model_Code_TextField` (a dead mirror outside the 24) on list ID 390.
+
+The original instructions:
+
 
 `MR-ATCO-0002-V1` also matches unit 994 on all 24. Same method — but **the field to edit
 is different here**, and it is worth being careful about:
