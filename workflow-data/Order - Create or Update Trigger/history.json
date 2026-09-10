@@ -43,6 +43,25 @@
       },
       "appliedAt": null,
       "source": "n3-merged-Order_Items__sync_from_Order.json"
+    },
+    {
+      "v": 3,
+      "captured": "2026-09-10T16:06:56-04:00",
+      "state": "local",
+      "parent": 1,
+      "note": "v003: OrdOrderFolder read is the bare string, not ?['Url'] -- proven by Test C",
+      "sha256": "55de185f087653ba52e3972d9bc75da12e0a3a3e0171532ca238179d3d2907d7",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 2,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v003__2026-09-10T16-06__local__v003-OrdOrderFolder-read-is-the-bare-string-not-.json"
+      },
+      "appliedAt": null,
+      "source": "n3-merged-Order_Items__sync_from_Order.json"
     }
   ]
 }

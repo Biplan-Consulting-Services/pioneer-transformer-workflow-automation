@@ -363,9 +363,10 @@ there is no bare `select()`.
 ✅ `OrdOrderFolder` is now **included** (2026-09-10, closing roadmap 38). It was excluded
 because a hyperlink is an object on both read and write and the shape was never sourced.
 The write shape is now sourced — the connector renders a URL column as **one input box**,
-so it takes a bare string. The read (`?['Url']`) is reasoned from REST's `SP.FieldUrlValue`
-and is the **one unproven expression in all three flows** — see
-`n3-deploy-and-test.md`, Test C, which exists to settle it on one row.
+so it takes a bare string. The read was **wrong and is now fixed**: Test C proved on one row (2026-09-10 16:04) that
+the connector returns a URL column as a plain **String**, and `?['Url']` against a string
+hard-fails the action rather than returning null. The `url` kind now emits the bare
+expression. Order flow re-staged as `v003`.
 
 🔴 **Deploying these flows is not a paste into an existing flow** — they do not exist in
 the tenant yet, so the `_inbox`/`_outbox` loop does not apply. Build a shell with the

@@ -195,12 +195,25 @@ def read_expr(src, kind):
     if kind in ("choice", "lookup"):
         return "%s?['Value']" % b
     if kind == "url":
-        # A URL/hyperlink column READS as an object with Url + Description, the same
-        # shape REST uses (SP.FieldUrlValue). But it WRITES as a single value: the
-        # connector renders a URL column as ONE input box, confirmed in the designer
-        # 2026-09-10. So take ?['Url'] and hand over the bare string -- sending the
-        # object would be the write shape REST wants, not the one the connector does.
-        return "%s?['Url']" % b
+        # OBSERVED, not reasoned: a URL column comes off the connector's trigger as a
+        # plain STRING, on both read and write. Not the {Url, Description} object REST
+        # uses (SP.FieldUrlValue), which is what I wrongly extrapolated from.
+        #
+        # `?['Url']` does not merely return null against a string -- it hard-fails the
+        # action:
+        #     InvalidTemplate. Unable to process template language expressions in
+        #     action 'Update_unit': the template language expression
+        #     triggerOutputs()?['body/Order_x0020_Folder']?['Url'] cannot be evaluated
+        #     because property 'Url' cannot be selected. Property selection is not
+        #     supported on values of type 'String'.
+        # Test C, 2026-09-10 16:04, Order E21003R1 -- one row, before it could reach
+        # any of the other 1,123.
+        #
+        # So the connector is consistent with itself: one input box on the write, one
+        # string on the read. It is REST that is the odd one out, and
+        # x5_backfill_order_folder.js is right to use SP.FieldUrlValue because it
+        # talks to REST, not to the connector.
+        return b
     if kind == "multichoice":
         # Keep only the Values and join them -- NEVER store the raw array. A
         # MultiChoice source arrives as [{"Value":"MALT"},...]; string() on that

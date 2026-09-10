@@ -18,11 +18,12 @@ snapshotted here.**
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-10 16:00 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Order | — | — | 0 | 0 | `ef5081a3b084` |
 | **v002** | 2026-09-10 16:00 | `local` | v001 | N3 Order_Items__sync_from_Order pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `aa9ee34d735b` |
+| **v003** | 2026-09-10 16:06 | `local` | v001 | v003: OrdOrderFolder read is the bare string, not ?['Url'] -- proven by Test C | — | — | 0 | 0 | `55de185f0876` |
 
 ## Right now
 
 - **Live:** v001 — empty shell built in the designer 2026-09-10, trigger configured on Order
-- **Pending (authored, not applied):** v002
+- **Pending (authored, not applied):** v002, v003
 
 ## Reading the columns
 

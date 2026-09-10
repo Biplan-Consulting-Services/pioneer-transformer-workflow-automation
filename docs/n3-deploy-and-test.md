@@ -234,7 +234,25 @@ question* below.
 | **`Order - Order Folder` is a working link to `/sites/PioneerPlanificatio/Order%20Library/E21003R1`** | 🔑 **the thing this test exists for** |
 | the other 14 unchanged | |
 
-🔴 **`Order Folder` is the one unproven expression in all three flows.** The *write* shape
+✅ **RESOLVED 2026-09-10 16:04 — the read was wrong, and Test C caught it on one row.**
+
+The connector returns a URL column as a plain **String** on both read and write. Not the
+`{Url, Description}` object REST uses, which is what I extrapolated from. And `?['Url']`
+does not quietly return null against a string — it hard-fails the action:
+
+```
+InvalidTemplate. ... the template language expression
+triggerOutputs()?['body/Order_x0020_Folder']?['Url'] cannot be evaluated because
+property 'Url' cannot be selected. Property selection is not supported on values
+of type 'String'.
+```
+
+Fixed in the generator (`url` kind returns the bare expression); Order flow re-staged as
+`v003`. The connector is consistent with itself — one input box on the write, one string
+on the read. REST is the odd one out, which is why `x5_backfill_order_folder.js` is still
+right to use `SP.FieldUrlValue`: it talks to REST, not to the connector.
+
+The original note, for the reasoning that led there: The *write* shape
 is sourced — the connector renders a URL column as one input box, so it takes a bare string.
 The *read* — `?['Url']` — is reasoned from REST's `SP.FieldUrlValue`, and there is no
 captured connector payload anywhere in this repo showing a Hyperlink column. So:

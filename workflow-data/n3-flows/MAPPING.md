@@ -25,7 +25,7 @@ Trigger list **Order** · fan-out filter `OrderNumberId` · **17** fields
 | `OrdProvinceState` | `Province_x002F_State` | plain | `triggerOutputs()?['body/Province_x002F_State']` |
 | `OrdSalesNotes` | `SalesNotes` | plain | `triggerOutputs()?['body/SalesNotes']` |
 | `OrdWETWETP` | `WET_x002d_WETP` | choice | `triggerOutputs()?['body/WET_x002d_WETP']?['Value']` |
-| `OrdOrderFolder` | `Order_x0020_Folder` | url | `triggerOutputs()?['body/Order_x0020_Folder']?['Url']` |
+| `OrdOrderFolder` | `Order_x0020_Folder` | url | `triggerOutputs()?['body/Order_x0020_Folder']` |
 
 ## `Order Items - sync from Models`
 
