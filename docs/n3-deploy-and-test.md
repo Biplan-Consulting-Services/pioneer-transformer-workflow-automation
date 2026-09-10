@@ -407,3 +407,36 @@ and the folder before there are three of them; nothing depends on the name.
 **And export the `.zip` for each** (Power Automate → Export → Package). A definition-only
 JSON cannot restore a flow; only the package carries `connectionsMap`/`apisMap`. JSON for
 editing, `.zip` for rollback.
+
+---
+
+## Test D · `Client - Create or Update Trigger` — ✅ PASSED 2026-09-10
+
+The fourth flow, added the same day: one field, `CliLeadTimeWeeks`, fanning out on
+`ClientId`.
+
+| run | result |
+|---|---|
+| **write** 18:01 | 1 of 2 units, `needsUpdate` true, `Update unit` **200** |
+| **no-op** 18:21 | 1 of 1 unit, `needsUpdate` **ran and returned false**, `Update unit` skipped |
+
+🔑 **The no-op is the one that mattered**, and it took two attempts to get a real one.
+`CliLeadTimeWeeks` is a **Number**, empty on both sides for any client without a lead
+time. `null` and `''` are not equal in Power Automate; the guard coalesces both sides,
+but no earlier test had exercised that on a Number column. **22 clients** are in that
+state, so a false positive there would have rewritten all their units on every edit.
+
+⚠️ **The first attempt (17:59) looked like a pass and was not.** `needsUpdate` showed
+**skipped**, not false — a zero-item loop, because that client has no units at all, so
+the guard was never asked. In the run graph the two are one grey icon apart. The test
+is only meaningful on a parent that HAS units:
+
+```
+zero-item loop      Get units -> 0    needsUpdate SKIPPED   proves nothing
+real no-op          Get units -> 1    needsUpdate FALSE     proves the guard
+```
+
+Same trap caught the first Models attempt. Worth checking `Apply to each unit` says
+`1 of N` before reading anything else in the graph.
+
+**Test parent:** `EXELON` — 1 order, 1 unit, no lead time. The smallest of the 22.
