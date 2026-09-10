@@ -146,14 +146,33 @@
     const r = await fetch(base+"/_api/web/lists/getbytitle('"+listTitle+"')/fields/createfieldasxml",
       {method:"POST", credentials:"include", headers:H,
        body: JSON.stringify({parameters:{__metadata:{type:"SP.XmlSchemaFieldCreationInformation"},
-                                         SchemaXml: xml}})});
+                                         SchemaXml: xml,
+                                         // 🔴 Options: 8 = AddFieldInternalNameHint.
+                                         // WITHOUT IT createfieldasxml IGNORES `Name`
+                                         // and derives the internal name from
+                                         // DisplayName -- percent-encoded and cut at
+                                         // 32 chars. Omitting it produced
+                                         // `Lead_x0020_Time_x0020__x0028_wee` instead
+                                         // of `CliLeadTimeWeeks`, four times over,
+                                         // because the existence check then never
+                                         // matched. n2_create_columns.js documents
+                                         // this in its own header; see n5b for the
+                                         // cleanup. Deliberately NOT 8|16 -- 16 is
+                                         // AddFieldToDefaultView.
+                                         Options: 8}})});
     console.log((r.ok ? "created " : "FAILED "+r.status+" ") + listTitle + "." + c[0]
                 + (r.ok ? "" : " " + (await r.text()).slice(0,200)));
   };
   for (const c of plan.clients)    await mk("Clients", c);
   for (const c of plan.orderItems) await mk("Order Items", c);
 
-  // 🔴 WAIT FOR THE SCHEMA TO CATCH UP BEFORE WRITING TO THE NEW COLUMNS.
+  // 🔴 CONFIRM THE COLUMNS EXIST UNDER THE NAMES WE ASKED FOR, then wait for the
+  // schema. Two different failures hide behind the same symptom:
+  //   - the internal name is not what we asked for (no Options: 8) -- permanent,
+  //     and re-running makes it worse by creating another set
+  //   - the schema has not refreshed yet -- transient, fixed by waiting
+  // Polling on the NAMES WE WANT distinguishes them: a name that never appears is
+  // the first case, and the loop below says so instead of timing out silently.
   // createfieldasxml returns 200 and the column really is created, but the list's
   // OData entity type is cached, so an immediate write to it fails with
   //     The property 'CliLeadTimeWeeks' does not exist
@@ -174,9 +193,15 @@
       }
       console.log("  waiting for the list schema (" + missing.length + " column(s) not visible yet)…");
       if (a === 12) {
-        console.error("columns exist but the schema has not refreshed after 30s.");
-        console.error("Nothing was seeded. Re-run this script -- creation will skip and it");
-        console.error("will go straight to seeding.");
+        console.error("after 30s these names are still not on the list: " + missing.join(", "));
+        console.error("");
+        console.error("That is almost certainly NOT a caching delay -- it means the columns");
+        console.error("were created under different internal names, which happens when");
+        console.error("createfieldasxml is called without Options: 8. Check the list in the");
+        console.error("UI: if columns with these DISPLAY names exist but the internal names");
+        console.error("differ, run n5b_cleanup_bad_columns.js first, then re-run this.");
+        console.error("");
+        console.error("Nothing was seeded.");
         return;
       }
     }
