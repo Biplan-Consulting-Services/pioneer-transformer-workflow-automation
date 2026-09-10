@@ -22,24 +22,28 @@ read it as much as you like. Your changes go in SharePoint.
 
 ## Finding your work
 
-Open the **Production Floor** view (*affichage*).
+Open the **`FRM10-12 Layout`** view (*affichage*). It is the workbook's layout: the same
+columns, in the same order you are used to, so you should find your way around it straight
+away. Start there.
 
-It shows only what matters when you are tracking an order: the unit number, the order
-number, where the unit is right now, who's winding it, and when it's due. Everything else is
-hidden.
+**Then make one of your own.** `FRM10-12 Layout` has everything, which means it also has a
+lot you personally never look at. You can build a view with just the columns you need,
+sorted and grouped the way you think about the work, and it will be there every time you
+open the list.
 
-Units are **grouped by Location**: the production step: `Bobinage`, `Stacking`,
-`Assemblage`, `Four`, `Tanking`, `Test`, `Finition`, `Livraison`, and the others you already
-know. Every unit sitting at the same step appears together under one heading, and you can
-collapse a group you don't care about. It reads like a board, not a spreadsheet.
+🔑 **Come and do it with me the first time.** It takes about two minutes, and there is one
+setting worth getting right at the start: a view you make is **public by default**, so it
+turns up in everyone's menu. That is not a disaster, but it is easier to decide up front
+than to tidy up later. After the first one you will not need me.
 
-Each Location has its **own colour**, so you can see at a glance where the work is piling
-up.
+**The other views that already exist**
 
-Within each group, the most urgent unit is at the top, sorted by due date.
-
-Only live work shows here. Units marked delivered or cancelled drop off the view
-automatically.
+- **`Production Floor`** shows where every unit is right now: unit number, order number,
+  location, winder, due date, and nothing else. Grouped by `Location`, a colour per step,
+  most urgent first, active units only. It reads like a board rather than a spreadsheet.
+- **`BO Tracking`** shows only units with a back order.
+- **`All Items`** shows everything, unsorted and ungrouped. It is the safety net: if a unit
+  seems to be missing from another view, it is here.
 
 ## Updating a unit
 
@@ -102,13 +106,6 @@ time somebody edits that order or model, and then it is silently replaced by wha
 other list says. If one of them is wrong, it needs fixing on the order, the model or the
 revision. Come and ask if you are not sure which.
 
-## If you want the old layout
-
-Open the **Planning** view instead. It is the workbook's **collapsed** layout, the same
-columns, in the same order, that you see in FRM10-12 when the column groups are closed. If
-you need one of the detail columns you'd normally expand to reach, they are all still there
-in the **All Items** view.
-
 ## Please don't
 
 **Don't edit the Excel file any more.** It's a mirror now: it rebuilds itself from
@@ -157,14 +154,14 @@ The four you'll use day to day:
 | View | Columns | What it's for |
 |---|---|---|
 | **Production Floor** | 6 | The main shop-floor view: where every unit is right now. Grouped by `Location`, with a colour per step. Sorted by estimated delivery date. Active units only. |
-| **Planning** | 24 | The workbook's **collapsed** layout, the same columns, in the same order you see in FRM10-12 when the column groups are closed. Sorted by planned delivery date. Active units only. |
+| **FRM10-12 Layout** | 24 | **Start here.** The workbook's layout: the same columns, in the same order you are used to. Sorted by planned delivery date. Active units only. |
 | **BO Tracking** | 23 | Back-order tracking: only units that have a BO, grouped by BO, sorted by planned tanking date. |
 | **All Items** | 74 | Everything, unfiltered and ungrouped. It's the default view, and the safety net, if a unit seems to be missing elsewhere, it's here. |
 
 ### You'll see others, and that's fine
 
 The menu also has views colleagues have made for themselves, for example
-**`Angelique reunion du lundi`**. Someone has already made **their own copy of `Planning`** for
+**`Angelique reunion du lundi`**. Someone has already made **their own copy of `FRM10-12 Layout`** for
 their Monday meeting: start from an existing view, use "Save view as", and give it a name of
 your own.
 
@@ -210,11 +207,11 @@ just for you.
 Sorting and filtering from the column headers (section 5) is safe and is not what this is about.
 What to avoid is **Edit current view** and **Save view**.
 
-**If you want a layout of your own, that's completely fine**, it's how
+**A layout of your own is the goal, not the exception**, it's how
 `Angelique reunion du lundi` came about. The one catch is that a view made that way is **public
 by default**: it shows up in everyone's menu. That's no disaster, but if you'd rather keep it to
-yourself, or you're not sure, **come and find me** and we'll set it up together. It takes two
-minutes.
+yourself, or you're not sure, **come and find me and we'll do the first one together.** It
+takes two minutes, and after that you won't need me.
 
 ## 7. If you group your view and some groups look empty
 

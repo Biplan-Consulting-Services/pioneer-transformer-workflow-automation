@@ -28,24 +28,28 @@ read it as much as you like. Your changes go in SharePoint.
 
 ## Finding your work
 
-Open the **Production Floor** view (*affichage*).
+Open the **`FRM10-12 Layout`** view (*affichage*). It is the workbook's layout: the same
+columns, in the same order you are used to, so you should find your way around it straight
+away. Start there.
 
-It shows only what matters when you are tracking an order: the unit number, the order
-number, where the unit is right now, who's winding it, and when it's due. Everything else is
-hidden.
+**Then make one of your own.** `FRM10-12 Layout` has everything, which means it also has a
+lot you personally never look at. You can build a view with just the columns you need,
+sorted and grouped the way you think about the work, and it will be there every time you
+open the list.
 
-Units are **grouped by Location**: the production step: `Bobinage`, `Stacking`,
-`Assemblage`, `Four`, `Tanking`, `Test`, `Finition`, `Livraison`, and the others you already
-know. Every unit sitting at the same step appears together under one heading, and you can
-collapse a group you don't care about. It reads like a board, not a spreadsheet.
+🔑 **Come and do it with me the first time.** It takes about two minutes, and there is one
+setting worth getting right at the start: a view you make is **public by default**, so it
+turns up in everyone's menu. That is not a disaster, but it is easier to decide up front
+than to tidy up later. After the first one you will not need me.
 
-Each Location has its **own colour**, so you can see at a glance where the work is piling
-up.
+**The other views that already exist**
 
-Within each group, the most urgent unit is at the top, sorted by due date.
-
-Only live work shows here. Units marked delivered or cancelled drop off the view
-automatically.
+- **`Production Floor`** shows where every unit is right now: unit number, order number,
+  location, winder, due date, and nothing else. Grouped by `Location`, a colour per step,
+  most urgent first, active units only. It reads like a board rather than a spreadsheet.
+- **`BO Tracking`** shows only units with a back order.
+- **`All Items`** shows everything, unsorted and ungrouped. It is the safety net: if a unit
+  seems to be missing from another view, it is here.
 
 ## Updating a unit
 
@@ -107,13 +111,6 @@ which is what makes it worth warning about: it sits there looking correct until 
 time somebody edits that order or model, and then it is silently replaced by whatever the
 other list says. If one of them is wrong, it needs fixing on the order, the model or the
 revision. Come and ask if you are not sure which.
-
-## If you want the old layout
-
-Open the **Planning** view instead. It is the workbook's **collapsed** layout, the same
-columns, in the same order, that you see in FRM10-12 when the column groups are closed. If
-you need one of the detail columns you'd normally expand to reach, they are all still there
-in the **All Items** view.
 
 ## Please don't
 

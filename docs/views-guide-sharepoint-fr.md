@@ -66,14 +66,14 @@ Les quatre que vous utiliserez au quotidien :
 | Affichage | Colonnes | À quoi il sert |
 |---|---|---|
 | **Production Floor** | 6 | L'affichage principal du plancher : où chaque unité est rendue. Regroupé par `Location`, avec une couleur par étape. Trié par date de livraison estimée. Seulement les unités actives. |
-| **Planning** | 24 | La disposition **repliée** du classeur, les mêmes colonnes, dans le même ordre que dans FRM10-12 quand les groupes de colonnes sont fermés. Trié par date de livraison prévue. Seulement les unités actives. |
+| **FRM10-12 Layout** | 24 | **Commencez ici.** La disposition du classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Trié par date de livraison prévue. Unités actives seulement. |
 | **BO Tracking** | 23 | Le suivi des pièces en rupture (*back order*) : seulement les unités qui ont un BO, regroupées par BO, triées par date d'encuvage prévue. |
 | **All Items** | 74 | Tout, sans filtre ni regroupement. C'est l'affichage par défaut, et le filet de sécurité, si une unité vous semble manquante ailleurs, elle est ici. |
 
 ### Vous allez en voir d'autres, et c'est normal
 
 Dans le menu, il y a aussi des affichages que des collègues se sont créés, par exemple
-**`Angelique reunion du lundi`**. Quelqu'un s'est déjà fait **sa propre copie de `Planning`**
+**`Angelique reunion du lundi`**. Quelqu'un s'est déjà fait **sa propre copie de `FRM10-12 Layout`**
 pour sa réunion du lundi : partir d'un affichage existant, faire « Enregistrer l'affichage
 sous », et lui donner un nom à soi.
 

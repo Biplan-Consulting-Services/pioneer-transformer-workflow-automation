@@ -25,25 +25,30 @@ se font dans SharePoint.
 
 ## Trouver votre travail
 
-Ouvrez l'affichage (*view*) **Production Floor**.
+Ouvrez l'affichage **`FRM10-12 Layout`**. C'est la disposition du classeur : les mêmes
+colonnes, dans le même ordre que vous avez l'habitude, donc vous devriez vous y retrouver
+tout de suite. Commencez par là.
 
-Il montre seulement ce qui compte quand vous suivez une commande : le numéro d'unité, le
-numéro de commande, où l'unité est rendue, qui la bobine, et quand elle est due. Tout le
-reste est masqué.
+**Ensuite, faites-vous en un à vous.** `FRM10-12 Layout` contient tout, ce qui veut dire
+qu'il contient aussi beaucoup de choses que vous, personnellement, ne regardez jamais. Vous
+pouvez vous bâtir un affichage avec seulement les colonnes dont vous avez besoin, trié et
+regroupé comme vous pensez le travail, et il sera là chaque fois que vous ouvrez la liste.
 
-Les unités sont **regroupées par Location** : l'étape de production : `Bobinage`, `Stacking`,
-`Assemblage`, `Four`, `Tanking`, `Test`, `Finition`, `Livraison`, et les autres que vous
-connaissez déjà. Toutes les unités rendues à la même étape apparaissent ensemble sous un même
-titre, et vous pouvez replier un groupe qui ne vous concerne pas. Ça se lit comme un tableau
-de production, pas comme un chiffrier.
+🔑 **Venez le faire avec moi la première fois.** Ça prend deux minutes, et il y a un
+réglage qui vaut la peine d'être bien mis dès le départ : un affichage que vous créez est
+**public par défaut**, donc il apparaît dans le menu de tout le monde. Ce n'est pas un
+drame, mais c'est plus simple à décider au départ qu'à démêler après. Après le premier,
+vous n'aurez plus besoin de moi.
 
-Chaque Location a **sa propre couleur**, ce qui permet de voir d'un coup d'œil où l'ouvrage
-s'accumule.
+**Les autres affichages qui existent déjà**
 
-Dans chaque groupe, l'unité la plus pressante est en haut, trié par date due.
-
-Seul l'ouvrage actif s'affiche. Les unités marquées livrées ou annulées disparaissent de
-l'affichage toutes seules.
+- **`Production Floor`** montre où chaque unité est rendue : numéro d'unité, numéro de
+  commande, location, bobineur, date due, et rien d'autre. Regroupé par `Location`, une
+  couleur par étape, le plus pressant en haut, unités actives seulement. Ça se lit comme un
+  tableau, pas comme un chiffrier.
+- **`BO Tracking`** montre seulement les unités qui ont un back order.
+- **`All Items`** montre tout, sans tri ni regroupement. C'est le filet de sécurité : si une
+  unité semble manquer ailleurs, elle est là.
 
 ## Mettre une unité à jour
 
@@ -110,13 +115,6 @@ quelqu'un modifie cette commande ou ce modèle, et là elle est remplacée sans 
 par ce que dit l'autre liste. Si une de ces valeurs est fausse, ça se corrige sur la
 commande, le modèle ou la révision. Venez me voir si vous n'êtes pas certain lequel.
 
-## Si vous préférez l'ancienne disposition
-
-Ouvrez plutôt l'affichage **Planning**. C'est la disposition **repliée** du classeur, les
-mêmes colonnes, dans le même ordre, que celles que vous voyez dans FRM10-12 quand les
-groupes de colonnes sont fermés. Si vous avez besoin d'une colonne de détail que vous
-ouvririez normalement, elles sont toutes encore là dans l'affichage **All Items**.
-
 ## S.V.P., ne pas faire
 
 **N'écrivez plus dans le fichier Excel.** C'est un miroir maintenant : il se reconstruit à
@@ -168,14 +166,14 @@ Les quatre que vous utiliserez au quotidien :
 | Affichage | Colonnes | À quoi il sert |
 |---|---|---|
 | **Production Floor** | 6 | L'affichage principal du plancher : où chaque unité est rendue. Regroupé par `Location`, avec une couleur par étape. Trié par date de livraison estimée. Seulement les unités actives. |
-| **Planning** | 24 | La disposition **repliée** du classeur, les mêmes colonnes, dans le même ordre que dans FRM10-12 quand les groupes de colonnes sont fermés. Trié par date de livraison prévue. Seulement les unités actives. |
+| **FRM10-12 Layout** | 24 | **Commencez ici.** La disposition du classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Trié par date de livraison prévue. Unités actives seulement. |
 | **BO Tracking** | 23 | Le suivi des pièces en rupture (*back order*) : seulement les unités qui ont un BO, regroupées par BO, triées par date d'encuvage prévue. |
 | **All Items** | 74 | Tout, sans filtre ni regroupement. C'est l'affichage par défaut, et le filet de sécurité, si une unité vous semble manquante ailleurs, elle est ici. |
 
 ### Vous allez en voir d'autres, et c'est normal
 
 Dans le menu, il y a aussi des affichages que des collègues se sont créés, par exemple
-**`Angelique reunion du lundi`**. Quelqu'un s'est déjà fait **sa propre copie de `Planning`**
+**`Angelique reunion du lundi`**. Quelqu'un s'est déjà fait **sa propre copie de `FRM10-12 Layout`**
 pour sa réunion du lundi : partir d'un affichage existant, faire « Enregistrer l'affichage
 sous », et lui donner un nom à soi.
 
