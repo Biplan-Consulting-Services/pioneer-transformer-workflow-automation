@@ -21,9 +21,6 @@ Bonjour à tous,
 **La bascule se fait ce soir.** Quand vous arriverez demain matin, **SharePoint sera la
 référence officielle** pour le suivi des unités.
 
-Rien à faire de votre côté ce soir — ce message est pour que vous sachiez à quoi vous attendre
-en arrivant.
-
 **Ce qu'il faudra faire**
 
 Faites vos mises à jour dans la liste **`Order Items`** dans SharePoint. La vue
@@ -89,8 +86,6 @@ Hello everyone,
 
 **The cutover happens tonight.** When you come in tomorrow morning, **SharePoint will be the
 official record** for unit tracking.
-
-Nothing for you to do this evening — this is so you know what to expect when you arrive.
 
 **What to do from tomorrow**
 

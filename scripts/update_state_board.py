@@ -30,8 +30,7 @@ LANES = [
    "thing that can genuinely be finished now."),
   ("EMAILNOW", "Send the email",
    "Tensed for exactly this: <em>la bascule se fait ce soir&hellip; quand vous arriverez demain "
-   "matin</em> &mdash; true when sent this evening and still true read over breakfast. It says "
-   "plainly there is nothing to do tonight, so nobody feels summoned back. "
+   "matin</em> &mdash; true when sent this evening and still true read over breakfast. "
    "&#9888;&#65039; It does <b>not</b> ask anyone to save and close FRM10-12, because everyone "
    "had already left &mdash; so anything unsaved on a machine tonight will not reach SharePoint. "
    "First thing to suspect if the re-diff at step 9 turns up stale-looking units."),
