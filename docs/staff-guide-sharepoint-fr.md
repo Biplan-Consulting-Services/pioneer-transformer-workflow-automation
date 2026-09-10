@@ -47,15 +47,11 @@ réglage qui vaut la peine d'être bien mis dès le départ : un affichage que v
 drame, mais c'est plus simple à décider au départ qu'à démêler après. Après le premier,
 vous n'aurez plus besoin de moi.
 
-**Les autres affichages qui existent déjà**
+**Les autres affichages**
 
-- **`Production Floor`** montre où chaque unité est rendue : numéro d'unité, numéro de
-  commande, location, bobineur, date due, et rien d'autre. Regroupé par `Location`, une
-  couleur par étape, le plus pressant en haut, unités actives seulement. Ça se lit comme un
-  tableau, pas comme un chiffrier.
 - **`BO Tracking`** montre seulement les unités qui ont un back order.
-- **`All Items`** montre tout, sans tri ni regroupement. C'est le filet de sécurité : si une
-  unité semble manquer ailleurs, elle est là.
+- Vous verrez aussi des affichages que des collègues se sont bâtis. En ouvrir un ne change
+  rien pour eux, alors regardez si ça vous sert. C'est la même liste de toute façon.
 
 ## Mettre une unité à jour
 
@@ -109,8 +105,8 @@ la valeur provient :
 | **Mod. Rev. -** | la liste **Model Revisions** | la spec technique : voltages, type de noyau, huile, kVA, la révision du dessin |
 | **Client -** | la liste **Clients** | ce qui concerne le client, par exemple son délai |
 
-Il y en a 48. Vous les croiserez surtout dans **All Items**; les affichages du quotidien
-n'en montrent qu'une poignée.
+Il y en a 48. La plupart sont masquées dans les affichages où vous travaillez au quotidien; vous ne
+voyez l'ensemble que si vous allez le chercher.
 
 Ce sont des **copies, tenues à jour automatiquement**. L'unité vous les montre pour que
 vous puissiez voir le PO d'une commande ou le voltage d'un modèle sans ouvrir une autre

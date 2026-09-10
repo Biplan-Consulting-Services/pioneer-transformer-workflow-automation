@@ -40,21 +40,17 @@ look the way you expect, that's usually why: you're still on a different view. J
 
 ## 3. The views that exist
 
-The four you'll use day to day:
+The two shared ones:
 
 | View | Columns | What it's for |
 |---|---|---|
-| **Production Floor** | 6 | The main shop-floor view: where every unit is right now. Grouped by `Location`, with a colour per step. Sorted by estimated delivery date. Active units only. |
 | **FRM10-12 Layout** | 24 | **Start here.** The workbook's layout: the same columns, in the same order you are used to. Sorted by planned delivery date. Active units only. |
 | **BO Tracking** | 23 | Back-order tracking: only units that have a BO, grouped by BO, sorted by planned tanking date. |
-| **All Items** | 74 | Everything, unfiltered and ungrouped. It's the default view, and the safety net, if a unit seems to be missing elsewhere, it's here. |
 
 ### You'll see others, and that's fine
 
-The menu also has views colleagues have made for themselves, for example
-**`Angelique reunion du lundi`**. Someone has already made **their own copy of `FRM10-12 Layout`** for
-their Monday meeting: start from an existing view, use "Save view as", and give it a name of
-your own.
+The menu also has views colleagues have built for themselves. That is how it is meant to
+work: start from an existing view, use "Save view as", and give it a name of your own.
 
 **That's section 1 in action.** Those views are **not** copies of the data, it's the same list
 seen through different glasses. Opening a colleague's view disturbs nobody and changes nothing.
@@ -64,7 +60,7 @@ differently, **in your copy**, without touching the original. See section 6.
 
 ## 4. Grouping
 
-In **Production Floor**, units are **grouped by `Location`**: the production step: `Bobinage`,
+Where a view is **grouped by `Location`**, that is: the production step: `Bobinage`,
 `Assemblage`, `Four`, `Finition`, `Livraison`, `Réparation`, `Entrepôt`, and the others you
 already know.
 
@@ -98,8 +94,8 @@ just for you.
 Sorting and filtering from the column headers (section 5) is safe and is not what this is about.
 What to avoid is **Edit current view** and **Save view**.
 
-**A layout of your own is the goal, not the exception**, it's how
-`Angelique reunion du lundi` came about. The one catch is that a view made that way is **public
+**A layout of your own is the goal, not the exception**, it's how the ones already in
+the menu came about. The one catch is that a view made that way is **public
 by default**: it shows up in everyone's menu. That's no disaster, but if you'd rather keep it to
 yourself, or you're not sure, **come and find me and we'll do the first one together.** It
 takes two minutes, and after that you won't need me.
@@ -113,8 +109,8 @@ This happens when one group is much bigger than all the others. If most units ha
 set, that one group can fill the entire view on its own, and the smaller groups get pushed off
 the end where you can't see them. It looks exactly like missing data. It isn't.
 
-It is not a rare edge case: **`Production Floor` grouped by `Location` has 827 units with no
-Location set.** Any grouping where one value dominates has the same shape.
+It is not a rare edge case: **grouping `Order Items` by `Location` puts 827 units under a single
+"no Location" heading.** Any grouping where one value dominates has the same shape.
 
 Two settings prevent it:
 

@@ -65,17 +65,15 @@ Les quatre que vous utiliserez au quotidien :
 
 | Affichage | Colonnes | À quoi il sert |
 |---|---|---|
-| **Production Floor** | 6 | L'affichage principal du plancher : où chaque unité est rendue. Regroupé par `Location`, avec une couleur par étape. Trié par date de livraison estimée. Seulement les unités actives. |
 | **FRM10-12 Layout** | 24 | **Commencez ici.** La disposition du classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Trié par date de livraison prévue. Unités actives seulement. |
 | **BO Tracking** | 23 | Le suivi des pièces en rupture (*back order*) : seulement les unités qui ont un BO, regroupées par BO, triées par date d'encuvage prévue. |
-| **All Items** | 74 | Tout, sans filtre ni regroupement. C'est l'affichage par défaut, et le filet de sécurité, si une unité vous semble manquante ailleurs, elle est ici. |
+| **BO Tracking** | 23 | Suivi des back orders : seulement les unités qui ont un BO, regroupé par BO, trié par date d'encuvage prévue. |
 
 ### Vous allez en voir d'autres, et c'est normal
 
-Dans le menu, il y a aussi des affichages que des collègues se sont créés, par exemple
-**`Angelique reunion du lundi`**. Quelqu'un s'est déjà fait **sa propre copie de `FRM10-12 Layout`**
-pour sa réunion du lundi : partir d'un affichage existant, faire « Enregistrer l'affichage
-sous », et lui donner un nom à soi.
+Dans le menu, il y a aussi des affichages que des collègues se sont bâtis. C'est exactement
+comme ça que c'est censé marcher : partir d'un affichage existant, faire « Enregistrer
+l'affichage sous », et lui donner un nom à soi.
 
 **C'est exactement l'idée de la section 1.** Ces affichages-là ne sont **pas** des copies des
 données, c'est la même liste, regardée avec d'autres lunettes. Ouvrir celui d'un collègue ne
@@ -87,7 +85,7 @@ section 6.
 
 ## 4. Les regroupements
 
-Dans **Production Floor**, les unités sont **regroupées par `Location`** : l'étape de production :
+Quand un affichage est **regroupé par `Location`**, c'est-à-dire : l'étape de production :
 `Bobinage`, `Assemblage`, `Four`, `Finition`, `Livraison`, `Réparation`, `Entrepôt`, et les
 autres que vous connaissez déjà.
 
@@ -124,11 +122,11 @@ Trier et filtrer par les en-têtes (section 5) est sans danger et n'est pas vis�
 consigne. Ce qu'il faut éviter, c'est **Modifier l'affichage courant** et **Enregistrer
 l'affichage**.
 
-**Si vous voulez votre propre disposition, c'est tout à fait permis**, c'est comme ça que
-`Angelique reunion du lundi` a été fait. Le seul piège, c'est qu'un affichage créé comme ça est
-**public par défaut** : il apparaît dans le menu de tout le monde. Ce n'est pas grave, mais si
-vous voulez qu'il reste à vous, ou si vous n'êtes pas sûr, **venez me voir** et on le crée
-ensemble. C'est deux minutes.
+**Un affichage à vous, c'est le but, pas l'exception**, c'est comme ça que ceux déjà dans le
+menu ont été faits. Le seul piège, c'est qu'un affichage créé comme ça est **public par
+défaut** : il apparaît dans le menu de tout le monde. Ce n'est pas grave, mais si vous voulez
+qu'il reste à vous, ou si vous n'êtes pas sûr, **venez me voir et on fait le premier
+ensemble.** C'est deux minutes, et après vous n'aurez plus besoin de moi.
 
 ## 7. Si votre affichage est regroupé et que des groupes ont l'air vides
 
@@ -140,8 +138,8 @@ n'ont pas de `Location`, ce groupe-là peut remplir l'affichage au complet à lu
 petits groupes se font pousser en dehors, là où vous ne les voyez pas. Ça a l'air exactement
 comme des données disparues. Ça n'en est pas.
 
-Et ce n'est pas un cas rare : **`Production Floor` regroupé par `Location` a 827 unités sans
-Location.** N'importe quel regroupement où une valeur domine a la même allure.
+Et ce n'est pas un cas rare : **regrouper `Order Items` par `Location` met 827 unités sous une seule
+rubrique « sans Location ».** N'importe quel regroupement où une valeur domine a la même allure.
 
 Deux réglages l'évitent :
 

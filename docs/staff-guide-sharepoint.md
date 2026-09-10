@@ -42,14 +42,11 @@ setting worth getting right at the start: a view you make is **public by default
 turns up in everyone's menu. That is not a disaster, but it is easier to decide up front
 than to tidy up later. After the first one you will not need me.
 
-**The other views that already exist**
+**The other views**
 
-- **`Production Floor`** shows where every unit is right now: unit number, order number,
-  location, winder, due date, and nothing else. Grouped by `Location`, a colour per step,
-  most urgent first, active units only. It reads like a board rather than a spreadsheet.
-- **`BO Tracking`** shows only units with a back order.
-- **`All Items`** shows everything, unsorted and ungrouped. It is the safety net: if a unit
-  seems to be missing from another view, it is here.
+- **`BO Tracking`** shows only units that have a back order.
+- You will also see views colleagues have built for themselves. Opening one changes
+  nothing for them, so look if it is useful. It is the same list either way.
 
 ## Updating a unit
 
@@ -99,8 +96,8 @@ from:
 | **Mod. Rev. -** | the **Model Revisions** list | the technical spec: voltages, core type, oil, kVA, the drawing revision |
 | **Client -** | the **Clients** list | facts about the client, such as their lead time |
 
-There are 48 of these. You will mostly meet them in **All Items**; the day-to-day views
-show only a handful.
+There are 48 of these. Most of them are hidden in the views you work in day to day; you meet the whole set
+only if you go looking.
 
 They are **copies, kept up to date automatically**. The unit shows them so you can see an
 order's PO or a model's voltage without opening another list, but the real value lives on
