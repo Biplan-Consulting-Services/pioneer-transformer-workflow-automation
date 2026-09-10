@@ -72,4 +72,4 @@ Trigger list **Model Revisions** · fan-out filter `ModelRevisionId` · **24** f
 
 ## Deliberately excluded
 
-`OrdOrderFolder` (`Order_x0020_Folder`, URL). Roadmap 38 is an open decision — a hyperlink is an object on both read and write, the shape was never sourced, and a wrong one either fails every row or writes nothing. Confirm the shape from one real trigger payload, then add it.
+Nothing, as of 2026-09-10. `OrdOrderFolder` was the last exclusion and is now mapped — the connector reads a URL column as a plain string, proven by Test C. `OrdOrderNumber` and `OrdQty` were removed rather than excluded: they duplicated the `OrderNumber` lookup and the native `Qty`.

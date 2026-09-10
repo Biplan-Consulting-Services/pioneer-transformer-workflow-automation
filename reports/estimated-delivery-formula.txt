@@ -1,0 +1,54 @@
+IF(
+  ISNUMBER(TableOrders[[#This Row],[Delivery Date]]),
+  TableOrders[[#This Row],[Delivery Date]],
+  IF(
+    ISNUMBER(TableOrders[[#This Row],[Manual Estimated Delivery Date]]),
+    TableOrders[[#This Row],[Manual Estimated Delivery Date]],
+    IF(
+      ISBLANK(TableOrders[[#This Row],[Finishing Date]]),
+      IF(
+        ISBLANK(TableOrders[[#This Row],[Testing Date]]),
+        IF(
+          ISBLANK(TableOrders[[#This Row],[Tanking Date]]),
+          IF(
+            MAX(TableOrders[[#This Row],[Coiling Date]:[Drying Date]]) = 0,
+            IF(
+              ISBLANK(TableOrders[[#This Row],[Order Date]]),
+              IF(
+                TableOrders[[#This Row],[Order]] = "",
+                "no order",
+                "défaut formule"
+              ),
+              TableOrders[[#This Row],[Order Date]] + 90 + _xlfn.XLOOKUP(
+                TableOrders[[#This Row],[Client]],
+                DelaisApproParClients!A:A,
+                DelaisApproParClients!G:G,
+                52
+              ) * 7
+            ),
+            MAX(TODAY(),TableOrders[[#This Row],[Coiling Date]:[Drying Date]],TableOrders[[#This Row],[Tank Delivery Date]]) + 21 + IF(
+              OR(TableOrders[[#This Row],[BO]] = "OK",TableOrders[[#This Row],[BO]] = ""),
+              0,
+              30
+            )
+          ),
+          MAX(TODAY(),TableOrders[[#This Row],[Tanking Date]]) + 14 + IF(
+            OR(TableOrders[[#This Row],[BO]] = "OK",TableOrders[[#This Row],[BO]] = ""),
+            0,
+            30
+          )
+        ),
+        MAX(TODAY(),TableOrders[[#This Row],[Testing Date]]) + 10 + IF(
+          OR(TableOrders[[#This Row],[BO]] = "OK",TableOrders[[#This Row],[BO]] = ""),
+          0,
+          30
+        )
+      ),
+      MAX(TODAY(),TableOrders[[#This Row],[Finishing Date]]) + 7 + IF(
+        OR(TableOrders[[#This Row],[BO]] = "OK",TableOrders[[#This Row],[BO]] = ""),
+        0,
+        30
+      )
+    )
+  )
+)

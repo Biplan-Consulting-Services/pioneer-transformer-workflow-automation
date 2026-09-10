@@ -1,0 +1,182 @@
+[
+ {
+  "client": "ALABAMA POWER",
+  "delai": "20 SEM",
+  "critical1": "Gauges",
+  "supplier1": "Richards Manuf.",
+  "critical2": null,
+  "supplier2": null,
+  "lead_weeks": "20",
+  "notes": null
+ },
+ {
+  "client": "AUSTIN ENERGY",
+  "delai": "16 SEM",
+  "critical1": "Flexible Connector",
+  "supplier1": "Groupe Exel Inter.",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "16",
+  "notes": null
+ },
+ {
+  "client": "EPCOR",
+  "delai": "18 SEM",
+  "critical1": "Radiateurs en SS",
+  "supplier1": "Trantech",
+  "critical2": "Flexible Connector",
+  "supplier2": "Groupe Exel Inter.",
+  "lead_weeks": "18",
+  "notes": null
+ },
+ {
+  "client": "GEORGIA POWER",
+  "delai": "18 SEM",
+  "critical1": "Radiateurs en SS",
+  "supplier1": "Trantech",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "18",
+  "notes": null
+ },
+ {
+  "client": "KORTICK",
+  "delai": "16 sem",
+  "critical1": "Flexible Connector",
+  "supplier1": "Groupe Exel Inter.",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "16",
+  "notes": null
+ },
+ {
+  "client": "LG&amp;E",
+  "delai": "20 SEM",
+  "critical1": "Gauges",
+  "supplier1": "Richards Manuf.",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "20",
+  "notes": null
+ },
+ {
+  "client": "NASHVILLE ELECTRIC",
+  "delai": "20 SEM",
+  "critical1": "Gauges",
+  "supplier1": "Richards Manuf.",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "20",
+  "notes": null
+ },
+ {
+  "client": "CITY OF RED DEER",
+  "delai": "18 SEM",
+  "critical1": "Radiateurs en SS",
+  "supplier1": "Trantech",
+  "critical2": null,
+  "supplier2": null,
+  "lead_weeks": "18",
+  "notes": null
+ },
+ {
+  "client": "TORONTO HYDRO",
+  "delai": "20 SEM",
+  "critical1": "Gauges",
+  "supplier1": "Richards Manuf.",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "20",
+  "notes": null
+ },
+ {
+  "client": "HYDRO OTTAWA",
+  "delai": "18 SEM",
+  "critical1": "Radiateurs",
+  "supplier1": "Trantech",
+  "critical2": null,
+  "supplier2": null,
+  "lead_weeks": "18",
+  "notes": null
+ },
+ {
+  "client": "PSE§G ",
+  "delai": "20 SEM",
+  "critical1": "LV Bushing (welded)",
+  "supplier1": "HJ International",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "20",
+  "notes": null
+ },
+ {
+  "client": "XCEL ENERGY NORTHERN",
+  "delai": "20 SEM",
+  "critical1": "LV Bushing (welded)",
+  "supplier1": "HJ International",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "20",
+  "notes": null
+ },
+ {
+  "client": "ENMAX",
+  "delai": "20 SEM",
+  "critical1": "Network Protector",
+  "supplier1": "Richards Manuf.",
+  "critical2": "Radiateurs en SS",
+  "supplier2": "Trantech",
+  "lead_weeks": "20",
+  "notes": null
+ },
+ {
+  "client": "HYDRO QUEBEC",
+  "delai": "28 SEM",
+  "critical1": "Various",
+  "supplier1": null,
+  "critical2": null,
+  "supplier2": null,
+  "lead_weeks": "28",
+  "notes": null
+ },
+ {
+  "client": "MADISON GAS § ELECTRIC",
+  "delai": "16 SEM",
+  "critical1": "Flexible Connector",
+  "supplier1": "Groupe Exel Inter.",
+  "critical2": "Network Switch",
+  "supplier2": "Quality Switch",
+  "lead_weeks": "16",
+  "notes": null
+ },
+ {
+  "client": "CONED",
+  "delai": "24 SEM",
+  "critical1": "Gauges",
+  "supplier1": "United Inst.",
+  "critical2": "Bushings",
+  "supplier2": "ABB",
+  "lead_weeks": "24",
+  "notes": null
+ },
+ {
+  "client": "First Energy",
+  "delai": "18 SEM",
+  "critical1": "Radiateurs ",
+  "supplier1": "Trantech",
+  "critical2": "Porte Fusible SM-5S",
+  "supplier2": "PTS Elect.",
+  "lead_weeks": "18",
+  "notes": null
+ },
+ {
+  "client": "GENERIC VALUE",
+  "delai": "26 SEM",
+  "critical1": null,
+  "supplier1": null,
+  "critical2": null,
+  "supplier2": null,
+  "lead_weeks": "26",
+  "notes": null
+ }
+]

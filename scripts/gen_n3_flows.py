@@ -54,6 +54,11 @@ LISTS = {
     "Order":           "6fe35dfe-2b7d-455a-abe3-056abb386733",
     "Models":          "b43a5140-0f9d-4ac1-9019-43b897074224",
     "Model Revisions": "e2ff8703-b590-4648-b181-9b47cf3883ba",
+    # UNSET on purpose. n5_clients_lead_time.js prints the Clients list id on its first
+    # line; paste it here. Empty rather than guessed: a wrong list GUID produces a flow
+    # that saves, runs, and silently watches the wrong list. The Clients flow is skipped
+    # with a warning until this is filled in; the other three generate normally.
+    "Clients":         "",
 }
 HOST = {"apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
         "operationId": None, "connectionName": "shared_sharepointonline"}
@@ -183,10 +188,19 @@ REV_MAP = [
     ("RevkVA",                "kVA_x0020_and_x0020_kV",            "plain"),
 ]
 
+# Clients -> Order Items. Added 2026-09-10 so the client lead time reaches the unit:
+# it is what Ing. Due Date and branch 7 of Estimated Delivery Date are computed from.
+# One field on purpose -- the critical-part and supplier columns are reference data for
+# the Clients list and would be dead weight copied onto 1,124 units.
+CLIENTS_MAP = [
+    ("CliLeadTimeWeeks",      "CliLeadTimeWeeks",                  "plain"),
+]
+
 FLOWS = [
     ("Order Items - sync from Order",           "Order",           "OrderNumberId",   ORDER_MAP),
     ("Order Items - sync from Models",          "Models",          "ModelId",         MODELS_MAP),
     ("Order Items - sync from Model Revisions", "Model Revisions", "ModelRevisionId", REV_MAP),
+    ("Order Items - sync from Clients",         "Clients",         "ClientId",        CLIENTS_MAP),
 ]
 
 def read_expr(src, kind):
@@ -321,6 +335,10 @@ def main():
           "2026-09-08; read shapes follow the R22 lesson (`?['Value']` on every Choice and "
           "Lookup source).\n"]
     for name, parent, lookup, mapping in FLOWS:
+        if not LISTS.get(parent):
+            print("SKIPPED %-46s LISTS[%r] is empty -- run n5 and paste the id"
+                  % (name, parent))
+            continue
         d = build(name, parent, lookup, mapping)
         fn = name.replace(" ", "_").replace("-", "") + ".definition.json"
         p = os.path.join(outdir, fn)
@@ -335,10 +353,10 @@ def main():
         for tgt, src, kind in mapping:
             md.append("| `%s` | `%s` | %s | `%s` |" % (tgt, src, kind, read_expr(src, kind)))
     md.append("\n## Deliberately excluded\n")
-    md.append("`OrdOrderFolder` (`Order_x0020_Folder`, URL). Roadmap 38 is an open decision — a "
-              "hyperlink is an object on both read and write, the shape was never sourced, and a "
-              "wrong one either fails every row or writes nothing. Confirm the shape from one "
-              "real trigger payload, then add it.\n")
+    md.append("Nothing, as of 2026-09-10. `OrdOrderFolder` was the last exclusion and "
+              "is now mapped — the connector reads a URL column as a plain string, "
+              "proven by Test C. `OrdOrderNumber` and `OrdQty` were removed rather than "
+              "excluded: they duplicated the `OrderNumber` lookup and the native `Qty`.\n")
     io.open(os.path.join(outdir, "MAPPING.md"), "w", encoding="utf-8", newline="\n").write("\n".join(md))
     print("wrote %s" % os.path.join(outdir, "MAPPING.md"))
 
