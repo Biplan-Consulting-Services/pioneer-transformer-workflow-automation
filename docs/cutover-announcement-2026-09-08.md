@@ -58,13 +58,6 @@ contrôle. Même information, mais plus de convention à retenir :
   **Order - Order Folder** pointe vers l'endroit où vivent tous les documents de la
   commande.
 
-**Ce qui s'en vient**
-
-Les **délais par client** (FRM13) s'en viennent dans SharePoint. Une fois là, la **date de
-livraison estimée** et la **date due d'ingénierie** se calculeront toutes seules sur
-l'unité, au lieu d'être une formule dans le classeur. Je vous reviens là-dessus. Rien à
-faire de votre côté.
-
 **Une question, un doute, quelque chose qui cloche ?**
 
 Venez me voir tout de suite, sur Teams ou à **soleil.anker@ermco-eci.com**. Mieux vaut poser la
@@ -119,12 +112,6 @@ information, one less convention to remember:
 - **`Status`** becomes two fields: **Step Status** (the step) and **Status Date** (the date).
 - **The order's folder** now appears on the unit itself. The **Order - Order Folder**
   column points at where every document filed against that order lives.
-
-**What is coming**
-
-The **per-client lead times** from FRM13 are moving into SharePoint. Once they are there,
-**Estimated Delivery Date** and **Engineering Due Date** will calculate themselves on the
-unit instead of being a formula in the workbook. I will follow up. Nothing for you to do.
 
 **Questions, doubts, anything that looks wrong?**
 
