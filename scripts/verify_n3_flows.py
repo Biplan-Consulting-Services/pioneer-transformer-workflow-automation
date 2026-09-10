@@ -17,6 +17,9 @@ Six assertions, each one a failure mode that would be silent in production:
      that did not change, and every write fans out across ~1,019 items
   6. every fan-out Get items carries paginationPolicy 5000 -- the connector returns 100
      by default and the shortfall is invisible
+  7. the trigger is OpenApiConnection + recurrence, not OpenApiConnectionWebhook --
+     SharePoint's create-or-modified trigger POLLS; pasting a webhook shape yields a
+     flow that saves cleanly and never fires
 
 Reads the internal names back out of `scripts/n2_create_columns.js`, which is the script
 that actually created the columns, rather than from a doc that could have drifted.
@@ -129,7 +132,28 @@ def main():
                    and node.get("type") == "OpenApiConnection"
                    and "GetItems" in json.dumps(node.get("inputs", {})))
 
+        # 7. the trigger is a POLLING connection, not a webhook. SharePoint's
+        #    "When an item is created or modified" is OpenApiConnection + recurrence.
+        #    The generator emitted OpenApiConnectionWebhook until 2026-09-10; nothing
+        #    caught it, because every other assertion here is about the write side.
+        #    Ground truth: an empty shell built in the designer, and the live
+        #    "Order Items - Create or Update Trigger flow", agree on this shape.
+        trg = list((defn.get("triggers") or {}).values())
+        trg_bad = []
+        if len(trg) != 1:
+            trg_bad.append("%d triggers" % len(trg))
+        else:
+            t = trg[0]
+            if t.get("type") != "OpenApiConnection":
+                trg_bad.append("type=%s (want OpenApiConnection)" % t.get("type"))
+            if not t.get("recurrence"):
+                trg_bad.append("no recurrence -- a polling trigger needs one")
+            if (((t.get("inputs") or {}).get("host") or {}).get("operationId")
+                    != "GetOnUpdatedItems"):
+                trg_bad.append("operationId is not GetOnUpdatedItems")
+
         status = []
+        if trg_bad: status.append("TRIGGER: " + "; ".join(trg_bad)); ok = False
         if n != want: status.append("FIELD COUNT %d != %d" % (n, want)); ok = False
         if unknown: status.append("UNKNOWN TARGETS %s" % unknown); ok = False
         if bare_select: status.append("BARE select() x%d" % len(bare_select)); ok = False

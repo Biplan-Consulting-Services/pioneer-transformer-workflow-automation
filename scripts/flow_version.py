@@ -447,7 +447,17 @@ def cmd_stage(a):
     # shapes stay available under alternate-shapes/ in case the editor changes,
     # but they are out of the way so there is never a question which to use.
     props = doc.get("properties")
-    main = props if props else definition(doc)
+    # The power-automate-tools extension hands back, and takes, a FLOW-EDITOR
+    # WRAPPER: {$schema: power-automate-tools.local/flow-editor.json#,
+    # connectionReferences: {...}, definition: {...}}. Confirmed 2026-09-10 from an
+    # empty shell the user exported out of the designer. Emitting the bare
+    # definition into that editor drops connectionReferences, which is the object
+    # carrying the real connection id -- so the actions come back unbound.
+    # Detect it by the pairing, not by the $schema string, which may vary by
+    # extension version.
+    editor_wrapper = ("definition" in doc and "connectionReferences" in doc
+                      and "properties" not in doc)
+    main = doc if editor_wrapper else (props if props else definition(doc))
     io.open(os.path.join(out, "PASTE-ME.json"), "w", encoding="utf-8").write(
         json.dumps(main, indent=2, ensure_ascii=False) + "\n")
     alt = os.path.join(out, "alternate-shapes")
@@ -455,6 +465,9 @@ def cmd_stage(a):
     for old_alt in glob.glob(os.path.join(alt, "*.json")):
         os.remove(old_alt)
     others = {"definition-only.json": definition(doc)}
+    if editor_wrapper:
+        others["definition-plus-connections.json"] = {
+            k: doc[k] for k in ("definition", "connectionReferences") if k in doc}
     if props:
         others["definition-plus-connections.json"] = {
             k: props[k] for k in ("definition", "connectionReferences") if k in props}

@@ -183,7 +183,16 @@ def build(flow_name, parent, lookup_id_field, mapping):
                        "$connections":    {"defaultValue": {}, "type": "Object"}},
         "triggers": {
             trig: {
-                "type": "OpenApiConnectionWebhook",
+                # 🔴 OpenApiConnection + recurrence, NOT OpenApiConnectionWebhook.
+                # SharePoint's "When an item is created or modified" is a POLLING
+                # trigger, not a webhook -- it wakes on a schedule and asks the list
+                # what changed. This was wrong until 2026-09-10 and would have been
+                # pasted as a webhook: caught by diffing against an empty shell the
+                # user built in the designer, and independently confirmed against the
+                # live "Order Items - Create or Update Trigger flow", which has used
+                # exactly this shape in production all along.
+                "type": "OpenApiConnection",
+                "recurrence": {"interval": 1, "frequency": "Minute"},
                 "inputs": {"parameters": {"dataset": SITE, "table": LISTS[parent]},
                            "host": host("GetOnUpdatedItems")},
                 "splitOn": "@triggerOutputs()?['body/value']",

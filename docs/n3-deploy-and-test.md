@@ -54,17 +54,55 @@ browser extension that exposes the raw JSON in the designer.
 
 3. **Save the shell.** A flow with only a trigger saves fine.
 
-4. **Open the JSON editor extension, replace the definition with the file's contents, save.**
-   The generated files are the bare `definition` object — `$schema` / `contentVersion` /
-   `parameters` / `triggers` / `actions` — which is the same shape the extension hands back,
-   so it is a straight swap, not a merge.
+4. **Export the shell's JSON out of the extension and intake it**, before pasting
+   anything in:
 
-5. **Reopen the designer and look at every action.** Expected: list names render as names
+   ```bash
+   mkdir -p "workflow-data/<flow folder>/_inbox"     # drop the JSON (and the .zip) here
+   python scripts/flow_version.py --flow "<flow folder>" intake --all        --note "empty shell, trigger configured on <list>"
+   ```
+
+   🔴 **This is not bookkeeping — the shell carries half the flow.** The extension deals in
+   a *flow-editor wrapper*, not a bare definition:
+
+   ```json
+   { "$schema": "https://power-automate-tools.local/flow-editor.json#",
+     "connectionReferences": {
+       "shared_sharepointonline": {
+         "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+         "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a", ... } },
+     "definition": { ... } }
+   ```
+
+   Every action inside the definition says only `"connectionName":
+   "shared_sharepointonline"` — a *name*, resolved through that wrapper. The real connection
+   id is tenant-specific and per-flow: it cannot be generated or copied between flows. Paste
+   a bare definition and `connectionReferences` is gone, so the actions come back unbound.
+
+5. **Merge and stage:**
+
+   ```bash
+   python scripts/apply_n3_definition.py --flow "<flow folder>"        --defn Order_Items__sync_from_<parent>
+   python scripts/flow_version.py --flow "<flow folder>" stage vNNN
+   ```
+
+   The merge is always **their wrapper, our definition**. Before writing anything it asserts
+   the shell's trigger list GUID matches the one the definition targets, that the trigger is
+   a polling trigger, and that every `connectionName` the definition uses has a
+   `connectionReferences` entry to resolve it.
+
+6. **Paste `_outbox/PASTE-ME.json` — the whole file — into the extension and save.**
+
+7. **Reopen the designer and look at every action.** Expected: list names render as names
    (`Order Items`), not raw GUIDs, and no action shows a connection warning. If one does,
    click it, pick the SharePoint connection, save — then re-check that action's parameters.
    A rebind sometimes blanks them, which is the failure this step exists to catch.
 
-6. **Leave the flow OFF.** Testing turns one on at a time.
+8. **Leave the flow OFF.** Testing turns one on at a time.
+
+9. **Export the flow's JSON again and intake it.** The staged local version flips to
+   `applied` only when a later pull carries its exact hash — a paste never claims that
+   itself.
 
 ---
 
@@ -135,16 +173,20 @@ Then turn the flow OFF.
 
 ### Test C · `Order Items - sync from Order` — the one that writes
 
-19 fields. Two of them differ, and both differences are expected:
+19 fields. Exactly one real difference is expected:
 
 ```
 field           Order E21003R1                                   unit 994
 --------------  -----------------------------------------------  -----------------
-Price           '0.00 $'                                         '$0.00'      DIFFERS
 Order Folder    /sites/PioneerPlanificatio/Order%20Library/...    (empty)      DIFFERS
+Price           '0.00 $'                                         '$0.00'      same value,
+                                                                  two renderings -- below
 ```
 
-The other 17 match exactly.
+`Order Folder` is the only real difference. The other 18 match, `Price` included: both
+columns are `Currency` holding the same number, and the two exports render it differently
+only because the parent carries `LCID="3084"` and the child does not. See *The Price
+question* below.
 
 **Run 1 — does it write the right thing?**
 
@@ -190,23 +232,62 @@ the field. Prime suspect: **`Price`**.
 
 Then turn the flow OFF.
 
-### ⚠️ The Price watch item — a decision, not a bug
+### ✅ The Price question — resolved, and there is nothing to fix
 
-`Order.Price` is a currency/number column; `Order Items.OrdPrice` is **Text** (spec rule 5,
-deliberate). N3 reads `Price` raw and writes it into Text, so the connector stringifies it.
-Measured on the 2026-09-09 exports, the stored side reads `$471,735.89` and the parent side
-`471,735.89 $` — **all 1,013 matched units differ**, on the exports' rendering at least.
+An earlier draft of this document flagged `OrdPrice` as a guard risk on the grounds that it
+was a `Text` column receiving a number. **That was wrong**, and the design intent behind the
+48 parent columns — *the child's type matches the parent's* — is exactly why.
 
-This does **not** permanently defeat the guard: once N3 writes a unit, the stored value *is*
-what N3 reads, so the second pass matches and the guard starts holding. Run 2 above is what
-confirms that.
+Read off both lists' own schemas:
 
-What it does mean is a **one-time reformat of `OrdPrice` across ~1,013 units** the first
-time each parent is touched after cutover — `$471,735.89` becoming something like
-`471735.89`. Nothing computes from `OrdPrice` (the viewer reads `Orders` directly, and
-Price CAD / Price USD are native formula columns), so this is cosmetic. But staff will see
-it, so it should be a decision rather than a surprise. **Run 1 shows the exact new format on
-unit 994 — decide then.**
+```xml
+Order        <Field DisplayName="Price"         Type="Currency" ... LCID="3084" />
+Order Items  <Field DisplayName="Order - Price" Type="Currency" Name="OrdPrice" />   (no LCID)
+```
+
+Both are **`Currency`**. The only difference is `LCID="3084"` — French (Canada) — on the
+parent and no LCID on the child, so the child inherits the default. That is a **display
+attribute**. It changes how each list renders the number and how each *export* writes it:
+
+```
+Order export       471,735.89 $      <- fr-CA currency rendering
+Order Items export $471,735.89       <- default rendering
+```
+
+**Same stored number, two renderings.** The 1,013 "differences" I measured were an artifact
+of comparing two exports, not a difference in the data.
+
+Consequences, all good:
+
+- **The guard is fine.** It compares what the connector reads to what is stored — number to
+  number, not string to string. Equal values compare equal.
+- **Nothing reformats.** There is no one-time rewrite of 1,013 units.
+- **`Order - Price` on unit 994 should not change in Test C.** If it does, that is a real
+  finding and worth stopping for.
+
+⚠️ **One small thing genuinely is worth fixing, separately and after cutover:** give
+`OrdPrice` `LCID="3084"` so the child displays in the same currency format as the parent.
+It is a column-settings change on `Order Items` (currency format → French (Canada)), it
+touches no data, and it costs nothing to defer.
+
+### ⚠️ The real guard risk in these flows is `RevModelDescription`, not Price
+
+Of the 47 parent columns, **26 of the 27 whose source resolves out of the flow definition
+match their parent's type exactly** — dates are `DateTime`, quantities `Number`, `Price`
+`Currency`, `OrdOrderFolder` `URL`. Only Choice and Lookup sources were flattened to `Text`,
+and a flattened Choice still round-trips as the same string.
+
+**Exactly one column disagrees with its parent: `RevModelDescription` is `Note` against a
+`MultiChoice` source.** It is read with `join(select(...), '; ')` and written into a free-text
+field that accepts anything — which is *how R22 was able to put 110 characters of JSON into
+979 rows*. If the join's output does not reproduce the stored string character for character,
+the guard sees a permanent difference and the Model Revisions flow rewrites every unit of a
+revision on every edit, forever.
+
+**Test B is the check.** `MR-ATCO-0002-V1` is the one revision where `Model Description`
+already matches, so `needsUpdate` must come back **false**. If it comes back true and the
+disagreeing field is `Model Description`, that is the R22 column failing again — stop, and
+do not enable this flow at 4.2.
 
 ### Cleanup
 
@@ -224,27 +305,27 @@ already have one.
 
 ## Part 3 · After the test — put them under version control
 
-The three flows now exist in the tenant, so the normal loop applies from here.
+Part 1 already puts each flow under version control on the way in — step 4 intakes the
+shell as `v001 pulled`, step 5 stages the merge as a `local` version, and step 9 intakes the
+result so that local version flips to `applied`. Nothing extra to do per flow.
 
-```bash
-mkdir "workflow-data/Order Items - sync from Order"
-mkdir "workflow-data/Order Items - sync from Models"
-mkdir "workflow-data/Order Items - sync from Model Revisions"
-```
+**Done so far** (2026-09-10):
 
-For each: copy the flow's JSON out of the extension into that folder's `_inbox/`, then
+| folder | v001 `pulled` | v002 `local` | staged |
+|---|---|---|---|
+| `Models - Create or Update Trigger` | empty shell, trigger on `Models` | N3 sync-from-Models merged in | ✅ `_outbox/PASTE-ME.json` |
+| the `Order` flow | — | — | shell not built yet |
+| the `Model Revisions` flow | — | — | shell not built yet |
 
-```bash
-python scripts/flow_version.py --flow "Order Items - sync from Order" intake \
-    --note "v001 first deploy, tested on unit 994"
-```
-
-which records it as a `pulled` version — a fact about what was live. From then on the repo
-README's rule holds: **snapshot before you modify.**
-
-⚠️ `flow_version.py` will not create the folder for you; it errors with
+⚠️ `flow_version.py` will not create a flow folder for you; it errors with
 `no such flow folder`. That is deliberate — it stops a typo in `--flow` from silently
 starting a new history.
+
+⚠️ **On the folder name.** The shell was created as `Models - Create or Update Trigger`,
+which describes its *trigger* and sits one word away from the existing
+`Order Items - Create or Update Trigger flow` — a different flow doing a different job. The
+runbook's 4.2 table calls this one `Order Items - sync from Models`. Worth renaming the flow
+and the folder before there are three of them; nothing depends on the name.
 
 **And export the `.zip` for each** (Power Automate → Export → Package). A definition-only
 JSON cannot restore a flow; only the package carries `connectionsMap`/`apisMap`. JSON for

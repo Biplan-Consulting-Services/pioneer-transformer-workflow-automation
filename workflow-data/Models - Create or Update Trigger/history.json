@@ -1,0 +1,48 @@
+{
+  "flow": {
+    "folder": "Models - Create or Update Trigger",
+    "displayName": "Models - Create or Update Trigger",
+    "id": null,
+    "site": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio"
+  },
+  "versions": [
+    {
+      "v": 1,
+      "captured": "2026-09-10T02:17:09-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "empty shell built in the designer 2026-09-10 -- trigger configured on Models, one throwaway Initialize_variable action. Baseline before the N3 definition is pasted in.",
+      "sha256": "557492e82b998f60724af5a1c68b772c6ced5851287146f53e2eb072149a753f",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 1,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v001__2026-09-10T02-17__pulled__empty-shell-built-in-the-designer-2026-09-10-tri.json"
+      },
+      "appliedAt": "2026-09-10T02:17:09-04:00",
+      "source": "Models - Create or Update Trigger.json"
+    },
+    {
+      "v": 2,
+      "captured": "2026-09-10T02:18:28-04:00",
+      "state": "local",
+      "parent": 1,
+      "note": "N3 Order_Items__sync_from_Models pasted into the shell, connectionReferences kept from v001",
+      "sha256": "e31280a3f5513ec0a3bd741e41bacc92f2b8cfd75fcedfb0794780f071a81c3f",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 2,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v002__2026-09-10T02-18__local__N3-Order-Items-sync-from-Models-pasted-into-the-.json"
+      },
+      "appliedAt": null,
+      "source": "n3-merged-Order_Items__sync_from_Models.json"
+    }
+  ]
+}

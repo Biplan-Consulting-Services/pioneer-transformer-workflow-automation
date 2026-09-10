@@ -13,7 +13,11 @@
   },
   "triggers": {
     "When_an_item_is_created_or_modified": {
-      "type": "OpenApiConnectionWebhook",
+      "type": "OpenApiConnection",
+      "recurrence": {
+        "interval": 1,
+        "frequency": "Minute"
+      },
       "inputs": {
         "parameters": {
           "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
