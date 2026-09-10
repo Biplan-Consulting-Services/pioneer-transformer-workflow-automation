@@ -381,30 +381,33 @@ been off since 2026-08-21 and N3 makes them redundant. One staff view still disp
 
 ## Stage 5 · Staff
 
-**5.1 · Warn the supplier-report producers *before* the email.** FRM11 feeds **eight
-outside companies** through eight supplier report sheets, and it goes stale the moment staff
-stop maintaining FRM10-12. This is the step with a party outside the building.
+**5.1 · ❌ CANCELLED by the user.** Was: warn the supplier-report producers before the
+email, because FRM11 feeds eight outside companies and goes stale once staff stop
+maintaining FRM10-12.
+
+Struck rather than deleted so it stops being re-proposed — it has been raised at least
+twice after the decision. **Do not reinstate it without the user saying so.** The
+underlying coupling is real and still documented (`docs/frm11-coupling-analysis-2026-09-06.md`,
+and the FRM11 section of the repo CLAUDE.md); what is cancelled is this step, not the fact.
 
 **5.2 · Send the cutover email.** `cutover-announcement-2026-09-08.md`.
-⚠️ Two things unresolved in it: the `[LIEN]` placeholder is blank, and the wording forks
-between "live copy" and "frozen snapshot". Both sentences are drafted; the wrong one has
-staff making decisions on stale data.
+The live-copy / frozen-snapshot fork is **resolved** (2026-09-10): it is a live copy,
+refreshed on a schedule by a person, and the email now says so in those terms. What remains
+is **two links to fill in** — the read-only workbook, and wherever the handbook is
+published.
 
-**5.3 · Clear the pre-publication banners.** There are three kinds and they need three
-different things — "strip the banners" is not one action.
+**5.3 · Publish the handbook.** ✅ Mostly done 2026-09-10. The four guides are consolidated
+into **`docs/staff-handbook-sharepoint.md`** and **`-fr.md`** — Part 1 doing the work, Part 2
+the views, one "something look wrong" at the end. Stitched from the reviewed text rather
+than rewritten, and all three pre-publication banners are gone. Publish these two; the four
+originals stay as the source they were built from.
 
-| guide | banner | what it needs |
-|---|---|---|
-| `staff-guide-sharepoint.md` · `-fr.md` | 📋 *Draft for review* | **Review with Soleil, then delete the box.** Rewritten 2026-09-09: the two "don't type in the Excel file" instructions are now correct rather than backwards, and a new *What looks different* section covers the fields that changed from a typed letter to a checkbox or dropdown. |
-| `views-guide-sharepoint.md` · `-fr.md` | *Where things stand today (2026-09-04)* | **Content fix, not a deletion.** It says FRM10-12 is still live and staff keep using it as before. True until Thursday, false the moment the cutover completes. Replace, don't remove — staff still need a "where things stand" line. |
-| `views-guide-sharepoint-fr.md` only | ⚠️ *AVANT PUBLICATION — vérifier trois libellés* | 🔴 **Verify first, then delete.** Not strippable on its own authority — it flags three French UI labels in section 7 that were reasoned, never read. |
-
-For that last one: open the classic view-settings page **in French** and confirm the three
-labels read exactly **« Regrouper par »**, **« Réduits »**, **« Limite d'éléments »**. About
-30 seconds in the browser, and it is the only banner in the set that nobody currently owns.
-It matters more than it looks — staff will search the screen for those exact words, and a
-guide naming a button that does not exist makes them doubt the parts that are right. The
-rest of section 7 is verified and depends on no label.
+⚠️ **One thing still unverified inside the French one**, carried over from
+`views-guide-sharepoint-fr.md`: section 7 names three UI labels — **« Regrouper par »**,
+**« Réduits »**, **« Limite d'éléments »** — that were reasoned, never read off the screen.
+Open the classic view-settings page in French and confirm. Thirty seconds, and it matters
+more than it looks: staff search for those exact words, and a guide naming a button that
+does not exist makes them doubt the parts that are right.
 
 ---
 
