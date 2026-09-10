@@ -351,18 +351,26 @@ in exports.
 
 | flow | trigger list | fan-out filter | fields |
 |---|---|---|---|
-| `Order Items - sync from Order` | `Order` | `OrderNumberId eq <ID>` | 18 |
+| `Order Items - sync from Order` | `Order` | `OrderNumberId eq <ID>` | 19 |
 | `Order Items - sync from Models` | `Models` | `ModelId eq <ID>` | 5 |
 | `Order Items - sync from Model Revisions` | `Model Revisions` | `ModelRevisionId eq <ID>` | 24 |
 
-Re-verified 2026-09-09 (`scripts/verify_n3_flows.py`): field counts 18/5/24 hold, every
+Re-verified 2026-09-10 (`scripts/verify_n3_flows.py`): field counts 19/5/24 hold, every
 target is one of the 48 columns N2 actually created, all 16 Choice/Lookup sources read
 `?['Value']`, change-guard line counts match field counts exactly, pagination is 5000, and
 there is no bare `select()`.
 
-🔴 `OrdOrderFolder` is deliberately excluded — a hyperlink is an object on both read and
-write, the shape was never sourced, and a wrong one either fails every row or writes
-nothing.
+✅ `OrdOrderFolder` is now **included** (2026-09-10, closing roadmap 38). It was excluded
+because a hyperlink is an object on both read and write and the shape was never sourced.
+The write shape is now sourced — the connector renders a URL column as **one input box**,
+so it takes a bare string. The read (`?['Url']`) is reasoned from REST's `SP.FieldUrlValue`
+and is the **one unproven expression in all three flows** — see
+`n3-deploy-and-test.md`, Test C, which exists to settle it on one row.
+
+🔴 **Deploying these flows is not a paste into an existing flow** — they do not exist in
+the tenant yet, so the `_inbox`/`_outbox` loop does not apply. Build a shell with the
+trigger configured first (that is what binds the connection), then overwrite its definition.
+Full procedure, plus the one-row test rig: **`docs/n3-deploy-and-test.md`**.
 
 **4.3 · Retire the two TextField syncs.** `Model Revisions` and `Order` TextField syncs have
 been off since 2026-08-21 and N3 makes them redundant. One staff view still displays
@@ -429,18 +437,29 @@ component is unexported, undocumented, and the tenant is its only copy, at the m
 becomes the most business-critical piece of the system. Not Thursday's work. Should not stay
 invisible.
 
-## 🔴 Two things the pre-cutover audit left open
+## 🔴 What the pre-cutover audit left open
 
 Full write-up: `pre-cutover-audit-2026-09-09.md`. Everything else came out clean — no
 workbook column is dropped, and the viewer reproduces all 76 data columns in the identical
 order.
 
-**1 · `Order Folder` — 106 links that will not survive.** `Order.Order Folder` is populated
-on **106 of 449** orders; `Order Items.Order - Order Folder` on **0 of 1,124**. Excluded on
-purpose (roadmap 38 — a hyperlink is an object on both read and write and the shape was
-never sourced), but the window closes when the flow is deleted at 2.4: N3 excludes it too.
-Source the shape from one real trigger payload before the run, or accept losing them and
-say so.
+**1 · `Order Folder` — ✅ RESOLVED 2026-09-10, two ways.** `Order.Order Folder` is
+populated on **106 of 449** orders; `Order Items.Order - Order Folder` on **0 of 1,124**.
+
+- **Backfill:** `scripts/x5_backfill_order_folder.js` copies them over REST using
+  `SP.FieldUrlValue`. **Not bound to the cutover window** — its source is the `Order` list,
+  which outlives the transfer flow. Re-runnable; it skips rows that already have a value.
+- **Ongoing:** N3's Order flow now carries `OrdOrderFolder` (4.2 above).
+
+⚠️ One thing stays open: the N3 **read** expression `?['Url']` is reasoned, not observed.
+Test C in `n3-deploy-and-test.md` settles it on one row. If it turns out wrong, X5 has
+already covered the existing 106 either way — only folders created *after* the backfill
+would be missed, and a second X5 run sweeps those.
+
+❌ **Not worth adding to the transfer flow.** It is one parameter and the value is already
+in the payload (`Get_All_Orders` has no `$select`), but that flow is deleted at 2.4 — a
+v008 paste-and-verify cycle on a 130-field production flow, the night before cutover, to
+buy 24 hours that a free X5 re-run already covers.
 
 **2 · Date storage.** A large set of dates sit at UTC midnight (`00:00:00Z`) rather than the
 Eastern-midnight convention — **all 139** `Tanking End Date` values, and 93 apiece on
