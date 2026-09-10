@@ -58,6 +58,27 @@ contrôle. Même information, mais plus de convention à retenir :
   **Order - Order Folder** pointe vers l'endroit où vivent tous les documents de la
   commande.
 
+**Les colonnes qui commencent par un préfixe**
+
+Vous allez voir des colonnes nommées `Order - ...`, `Model - ...`, `Mod. Rev. - ...`,
+`Client - ...`. Le préfixe dit d'où vient la valeur :
+
+- **`Order -`** vient de la liste **Order** : ce qui concerne la commande au complet, le
+  PO, la date promise, le type de commande.
+- **`Model -`** vient de la liste **Models** : ce qui concerne le modèle.
+- **`Mod. Rev. -`** vient de la liste **Model Revisions** : la spec technique, voltages,
+  noyau, huile, kVA.
+- **`Client -`** vient de la liste **Clients** : ce qui concerne le client.
+
+Ce sont des **copies, tenues à jour automatiquement**. L'unité vous les montre pour que
+vous n'ayez pas à aller les chercher ailleurs.
+
+🔴 **N'écrivez pas dedans.** Ce que vous y tapez n'a pas l'air faux tout de suite : ça
+reste affiché, l'air correct, jusqu'à ce que quelqu'un modifie cette commande ou ce
+modèle, et là c'est remplacé sans avertissement. Si une de ces valeurs est fausse, ça se
+corrige sur la commande, le modèle ou la révision. Venez me voir si vous n'êtes pas
+certain lequel.
+
 **Une question, un doute, quelque chose qui cloche ?**
 
 Venez me voir tout de suite, sur Teams ou à **soleil.anker@ermco-eci.com**. Mieux vaut poser la
@@ -112,6 +133,26 @@ information, one less convention to remember:
 - **`Status`** becomes two fields: **Step Status** (the step) and **Status Date** (the date).
 - **The order's folder** now appears on the unit itself. The **Order - Order Folder**
   column points at where every document filed against that order lives.
+
+**Columns that start with a prefix**
+
+You will see columns named `Order - ...`, `Model - ...`, `Mod. Rev. - ...`,
+`Client - ...`. The prefix tells you where the value comes from:
+
+- **`Order -`** comes from the **Order** list: things about the whole order, the PO, the
+  promised date, the order type.
+- **`Model -`** comes from the **Models** list: things about the model.
+- **`Mod. Rev. -`** comes from the **Model Revisions** list: the technical spec,
+  voltages, core, oil, kVA.
+- **`Client -`** comes from the **Clients** list: things about the client.
+
+They are **copies, kept up to date automatically**. The unit shows them so you don't have
+to go looking somewhere else.
+
+🔴 **Don't type into them.** What you type does not look wrong straight away: it sits
+there looking correct until somebody edits that order or model, and then it is replaced
+without warning. If one of those values is wrong, it needs fixing on the order, the model
+or the revision. Come and ask me if you are not sure which.
 
 **Questions, doubts, anything that looks wrong?**
 
