@@ -28,6 +28,19 @@
      told me they are stale" is a good reason to proceed and a bad reason to have no
      way back.
 
+   IF YOU LOSE THE UNDO BLOCK
+     It happened on the first run -- console cleared before it was copied. It is
+     recoverable, and that is worth knowing before you panic: every previous value
+     is in the pre-change export, `sharepoint-lists/Order 2026-09-09 1757.csv`.
+     Rebuilt for that run into
+     `rollback/n6-order-lead-time-undo-2026-09-10.json`, 366 orders, matching the
+     dry run exactly (16 x4, 20 x87, 26 x275).
+
+     The general point: this script's UNDO is a convenience, not the only copy.
+     Stage 1.3's "re-export all four lists" is what actually makes these writes
+     reversible, which is why it is the first step of the runbook and not an
+     afterthought.
+
    WHAT IT DOES NOT TOUCH
      Orders whose client has no lead time in FRM13. They keep whatever they have and
      fall back to the generic __GENERIC__ weeks in the formulas, which is FRM13's own
