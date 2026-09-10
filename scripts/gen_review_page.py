@@ -232,7 +232,7 @@ footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
   <p class="eyebrow">Pioneer Transformer · 10 September 2026</p>
   <h1>Cutover review</h1>
   <p class="sub">The staff email and the handbook, exactly as they stand. Read them before
-  it goes out — it is now written to be sent BEFORE tonight’s cutover, and three things still need you.</p>
+  it goes out this evening — it is written to be true tonight and still true tomorrow morning. Three things still need you.</p>
 </header>
 
 <div class="decisions">
@@ -246,13 +246,13 @@ footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);
     « Regrouper par », « Réduits » and « Limite d'éléments ». They were reasoned, never read
     off the screen. Open the classic view-settings page in French and confirm — 30 seconds.</span></div></label>
   <label class="dec"><input type="checkbox">
-    <div><b>Read the retensed opening</b>
-    <span>The email now goes out <em>before</em> the cutover, not after: it says the bascule is
-    tonight and asks people to <b>save and close FRM10-12 before they leave</b> — which is
-    runbook step 4, and the one thing an email can do that nothing else can. “What changes
-    tonight” is therefore a forecast and reads as one, so it does not need every line to have
-    happened first. It does need them to happen: if a step is abandoned rather than delayed,
-    send a short correction tomorrow.</span></div></label>
+    <div><b>Read the opening — it was retensed three times today</b>
+    <span>Final form: <em>la bascule se fait ce soir… quand vous arriverez demain matin</em>.
+    True when sent this evening and still true read over breakfast, which is the only tense
+    that survives both. It does <b>not</b> ask anyone to save and close FRM10-12 — everyone had
+    already left, so that would be an instruction nobody could act on. The cost is real
+    though: anything unsaved on a machine tonight never reaches SharePoint, and that is the
+    first thing to suspect if the re-diff turns up stale-looking units.</span></div></label>
 </div>
 
 <nav>

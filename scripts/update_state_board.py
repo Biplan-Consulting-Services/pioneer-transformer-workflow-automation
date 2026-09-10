@@ -16,7 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BOARD = os.path.join(os.path.dirname(HERE), "artifacts", "cutover-state-board.html")
 
 LANES = [
- ("you", "Now &mdash; before 22:00", "neither needs the freeze; both block the email", [
+ ("you", "Now &mdash; before 22:00", "the only staff-facing work that can finish before the freeze", [
   ("FRLBL", "Verify three French UI labels",
    "Open the classic view-settings page <b>in French</b> and confirm they read exactly "
    "&laquo;&nbsp;Regrouper par&nbsp;&raquo;, &laquo;&nbsp;R&eacute;duits&nbsp;&raquo; and "
@@ -26,12 +26,15 @@ LANES = [
    "that are right."),
   ("PUBHB", "Publish the handbook",
    "<code>staff-handbook-sharepoint.md</code> and <code>-fr.md</code> onto a SharePoint page. "
-   "Depends on nothing &mdash; and the email needs its link."),
+   "Depends on nothing, and the email needs its link &mdash; so it is the one staff-facing "
+   "thing that can genuinely be finished now."),
   ("EMAILNOW", "Send the email",
-   "&#128308; <b>Retensed for a send BEFORE the cutover.</b> It now says the bascule is tonight "
-   "and asks people to <b>save and close FRM10-12 before they leave</b> &mdash; which is step 4, "
-   "and the one thing an email can do that nothing else can. Sent after 22:00 it does none of "
-   "that work."),
+   "Tensed for exactly this: <em>la bascule se fait ce soir&hellip; quand vous arriverez demain "
+   "matin</em> &mdash; true when sent this evening and still true read over breakfast. It says "
+   "plainly there is nothing to do tonight, so nobody feels summoned back. "
+   "&#9888;&#65039; It does <b>not</b> ask anyone to save and close FRM10-12, because everyone "
+   "had already left &mdash; so anything unsaved on a machine tonight will not reach SharePoint. "
+   "First thing to suspect if the re-diff at step 9 turns up stale-looking units."),
   ("LINKS", "Fill the two links in the email",
    "<code>[LIEN]</code> the read-only workbook, <code>[LIEN GUIDE]</code> wherever the handbook "
    "is published. Neither was invented for you. A SharePoint page on the site is the obvious "
