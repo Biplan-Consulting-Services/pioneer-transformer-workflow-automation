@@ -7,7 +7,8 @@ Montreal and the factory in Granby, and the shop-floor vocabulary is already Fre
 Vocabulary matches `staff-guide-sharepoint-fr.md` deliberately — **la bascule**, **copie en
 lecture seule**, **c'est un miroir maintenant** — so this email and the guide read as one voice.
 
-🔴 **Two things to fill in or decide before sending — see the checklist at the bottom.**
+🔴 **One thing to fill in before sending: the link. Everything else is resolved** — see the
+checklist at the bottom.
 
 ---
 
@@ -34,7 +35,11 @@ transféré** et sera perdu.
 **Si vous voulez seulement consulter le classeur**
 
 Utilisez la version **FRM10-12 — lecture seule** : **[LIEN]**
-C'est une copie de consultation; on ne peut pas y écrire.
+C'est une copie de consultation : on ne peut pas y écrire, et elle se reconstruit à partir de
+SharePoint à chaque rafraîchissement — donc **elle date du dernier rafraîchissement, pas de la
+minute**. Pour la donnée à jour à la seconde près, c'est SharePoint.
+
+**Le guide complet** (comment saisir, comment lire les affichages) : **[LIEN GUIDE]**
 
 **Une question, un doute, quelque chose qui cloche ?**
 
@@ -67,7 +72,11 @@ transferred** and will be lost.
 **If you just want to look at the workbook**
 
 Use the **FRM10-12 — read-only** version: **[LINK]**
-It is a reference copy; you cannot write to it.
+It is a reference copy: you cannot write to it, and it rebuilds from SharePoint each time it is
+refreshed — so **it is as current as the last refresh, not as current as this minute**. For
+up-to-the-second data, go to SharePoint.
+
+**The full guide** (how to enter data, how to read the views): **[GUIDE LINK]**
 
 **Questions, doubts, anything that looks wrong?**
 
@@ -81,20 +90,20 @@ Soleil Anker-Baril
 
 ## Before you send — checklist
 
-**1. 🔴 Fill in `[LIEN]` / `[LINK]`.** I have deliberately not invented a URL.
+**1. 🔴 Fill in `[LIEN]` / `[LINK]` and `[LIEN GUIDE]` / `[GUIDE LINK]`.** Two URLs, neither
+invented here: the read-only workbook, and wherever `staff-handbook-sharepoint.md` /
+`-fr.md` gets published (a SharePoint page on the site is the obvious home — staff are
+already there, and it needs no separate permission).
 
-**2. 🔴 Decide what the read-only copy actually is, because the wording depends on it.**
-`staff-guide-sharepoint-fr.md` describes it as *"une copie en lecture seule qui se reconstruit
-toute seule à partir de SharePoint"* — a copy that rebuilds itself from SharePoint. If that is what
-you have built, the email above is correct as written. **If it is instead a frozen snapshot of the
-old workbook, change the line**, because staff will otherwise assume it is current and make
-decisions on stale data:
+**2. ✅ RESOLVED 2026-09-10 — it is a live copy, refreshed, not a frozen snapshot.** The viewer
+rebuilds from SharePoint on every refresh, and someone owns running that refresh so FRM11 and
+the reports stay fresh. So the "live copy" wording is the correct fork.
 
-- live copy: *« C'est une copie de consultation; on ne peut pas y écrire. »* (as written)
-- frozen snapshot: *« C'est une photo du classeur au moment de la bascule — elle ne se met plus à
-  jour. Pour des données à jour, allez dans SharePoint. »*
-- English equivalents: *"It is a reference copy; you cannot write to it."* /
-  *"It is a snapshot taken at cutover and no longer updates. For current data, go to SharePoint."*
+⚠️ But it is refreshed **on a schedule, by a person** — not continuously. The email now says
+that outright ("as current as the last refresh, not as current as this minute"), because the
+risk this checklist item was written about is real in a softer form: staff who believe the
+workbook is live will read a stale figure off it and never think to check. Naming the limit
+costs one clause and removes the whole failure mode.
 
 **3. Optional line, if staff have been complaining about the dates.** The run fixed ~4,700 date
 values that were displaying one day early. If that was visible to people, it is worth a sentence,
@@ -113,7 +122,21 @@ read the same table.
 after the final refresh, never reached SharePoint. Two units were only found this morning because
 they were missing entirely — worth not adding more.
 
-**6. Update `staff-guide-sharepoint-fr.md` and `staff-guide-sharepoint.md`.** Both open with a
+**6. ✅ DONE 2026-09-10 — the guides are consolidated and the banners are gone.**
+`staff-handbook-sharepoint.md` and `-fr.md` merge the two guides staff would otherwise have to
+read separately: Part 1 doing the work (from `staff-guide-*`), Part 2 the views (from
+`views-guide-*`), one "something look wrong" section at the end. Text is the reviewed wording
+verbatim — stitched, not rewritten — with the pre-publication banners stripped. **This is the
+`[LIEN GUIDE]` target.**
+
+⚠️ **One item still unverified inside it**, carried over from `views-guide-sharepoint-fr.md`:
+section 7 of the French handbook names three UI labels — **« Regrouper par »**, **« Réduits »**,
+**« Limite d'éléments »** — that were reasoned, never read off the screen. Open the classic
+view-settings page in French and confirm. Thirty seconds, and it matters more than it looks:
+staff search for those exact words, and a guide naming a button that does not exist makes them
+doubt the parts that are right.
+
+**Superseded, for reference —** the originals open with a
 *"NE PAS DISTRIBUER — ce guide n'est pas encore vrai"* / do-not-distribute banner, written on
 2026-09-04 because the cutover had been interrupted. It has now happened, so **the banner is
 stale and the guides are true** — the two instructions the banner flags as backwards (*"N'écrivez
