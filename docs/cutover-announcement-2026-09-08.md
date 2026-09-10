@@ -34,10 +34,10 @@ classeur, donc vous devriez vous y retrouver tout de suite.
 
 **Si vous voulez seulement consulter le classeur**
 
-Utilisez la version **FRM10-12 (lecture seule)** : **[LIEN]**
-C'est une copie de consultation : on ne peut pas y écrire, et elle se reconstruit à partir de
-SharePoint à chaque rafraîchissement, donc **elle date du dernier rafraîchissement, pas de la
-minute**. Pour la donnée à jour à la seconde près, c'est SharePoint.
+**FRM10-12** reste consultable ici : **[LIEN]**
+Il passe **en lecture seulement** : vous pourrez l'ouvrir et le lire, mais plus y écrire. Il se
+reconstruit à partir de SharePoint à chaque rafraîchissement, donc **il date du dernier
+rafraîchissement, pas de la minute**. Pour la donnée à jour à la seconde près, c'est SharePoint.
 
 **Le guide complet** (comment saisir, comment lire les affichages) : **[LIEN GUIDE]**
 
@@ -100,10 +100,10 @@ be transferred** and will be lost.
 
 **If you just want to look at the workbook**
 
-Use the **FRM10-12 (read-only)** version: **[LINK]**
-It is a reference copy: you cannot write to it, and it rebuilds from SharePoint each time it is
-refreshed, so **it is as current as the last refresh, not as current as this minute**. For
-up-to-the-second data, go to SharePoint.
+**FRM10-12** is still there to look at: **[LINK]**
+It becomes **read-only**: you can open it and read it, but not write to it. It rebuilds from
+SharePoint each time it is refreshed, so **it is as current as the last refresh, not as current
+as this minute**. For up-to-the-second data, go to SharePoint.
 
 **The full guide** (how to enter data, how to read the views): **[GUIDE LINK]**
 
