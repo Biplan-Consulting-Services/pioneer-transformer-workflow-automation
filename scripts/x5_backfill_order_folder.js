@@ -74,39 +74,43 @@
   const orders = await page(base+"/_api/web/lists(guid'"+ord.Id+"')/items"
                             +"?$select=Id,Order_x0020_Number1,Order_x0020_Folder&$top=500");
   if (!orders.length) { console.error("ABORT: read 0 orders -- broken query, not an empty list."); return; }
+  // Keyed on the Order's list ID, not its order number. Order Items reaches its parent
+  // through the `OrderNumber` LOOKUP, so `OrderNumberId` is the join the platform already
+  // resolved -- no string matching, and it keeps working after the redundant
+  // `OrdOrderNumber` text copy is deleted (2026-09-10).
   const folder = new Map();
   for (const o of orders) {
     const num = (o["Order_x0020_Number1"]||"").trim();
     const f = o["Order_x0020_Folder"];
     // a URL field comes back as {Url, Description} -- or null
     const url = f && (f.Url || f.url);
-    if (num && url) folder.set(num, {Url: url, Description: (f.Description || f.description || num)});
+    if (url) folder.set(o.Id, {Url: url, Description: (f.Description || f.description || num), num: num});
   }
   console.log("orders read: " + orders.length + " | with a folder: " + folder.size);
   if (!folder.size) { console.error("ABORT: no order carries a folder URL. Check the field name."); return; }
 
   // ------------------------------------------------------------ the units to fill
   const units = await page(base+"/_api/web/lists(guid'"+oi.Id+"')/items"
-                           +"?$select=Id,Title,OrdOrderNumber,OrdOrderFolder&$top=500");
+                           +"?$select=Id,Title,OrderNumberId,OrdOrderFolder&$top=500");
   if (!units.length) { console.error("ABORT: read 0 units -- broken query, not an empty list."); return; }
   console.log("units read : " + units.length);
 
   const plan = [], already = [], noFolder = [], noOrder = [];
   for (const u of units) {
-    const num = (u.OrdOrderNumber||"").trim();
+    const num = u.OrderNumberId;
     if (!num) { noOrder.push(u.Title); continue; }
     const f = folder.get(num);
     if (!f) { noFolder.push(u.Title); continue; }
     const cur = u.OrdOrderFolder && (u.OrdOrderFolder.Url || u.OrdOrderFolder.url);
     if (cur) { already.push(u.Title); continue; }
-    plan.push({Id:u.Id, Title:u.Title, num, val:f});
+    plan.push({Id:u.Id, Title:u.Title, num:f.num, val:f});
   }
   console.log("\n=== plan ===");
   console.log("  to fill                    : " + plan.length);
   console.log("  already have a folder      : " + already.length);
   console.log("  order has no folder        : " + noFolder.length);
-  console.log("  unit has no OrdOrderNumber : " + noOrder.length
-              + (noOrder.length ? "   <- these are also missing their parent sync" : ""));
+  console.log("  unit not linked to an Order : " + noOrder.length
+              + (noOrder.length ? "   <- these have no OrderNumber lookup set" : ""));
   const byOrder = {};
   for (const p of plan) byOrder[p.num] = (byOrder[p.num]||0)+1;
   console.log("  distinct orders covered    : " + Object.keys(byOrder).length + " of " + folder.size);
@@ -156,13 +160,13 @@
 
   // ------------------------------------------------------------ verification
   const after = await page(base+"/_api/web/lists(guid'"+oi.Id+"')/items"
-                           +"?$select=Id,Title,OrdOrderNumber,OrdOrderFolder&$top=500");
+                           +"?$select=Id,Title,OrderNumberId,OrdOrderFolder&$top=500");
   const ids = new Set(plan.map(p=>p.Id));
   const mine = after.filter(r=>ids.has(r.Id));
   const bad  = mine.filter(r => !(r.OrdOrderFolder && (r.OrdOrderFolder.Url||r.OrdOrderFolder.url)));
   const wrong = mine.filter(r => {
     const u = r.OrdOrderFolder && (r.OrdOrderFolder.Url||r.OrdOrderFolder.url);
-    const want = folder.get((r.OrdOrderNumber||"").trim());
+    const want = folder.get(r.OrderNumberId);
     return u && want && u !== want.Url;
   });
   console.log("\n--- verification (trust this, not the write results) ---");

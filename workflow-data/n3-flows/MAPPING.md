@@ -5,7 +5,7 @@
 
 ## `Order Items - sync from Order`
 
-Trigger list **Order** · fan-out filter `OrderNumberId` · **19** fields
+Trigger list **Order** · fan-out filter `OrderNumberId` · **17** fields
 
 | → `Order Items` | ← source internal | source kind | read expression |
 |---|---|---|---|
@@ -17,14 +17,12 @@ Trigger list **Order** · fan-out filter `OrderNumberId` · **19** fields
 | `OrdNewmodeltobecreated` | `New_x0020_model_x0020_to_x0020_b` | choice | `triggerOutputs()?['body/New_x0020_model_x0020_to_x0020_b']?['Value']` |
 | `OrdNote` | `Note` | plain | `triggerOutputs()?['body/Note']` |
 | `OrdOrderDate` | `Order_x0020_Date` | plain | `triggerOutputs()?['body/Order_x0020_Date']` |
-| `OrdOrderNumber` | `Order_x0020_Number1` | plain | `triggerOutputs()?['body/Order_x0020_Number1']` |
 | `OrdOrderStatus` | `OrderStatus` | choice | `triggerOutputs()?['body/OrderStatus']?['Value']` |
 | `OrdOrderStep` | `Order_x0020_Step` | choice | `triggerOutputs()?['body/Order_x0020_Step']?['Value']` |
 | `OrdOrderType` | `Order_x0020_Type1` | choice | `triggerOutputs()?['body/Order_x0020_Type1']?['Value']` |
 | `OrdPO` | `PO` | plain | `triggerOutputs()?['body/PO']` |
 | `OrdPrice` | `Price` | plain | `triggerOutputs()?['body/Price']` |
 | `OrdProvinceState` | `Province_x002F_State` | plain | `triggerOutputs()?['body/Province_x002F_State']` |
-| `OrdQty` | `Qty` | plain | `triggerOutputs()?['body/Qty']` |
 | `OrdSalesNotes` | `SalesNotes` | plain | `triggerOutputs()?['body/SalesNotes']` |
 | `OrdWETWETP` | `WET_x002d_WETP` | choice | `triggerOutputs()?['body/WET_x002d_WETP']?['Value']` |
 | `OrdOrderFolder` | `Order_x0020_Folder` | url | `triggerOutputs()?['body/Order_x0020_Folder']?['Url']` |

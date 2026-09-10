@@ -105,6 +105,20 @@ def host(op):
 
 # target internal name, source internal name, source kind
 #   kind: plain | choice | lookup | multichoice
+# REMOVED 2026-09-10, both duplicated a column Order Items already had:
+#   OrdOrderNumber -> the `OrderNumber` LOOKUP already points at the parent order and
+#                     displays its number. A text copy beside it is a third
+#                     representation (the second being Order_Number_TextField, retired
+#                     at runbook 4.3) that can only ever drift from the relationship.
+#   OrdQty         -> the native `Qty` IS the order quantity. It is written from the
+#                     Unit ID fraction (`21865-1/5` -> 5), and that denominator is the
+#                     order Qty by construction: TableOrders expands each order into
+#                     Qty job-lines to build the ID. Same fact, derived rather than
+#                     copied.
+#                     ⚠️ I argued these were different facts on the strength of 9 rows
+#                     where they disagree. That was wrong: Order Items has been unsynced
+#                     since 09-01, so a disagreement there is staleness, not signal.
+#                     Do not use that list as evidence about its own correctness.
 ORDER_MAP = [
     ("OrdClientDateStatus",   "ClientDateStatus",                  "choice"),
     ("OrdEngineeringRequired","EngineeringRequired",               "plain"),
@@ -114,14 +128,12 @@ ORDER_MAP = [
     ("OrdNewmodeltobecreated","New_x0020_model_x0020_to_x0020_b",   "choice"),
     ("OrdNote",               "Note",                              "plain"),
     ("OrdOrderDate",          "Order_x0020_Date",                  "plain"),
-    ("OrdOrderNumber",        "Order_x0020_Number1",               "plain"),
     ("OrdOrderStatus",        "OrderStatus",                       "choice"),
     ("OrdOrderStep",          "Order_x0020_Step",                  "choice"),
     ("OrdOrderType",          "Order_x0020_Type1",                 "choice"),
     ("OrdPO",                 "PO",                                "plain"),
     ("OrdPrice",              "Price",                             "plain"),
     ("OrdProvinceState",      "Province_x002F_State",              "plain"),
-    ("OrdQty",                "Qty",                               "plain"),
     ("OrdSalesNotes",         "SalesNotes",                        "plain"),
     ("OrdWETWETP",            "WET_x002d_WETP",                    "choice"),
     # Added 2026-09-10, closing roadmap 38. It was excluded because "a hyperlink is an

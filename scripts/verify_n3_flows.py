@@ -8,7 +8,7 @@ against the current schema rather than trusted from generation time.
 
 Six assertions, each one a failure mode that would be silent in production:
 
-  1. field counts are 19 / 5 / 24                  -- a dropped mapping writes nothing
+  1. field counts are 17 / 5 / 24                  -- a dropped mapping writes nothing
   2. every target is one of the 48 columns N2 built (by internal name, exactly)
   3. every Choice/Lookup source is read `?['Value']`  -- the R22 lesson; without it the
      raw expanded reference is stored, which is what put 110 chars of JSON on 979 rows
@@ -36,7 +36,7 @@ ROOT = os.path.dirname(HERE)
 N3 = os.path.join(ROOT, "workflow-data", "n3-flows")
 
 EXPECTED = {
-    "Order_Items__sync_from_Order.definition.json": ("Ord", 19),
+    "Order_Items__sync_from_Order.definition.json": ("Ord", 17),
     "Order_Items__sync_from_Models.definition.json": ("Mdl", 5),
     "Order_Items__sync_from_Model_Revisions.definition.json": ("Rev", 24),
 }
