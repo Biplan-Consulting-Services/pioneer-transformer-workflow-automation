@@ -83,6 +83,9 @@ modèle ou sur la révision. Venez me voir si vous ne savez pas laquelle.
 Venez me voir tout de suite, sur Teams ou à **soleil.anker@ermco-eci.com**. Mieux vaut poser la
 question deux minutes que de saisir au mauvais endroit toute la journée.
 
+**Je serai sur place à Granby demain et au début de la semaine prochaine.** Arrêtez-moi
+quand vous me voyez passer : on peut regarder ça ensemble directement à votre poste.
+
 Merci à tous,
 Soleil Anker-Baril
 
@@ -157,6 +160,9 @@ if you are not sure which.
 
 Come and find me straight away, on Teams or at **soleil.anker@ermco-eci.com**. Two minutes of
 asking beats a whole day of entering things in the wrong place.
+
+**I will be on site in Granby tomorrow and at the start of next week.** Stop me when you
+see me going by: we can look at it together right at your workstation.
 
 Thanks everyone,
 Soleil Anker-Baril
