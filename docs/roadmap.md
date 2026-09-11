@@ -650,6 +650,22 @@ correctness problem for shift times, not only a cosmetic one for dates.
 Each of these was consciously cut from the overnight window, not overlooked. Full context in
 `archive/cutover-runbook-2026-09-01.md`.
 
+- **Confirm the three French UI labels in section 7 of the French handbook** (deferred
+  2026-09-10 21:45 by the user, minutes before publishing). Section 7 names
+  « Regrouper par », « Réduits » and « Limite d'éléments » on the classic view-settings
+  page. They were reasoned from the English labels, never read off a French screen, and
+  the handbook shipped with them unverified.
+  - ⚠️ **There is a prior question, and it is the more interesting one:** SharePoint's UI
+    language is a per-user setting, and French also has to be enabled on the site. If most
+    staff are on the English UI they will see "Group by", "Collapsed" and "Item limit"
+    regardless of which handbook they are reading, and the French labels are wrong for
+    everybody rather than right for some.
+  - Deferred rather than fixed because the fix (describing the settings by position instead
+    of naming buttons) would have meant redoing the Word layout that had just been
+    completed by hand. Low severity: the settings are findable by position, and the
+    handbook already asks people to build their first view together with Soleil.
+  - **Check it on site in Granby**, then either correct the labels or drop them.
+
 - **Date-urgency conditional formatting on `Planned Tanking Date`** (deferred 2026-09-04 by the
   user, after two failed attempts). Intent: yellow when tanking is within 14 days, red when
   overdue, so a BO row's deadline pressure reads at a glance. **Two blockers, both real, both
