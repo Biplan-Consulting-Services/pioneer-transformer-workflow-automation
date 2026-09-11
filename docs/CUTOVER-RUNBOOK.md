@@ -317,8 +317,17 @@ tests `Location` in two-letter codes.
 **3.4 · Deploy the viewer to `Revue/FRM10-12.xlsx` and repoint the `Index` row** from
 `Formulaires/` to `Revue/`.
 
-- **This overwrites the stale twin.** Snapshot it into `live-workbook-data/` first — that
-  snapshot is the rollback.
+- ✅ **There is no stale twin. Confirmed 2026-09-11 05:2x: `Revue/FRM10-12.xlsx` does not
+  exist.** So this step CREATES the file rather than overwriting one, and the snapshot
+  this line used to demand has nothing to snapshot. Step 24 is moot.
+
+  Earlier text said "this overwrites the stale twin" and told you to snapshot it first.
+  That was carried from the 2026-09-04 move, when both files were believed to exist. Only
+  `Revue/Formulaires/FRM10-12.xlsx` is real, and it is the file staff have been using —
+  kept as `workbooks/FRM10-12 final staff version pre-archive 2026-09-11 0522.xlsx` and
+  retired at 3.6.
+
+  🔑 One risk fewer: nothing can be destroyed by this deploy.
 - **Break permission inheritance on the deployed file.** Staff get **Read**. The refresh
   operator keeps **Edit** — a Power Query refresh has to save, so read-only-for-everyone
   breaks the very thing keeping FRM09 alive.
