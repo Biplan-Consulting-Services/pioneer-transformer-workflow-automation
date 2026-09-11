@@ -87,10 +87,10 @@ typed a letter into, the same information, just no longer a convention you had t
 | free text in **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | a **dropdown**, pick one |
 | a code like `TE-Se-4` in **Status** | two fields: **Step Status** (pick the step) and **Status Date** (pick the date) |
 
-Two things worth knowing about the checkboxes:
+A few things worth knowing:
 
-- **Unticked means "no".** There is no third option for "not decided yet". If that distinction matters for a unit, put it in **Technical Notes** rather than leaving the box
-  as a hint.
+- **Unticked means "no".** There is no third option for "not decided yet". If you need
+  that option, come and see me.
 - **A dropdown does not erase what is already there.** Values that predate the
   dropdown keep displaying exactly as they were, even the odd spellings. What the
   dropdown changes is only what you can pick from now on. So if a value you need is missing from the list, that is worth reporting rather than working around.

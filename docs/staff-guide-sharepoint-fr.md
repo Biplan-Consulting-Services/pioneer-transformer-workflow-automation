@@ -93,10 +93,10 @@ n'est plus une convention à retenir.
 | du texte libre dans **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | une **liste déroulante**, choisissez |
 | un code comme `TE-Se-4` dans **Status** | deux champs : **Step Status** (choisir l'étape) et **Status Date** (choisir la date) |
 
-Deux choses à savoir sur les cases à cocher :
+Quelques choses à savoir :
 
-- **Décochée veut dire « non ».** Il n'y a pas de troisième option pour « pas encore décidé ». Si la nuance compte pour une unité, écrivez-la dans **Technical Notes** plutôt
-  que de laisser la case décochée comme indice.
+- **Décochée veut dire « non ».** Il n'y a pas de troisième option pour « pas encore
+  décidé ». Si vous avez besoin de cette option-là, venez me voir.
 - **Une liste déroulante n'efface pas ce qui est déjà là.** Les valeurs saisies avant
   restent affichées telles quelles, même les orthographes bizarres. Ce que la liste
   encadre, c'est seulement ce que vous pouvez choisir à partir de maintenant. Donc si une valeur dont vous avez besoin manque dans la liste, signalez-le plutôt que de
