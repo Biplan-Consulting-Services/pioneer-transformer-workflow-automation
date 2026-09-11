@@ -26,5 +26,7 @@ dist/
 # not worth the storage. NOTE this means the .bak is the ONLY pre-change copy when the
 # workbook itself was untracked before the surgery - as BO Report.xlsx was on 2026-09-11.
 # Don't delete one until the changed workbook has been committed and eyeballed.
-*.xlsx.bak
-*.xlsm.bak
+# *.bak, not *.xlsx.bak: the narrower pattern missed
+# 'BO Report.xlsx.printsetup.bak' and a 105KB binary went into a commit that had
+# just declared it ignored. Match the suffix, not a guessed middle.
+*.bak

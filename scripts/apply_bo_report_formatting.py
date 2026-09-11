@@ -55,11 +55,41 @@ SHEET = "xl/worksheets/sheet1.xml"
 FIRST_DATA_ROW = 2
 LAST_DATA_ROW = 1092
 
-# dxf indices already present in BO Report's styles.xml - verified 2026-09-11 to be
-# the same formats BO Manager uses (its own indices there are 130/129/128).
-DXF_BO = 15      # theme 5 tint 0.4
-DXF_OK = 16      # theme 9 tint 0.4
-DXF_STRIKE = 0   # <strike/>
+# 🔴 DXF INDICES ARE RESOLVED BY CONTENT, NEVER HARDCODED.
+# They were hardcoded (15/16/0) in the first version of this script, and they went
+# stale the same afternoon: the moment Excel opened and re-saved the workbook it
+# garbage-collected unused dxfs, 41 -> 29, and renumbered the survivors to 4/3/0.
+# A re-run against the hardcoded numbers would have pointed the BO and OK rules at
+# two blank formats - the fills would have silently disappeared, with the rules still
+# present and apparently fine. So: find them by what they ARE.
+STRIKE_MARK = '<strike'
+BO_FILL_THEME = '5'   # theme 5 tint 0.4 - the orange, per BO Manager
+OK_FILL_THEME = '9'   # theme 9 tint 0.4 - the green
+
+
+def resolve_dxfs(styles_xml):
+    """-> (bo, ok, strike) dxf indices, by inspecting each dxf rather than trusting
+    a position. Raises rather than guessing: a wrong index here is invisible."""
+    dxfs = re.findall(r'<dxf>(.*?)</dxf>', styles_xml, re.S)
+    bo = ok = strike = None
+    for i, d in enumerate(dxfs):
+        if strike is None and STRIKE_MARK in d:
+            strike = i
+            continue
+        th = re.search(r'<bgColor theme="(\d+)"', d)
+        if th and bo is None and th.group(1) == BO_FILL_THEME:
+            bo = i
+        elif th and ok is None and th.group(1) == OK_FILL_THEME:
+            ok = i
+    missing = [n for n, v in (("BO fill", bo), ("OK fill", ok), ("strike", strike))
+               if v is None]
+    if missing:
+        raise SystemExit(
+            "could not find the %s dxf in styles.xml. Refusing to write conditional "
+            "formatting that points at the wrong format - that failure is invisible in "
+            "Excel. Check the workbook still carries BO Manager's formats."
+            % " and ".join(missing))
+    return bo, ok, strike
 
 ROLLUP_COL = "C"
 
@@ -71,14 +101,14 @@ GROUPS = [
 ]
 
 
-def build_cf():
+def build_cf(dxf_bo, dxf_ok, dxf_strike):
     """The five blocks, one per logical rule. Priority ascending; the strikethrough
     rules sit on disjoint column ranges so they never compete with each other, and
     they never overlap the roll-up column, so priority order is not load-bearing -
     but it is written explicitly rather than left to chance."""
     out = []
     p = 1
-    for value, dxf in (("BO", DXF_BO), ("OK", DXF_OK)):
+    for value, dxf in (("BO", dxf_bo), ("OK", dxf_ok)):
         out.append(
             '<conditionalFormatting sqref="{c}{a}:{c}{b}">'
             '<cfRule type="expression" dxfId="{d}" priority="{p}">'
@@ -97,7 +127,7 @@ def build_cf():
             '<formula>${ok}{a}=TRUE</formula>'
             '</cfRule></conditionalFormatting>'.format(
                 c1=c1, c2=c2, a=FIRST_DATA_ROW, b=LAST_DATA_ROW,
-                d=DXF_STRIKE, p=p, ok=ok)
+                d=dxf_strike, p=p, ok=ok)
         )
         p += 1
     return "".join(out)
@@ -135,20 +165,22 @@ def main():
         raise SystemExit("unexpected markup between the CF blocks, refusing to "
                          "clobber it: %r" % stray[:200])
 
-    new_xml = xml[:start] + build_cf() + xml[end:]
+    dxf_bo, dxf_ok, dxf_strike = resolve_dxfs(parts['xl/styles.xml'].decode('utf-8'))
+    cf = build_cf(dxf_bo, dxf_ok, dxf_strike)
+    new_xml = xml[:start] + cf + xml[end:]
 
     print("%s" % WB)
     print("  existing CF blocks : %d  (ranges anchored at rows %s)" % (
         len(blocks),
         "/".join(sorted({m for b in blocks
                          for m in re.findall(r"[A-Z]+(\d+)", b)})[:4]) or "?"))
-    print("  replacement blocks : %d" % len(re.findall(
-        r"<conditionalFormatting", build_cf())))
+    print("  replacement blocks : %d" % len(re.findall(r"<conditionalFormatting", cf)))
+    print("  resolved dxfs      : BO=%d OK=%d strike=%d" % (dxf_bo, dxf_ok, dxf_strike))
     for (c1, c2), ok in GROUPS:
         print("    strike %s%d:%s%d  when  $%s<row>=TRUE" % (
             c1, FIRST_DATA_ROW, c2, LAST_DATA_ROW, ok))
     print("    fill   %s%d:%s%d  when  =\"BO\" (dxf %d) / =\"OK\" (dxf %d)" % (
-        ROLLUP_COL, FIRST_DATA_ROW, ROLLUP_COL, LAST_DATA_ROW, DXF_BO, DXF_OK))
+        ROLLUP_COL, FIRST_DATA_ROW, ROLLUP_COL, LAST_DATA_ROW, dxf_bo, dxf_ok))
 
     if not args.apply:
         print("\nDRY RUN - nothing written. Re-run with --apply.")
