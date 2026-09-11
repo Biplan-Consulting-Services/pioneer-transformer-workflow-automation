@@ -93,7 +93,16 @@ def mapping():
             kind = "text"
         elif "not(equals(" in e and "'')" in e:
             kind = "bool"
-        elif "'Completed'" in e or "'Pending'" in e:
+        elif re.search(r"'[YyNn]'", e) and ("true" in e.lower() or "false" in e.lower()
+                                            or "equals(" in e):
+            # `Y`/`N` in the workbook becomes a real boolean on the list. Comparing
+            # them as text reports every populated row as different.
+            kind = "yn2bool"
+        elif ("'Completed'" in e or "'Pending'" in e) and col.strip().endswith("Date"):
+            # The SOURCE has to be a date column. `Client Date Status` contains the
+            # word Date and its expression mentions Completed, and on the strength of
+            # those two coincidences it was classified here and reported all 103 of
+            # its populated rows as different -- CONFIRMED against Confirmed.
             # `if(empty(<a date column>), 'Pending', 'Completed')`. The workbook holds
             # the stage's DATE; the list holds a status derived from whether that date
             # exists. Comparing them as text reports every single row as different,
@@ -192,6 +201,32 @@ def norm(v):
     return s
 
 
+STAGES = ("Coiling", "Stacking", "Assembly", "Drying", "Tanking", "Testing",
+          "Finishing", "Delivery")
+
+
+def alias(internal):
+    """Display name for an internal name that does not simply de-camel-case.
+
+    Two families, both documented in CLAUDE.md, and both silently skip a column if
+    you do not handle them -- which reads as "nothing to compare" rather than "not
+    compared", the more dangerous of the two.
+
+      <Stage>Date  ->  "<Stage> End Date".  The columns were created as "Coiling
+                       Date" and renamed when the Start Dates arrived. A SharePoint
+                       rename does NOT change the internal name, so the two halves of
+                       the same pair follow different rules: the End dates are
+                       <Stage>Date and the Start dates really are <Stage>StartDate.
+      Ord<X>       ->  "Order - <X>".  The parent-sync prefix.
+    """
+    for st in STAGES:
+        if internal == st + "Date":
+            return st + " End Date"
+    if internal.startswith("Ord") and len(internal) > 3 and internal[3].isupper():
+        return "Order - " + internal[3:]
+    return internal
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--detail", action="store_true")
@@ -211,7 +246,7 @@ def main():
     unresolved, results = [], []
     for tgt, (col, kind) in sorted(maps.items()):
         name = tgt[5:].split("/")[0]
-        oh = by_slug.get(slug(name))
+        oh = by_slug.get(slug(name)) or by_slug.get(slug(alias(name)))
         if oh is None or col not in next(iter(wbrows.values())):
             unresolved.append((tgt, col, "no list column" if oh is None else "no workbook column"))
             continue
@@ -219,7 +254,14 @@ def main():
         ex = []
         for u in both:
             w, o = wbrows[u].get(col), oirows[u].get(oh)
-            if kind == "date2status":
+            if kind == "yn2bool":
+                raw = str(w).strip().lower() if w is not None else ""
+                ov = str(o).strip().lower()
+                if raw == "" and ov in ("", "false"):
+                    bothblank += 1
+                    continue
+                wv = "true" if raw in ("y", "yes", "oui", "true", "1") else "false"
+            elif kind == "date2status":
                 raw = str(w).strip().lower() if w is not None else ""
                 # `ec` is en cours in the workbook, and the flow translates it rather
                 # than treating it as a date. It is the only non-date value the stage
@@ -236,9 +278,7 @@ def main():
                     bothblank += 1
                     continue
             else:
-                wv, ov = norm(w), norm(o)
-                if kind == "lower":
-                    wv, ov = wv.lower(), ov.lower()
+                wv, ov = norm(w).lower(), norm(o).lower()
                 if wv == "" and ov == "":
                     bothblank += 1
                     continue
