@@ -821,6 +821,52 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
   definition — depopulated, not deleted, despite `FRM10-12/CONTEXT.md` saying it was dropped.
   Cosmetic, but it makes column-count audits confusing.
 
+## Future work — maintain the parent `_TextField` mirrors from the N3 flows
+
+Raised by the user 2026-09-11 06:3x, after 4.3 was cancelled.
+
+**Why it matters.** The Power Apps filter, link and sort on these mirrors. Lookup columns
+are not delegable in Power Apps, so a text mirror is the standard way round it — that is
+what they are for. Nothing has maintained the parent-side ones since **2026-08-21**, when
+the standalone TextField syncs were switched off, and N3 is strictly parent → child so it
+never writes back.
+
+`Order Items`' own four mirrors are fine and always were: the create-or-update trigger
+flow writes them and has been live throughout. This is only about the parents.
+
+| list | mirrors going unmaintained |
+|---|---|
+| `Order` | `Client_ID_TextField` · `Model_ID_TextField` · `Model_Revision_ID_TextField` |
+| `Models` | `Client_ID_TextField` · `Latest_Model_Revision_TextField` · `Parent_Model_TextField` |
+| `Model Revisions` | `Client_ID_TextField` · `Pioneer_Model_Code_TextField` · `Duplicate_Order_TextField` |
+| `Clients` | none — nothing to do |
+
+**The shape of the change.** Each N3 flow already triggers on its parent and already has
+the two things this needs: a change-guard, and `?['Value']` reads off the triggering item.
+So it is one extra write action per flow, against the trigger's own row.
+
+🔴 **The hazard, and it is the whole reason this needs designing rather than typing.** An
+N3 flow triggers on *"when an item is created or modified"* on its parent list. Writing
+back to that same row **re-triggers the flow**. The existing change-guard is what stops
+that being unbounded: run 2 finds the mirror already equal to the lookup, writes nothing,
+and the chain ends. So the cost is **two runs per real parent edit instead of one** — but
+only if the guard covers the mirror fields too. A write that is not guarded loops until
+the platform throttles it.
+
+**Prerequisite: export the Power Apps first.** `power-apps/` is an empty `.gitkeep` and
+the tenant is the only copy, which is exactly why nobody knew the apps depended on these
+until it was nearly too late. Which mirrors each app actually uses decides whether all
+nine columns need maintaining or three of them do.
+
+**Before any of it: measure the drift.** A REST comparison per parent list — the lookup's
+real target against the stored mirror — says whether three weeks has produced five stale
+rows or two hundred, and that changes whether the first move is a one-off backfill or a
+flow.
+
+⚠️ Any write to a parent row fires that parent's N3 sync. A backfill across hundreds of
+rows means hundreds of N3 runs, mostly writing nothing. Same trap as x5: run it with the
+N3 flows off, or accept the burst knowingly.
+
 ## Explicitly not planned yet (future phases)
 
 - **Phase 2+ of the business process**: `Electrical Design`/`Mechanical Design` execution,
