@@ -650,6 +650,19 @@ correctness problem for shift times, not only a cosmetic one for dates.
 Each of these was consciously cut from the overnight window, not overlooked. Full context in
 `archive/cutover-runbook-2026-09-01.md`.
 
+- **`n8_split_status.js` creates duplicate columns on every re-run** (found 2026-09-11
+  04:2x, during the cutover). Its header says column creation "skips what exists". It does
+  not: it POSTs the field and reports whatever comes back, so the mandatory 2.5 re-run
+  reported `200 created` three times against columns that already existed from 09-09, and
+  SharePoint made `StepStatus0`, `StatusDate0` and `StepStatusStamped0`.
+  - 🔴 **The duplicates are indistinguishable in the UI** — same display names, all
+    visible. A staff member typing into the empty twin watches the value vanish from every
+    view and report, with no error.
+  - Cleaned up by `x9_delete_duplicate_status_columns.js`, which deletes by *internal*
+    name and proves each target empty immediately before deleting.
+  - **The fix n8 still needs:** an existence check before each POST. Until it has one,
+    every future re-run leaves another set behind — the next would be `StepStatus1`.
+
 - **Confirm the three French UI labels in section 7 of the French handbook** (deferred
   2026-09-10 21:45 by the user, minutes before publishing). Section 7 names
   « Regrouper par », « Réduits » and « Limite d'éléments » on the classic view-settings
