@@ -79,6 +79,54 @@ def definition(doc):
     return doc.get("properties", {}).get("definition", doc.get("definition", doc))
 
 
+def identity(doc):
+    """(flow display name, flow id) out of an export, or (None, None) for a bare
+    definition paste which carries neither."""
+    return doc.get("name"), doc.get("id")
+
+
+def check_identity(hist, doc, flow):
+    """Refuse an export that belongs to a DIFFERENT flow.
+
+    🔴 2026-09-11 00:00. An export of the `Order Items - Create or Update Trigger` flow
+    was dropped into the transfer flow's `_inbox`. Intake took it at face value: it
+    stored a `pulled` version whose definition was another flow entirely, and because
+    the hash did not match, it marked v008, v009 and v010 FORKED -- telling us the
+    tenant had moved when nothing had.
+
+    Losing the history was the cheap part. The expensive path is the next step:
+    `apply_n3_definition` and every authoring script builds on the newest pulled
+    version, so the wrong flow's connectionReferences and trigger would have been
+    merged into the transfer flow and pasted into production.
+
+    A hash cannot catch this -- a different flow is exactly what a changed hash looks
+    like. Identity has to be checked separately, and an export carries it: `name` is the
+    flow's GUID-ish id and `id` is its full ARM path. Both are stable across edits and
+    across designer round-trips, so the first export to arrive sets them and every one
+    after has to agree.
+
+    A bare definition paste carries neither, so it cannot be checked. That is a real
+    gap, and it is the reason to prefer exporting the .zip: the package is the only
+    artifact that both re-imports and identifies itself.
+    """
+    name, fid = identity(doc)
+    if name is None and fid is None:
+        return                          # bare definition: nothing to check against
+    known = hist.get("identity")
+    if not known:
+        hist["identity"] = {"name": name, "id": fid}
+        return
+    if known.get("name") == name or known.get("id") == fid:
+        return
+    raise SystemExit(
+        "this export belongs to a DIFFERENT flow -- refusing to ingest it into %r.\n"
+        "       expected id : %s\n"
+        "       this file   : %s\n"
+        "       Nothing has been stored and no version was marked forked. Move the "
+        "export into the right flow's _inbox and run intake there."
+        % (flow, known.get("id"), fid))
+
+
 def canonical(node):
     """Strip the edits the DESIGNER makes on save, so a faithful paste hashes equal.
 
@@ -105,7 +153,39 @@ def canonical(node):
                 continue
             if k == "else" and v == {"actions": {}}:
                 continue
+            # Added 2026-09-11 00:10, after a faithful paste of v010 came back reporting
+            # FORKED with ZERO differing values -- the pull simply carried 27 keys more
+            # than what was pasted. Both are injected by the platform on EXPORT, never
+            # authored and never pasteable:
+            #
+            #   metadata.operationMetadataId   a designer GUID per action, regenerated
+            #                                  freely; it identifies the card, not the work
+            #   inputs.authentication          the APIM runtime binding, always the same
+            #                                  shape:
+            #     {"type": "Raw", "value":
+            #      "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))
+            #       ['$ConnectionKey']"}
+            #
+            # ⚠️ `authentication` is stripped ONLY in that exact platform shape. A
+            # hand-set authentication block is a real behavioural difference and must
+            # keep affecting the hash, so anything else falls through untouched.
+            if k == "operationMetadataId":
+                continue
+            if k == "authentication" and isinstance(v, dict) and v.get("type") == "Raw"                     and "X-MS-APIM-Tokens" in str(v.get("value", "")):
+                continue
             out[k] = canonical(v)
+        # metadata.tableId is the designer's copy of the Excel table it already names
+        # in inputs.parameters.table -- bookkeeping so the card can show a table name.
+        # Dropped ONLY when the two agree: if they ever disagree that is a real
+        # discrepancy and it must stay visible to the hash.
+        md, ins = out.get("metadata"), out.get("inputs")
+        if isinstance(md, dict) and "tableId" in md and isinstance(ins, dict):
+            if md["tableId"] == (ins.get("parameters") or {}).get("table"):
+                md = dict(md); md.pop("tableId")
+                out["metadata"] = md
+        # `metadata` whose only content was those ids is now empty and equally inert
+        if out.get("metadata") == {}:
+            out.pop("metadata")
         return out
     if isinstance(node, list):
         return [canonical(x) for x in node]
@@ -310,6 +390,11 @@ def cmd_snapshot(a):
     fp = fingerprint(doc)
     h = load_hist(a.flow)
     fold = flow_dir(a.flow)
+
+    # Before anything is stored or any state is changed: is this even the right flow?
+    # A hash mismatch and a wrong flow are indistinguishable by hash alone.
+    if not a.local:
+        check_identity(h, doc, a.flow)
 
     same = [v for v in h["versions"] if v["sha256"] == sha]
     if same and not a.local:
