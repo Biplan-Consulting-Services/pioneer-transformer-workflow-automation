@@ -1,0 +1,153 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$authentication": {
+      "defaultValue": {},
+      "type": "SecureObject"
+    },
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    }
+  },
+  "triggers": {
+    "Every_night_at_01_00_Eastern": {
+      "type": "Recurrence",
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1,
+        "timeZone": "Eastern Standard Time",
+        "schedule": {
+          "hours": [
+            "1"
+          ],
+          "minutes": [
+            0
+          ]
+        }
+      }
+    }
+  },
+  "actions": {
+    "A1_Get_delivery_candidates": {
+      "type": "OpenApiConnection",
+      "inputs": {
+        "parameters": {
+          "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+          "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+          "$filter": "ItemStatus eq 'Active' and Location eq 'Livraison' and DeliveryDate ne null",
+          "$top": 5000
+        },
+        "host": {
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+          "connectionName": "shared_sharepointonline",
+          "operationId": "GetItems"
+        }
+      },
+      "runtimeConfiguration": {
+        "paginationPolicy": {
+          "minimumItemCount": 5000
+        }
+      },
+      "runAfter": {}
+    },
+    "A2_For_each_delivery_candidate": {
+      "runAfter": {
+        "A1_Get_delivery_candidates": [
+          "Succeeded"
+        ]
+      },
+      "type": "Foreach",
+      "foreach": "@outputs('A1_Get_delivery_candidates')?['body/value']",
+      "runtimeConfiguration": {
+        "concurrency": {
+          "repetitions": 1
+        }
+      },
+      "actions": {
+        "A3_Delivery_date_is_not_in_the_future": {
+          "runAfter": {},
+          "type": "If",
+          "expression": {
+            "lessOrEquals": [
+              "@formatDateTime(items('A2_For_each_delivery_candidate')?['DeliveryDate'], 'yyyy-MM-dd')",
+              "@formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')"
+            ]
+          },
+          "actions": {
+            "A4_Mark_delivered": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                  "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                  "id": "@items('A2_For_each_delivery_candidate')?['ID']",
+                  "item/ItemStatus/Value": "Delivered",
+                  "item/DeliveryStatus/Value": "Completed"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "connectionName": "shared_sharepointonline",
+                  "operationId": "PatchItem"
+                }
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "A5_Held_back_future_delivery_date": {
+                "runAfter": {},
+                "type": "Compose",
+                "inputs": {
+                  "heldBack": "@items('A2_For_each_delivery_candidate')?['Title']",
+                  "deliveryDate": "@items('A2_For_each_delivery_candidate')?['DeliveryDate']",
+                  "reason": "Delivery date is in the future - Delivered would contradict it. Decide by hand."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "C1_Get_deletion_candidates_REPORT_ONLY": {
+      "type": "OpenApiConnection",
+      "inputs": {
+        "parameters": {
+          "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+          "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+          "$filter": "(ItemStatus eq 'Delivered' or ItemStatus eq 'Cancelled') and Modified lt '@{addDays(utcNow(), -30)}'",
+          "$top": 5000
+        },
+        "host": {
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+          "connectionName": "shared_sharepointonline",
+          "operationId": "GetItems"
+        }
+      },
+      "runtimeConfiguration": {
+        "paginationPolicy": {
+          "minimumItemCount": 5000
+        }
+      },
+      "runAfter": {
+        "A2_For_each_delivery_candidate": [
+          "Succeeded"
+        ]
+      }
+    },
+    "C2_Deletion_candidate_report": {
+      "runAfter": {
+        "C1_Get_deletion_candidates_REPORT_ONLY": [
+          "Succeeded"
+        ]
+      },
+      "type": "Compose",
+      "inputs": {
+        "graceDays": 30,
+        "candidateCount": "@length(outputs('C1_Get_deletion_candidates_REPORT_ONLY')?['body/value'])",
+        "note": "REPORT ONLY - nothing is deleted. Wiring the delete needs the Archive active.xlsx reconfirm plus the three open answers in archiving-plan.md."
+      }
+    }
+  }
+}

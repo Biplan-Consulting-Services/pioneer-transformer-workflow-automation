@@ -20,3 +20,11 @@ __pycache__/
 
 # handbook build output: regenerate with gen_handbook_docs.py + Convert-HandbookDocs.ps1
 dist/
+
+# Local backups taken before in-place workbook surgery (apply_bo_report_formatting.py).
+# Kept on disk, deliberately out of git: an LFS copy of a one-off pre-change snapshot is
+# not worth the storage. NOTE this means the .bak is the ONLY pre-change copy when the
+# workbook itself was untracked before the surgery - as BO Report.xlsx was on 2026-09-11.
+# Don't delete one until the changed workbook has been committed and eyeballed.
+*.xlsx.bak
+*.xlsm.bak

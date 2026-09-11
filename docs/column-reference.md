@@ -151,7 +151,7 @@ page that they do not exist.
 | `StepStatusStamped0` | Step Status Stamped | Text | — |
 | `Tank` | Tank | Boolean | same name |
 | `TankDeliveryDate` | Tank Delivery Date | DateTime | same name |
-| `TankingDateChangeJustification` | Tanking Date Change Justification | Note | `Tanking date change justification` |
+| `TankingDateChangeJustification` | Planning Notes | Note | `Tanking date change justification` |
 | `TankingDate` | Tanking End Date | DateTime | — |
 | `TankingStartDate` | Tanking Start Date | DateTime | — |
 | `TankingStatus` | Tanking Status | Choice | — |
