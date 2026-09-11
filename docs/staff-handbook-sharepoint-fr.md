@@ -43,7 +43,8 @@ vous y retrouver tout de suite, et il n'y a rien à choisir ni à régler avant.
 **Ensuite, faites-vous en un à vous.** `FRM10-12 Layout` contient tout, ce qui veut dire
 qu'il contient aussi beaucoup de choses que vous, personnellement, ne regardez jamais. Vous
 pouvez vous bâtir un affichage avec seulement les colonnes dont vous avez besoin, trié et
-regroupé comme vous pensez le travail, et il sera là chaque fois que vous ouvrez la liste.
+regroupé selon votre façon de travailler, et il sera là chaque fois que vous ouvrez la
+liste.
 
 🔑 **Venez le faire avec moi la première fois.** Ça prend deux minutes, et il y a un
 réglage qui vaut la peine d'être bien mis dès le départ : un affichage que vous créez est
