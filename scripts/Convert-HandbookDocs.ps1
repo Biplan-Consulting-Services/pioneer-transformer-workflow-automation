@@ -49,13 +49,15 @@ function Set-PageDiscipline {
     #>
     param($doc)
 
-    # no paragraph splits across a page boundary, anywhere
-    $doc.Content.ParagraphFormat.KeepTogether = $true
-    $doc.Content.ParagraphFormat.WidowControl = $true
-
-    # a heading stays with what follows it; 10 is wdOutlineLevelBodyText
+    # Per paragraph, not $doc.Content.ParagraphFormat in one go: setting it on a range
+    # that spans tables does not reliably reach the paragraphs inside them, and the
+    # first version of this left a body paragraph cut in half by a page break while
+    # reporting success.
     $kept = 0
     foreach ($p in $doc.Paragraphs) {
+        $p.KeepTogether = $true          # this paragraph is never split across pages
+        $p.WidowControl = $true
+        # a heading stays with what follows it; 10 is wdOutlineLevelBodyText
         if ($p.OutlineLevel -lt 10) { $p.KeepWithNext = $true; $kept++ }
     }
 
@@ -70,6 +72,24 @@ function Set-PageDiscipline {
 
 $html = Get-ChildItem -Path $DistPath -Filter '*.html' -File
 if (-not $html) { throw "No .html in $DistPath. Run gen_handbook_docs.py first." }
+
+# Check the targets are writable BEFORE opening Word. A PDF left open in Acrobat locks
+# the file, and the failure surfaces as a COM exception from SaveAs halfway through the
+# batch, having already overwritten the other document. Naming the offender costs a
+# millisecond and saves working out which of four files is the problem.
+$locked = @()
+foreach ($f in $html) {
+    foreach ($ext in '.docx', '.pdf') {
+        $t = Join-Path $DistPath ($f.BaseName + $ext)
+        if (Test-Path $t) {
+            try { [IO.File]::OpenWrite($t).Close() } catch { $locked += $t }
+        }
+    }
+}
+if ($locked) {
+    throw ("Close these before running, something has them open (Acrobat? Word?):" +
+           [Environment]::NewLine + ($locked -join [Environment]::NewLine))
+}
 
 $word = New-Object -ComObject Word.Application
 $word.Visible = $false
