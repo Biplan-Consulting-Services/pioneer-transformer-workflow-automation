@@ -23,8 +23,8 @@ is now a **read-only copy** that rebuilds itself from SharePoint, so open it and
 much as you like.
 
 **The data only travels one way, from SharePoint into the file.** Nothing typed into the
-file reaches SharePoint, and the next rebuild overwrites it. Make your changes in
-`Order Items`.
+file reaches SharePoint, and the next rebuild overwrites it. If you want to make changes,
+you need to make them in the SharePoint lists.
 
 ## Finding your work
 
