@@ -60,7 +60,7 @@
 */
 
 (async () => {
-  const APPLY = false;                     // <-- set true to actually convert
+  const APPLY = true;                     // <-- set true to actually convert
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const LIST  = "Order Items";
   const IDS = {
