@@ -672,7 +672,23 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
   - `ConvertValue` reads `if v = true then arg else null` — false cannot produce `False`
   - no column is double-mapped across entities (only `Client` is, legitimately)
 
-  ✅ **CAUSE FOUND 2026-09-11 05:1x, by the user, and it is not Power Query at all.**
+  ✅ **RESOLVED 2026-09-11 05:19. `verify_viewer.py` now reports all ten markers clean
+  and 3.2 passing.** The fix was to DELETE THE CELL CONTENTS of the six columns, which
+  removed the checkboxes, and then run the Office Script refresh so Power Query wrote
+  fresh values in.
+
+  That also identifies the real cause: the checkboxes were **cell-level controls bound
+  to those cells**, not a number format and nothing in the M. It explains every
+  confusing symptom at once — `Insert → Checkbox` did nothing (the control is not a
+  format you toggle off from there), openpyxl reported plain `General` on both groups
+  (it is not a numFmt), and the M provably could not emit `false` (it never did; the
+  control coerced the cell).
+
+  🔑 **It can come back.** A control lives in the sheet, not in the query, so a refresh
+  does not clear it and neither does redeploying the query. If those columns ever show
+  checkboxes again: clear the cells, then refresh. `verify_viewer.py` catches it.
+
+  ⚠️ Superseded reading, kept because the reasoning in it is still correct:
   Those six columns have Excel's native **Checkbox** cell format applied, and applying
   Checkbox to a range coerces every empty cell in it to `FALSE`. The four clean columns
   simply never had the format. My conclusion above — that it needed a step-by-step
