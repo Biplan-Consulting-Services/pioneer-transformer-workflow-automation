@@ -16,17 +16,17 @@ snapshotted here.**
 
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
-| **v001** | 2026-09-05 19:00 | `pulled` | — | baseline pre-P3 | 50 | 58 | 4 | 24 | `495e1552f955` |
-| **v002** | 2026-09-07 15:12 | `pulled` | — | P3 toLower applied | 50 | 58 | 28 | 0 | `8a429e9927d7` |
-| **v003** | 2026-09-07 16:06 | `superseded` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `5b81e86572be` |
-| **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `0af248fcb39c` |
-| **v005** | 2026-09-08 00:04 | `superseded` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `aeb5b533ff4c` |
-| **v006** | 2026-09-08 00:35 | `applied` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `2bd3af57c026` |
-| **v007** | 2026-09-09 02:19 | `applied` | v006 | v007 R22 RevModelDescription mapping correction | 122 | 130 | 34 | 0 | `0955ee64f177` |
-| **v008** | 2026-09-10 23:14 | `superseded` | v007 | v008 integer variables never null (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `3ca1af164050` |
-| **v009** | 2026-09-10 23:15 | `superseded` | v008 | v008 integer variables never null, -1 sentinel (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `b171ae2cb79a` |
-| **v010** | 2026-09-10 23:42 | `forked` | v009 | v010 RevModelDescription without select(), which is not a Power Automate function | 122 | 130 | 34 | 0 | `4dce3bd6b629` |
-| **v011** | 2026-09-11 00:09 | `pulled` | — | pasted from designer | 122 | 130 | 34 | 0 | `937a6cce2ed9` |
+| **v001** | 2026-09-05 19:00 | `pulled` | — | baseline pre-P3 | 50 | 58 | 4 | 24 | `73ba21820ea0` |
+| **v002** | 2026-09-07 15:12 | `pulled` | — | P3 toLower applied | 50 | 58 | 28 | 0 | `7daa19742737` |
+| **v003** | 2026-09-07 16:06 | `superseded` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `45e108a7b714` |
+| **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `b7c151e5e7c5` |
+| **v005** | 2026-09-08 00:04 | `superseded` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `cf2d974f7eaa` |
+| **v006** | 2026-09-08 00:35 | `applied` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `1fef6227c890` |
+| **v007** | 2026-09-09 02:19 | `applied` | v006 | v007 R22 RevModelDescription mapping correction | 122 | 130 | 34 | 0 | `c962d8bb8bf6` |
+| **v008** | 2026-09-10 23:14 | `superseded` | v007 | v008 integer variables never null (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `8bd7405cdee5` |
+| **v009** | 2026-09-10 23:15 | `superseded` | v008 | v008 integer variables never null, -1 sentinel (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `e7fc9651f860` |
+| **v010** | 2026-09-10 23:42 | `applied` | v009 | v010 RevModelDescription without select(), which is not a Power Automate function | 122 | 130 | 34 | 0 | `3cc4358fed17` |
+| **v011** | 2026-09-11 00:09 | `pulled` | — | pasted from designer | 122 | 130 | 34 | 0 | `3cc4358fed17` |
 
 ## Right now
 
