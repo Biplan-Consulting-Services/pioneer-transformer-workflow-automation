@@ -217,7 +217,7 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
 }
 </style>
 
-<script id="app-state" type="application/json">{"tick":{},"v":2}</script>
+<script id="app-state" type="application/json">{"tick":{"VIEWS2":true,"STATUSCOL":true,"PUBHB":true,"EMAILNOW":true,"LINKS":true,"EXP":true,"CLOSE":true,"REFRESH":true,"V007":true,"RUN":true,"VERIFY":true,"DIFF":true,"DELFLOW":true,"N8B":true},"v":2}</script>
 
 <div class="wrap">
 
@@ -228,26 +228,26 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
       settled — so the last night before cutover is spent running things, not re-deciding
       them.</p>
     <div class="meta">
-      <span><b>Cutover</b> Thursday 2026-09-10, evening</span>
+      <span><b>Cutover</b> ran overnight 2026-09-10 into 09-11</span>
       <span><b>Transfer flow</b> v006 live · v007 staged</span>
       <span><b>Order Items</b> 1,117 rows · 165 columns</span>
-      <span><b>Updated</b> 2026-09-09 evening</span>
+      <span><b>Updated</b> 2026-09-11 04:50</span>
     </div>
   </header>
 
   <div class="tally">
-    <div class="tal you"><div class="n">1</div><div class="l">Do this next</div></div>
-    <div class="tal ok"><div class="n">8</div><div class="l">Done, verified</div></div>
-    <div class="tal me"><div class="n">4</div><div class="l">Left before Thursday</div></div>
-    <div class="tal no"><div class="n">1</div><div class="l">Untested gate</div></div>
-    <div class="tal"><div class="n">4</div><div class="l">Rollbacks saved</div></div>
+    <div class="tal you"><div class="n">17</div><div class="l">Next: delete the two duplicate columns</div></div>
+    <div class="tal ok"><div class="n">14</div><div class="l">Steps done tonight</div></div>
+    <div class="tal me"><div class="n">20</div><div class="l">Steps left</div></div>
+    <div class="tal no"><div class="n">3</div><div class="l">Value differences, all understood</div></div>
+    <div class="tal"><div class="n">18,946</div><div class="l">Values verified against the workbook</div></div>
   </div>
 
   <!-- ============ WHO HOLDS WHAT ============ -->
   <section>
     <div class="shead">
       <h2>What is left to do</h2>
-      <span class="cnt">34 steps &middot; ticks save to this page</span>
+      <span class="cnt">35 steps &middot; ticks save to this page</span>
     </div>
     <p class="intro">In order. The ordering is load-bearing in five places and those are
       marked &#128308;. Everything below the next heading is finished: the four sync flows
@@ -262,7 +262,7 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
         <div class="it" data-id="FRLBL">
           <button class="box" aria-label="Mark done">&#10003;</button>
           <div><div class="t"><span class="id">1</span>Verify three French UI labels</div>
-            <div class="w">Open the classic view-settings page <b>in French</b> and confirm they read exactly &laquo;&nbsp;Regrouper par&nbsp;&raquo;, &laquo;&nbsp;R&eacute;duits&nbsp;&raquo; and &laquo;&nbsp;Limite d&rsquo;&eacute;l&eacute;ments&nbsp;&raquo;. Section 7 of the French handbook names them and they were reasoned, never read off the screen. Thirty seconds &mdash; and staff search for those exact words, so a wrong one makes them doubt the parts that are right.</div></div>
+            <div class="w">Open the classic view-settings page <b>in French</b> and confirm they read exactly &laquo;&nbsp;Regrouper par&nbsp;&raquo;, &laquo;&nbsp;R&eacute;duits&nbsp;&raquo; and &laquo;&nbsp;Limite d&rsquo;&eacute;l&eacute;ments&nbsp;&raquo;. Section 7 of the French handbook names them and they were reasoned, never read off the screen. Thirty seconds &mdash; and staff search for those exact words, so a wrong one makes them doubt the parts that are right.<br><b>&#9208; DEFERRED 2026-09-10 21:45</b>, minutes before publishing: fixing it would have meant redoing the Word layout that had just been done by hand. Low severity, the settings are findable by position. <b>Check it on site in Granby</b> &mdash; and check the prior question too, whether anyone here even sees SharePoint in French, since that is a per-user setting.</div></div>
         </div>
 
         <div class="it" data-id="VIEWS2">
@@ -280,7 +280,7 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
         <div class="it" data-id="DEFVIEW">
           <button class="box" aria-label="Mark done">&#10003;</button>
           <div><div class="t"><span class="id">4</span>Make <code>FRM10-12 Layout</code> the default view</div>
-            <div class="w">So nobody has to find it. The handbook now says the list <em>opens</em> there rather than telling people to go looking.<br>&#128308; <b>This changes what an export produces.</b> A SharePoint <em>Export to CSV</em> follows the <b>currently selected view</b>, not the list, so once Layout is the default every export defaults to <b>24 columns, active units only</b> instead of everything. Two steps tonight depend on that not happening: the Stage 1 re-export is the only data rollback, and step 14 is what the generator reads column types from. <b>Switch to <code>All Items</code> before every export and check the row count</b> &mdash; a view-shaped export looks entirely real until you count it, which has already happened once on this list (3 rows, 23 columns, from BO Tracking).</div></div>
+            <div class="w">So nobody has to find it. The handbook now says the list <em>opens</em> there rather than telling people to go looking.<br>&#128308; <b>This changes what an export produces.</b> A SharePoint <em>Export to CSV</em> follows the <b>currently selected view</b>, not the list, so once Layout is the default every export defaults to <b>24 columns, active units only</b> instead of everything. Two steps tonight depend on that not happening: the Stage 1 re-export is the only data rollback, and step 14 is what the generator reads column types from. <b>Switch to <code>All Items</code> before every export and check the row count</b> &mdash; a view-shaped export looks entirely real until you count it, which has already happened once on this list (3 rows, 23 columns, from BO Tracking).<br><b>&#9208; PARKED until after step 19&rsquo;s re-export</b>, deliberately: doing it now arms that trap for the rest of the night, and nothing tomorrow morning depends on it being default tonight.</div></div>
         </div>
 
         <div class="it" data-id="PUBHB">
@@ -443,6 +443,12 @@ footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:16px;
           <button class="box" aria-label="Mark done">&#10003;</button>
           <div><div class="t"><span class="id">27</span>Break permission inheritance on the deployed file</div>
             <div class="w">Staff <b>Read</b>, refresh operators <b>Edit</b>. A Power Query refresh has to save, so read-only-for-everyone breaks the very thing keeping FRM09 alive.</div></div>
+        </div>
+
+        <div class="it" data-id="RETIREOLD">
+          <button class="box" aria-label="Mark done">&#10003;</button>
+          <div><div class="t"><span class="id">27b</span>Retire the OLD staff workbook at <code>Revue/Formulaires/FRM10-12.xlsx</code></div>
+            <div class="w">&#128308; <b>Added 2026-09-11, and it is the quietest way this cutover still fails.</b> Step 27 secures the file the viewer is deployed <em>to</em>. The file staff actually worked in all along is the one a level down in <code>Formulaires/</code>, and nothing touches it: after cutover it is still there, still writable, and still what every bookmark, Recent Files entry and Teams link opens. Someone works in it for a day and none of it reaches SharePoint, with no symptom at all, because unlike the viewer it does not even feel different.<br><b>Rename it</b> (e.g. <code>FRM10-12 ARCHIVE 2026-09-10 (ne plus utiliser).xlsx</code>) so a stale bookmark fails loudly, <b>then set it read-only</b>. Safe once the <code>Index</code> row is repointed at step 26: nothing in the estate hardcodes a workbook path.</div></div>
         </div>
 
         <div class="it" data-id="FRM09">
