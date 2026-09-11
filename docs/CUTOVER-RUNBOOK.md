@@ -380,6 +380,21 @@ force it**.
 > 🔴 **Gate: nothing in this stage until every bulk write is finished.** The trigger flow
 > fires one run per row. X1's 1,141 stage-clears, X2's 66 rows, N8's 247 and the final run's
 > 1,117 would each fire per-row.
+>
+> ⚠️ **This gate and step 5.x contradict each other, found 2026-09-11 06:1x.**
+> `x5_backfill_order_folder.js` is a bulk write across roughly a thousand `Order Items`
+> rows, and it is scheduled AFTER the trigger flow is enabled — so on the page as written
+> it trips the very gate this paragraph sets. Nobody noticed because x5 had never been
+> run.
+>
+> **Do x5 one of two ways:**
+> - turn the trigger flow **off**, run x5, re-run the `StepStatusStamped = StepStatus`
+>   check from 4.1, then turn it back on — the check matters because x5's writes touch
+>   rows the auto-stamp watches; or
+> - leave x5 for daylight, when somebody can watch the run queue.
+>
+> Either is fine. Running it with the trigger live is not: a thousand rows is a thousand
+> runs, which is how this flow wedged against the capacity cap in the first place.
 
 **4.1 · Paste trigger `v002` and enable.** X3 (131 → 11 actions) plus the Status Date
 auto-stamp. Watch 15 minutes; **if any run passes ten minutes, turn it straight back off.**
