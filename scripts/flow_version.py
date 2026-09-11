@@ -179,6 +179,14 @@ def canonical(node):
             # alone marked a faithful paste FORKED.
             if k == "authentication" and v == "@parameters('$authentication')":
                 continue
+            # ⚠️ NOT stripped, and deliberately so: `recurrence`. The designer rewrote the
+            # trigger flow's polling interval from 1 to 5 minutes on save, 2026-09-11 --
+            # the user did not set it and could not find the field. So expect a paste of
+            # that flow to come back FORKED on this one key with nobody having caused it.
+            # It stays in the hash anyway: how often a flow polls is behaviour, and a
+            # silent change to it is exactly the kind of thing this scheme exists to
+            # surface. Read the fork report, confirm the interval is the only difference,
+            # move on.
             out[k] = canonical(v)
         # metadata.tableId is the designer's copy of the Excel table it already names
         # in inputs.parameters.table -- bookkeeping so the card can show a table name.
