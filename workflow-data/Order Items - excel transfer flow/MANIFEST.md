@@ -23,11 +23,13 @@ snapshotted here.**
 | **v005** | 2026-09-08 00:04 | `superseded` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `aeb5b533ff4c` |
 | **v006** | 2026-09-08 00:35 | `applied` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `2bd3af57c026` |
 | **v007** | 2026-09-09 02:19 | `applied` | v006 | v007 R22 RevModelDescription mapping correction | 122 | 130 | 34 | 0 | `0955ee64f177` |
+| **v008** | 2026-09-10 23:14 | `local` | v007 | v008 integer variables never null (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `3ca1af164050` |
+| **v009** | 2026-09-10 23:15 | `local` | v008 | v008 integer variables never null, -1 sentinel (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `b171ae2cb79a` |
 
 ## Right now
 
 - **Live:** v007 — v007 R22 RevModelDescription mapping correction
-- **Pending (authored, not applied):** none
+- **Pending (authored, not applied):** v008, v009
 
 ## Reading the columns
 

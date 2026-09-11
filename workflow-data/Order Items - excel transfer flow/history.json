@@ -159,6 +159,48 @@
       },
       "appliedAt": "2026-09-10T22:37:06-04:00",
       "source": "v007.json"
+    },
+    {
+      "v": 8,
+      "captured": "2026-09-10T23:14:22-04:00",
+      "state": "local",
+      "parent": 7,
+      "note": "v008 integer variables never null (ResetModelID BadRequest)",
+      "sha256": "3ca1af164050b8ff6583851f11c8fe06991f7f8f74b161dfac3769452561eee1",
+      "fingerprint": {
+        "toLower": 34,
+        "ecUpper": 0,
+        "actions": 11,
+        "CreateOrderItem": 122,
+        "UpdateOrderItem": 130,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v008__2026-09-10T23-14__local__v008-integer-variables-never-null-ResetModelID-B.json"
+      },
+      "appliedAt": null,
+      "source": "_v008-candidate.json"
+    },
+    {
+      "v": 9,
+      "captured": "2026-09-10T23:15:13-04:00",
+      "state": "local",
+      "parent": 8,
+      "note": "v008 integer variables never null, -1 sentinel (ResetModelID BadRequest)",
+      "sha256": "b171ae2cb79ad1d38f08ce73f2e8e50671b1f410d1b4e6f48d3bdf4266a0944d",
+      "fingerprint": {
+        "toLower": 34,
+        "ecUpper": 0,
+        "actions": 11,
+        "CreateOrderItem": 122,
+        "UpdateOrderItem": 130,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v009__2026-09-10T23-15__local__v008-integer-variables-never-null-1-sentinel-Res.json"
+      },
+      "appliedAt": null,
+      "source": "_v008-candidate.json"
     }
   ]
 }
