@@ -42,6 +42,17 @@ LANES = [
    "&#9888;&#65039; Three views now, not one: <code>FRM10-12 Layout</code>, "
    "<code>Completed</code> and <code>All</code>. Doing this before copying Layout would have "
    "been a single edit; worth remembering next time a view gets duplicated."),
+  ("DEFVIEW", "Make <code>FRM10-12 Layout</code> the default view",
+   "So nobody has to find it. The handbook now says the list <em>opens</em> there rather than "
+   "telling people to go looking.<br>"
+   "&#128308; <b>This changes what an export produces.</b> A SharePoint <em>Export to CSV</em> "
+   "follows the <b>currently selected view</b>, not the list, so once Layout is the default "
+   "every export defaults to <b>24 columns, active units only</b> instead of everything. Two "
+   "steps tonight depend on that not happening: the Stage 1 re-export is the only data "
+   "rollback, and step 14 is what the generator reads column types from. <b>Switch to "
+   "<code>All Items</code> before every export and check the row count</b> &mdash; a "
+   "view-shaped export looks entirely real until you count it, which has already happened "
+   "once on this list (3 rows, 23 columns, from BO Tracking)."),
   ("PUBHB", "Publish the handbook",
    "<code>staff-handbook-sharepoint.md</code> and <code>-fr.md</code> onto a SharePoint page. "
    "Depends on nothing, and the email needs its link &mdash; so it is the one staff-facing "
@@ -61,7 +72,11 @@ LANES = [
   ("EXP", "Re-export all four lists",
    "<code>Order Items</code>, <code>Order</code>, <code>Models</code>, "
    "<code>Model Revisions</code>. <b>This is the only data rollback</b>, and taking it now "
-   "rather than earlier is the whole point of it being step one."),
+   "rather than earlier is the whole point of it being step one. "
+   "&#128308; <b>Switch each list to <code>All Items</code> first.</b> An export follows the "
+   "selected view, and <code>FRM10-12 Layout</code> is the default now, so the obvious "
+   "gesture yields 24 columns and active units only. A rollback missing the delivered units "
+   "is not a rollback."),
   ("CLOSE", "Staff save and close FRM10-12",
    "&#128308; <b>Desktop Excel only.</b> A browser save corrupted this workbook on 09-09. "
    "Anything left unsaved never reaches SharePoint."),
@@ -102,7 +117,8 @@ LANES = [
    "Dry run first; expect <b>12</b> columns. It mirrors each parent&rsquo;s option list "
    "<em>and</em> its <code>FillInChoice</code>, so no value cleanup is needed first."),
   ("REEXP", "Re-export Order Items",
-   "&#128308; <b>Not optional.</b> The generator reads column types from this export to decide "
+   "&#128308; <b>Not optional, and from <code>All Items</code>.</b> The generator reads column "
+   "types from this export to decide "
    "<code>item/X/Value</code> against <code>item/X</code>. A stale export silently produces the "
    "wrong shape, and a plain key into a Choice column stops landing without reporting anything."),
   ("REGEN", "<code>gen_n3_flows.py</code>, then <code>verify_n3_flows.py</code>",

@@ -27,9 +27,9 @@ fait dans SharePoint.
 
 ## Trouver votre travail
 
-Ouvrez l'affichage **`FRM10-12 Layout`**. C'est la disposition du classeur : les mêmes
-colonnes, dans le même ordre que vous avez l'habitude, donc vous devriez vous y retrouver
-tout de suite. Commencez par là.
+La liste s'ouvre dans l'affichage **`FRM10-12 Layout`**, qui est la disposition du
+classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Vous devriez
+vous y retrouver tout de suite, et il n'y a rien à choisir ni à régler avant.
 
 **Ensuite, faites-vous en un à vous.** `FRM10-12 Layout` contient tout, ce qui veut dire
 qu'il contient aussi beaucoup de choses que vous, personnellement, ne regardez jamais. Vous

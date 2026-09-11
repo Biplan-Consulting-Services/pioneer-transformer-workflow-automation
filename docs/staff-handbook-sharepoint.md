@@ -29,9 +29,9 @@ much as you like. Anything you change goes in SharePoint.
 
 ## Finding your work
 
-Open the **`FRM10-12 Layout`** view (*affichage*). It is the workbook's layout: the same
-columns, in the same order you are used to, so you should find your way around it straight
-away. Start there.
+The list opens in the **`FRM10-12 Layout`** view (*affichage*), which is the workbook's
+layout: the same columns, in the same order you are used to. You should find your way
+around it straight away, and there is nothing to pick or set up first.
 
 **Then make one of your own.** `FRM10-12 Layout` has everything, which means it also has a
 lot you personally never look at. You can build a view with just the columns you need,
