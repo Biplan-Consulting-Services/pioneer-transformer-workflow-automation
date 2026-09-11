@@ -18,13 +18,13 @@ snapshotted here.**
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-10 10:27 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Model Revisions | — | — | 0 | 0 | `9661af8f0a85` |
 | **v002** | 2026-09-10 10:27 | `applied` | v001 | N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `f09199591995` |
-| **v003** | 2026-09-10 23:45 | `local` | v002 | v003 RevModelDescription without select() | — | — | 0 | 0 | `2f1e4fa77f9d` |
-| **v004** | 2026-09-11 04:20 | `local` | v002 | choice /Value after n4 conversion | — | — | 0 | 0 | `16493e38bec6` |
+| **v003** | 2026-09-10 23:45 | `forked` | v002 | v003 RevModelDescription without select() | — | — | 0 | 0 | `2f1e4fa77f9d` |
+| **v004** | 2026-09-11 04:20 | `applied` | v002 | choice /Value after n4 conversion | — | — | 0 | 0 | `16493e38bec6` |
 
 ## Right now
 
-- **Live:** v002 — N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001
-- **Pending (authored, not applied):** v003, v004
+- **Live:** v004 — choice /Value after n4 conversion
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 

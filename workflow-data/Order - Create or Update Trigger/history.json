@@ -87,7 +87,7 @@
     {
       "v": 5,
       "captured": "2026-09-11T04:20:05-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 4,
       "note": "choice /Value after n4 conversion",
       "sha256": "2f9a7a078835f3dc7d0b45983c1f865a84b15c261c2fcca8744cf0a89f985523",
@@ -98,10 +98,15 @@
         "excelFile": null
       },
       "files": {
-        "definition": "v005__2026-09-11T04-20__local__choice-Value-after-n4-conversion.json"
+        "definition": "v005__2026-09-11T04-20__local__choice-Value-after-n4-conversion.json",
+        "package": "v005__2026-09-11T04-20__local__choice-Value-after-n4-conversion.zip"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-11T04:27:17-04:00",
       "source": "n3-merged-Order_Items__sync_from_Order.json"
     }
-  ]
+  ],
+  "identity": {
+    "name": "1c612f28-31f0-37be-6776-6f6b4cac9d6a",
+    "id": "/providers/Microsoft.Flow/flows/1c612f28-31f0-37be-6776-6f6b4cac9d6a"
+  }
 }

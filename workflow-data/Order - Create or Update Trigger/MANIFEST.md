@@ -20,12 +20,12 @@ snapshotted here.**
 | **v002** | 2026-09-10 16:00 | `forked` | v001 | N3 Order_Items__sync_from_Order pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `607e60ccc34d` |
 | **v003** | 2026-09-10 16:06 | `applied` | v001 | v003: OrdOrderFolder read is the bare string, not ?['Url'] -- proven by Test C | — | — | 0 | 0 | `afa72602caeb` |
 | **v004** | 2026-09-10 17:42 | `pulled` | — | pulled after pasting v003 -- confirms what is live | — | — | 0 | 0 | `afa72602caeb` |
-| **v005** | 2026-09-11 04:20 | `local` | v004 | choice /Value after n4 conversion | — | — | 0 | 0 | `2f9a7a078835` |
+| **v005** | 2026-09-11 04:20 | `applied` | v004 | choice /Value after n4 conversion | — | — | 0 | 0 | `2f9a7a078835` |
 
 ## Right now
 
-- **Live:** v004 — pulled after pasting v003 -- confirms what is live
-- **Pending (authored, not applied):** v005
+- **Live:** v005 — choice /Value after n4 conversion
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 

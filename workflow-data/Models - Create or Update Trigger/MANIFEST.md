@@ -18,12 +18,12 @@ snapshotted here.**
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-10 02:17 | `pulled` | — | empty shell built in the designer 2026-09-10 -- trigger configured on Models, one throwaway Initialize_variable action. Baseline before the N3 definition is pasted in. | — | — | 0 | 0 | `63ae3b8a03ed` |
 | **v002** | 2026-09-10 02:18 | `applied` | v001 | N3 Order_Items__sync_from_Models pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `9fb78fa19f04` |
-| **v003** | 2026-09-11 04:20 | `local` | v002 | choice /Value after n4 conversion | — | — | 0 | 0 | `6f34e92cc95c` |
+| **v003** | 2026-09-11 04:20 | `applied` | v002 | choice /Value after n4 conversion | — | — | 0 | 0 | `6f34e92cc95c` |
 
 ## Right now
 
-- **Live:** v002 — N3 Order_Items__sync_from_Models pasted into the shell, connectionReferences kept from v001
-- **Pending (authored, not applied):** v003
+- **Live:** v003 — choice /Value after n4 conversion
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 

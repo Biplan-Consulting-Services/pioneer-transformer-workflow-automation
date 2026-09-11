@@ -47,7 +47,7 @@
     {
       "v": 3,
       "captured": "2026-09-10T23:45:02-04:00",
-      "state": "local",
+      "state": "forked",
       "parent": 2,
       "note": "v003 RevModelDescription without select()",
       "sha256": "2f1e4fa77f9df505eb62b5e715b769ac18aedb48208e629f44538ae1d28c04d1",
@@ -61,12 +61,13 @@
         "definition": "v003__2026-09-10T23-45__local__v003-RevModelDescription-without-select.json"
       },
       "appliedAt": null,
-      "source": "n3-merged-Order_Items__sync_from_Model_Revisions.json"
+      "source": "n3-merged-Order_Items__sync_from_Model_Revisions.json",
+      "forkedAt": "2026-09-11T04:27:17-04:00"
     },
     {
       "v": 4,
       "captured": "2026-09-11T04:20:05-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 2,
       "note": "choice /Value after n4 conversion",
       "sha256": "16493e38bec63b956b4eb4f4bb1f3f4286c93ac29018339effaf37c200286a99",
@@ -77,10 +78,15 @@
         "excelFile": null
       },
       "files": {
-        "definition": "v004__2026-09-11T04-20__local__choice-Value-after-n4-conversion.json"
+        "definition": "v004__2026-09-11T04-20__local__choice-Value-after-n4-conversion.json",
+        "package": "v004__2026-09-11T04-20__local__choice-Value-after-n4-conversion.zip"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-11T04:27:17-04:00",
       "source": "n3-merged-Order_Items__sync_from_Model_Revisions.json"
     }
-  ]
+  ],
+  "identity": {
+    "name": "4c32414e-4628-c5bf-9086-5de9ba6d54fb",
+    "id": "/providers/Microsoft.Flow/flows/4c32414e-4628-c5bf-9086-5de9ba6d54fb"
+  }
 }
