@@ -17,3 +17,6 @@ desktop.ini
 workflow-data/*raw output*.json
 __pycache__/
 *.pyc
+
+# handbook build output: regenerate with gen_handbook_docs.py + Convert-HandbookDocs.ps1
+dist/
