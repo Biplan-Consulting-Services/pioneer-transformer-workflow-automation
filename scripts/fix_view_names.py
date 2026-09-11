@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """Bring the guides in line with the views that actually exist.
 
+⚠️ ONE-SHOT, ALREADY APPLIED 2026-09-10. Do not re-run it. Its `BO Tracking`
+   description ("only units that have a BO") was WRONG and was corrected later the same
+   day: the view carries every unit and groups them by BO status. Re-running this would
+   put the wrong description back.
+
     python scripts/fix_view_names.py
 
 The views on `Order Items`, confirmed by the user 2026-09-10:

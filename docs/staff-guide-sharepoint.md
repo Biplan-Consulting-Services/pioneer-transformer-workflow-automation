@@ -55,7 +55,8 @@ All three FRM10-12 views have the same columns in the same order. Only the filte
 **`FRM10-12 All`** is the one to check when a unit seems to have vanished. Nine times out
 of ten it has simply been delivered and dropped out of `FRM10-12 Layout`.
 
-**`BO Tracking`** shows only units that have a back order.
+**`BO Tracking`** shows the same units grouped by BO status, so what is waiting on a
+part is together in one place.
 
 You will also see views colleagues have built for themselves. Opening one changes nothing
 for them, so look if it is useful. It is the same list either way.

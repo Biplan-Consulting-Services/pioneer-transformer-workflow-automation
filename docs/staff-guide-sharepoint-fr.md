@@ -59,7 +59,8 @@ change :
 **`FRM10-12 All`**, c'est celui à vérifier quand une unité a l'air d'avoir disparu. Neuf
 fois sur dix elle a simplement été livrée et est sortie de `FRM10-12 Layout`.
 
-**`BO Tracking`** montre seulement les unités qui ont un back order.
+**`BO Tracking`** montre les mêmes unités regroupées par statut de BO, pour avoir au même
+endroit tout ce qui attend une pièce.
 
 Vous verrez aussi des affichages que des collègues se sont bâtis. En ouvrir un ne change
 rien pour eux, alors regardez si ça vous sert. C'est la même liste de toute façon.

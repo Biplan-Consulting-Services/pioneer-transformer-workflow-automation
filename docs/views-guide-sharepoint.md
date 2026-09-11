@@ -47,7 +47,7 @@ The shared ones. The three FRM10-12 views are the same columns with a different 
 | **FRM10-12 Layout** | 24 | **Start here.** The workbook's layout: the same columns, in the same order you are used to. Sorted by planned delivery date. Active units only. |
 | **FRM10-12 Completed** | 24 | Same columns, delivered units only. |
 | **FRM10-12 All** | 24 | Same columns, no filter. **Check here first when a unit seems to be missing.** |
-| **BO Tracking** | 23 | Back-order tracking: only units that have a BO, grouped by BO, sorted by planned tanking date. |
+| **BO Tracking** | 23 | Every unit, **grouped by BO status**, so you see what is waiting on a part and what is not. |
 
 ### You'll see others, and that's fine
 
