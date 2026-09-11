@@ -434,9 +434,32 @@ the tenant yet, so the `_inbox`/`_outbox` loop does not apply. Build a shell wit
 trigger configured first (that is what binds the connection), then overwrite its definition.
 Full procedure, plus the one-row test rig: **`docs/n3-deploy-and-test.md`**.
 
-**4.3 · Retire the two TextField syncs.** `Model Revisions` and `Order` TextField syncs have
-been off since 2026-08-21 and N3 makes them redundant. One staff view still displays
-`Order_Number_TextField` — retire rather than revive, but check that view first.
+**4.3 · ❌ CANCELLED 2026-09-11 06:2x. DO NOT retire the TextField syncs.**
+
+The user: **the Power Apps use those mirrors to filter, link and sort.**
+
+Lookup columns are not delegable in Power Apps, and a text mirror is the standard way
+round it — which is why these exist. "N3 makes them redundant" was reasoning about
+*Power Query consumers*, where it is true and verified: no consumer query references
+`_TextField`, and the viewer explicitly drops `Order_Number_TextField` in favour of the
+live lookup. It is simply wrong about the apps, and nobody caught it because
+`power-apps/` here is an empty `.gitkeep` and the tenant is the only copy of them.
+
+🔴 **And this uncovers a live problem, not just a cancelled step.** Those syncs have been
+**off since 2026-08-21**, three weeks:
+
+- **`Order Items`' four mirrors are fine** — the create-or-update trigger flow writes
+  `Order_Number_TextField`, `Client_ID_TextField`, `Model_ID_TextField` and
+  `Model_Revision_ID_TextField`, and it has been live throughout.
+- **The parent lists' mirrors are not maintained by anything.** N3 is strictly parent →
+  child and writes nothing back. So any `Order`, `Models` or `Model Revisions` record
+  created or re-pointed since 08-21 carries a stale or empty mirror, and an app that
+  filters or sorts on it has been quietly wrong for three weeks.
+
+**Next action, in daylight:** measure the drift over REST per parent list — the lookup's
+real target against the mirror's stored value — then decide whether to revive the syncs
+or replace them with an N3-shaped flow that maintains a parent's own mirrors. Deciding
+that needs the apps exported first, which is its own overdue task.
 
 ---
 
