@@ -280,10 +280,19 @@ every value is well-formed. Stage 3 already sits after 2.5; keep it that way.
 > is also the silent failure: leave the row pointing at the staff workbook and FRM09 / FRM11
 > / FRM13 / BO Manager keep reading a file that has **stopped changing**, with no error.
 >
-> ⚠️ **There are two real files, not one.** The old `Revue/FRM10-12.xlsx` and a separate
-> `Revue/Formulaires/FRM10-12.xlsx` created 2026-08-28. The `Index` row currently resolves
-> to `Formulaires/`. So a wrong row does not error — it silently reads an abandoned
-> workbook. **This row has never actually been read.** Read it before and after.
+> ⚠️ **Believed to be two real files; it is one.** Checked 2026-09-11 05:2x, while taking
+> what was supposed to be the pre-deploy snapshot: **`Revue/FRM10-12.xlsx` does not
+> exist.** Only `Revue/Formulaires/FRM10-12.xlsx` is there, and the `Index` row resolves
+> to it.
+>
+> The "abandoned twin" was inferred from the 2026-09-04 move and never verified, and it
+> shaped a week of planning — it is why 3.4 warned about overwriting and why step 24
+> asked for a snapshot of something that was never there. One risk fewer: this deploy
+> creates a file and cannot destroy one.
+>
+> 🔴 **The hazard the twin stood in for is unchanged.** A wrong `Index` row does not
+> error; it silently reads a workbook that has stopped changing. Read the row before and
+> after regardless.
 
 **3.1 · Already done in 1.2.** The sync and the conversion checks happen *before* the run,
 because that is the last point at which a failure costs nothing. Re-refresh here so the
