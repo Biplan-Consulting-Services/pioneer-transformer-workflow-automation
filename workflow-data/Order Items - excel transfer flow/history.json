@@ -141,7 +141,7 @@
     {
       "v": 7,
       "captured": "2026-09-09T02:19:33-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 6,
       "note": "v007 R22 RevModelDescription mapping correction",
       "sha256": "0955ee64f17724e6d7ca263a7c34d2dc556373be77731ba56d50a08fb6919dd7",
@@ -154,9 +154,10 @@
         "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
       },
       "files": {
-        "definition": "v007__2026-09-09T02-19__local__v007-R22-RevModelDescription-mapping-correction.json"
+        "definition": "v007__2026-09-09T02-19__local__v007-R22-RevModelDescription-mapping-correction.json",
+        "package": "v007__2026-09-09T02-19__local__v007-R22-RevModelDescription-mapping-correction.zip"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-10T22:37:06-04:00",
       "source": "v007.json"
     }
   ]

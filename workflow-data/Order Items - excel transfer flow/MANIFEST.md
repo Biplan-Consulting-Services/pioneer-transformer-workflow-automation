@@ -16,18 +16,18 @@ snapshotted here.**
 
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
-| **v001** | 2026-09-05 19:00 | `pulled` | — | baseline pre-P3 | 50 | 58 | 4 | 24 | `9d27fc7069eb` |
-| **v002** | 2026-09-07 15:12 | `pulled` | — | P3 toLower applied | 50 | 58 | 28 | 0 | `121f21ea7b9d` |
-| **v003** | 2026-09-07 16:06 | `superseded` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `8c20b0184ad8` |
-| **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `9cbacfebd261` |
-| **v005** | 2026-09-08 00:04 | `superseded` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `f248c30bc06e` |
-| **v006** | 2026-09-08 00:35 | `applied` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `7da243951712` |
-| **v007** | 2026-09-09 02:19 | `local` | v006 | v007 R22 RevModelDescription mapping correction | 122 | 130 | 34 | 0 | `ee848873f252` |
+| **v001** | 2026-09-05 19:00 | `pulled` | — | baseline pre-P3 | 50 | 58 | 4 | 24 | `495e1552f955` |
+| **v002** | 2026-09-07 15:12 | `pulled` | — | P3 toLower applied | 50 | 58 | 28 | 0 | `8a429e9927d7` |
+| **v003** | 2026-09-07 16:06 | `superseded` | v002 | D1D2 six columns | 56 | 64 | 28 | 0 | `5b81e86572be` |
+| **v004** | 2026-09-07 17:19 | `applied` | v003 | D3 BO transfer | 75 | 83 | 34 | 0 | `0af248fcb39c` |
+| **v005** | 2026-09-08 00:04 | `superseded` | v004 | v005 Order-X columns populated | 93 | 101 | 34 | 0 | `aeb5b533ff4c` |
+| **v006** | 2026-09-08 00:35 | `applied` | v005 | v006 fetch-once + review fixes + Mdl-Rev columns | 122 | 130 | 34 | 0 | `2bd3af57c026` |
+| **v007** | 2026-09-09 02:19 | `applied` | v006 | v007 R22 RevModelDescription mapping correction | 122 | 130 | 34 | 0 | `0955ee64f177` |
 
 ## Right now
 
-- **Live:** v006 — v006 fetch-once + review fixes + Mdl-Rev columns
-- **Pending (authored, not applied):** v007
+- **Live:** v007 — v007 R22 RevModelDescription mapping correction
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 
