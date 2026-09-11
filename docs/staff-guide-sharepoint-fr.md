@@ -18,16 +18,12 @@
 > **Ne pas faire circuler avant que la migration soit terminée.** D'ici là,
 > `views-guide-sharepoint-fr.md` est ce qu'il faut dire au personnel.
 
-## Ce qui change
+## Ce qui arrive au fichier Excel
 
-FRM10-12 sort d'Excel et s'en va dans SharePoint. Vous mettez maintenant vos unités à jour
-directement dans une liste sur ce site, au lieu d'ouvrir le classeur. Plus besoin d'attendre
-que quelqu'un d'autre ferme le fichier, et plus de changements perdus.
-
-Le fichier Excel existe encore, et il a exactement la même allure, mêmes colonnes, même
-ordre, mêmes valeurs. C'est maintenant une **copie en lecture seule** qui se reconstruit
-toute seule à partir de SharePoint. Consultez-le tant que vous voulez. Vos changements, eux,
-se font dans SharePoint.
+Il est encore là, et il a exactement la même allure : mêmes colonnes, même ordre, mêmes
+valeurs. C'est maintenant une **copie en lecture seule** qui se reconstruit toute seule à
+partir de SharePoint, alors consultez-le tant que vous voulez. Ce que vous changez, ça se
+fait dans SharePoint.
 
 ## Trouver votre travail
 

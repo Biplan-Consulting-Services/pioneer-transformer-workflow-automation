@@ -21,15 +21,11 @@ better than guessing.
 
 # Part 1 · Doing the work
 
-## What changed
+## What happens to the Excel file
 
-FRM10-12 has moved out of Excel and into SharePoint. You now update your units directly in
-a list on this site, instead of opening the workbook. No more waiting for someone else to
-close the file, and no more lost changes.
-
-The Excel file still exists, and it still looks the same, same columns, same order, same
-values. It is now a **read-only copy** that rebuilds itself from SharePoint. Open it and
-read it as much as you like. Your changes go in SharePoint.
+It is still there, and it still looks the same: same columns, same order, same values. It
+is now a **read-only copy** that rebuilds itself from SharePoint, so open it and read it as
+much as you like. Anything you change goes in SharePoint.
 
 ## Finding your work
 
