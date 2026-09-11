@@ -31,7 +31,7 @@ valeurs. C'est maintenant une **copie en lecture seule** qui se reconstruit tout
 partir de SharePoint, alors consultez-le tant que vous voulez.
 
 **La donnée voyage dans un seul sens, de SharePoint vers le fichier.** Rien de ce qui est
-tapé dans le fichier ne se rend à SharePoint, et la prochaine reconstruction l'efface. Si
+tapé dans le fichier ne se rend à SharePoint, et le prochain rafraîchissement l'efface. Si
 vous voulez faire des changements, il faut les faire dans les listes SharePoint.
 
 ## Trouver votre travail
