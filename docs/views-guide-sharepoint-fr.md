@@ -98,17 +98,28 @@ section 6.
 
 ## 4. Les regroupements
 
-Quand un affichage est **regroupé par `Location`**, c'est-à-dire : l'étape de production :
-`Bobinage`, `Assemblage`, `Four`, `Finition`, `Livraison`, `Réparation`, `Entrepôt`, et les
-autres que vous connaissez déjà.
+Un affichage peut être **regroupé par une colonne**. La liste arrête alors d'être une longue
+suite de lignes : les unités qui ont la même valeur dans cette colonne sont rassemblées sous
+un titre, un titre par valeur.
 
-- Toutes les unités rendues à la même étape apparaissent ensemble, sous un même titre.
-- Le titre affiche le **nombre d'unités** dans le groupe. C'est votre charge de travail à cette
-  étape, d'un coup d'œil.
-- Cliquez sur la flèche du titre pour **replier** un groupe qui ne vous concerne pas. SharePoint
-  s'en souvient.
-- Si vous changez la `Location` d'une unité, elle **saute d'elle-même** dans son nouveau groupe.
-  Vous n'avez rien d'autre à faire.
+Peu importe la colonne :
+
+- Toutes les unités qui ont la même valeur apparaissent ensemble, sous un même titre.
+- Le titre affiche le **nombre d'unités** dans le groupe. C'est souvent ce compte-là que vous
+  vouliez savoir.
+- Cliquez sur la flèche du titre pour **replier** un groupe qui ne vous concerne pas.
+  SharePoint s'en souvient.
+- Si vous changez cette valeur sur une unité, elle **saute d'elle-même** dans son nouveau
+  groupe. Vous n'avez rien d'autre à faire.
+
+**Un exemple.** Regroupé par `Location`, c'est-à-dire : l'étape de production, vous avez un
+titre par étape : `Bobinage`, `Assemblage`, `Four`, `Finition`, `Livraison`, `Réparation`,
+`Entrepôt`, et les autres que vous connaissez déjà. Chaque titre compte les unités rendues à
+cette étape, donc la liste repliée se lit comme la charge de l'usine. Passez une unité de
+`Bobinage` à `Assemblage` et elle quitte un groupe et apparaît dans l'autre toute seule.
+
+Regroupez plutôt par `Client` et la même liste devient un titre par client. Mêmes unités,
+mêmes données, une autre question posée.
 
 ## 5. Trier et filtrer sans rien briser
 

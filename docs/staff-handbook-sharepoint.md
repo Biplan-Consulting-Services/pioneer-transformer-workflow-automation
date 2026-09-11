@@ -208,16 +208,27 @@ differently, **in your copy**, without touching the original. See section 6.
 
 ## 4. Grouping
 
-Where a view is **grouped by `Location`**, that is: the production step: `Bobinage`,
-`Assemblage`, `Four`, `Finition`, `Livraison`, `Réparation`, `Entrepôt`, and the others you
-already know.
+A view can be **grouped by a column**. The list then stops being one long run of rows: units
+that share the same value in that column are gathered under a heading, one heading per value.
 
-- Every unit at the same step appears together, under one heading.
-- The heading shows the **number of units** in the group. That's your workload at that step, at
-  a glance.
-- Click the arrow on a heading to **collapse** a group you don't care about. SharePoint remembers
-  it.
-- If you change a unit's `Location`, it **jumps to its new group by itself**. Nothing else to do.
+Whatever column it is grouped by:
+
+- Every unit with the same value appears together, under one heading.
+- The heading shows the **number of units** in the group. That count is usually the thing
+  you actually wanted to know.
+- Click the arrow on a heading to **collapse** a group you don't care about. SharePoint
+  remembers it.
+- If you change that value on a unit, it **jumps to its new group by itself**. Nothing else
+  to do.
+
+**An example.** Grouped by `Location`, that is: the production step, you get one heading per
+step: `Bobinage`, `Assemblage`, `Four`, `Finition`, `Livraison`, `Réparation`, `Entrepôt`, and
+the others you already know. Each heading counts the units sitting at that step, so the
+collapsed list reads as the workload of the shop. Move a unit from `Bobinage` to `Assemblage`
+and it leaves the one group and appears in the other on its own.
+
+Group by `Client` instead and the same list becomes one heading per client. Same units, same
+data, different question being asked of it.
 
 ## 5. Sorting and filtering without breaking anything
 
