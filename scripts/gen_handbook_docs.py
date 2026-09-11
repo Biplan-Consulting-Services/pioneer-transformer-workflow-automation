@@ -56,6 +56,7 @@ blockquote { margin: 0 0 10pt 0; padding: 7pt 10pt; background: #f4f7fa;
              border-left: 3pt solid #14507f; }
 hr { border: 0; border-top: 0.75pt solid #c8d6e0; margin: 16pt 0; }
 .sub { color: #4a6076; font-size: 10.5pt; margin: 0 0 16pt 0; }
+h2.part { page-break-before: always; }
 """
 
 CFG = [
@@ -68,12 +69,31 @@ CFG = [
 ]
 
 
+def part_breaks(body):
+    """Start each Part on its own page.
+
+    md() shifts every heading down one level, so the three `#` headings of a handbook
+    (the title, Part 1, Part 2) all arrive as `<h2>`. The first is the title and stays
+    where it is; the rest open a page. The `---` rule that precedes each Part goes with
+    it, otherwise it is left dangling alone at the foot of the previous page.
+    """
+    bits = body.split("<h2>")
+    if len(bits) < 3:
+        return body
+    out = [bits[0], "<h2>" + bits[1]]
+    for b in bits[2:]:
+        out.append('<h2 class="part">' + b)
+    body = "".join(out)
+    return body.replace('<hr>\n<h2 class="part">', '<h2 class="part">')
+
+
 def main():
     if not os.path.isdir(DIST):
         os.makedirs(DIST)
     for c in CFG:
         text = io.open(os.path.join(DOCS, c["src"]), encoding="utf-8").read()
         body = md(text)
+        body = part_breaks(body)
         # the subtitle goes under the H1, which md() emits first
         head, sep, rest = body.partition("</h2>")
         # md() shifts headings down one level, so the document title arrives as <h2>

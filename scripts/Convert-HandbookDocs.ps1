@@ -33,6 +33,41 @@ $wdExportAllDocument   = 0
 $wdExportDocumentContent = 0
 $wdExportCreateHeadingBookmarks = 1
 
+function Set-PageDiscipline {
+    <#
+      Stop headings and tables being cut in half by a page boundary.
+
+      This has to happen HERE, on the imported document, not in the CSS. Word's HTML
+      import accepts `page-break-before` but silently discards `page-break-after: avoid`,
+      so a heading lands at the foot of a page with everything it introduces overleaf.
+      The CSS still carries the rule for anyone opening the .html directly in a browser;
+      Word gets it as real paragraph properties.
+
+      OutlineLevel is the locale-independent way to find a heading. Style names are not:
+      this machine's Word is English, but the FR document is equally likely to be opened
+      in a French install where the style reads "Titre 2".
+    #>
+    param($doc)
+
+    # no paragraph splits across a page boundary, anywhere
+    $doc.Content.ParagraphFormat.KeepTogether = $true
+    $doc.Content.ParagraphFormat.WidowControl = $true
+
+    # a heading stays with what follows it; 10 is wdOutlineLevelBodyText
+    $kept = 0
+    foreach ($p in $doc.Paragraphs) {
+        if ($p.OutlineLevel -lt 10) { $p.KeepWithNext = $true; $kept++ }
+    }
+
+    # tables: no row split, and the header row repeats if a long one does span pages
+    foreach ($t in $doc.Tables) {
+        $t.Rows.AllowBreakAcrossPages = $false
+        if ($t.Rows.Count -gt 0) { $t.Rows.Item(1).HeadingFormat = $true }
+    }
+
+    return $kept
+}
+
 $html = Get-ChildItem -Path $DistPath -Filter '*.html' -File
 if (-not $html) { throw "No .html in $DistPath. Run gen_handbook_docs.py first." }
 
@@ -46,15 +81,18 @@ try {
         $docx = "$base.docx"
         $pdf  = "$base.pdf"
 
-        $doc = $word.Documents.Open($f.FullName, $false, $true)   # ConfirmConversions, ReadOnly
+        # not ReadOnly: Set-PageDiscipline edits the document. The .html is never written
+        # back, because Close below passes SaveChanges = false.
+        $doc = $word.Documents.Open($f.FullName, $false, $false)
         try {
+            $kept = Set-PageDiscipline $doc
             $doc.SaveAs([ref]$docx, [ref]$wdFormatXMLDocument)
             $doc.ExportAsFixedFormat($pdf, $wdExportFormatPDF, $false,
                                      $wdExportOptimizeForPrint, $wdExportAllDocument,
                                      1, 1, $wdExportDocumentContent, $true, $true,
                                      $wdExportCreateHeadingBookmarks)
             $pages = $doc.ComputeStatistics(2)                    # wdStatisticPages
-            "{0,-52} {1,2} pages -> .docx + .pdf" -f $f.BaseName, $pages
+            "{0,-52} {1,2} pages, {2,3} headings kept with their text" -f $f.BaseName, $pages, $kept
         }
         finally {
             $doc.Close([ref]$false)
