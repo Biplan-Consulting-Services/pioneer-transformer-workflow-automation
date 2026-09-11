@@ -184,9 +184,16 @@ different filter on each:
 | **FRM10-12 Completed** | Delivered units only. |
 | **FRM10-12 All** | No filter. **Check here first when a unit seems to be missing.** |
 
-**`BO Tracking`** is a different thing, not a fourth FRM10-12 view. It has every unit too,
-but its own 23 columns, and it is **grouped by BO status** so that what is waiting on a
-part and what is not sit side by side.
+### BO Tracking
+
+`BO Tracking` is for following the parts that are on back order.
+
+It holds every unit, like the others do, but it shows **23 columns chosen around back
+orders** instead of the workbook layout, and it is **grouped by BO status**. So all the
+units waiting on the same thing come up together, with a count on the heading, and the
+units waiting on nothing are in their own group out of the way.
+
+Open it when the question is "what is held up, and on what".
 
 ### You'll see others, and that's fine
 

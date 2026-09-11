@@ -70,9 +70,17 @@ filtre différent sur chacun :
 | **FRM10-12 Completed** | Les unités livrées seulement. |
 | **FRM10-12 All** | Sans filtre. **À vérifier en premier quand une unité semble manquer.** |
 
-**`BO Tracking`**, c'est autre chose, pas un quatrième affichage FRM10-12. Il contient
-toutes les unités lui aussi, mais avec ses propres 23 colonnes, et il est **regroupé par
-statut de BO** pour que ce qui attend une pièce et ce qui n'attend pas soient côte à côte.
+### BO Tracking
+
+`BO Tracking` sert à suivre les pièces en rupture (*back order*).
+
+Il contient toutes les unités, comme les autres, mais il montre **23 colonnes choisies
+autour des back orders** plutôt que la disposition du classeur, et il est **regroupé par
+statut de BO**. Les unités qui attendent la même chose se retrouvent donc ensemble, avec
+le compte sur la rubrique, et celles qui n'attendent rien sont dans leur propre groupe,
+tassées de côté.
+
+Ouvrez-le quand la question est « qu'est-ce qui est bloqué, et sur quoi ».
 
 ### Vous allez en voir d'autres, et c'est normal
 
