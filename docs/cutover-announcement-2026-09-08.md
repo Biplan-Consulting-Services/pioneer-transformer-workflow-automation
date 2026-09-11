@@ -84,7 +84,8 @@ Venez me voir tout de suite, sur Teams ou à **soleil.anker@ermco-eci.com**. Mie
 question deux minutes que de saisir au mauvais endroit toute la journée.
 
 **Je serai sur place à Granby demain et au début de la semaine prochaine.** Arrêtez-moi
-quand vous me voyez passer : on peut regarder ça ensemble directement à votre poste.
+quand vous me voyez passer, ou écrivez-moi et j'irai vous rejoindre à votre poste. C'est
+souvent plus rapide de regarder ça ensemble devant l'écran.
 
 Merci à tous,
 Soleil Anker-Baril
@@ -162,7 +163,8 @@ Come and find me straight away, on Teams or at **soleil.anker@ermco-eci.com**. T
 asking beats a whole day of entering things in the wrong place.
 
 **I will be on site in Granby tomorrow and at the start of next week.** Stop me when you
-see me going by: we can look at it together right at your workstation.
+see me going by, or send me a message and I will come to you. It is usually quicker to
+look at it together in front of the screen.
 
 Thanks everyone,
 Soleil Anker-Baril
