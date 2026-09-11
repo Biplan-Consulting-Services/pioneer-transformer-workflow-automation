@@ -650,6 +650,32 @@ correctness problem for shift times, not only a cosmetic one for dates.
 Each of these was consciously cut from the overnight window, not overlooked. Full context in
 `archive/cutover-runbook-2026-09-01.md`.
 
+- **Six viewer marker columns render `False` where the workbook shows blank** (found
+  2026-09-11 05:0x by `scripts/verify_viewer.py`, immediately after the 3.2 refresh).
+
+  | column group | false rows render as |
+  |---|---|
+  | `Tank` · `ISO Stack` · `ISO Coil` · `Lead Assembly` | blank ✓ |
+  | `Temperature Rise` · `Impulse` · `Partial D` · `Oil Analysis` · `DB` · `SFRA` | **boolean `False`** ✗ |
+
+  Confirmed at cell level: the first group holds `None`, the second holds a real boolean
+  `False` on ~1,060 rows each.
+
+  **Not a deploy blocker, and that was checked rather than assumed:** no consumer query
+  in `power-query/` references any of the six. FRM11 — the strictest consumer — reads ten
+  columns by literal string and none of them is in this set. The cost is cosmetic, to
+  staff reading the read-only workbook, on columns with 4/4/3/2/6/3 real values.
+
+  **What has been ruled out**, so nobody re-walks it:
+  - all ten markers carry an identical `ValueConversions` row (`marker`, with `R`/`x`/`Y`)
+  - all ten are `Type = "text"` in `ColumnMap`, so the retype is not the difference
+  - `ConvertValue` reads `if v = true then arg else null` — false cannot produce `False`
+  - no column is double-mapped across entities (only `Client` is, legitimately)
+
+  So the difference is not in any file in the repo, which means it needs Power Query's
+  own step-by-step preview on `#"Applied Order Items Column Map"` — compare `Tank` and
+  `Temperature Rise` side by side at that step and the divergence will be visible.
+
 - **`n8_split_status.js` creates duplicate columns on every re-run** (found 2026-09-11
   04:2x, during the cutover). Its header says column creation "skips what exists". It does
   not: it POSTs the field and reports whatever comes back, so the mandatory 2.5 re-run
