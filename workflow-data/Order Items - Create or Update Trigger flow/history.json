@@ -29,7 +29,7 @@
     {
       "v": 2,
       "captured": "2026-09-09T00:48:58-04:00",
-      "state": "local",
+      "state": "forked",
       "parent": 1,
       "note": "X3 strip 2c stage-stamping + Status Date auto-stamp",
       "sha256": "fd34a013378fccaccbb90f2a0250d4b3674b711d69bf32a12896225ea8f6822e",
@@ -43,7 +43,32 @@
         "definition": "v002__2026-09-09T00-48__local__X3-strip-2c-stage-stamping-Status-Date-auto-stam.json"
       },
       "appliedAt": null,
-      "source": "trigger_v002.json"
+      "source": "trigger_v002.json",
+      "forkedAt": "2026-09-11T06:00:33-04:00"
+    },
+    {
+      "v": 3,
+      "captured": "2026-09-11T06:00:33-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "pasted from designer",
+      "sha256": "8952f0112e1b3a7bea634c729dd281b3108cfca9005c0172d493dd57d5d8c7a0",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 7,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v003__2026-09-11T06-00__pulled__pasted-from-designer.json",
+        "package": "v003__2026-09-11T06-00__pulled__pasted-from-designer.zip"
+      },
+      "appliedAt": "2026-09-11T06:00:33-04:00",
+      "source": "OrderItems-CreateorUpdateTrigger_20260911100018.zip"
     }
-  ]
+  ],
+  "identity": {
+    "name": "6946f120-3d5f-07f8-9e88-a51f92bf1d4f",
+    "id": "/providers/Microsoft.Flow/flows/6946f120-3d5f-07f8-9e88-a51f92bf1d4f"
+  }
 }

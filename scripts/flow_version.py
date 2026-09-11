@@ -173,6 +173,12 @@ def canonical(node):
                 continue
             if k == "authentication" and isinstance(v, dict) and v.get("type") == "Raw"                     and "X-MS-APIM-Tokens" in str(v.get("value", "")):
                 continue
+            # The SECOND platform form of the same thing, found 2026-09-11 06:0x on the
+            # trigger flow: a bare "@parameters('$authentication')" string rather than the
+            # Raw/APIM record. Same story -- injected on export, not authorable, and it
+            # alone marked a faithful paste FORKED.
+            if k == "authentication" and v == "@parameters('$authentication')":
+                continue
             out[k] = canonical(v)
         # metadata.tableId is the designer's copy of the Excel table it already names
         # in inputs.parameters.table -- bookkeeping so the card can show a table name.

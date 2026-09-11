@@ -16,13 +16,14 @@ snapshotted here.**
 
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
-| **v001** | 2026-09-09 00:36 | `pulled` | — | baseline pulled from tenant, pre Status Date auto-stamp | — | — | 0 | 0 | `d38cf4505295` |
-| **v002** | 2026-09-09 00:48 | `local` | v001 | X3 strip 2c stage-stamping + Status Date auto-stamp | — | — | 0 | 0 | `dbf100618e75` |
+| **v001** | 2026-09-09 00:36 | `pulled` | — | baseline pulled from tenant, pre Status Date auto-stamp | — | — | 0 | 0 | `a95717bc9d7f` |
+| **v002** | 2026-09-09 00:48 | `forked` | v001 | X3 strip 2c stage-stamping + Status Date auto-stamp | — | — | 0 | 0 | `fd34a013378f` |
+| **v003** | 2026-09-11 06:00 | `pulled` | — | pasted from designer | — | — | 0 | 0 | `8952f0112e1b` |
 
 ## Right now
 
-- **Live:** v001 — baseline pulled from tenant, pre Status Date auto-stamp
-- **Pending (authored, not applied):** v002
+- **Live:** v003 — pasted from designer
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 
