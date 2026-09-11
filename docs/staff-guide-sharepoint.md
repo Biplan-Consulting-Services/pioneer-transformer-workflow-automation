@@ -18,9 +18,9 @@
 
 ## What changed
 
-Production tracking has moved out of the FRM10-12 Excel file and into SharePoint. You now
-update your units directly in a list on this site, instead of opening the workbook. That
-means no more waiting for someone else to close the file, and no more lost changes.
+FRM10-12 has moved out of Excel and into SharePoint. You now update your units directly in
+a list on this site, instead of opening the workbook. No more waiting for someone else to
+close the file, and no more lost changes.
 
 The Excel file still exists, and it still looks the same, same columns, same order, same
 values. It is now a **read-only copy** that rebuilds itself from SharePoint. Open it and

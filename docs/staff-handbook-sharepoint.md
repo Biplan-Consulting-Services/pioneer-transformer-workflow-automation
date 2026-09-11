@@ -1,10 +1,11 @@
 # Order Items in SharePoint: staff handbook
 
-Everything you need for day-to-day unit tracking now that production tracking has
-moved out of FRM10-12. Two parts: **doing the work**, then **the views** you do it in.
+FRM10-12 has moved out of Excel and into SharePoint. This is everything you need
+to work in it. Two parts: **doing the work**, then **the views** you do it in.
 
-Questions, anything that looks wrong, anything at all: **Soleil Anker-Baril**, on Teams
-or at soleil.anker@ermco-eci.com. Asking is always better than guessing.
+If you have questions or see anything wrong, you can contact
+**Soleil Anker-Baril** on Teams or at soleil.anker@ermco-eci.com. Asking is always
+better than guessing.
 
 ---
 
@@ -12,9 +13,9 @@ or at soleil.anker@ermco-eci.com. Asking is always better than guessing.
 
 ## What changed
 
-Production tracking has moved out of the FRM10-12 Excel file and into SharePoint. You now
-update your units directly in a list on this site, instead of opening the workbook. That
-means no more waiting for someone else to close the file, and no more lost changes.
+FRM10-12 has moved out of Excel and into SharePoint. You now update your units directly in
+a list on this site, instead of opening the workbook. No more waiting for someone else to
+close the file, and no more lost changes.
 
 The Excel file still exists, and it still looks the same, same columns, same order, same
 values. It is now a **read-only copy** that rebuilds itself from SharePoint. Open it and

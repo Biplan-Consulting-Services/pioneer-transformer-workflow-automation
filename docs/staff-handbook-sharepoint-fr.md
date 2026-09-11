@@ -1,11 +1,12 @@
 # Order Items dans SharePoint : guide du personnel
 
-Tout ce qu'il faut pour le suivi des unités au quotidien, maintenant que le suivi de
-production sort de FRM10-12. Deux parties : **faire le travail**, puis **les affichages**
-dans lesquels vous le faites.
+FRM10-12 sort d'Excel et s'en va dans SharePoint. Voici tout ce qu'il faut pour y
+travailler. Deux parties : **faire le travail**, puis **les affichages** dans
+lesquels vous le faites.
 
-Une question, quelque chose qui cloche, n'importe quoi : **Soleil Anker-Baril**, sur Teams
-ou à soleil.anker@ermco-eci.com. Demander vaut toujours mieux que deviner.
+Si vous avez des questions ou si vous voyez quelque chose d'anormal, vous pouvez
+contacter **Soleil Anker-Baril** sur Teams ou à soleil.anker@ermco-eci.com.
+Demander vaut toujours mieux que deviner.
 
 ---
 
@@ -13,10 +14,9 @@ ou à soleil.anker@ermco-eci.com. Demander vaut toujours mieux que deviner.
 
 ## Ce qui change
 
-Le suivi de production sort du fichier Excel FRM10-12 et s'en vient dans SharePoint. Vous
-mettez maintenant vos unités à jour directement dans une liste sur ce site, au lieu d'ouvrir
-le classeur. Plus besoin d'attendre que quelqu'un d'autre ferme le fichier, et plus de
-changements perdus.
+FRM10-12 sort d'Excel et s'en va dans SharePoint. Vous mettez maintenant vos unités à jour
+directement dans une liste sur ce site, au lieu d'ouvrir le classeur. Plus besoin d'attendre
+que quelqu'un d'autre ferme le fichier, et plus de changements perdus.
 
 Le fichier Excel existe encore, et il a exactement la même allure, mêmes colonnes, même
 ordre, mêmes valeurs. C'est maintenant une **copie en lecture seule** qui se reconstruit
