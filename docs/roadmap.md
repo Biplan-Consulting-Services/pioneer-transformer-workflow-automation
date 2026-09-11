@@ -821,6 +821,59 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
   definition — depopulated, not deleted, despite `FRM10-12/CONTEXT.md` saying it was dropped.
   Cosmetic, but it makes column-count audits confusing.
 
+## 🔴 FIRST daylight job — the trigger flow fails on 203 units, and is OFF because of it
+
+Found 2026-09-11 07:1x, minutes after enabling it. **The flow is currently disabled.**
+
+    WorkflowOperationParametersRuntimeMissingValue
+    'Get_Model' ... 'id' may not be null or empty
+
+`Get_Client` and `Get_Model` read the lookup id straight off the trigger row with no
+guard:
+
+    Get_Client   id = @triggerBody()?['Client/Id']
+    Get_Model    id = @triggerBody()?['Model/Id']
+    Condition    runAfter = Get_Model [Succeeded]
+
+**203 of 1,189 units have no Client, Model or Model Revision** — the same 203 rows in all
+three. Editing one fails the flow at `Get_Client`, and because `Condition` runs only on
+`Get_Model [Succeeded]`, everything downstream is skipped **including the `Status Date`
+auto-stamp**. About 17% of units would silently stop stamping.
+
+⚠️ **This predates v002.** `Get_Client` and `Get_Model` are v001 survivors. What changed
+is that the auto-stamp now depends on them, turning a dormant weakness into a
+user-visible one. The 2026-09-10 tests missed it because they ran on units that have a
+model — which is most of them.
+
+### The fix: the stamp has no business depending on Client or Model
+
+Two changes, and the second is the real one:
+
+1. **Guard both gets.** Wrap each in a condition on
+   `not(empty(triggerBody()?['Client/Id']))` / `['Model/Id']`, and have `Condition`
+   coalesce the skipped case so it compares equal and requests no update:
+   `coalesce(outputs('Get_Client')?['body/Client_ID'], triggerBody()?['Client_ID_TextField'])`.
+   Downstream `runAfter` then needs `Succeeded` **and** `Skipped`.
+
+2. **Decouple the stamp.** `Condition_StatusDate` needs only `Step Status` and
+   `Step Status Stamped`, both on the trigger row. Run it directly off the trigger rather
+   than downstream of the two gets, so a unit with no model still gets its date. This is
+   what makes the flow correct rather than merely not-failing.
+
+### Before turning it back on
+
+- Re-run the `StepStatusStamped = StepStatus` check. It was 262/262 at 05:55 and nothing
+  should have moved it, but it is the gate that stops 246 historical dates being
+  re-stamped to today.
+- Test on a unit that **has no model** — one of the 203 — not on a healthy one. That is
+  the case that broke it, and testing the happy path is how it got here.
+
+### While it is off
+
+Nothing maintains `Order Items`' four `_TextField` mirrors. Confirmed acceptable with the
+user 2026-09-11: those four are not used by anything yet. The **parent** mirrors are a
+different matter and have their own item below.
+
 ## Future work — maintain the parent `_TextField` mirrors from the N3 flows
 
 Raised by the user 2026-09-11 06:3x, after 4.3 was cancelled.
