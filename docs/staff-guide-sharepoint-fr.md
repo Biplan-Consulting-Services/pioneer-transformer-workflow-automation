@@ -92,7 +92,7 @@ n'est plus une convention à retenir.
 | du texte libre dans **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | une **liste déroulante** |
 | un code comme `TE-Se-4` dans **Status** | deux champs : **Step Status** (choisir l'étape) et **Status Date** (choisir la date) |
 
-Quelques choses à savoir :
+Quelques points à savoir :
 
 - **Décochée veut dire « non ».** Il n'y a pas de troisième option pour « pas encore
   décidé ». Si vous avez besoin de cette option-là, venez me voir.
