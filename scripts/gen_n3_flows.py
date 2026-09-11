@@ -44,7 +44,7 @@ READ SHAPES -- this is the R22 lesson encoded
                                                                which is what put
                                                                110 chars of JSON
                                                                into 979 rows
-  multichoice  join(select(...,item()?['Value']), '; ')
+  multichoice  first(...)?['Value']                        <- NOT select(): see below
 """
 import json, io, os, collections
 
@@ -228,19 +228,32 @@ def read_expr(src, kind):
         # talks to REST, not to the connector.
         return b
     if kind == "multichoice":
-        # Keep only the Values and join them -- NEVER store the raw array. A
-        # MultiChoice source arrives as [{"Value":"MALT"},...]; string() on that
-        # serialises the whole array, which is exactly the 110-character blob
-        # R22 put on 979 rows.
+        # Keep only the Value -- NEVER store the raw array. A MultiChoice source
+        # arrives as [{"Value":"MALT"},...]; string() on that serialises the whole
+        # array, which is exactly the 110-character blob R22 put on 979 rows.
         #
-        # coalesce INSIDE select() as well as in the guard, on purpose:
-        # Power Automate's if() evaluates BOTH branches rather than
-        # short-circuiting, so select(null, ...) can throw even when the guard
-        # is true. Coalescing both places is correct either way and costs
-        # nothing.
+        # 🔴 NOT select(). `select` is a Data Operation ACTION, not a template
+        # function -- there is no select() in the expression language at all. The
+        # version of this that used one was written 2026-09-08, read correct in
+        # review, sat in the repo for two days, and failed the cutover run with
+        #     The template function 'select' is not defined or not valid.
+        # A no-op test does not catch it either: the change-guard skips the write,
+        # so the expression is never evaluated. That is how the Model Revisions
+        # flow passed its test carrying this.
+        #
+        # ⚠️ LIMITATION, accepted deliberately 2026-09-10. first() keeps only the
+        # FIRST ticked value. Measured against the live list the same night: of 391
+        # revisions, 317 have exactly one value and 0 have more than one, so this is
+        # lossless on every row that exists. But `Model Description` is a checkbox
+        # column and someone can tick a second box, and then this silently drops it.
+        # The correct general fix is a Select ACTION feeding join(); it is a
+        # structural change and it is on the roadmap.
+        #
+        # coalesce twice, on purpose: Power Automate's if() evaluates BOTH branches
+        # rather than short-circuiting, so first(null) can throw even when the guard
+        # is true.
         arr = "coalesce(%s, json('[]'))" % b
-        return ("if(empty(%s), null, join(select(%s, item()?['Value']), '; '))"
-                % (arr, arr))
+        return "if(empty(%s), null, first(%s)?['Value'])" % (arr, arr)
     return b
 
 def build(flow_name, parent, lookup_id_field, mapping):

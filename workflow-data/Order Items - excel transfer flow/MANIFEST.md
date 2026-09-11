@@ -25,11 +25,12 @@ snapshotted here.**
 | **v007** | 2026-09-09 02:19 | `applied` | v006 | v007 R22 RevModelDescription mapping correction | 122 | 130 | 34 | 0 | `0955ee64f177` |
 | **v008** | 2026-09-10 23:14 | `local` | v007 | v008 integer variables never null (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `3ca1af164050` |
 | **v009** | 2026-09-10 23:15 | `local` | v008 | v008 integer variables never null, -1 sentinel (ResetModelID BadRequest) | 122 | 130 | 34 | 0 | `b171ae2cb79a` |
+| **v010** | 2026-09-10 23:42 | `local` | v009 | v010 RevModelDescription without select(), which is not a Power Automate function | 122 | 130 | 34 | 0 | `4dce3bd6b629` |
 
 ## Right now
 
 - **Live:** v007 — v007 R22 RevModelDescription mapping correction
-- **Pending (authored, not applied):** v008, v009
+- **Pending (authored, not applied):** v008, v009, v010
 
 ## Reading the columns
 

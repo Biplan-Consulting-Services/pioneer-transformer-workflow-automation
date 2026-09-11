@@ -18,11 +18,12 @@ snapshotted here.**
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-10 10:27 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Model Revisions | — | — | 0 | 0 | `9661af8f0a85` |
 | **v002** | 2026-09-10 10:27 | `applied` | v001 | N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `f09199591995` |
+| **v003** | 2026-09-10 23:45 | `local` | v002 | v003 RevModelDescription without select() | — | — | 0 | 0 | `2f1e4fa77f9d` |
 
 ## Right now
 
 - **Live:** v002 — N3 Order_Items__sync_from_Model_Revisions pasted into the shell, connectionReferences kept from v001
-- **Pending (authored, not applied):** none
+- **Pending (authored, not applied):** v003
 
 ## Reading the columns
 

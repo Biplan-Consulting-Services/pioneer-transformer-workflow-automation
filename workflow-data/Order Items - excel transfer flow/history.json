@@ -201,6 +201,27 @@
       },
       "appliedAt": null,
       "source": "_v008-candidate.json"
+    },
+    {
+      "v": 10,
+      "captured": "2026-09-10T23:42:28-04:00",
+      "state": "local",
+      "parent": 9,
+      "note": "v010 RevModelDescription without select(), which is not a Power Automate function",
+      "sha256": "4dce3bd6b6296ac2b6064a10c2205314411fca89bc89d91ab0015e30ac2555cb",
+      "fingerprint": {
+        "toLower": 34,
+        "ecUpper": 0,
+        "actions": 11,
+        "CreateOrderItem": 122,
+        "UpdateOrderItem": 130,
+        "excelFile": "01DI2JQP5KC64JFFTHRBEZT5EIFZTSN3TW"
+      },
+      "files": {
+        "definition": "v010__2026-09-10T23-42__local__v010-RevModelDescription-without-select-which-is.json"
+      },
+      "appliedAt": null,
+      "source": "_v010-candidate.json"
     }
   ]
 }

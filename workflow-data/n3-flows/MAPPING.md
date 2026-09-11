@@ -53,7 +53,7 @@ Trigger list **Model Revisions** · fan-out filter `ModelRevisionId` · **24** f
 | `RevFamily` | `Family` | choice | `triggerOutputs()?['body/Family']?['Value']` |
 | `RevForm` | `Form` | plain | `triggerOutputs()?['body/Form']` |
 | `RevJS` | `JS_x0020__x0023_` | plain | `triggerOutputs()?['body/JS_x0020__x0023_']` |
-| `RevModelDescription` | `Description` | multichoice | `if(empty(coalesce(triggerOutputs()?['body/Description'], json('[]'))), null, join(select(coalesce(triggerOutputs()?['body/Description'], json('[]')), item()?['Value']), '; '))` |
+| `RevModelDescription` | `Description` | multichoice | `if(empty(coalesce(triggerOutputs()?['body/Description'], json('[]'))), null, first(coalesce(triggerOutputs()?['body/Description'], json('[]')))?['Value'])` |
 | `RevModelType` | `Model_x0020_Type` | choice | `triggerOutputs()?['body/Model_x0020_Type']?['Value']` |
 | `RevModelRevionID` | `ModelID` | plain | `triggerOutputs()?['body/ModelID']` |
 | `RevNotes` | `Notes` | plain | `triggerOutputs()?['body/Notes']` |

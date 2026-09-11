@@ -56,16 +56,29 @@ def die(msg):
 
 
 def newest_pulled(flow):
-    """The shell to merge into: the newest version that was actually exported."""
+    """The shell to merge into: the newest version PROVEN to have been in the tenant.
+
+    `pulled` and `applied` both qualify, and for the same reason: a pulled version was
+    exported from the tenant, and an applied one is a local version a later pull matched
+    by hash. Either way its connectionReferences carry a real connection id.
+
+    `local` never qualifies. It has never been in the tenant, so its connection block is
+    whatever it was authored from and proves nothing.
+
+    ⚠️ Taking the NEWEST of those, not the oldest, is the point. Merging into a stale
+    shell silently reverts everything that changed since -- which is exactly what
+    happened to the transfer flow on 2026-09-10, where v007 was authored from a stored
+    v006 that had been hand-edited live and never re-exported.
+    """
     h = json.load(io.open(os.path.join(ROOT, "workflow-data", flow, "history.json"),
                           encoding="utf-8"))
-    pulled = [v for v in h["versions"] if v.get("state") == "pulled"]
-    if not pulled:
-        die("no `pulled` version in %s -- export the shell out of the designer and "
-            "run `flow_version.py intake` first. A local version is not a shell: it "
-            "has never been in the tenant, so its connectionReferences prove nothing."
-            % flow)
-    return sorted(pulled, key=lambda v: v["v"])[-1]
+    live = [v for v in h["versions"] if v.get("state") in ("pulled", "applied")]
+    if not live:
+        die("no `pulled` or `applied` version in %s -- export the shell out of the "
+            "designer and run `flow_version.py intake` first. A local version is not a "
+            "shell: it has never been in the tenant, so its connectionReferences prove "
+            "nothing." % flow)
+    return sorted(live, key=lambda v: v["v"])[-1]
 
 
 def collect_connection_names(node, acc):

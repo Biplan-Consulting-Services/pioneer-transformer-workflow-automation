@@ -2,7 +2,7 @@
 
 ## → `PASTE-ME.json`
 
-**v010 — v010 RevModelDescription without select(), which is not a Power Automate function**
+**v003 — v003 RevModelDescription without select()**
 
 That is the file. It is the export's `properties` object — the shape the
 extension accepted for v004 — and `connectionReferences` inside it is carried
@@ -15,17 +15,17 @@ the editor rejects the file above; then try `definition-only.json` first.
 
 | | before | after |
 |---|---|---|
-| `CreateOrderItem` item/* fields | 122 | **122** |
-| `UpdateOrderItem` item/* fields | 130 | **130** |
-| `toLower(` occurrences | 34 | **34** |
+| `CreateOrderItem` item/* fields | — | **—** |
+| `UpdateOrderItem` item/* fields | — | **—** |
+| `toLower(` occurrences | 0 | **0** |
 | unguarded `'EC'` | 0 | **0** |
 
 ## Then close the loop
 
 Save in Power Automate, copy the JSON back out into `_inbox/`, and tell me.
-`flow_version.py intake` will confirm by hash — if it matches, v010 flips to
+`flow_version.py intake` will confirm by hash — if it matches, v003 flips to
 `applied`. Until then it stays `local`: I do not mark my own work as landed.
 
-If it does **not** match, v010 is marked `forked` and I report exactly what
+If it does **not** match, v003 is marked `forked` and I report exactly what
 differs — which is the signal that something else changed underneath.
 
