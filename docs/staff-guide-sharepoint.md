@@ -71,8 +71,6 @@ That's the whole thing. There is:
 - **No refresh**: everyone sees your change straight away
 - **No "someone else has it open"**: several people can work at once
 
-If you change a unit's Location, it jumps to its new group by itself.
-
 ## What looks different
 
 Most columns work exactly as they did. A few now have a proper control instead of a cell you

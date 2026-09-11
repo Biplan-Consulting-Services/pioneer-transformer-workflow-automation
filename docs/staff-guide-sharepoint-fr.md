@@ -77,8 +77,6 @@ C'est tout. Il n'y a :
 - **Aucun « quelqu'un d'autre l'a ouvert »** : plusieurs personnes peuvent travailler en même
   temps
 
-Si vous changez la Location d'une unité, elle saute d'elle-même dans son nouveau groupe.
-
 ## Ce qui a l'air différent
 
 La plupart des colonnes fonctionnent comme avant. Quelques-unes ont maintenant un vrai
