@@ -94,8 +94,8 @@ n'est plus une convention à retenir.
 | `R` dans **Tank**, **ISO Stack**, **ISO Coil**, **Lead Assembly** | une **case à cocher** |
 | `x` dans **Temperature Rise**, **Impulse**, **Partial D**, **Oil Analysis**, **DB** | une **case à cocher** |
 | `Y` dans **SFRA** | une **case à cocher** |
-| `Reçu` ou `Plaspak` dans **Frame** | une **liste déroulante**, choisissez |
-| du texte libre dans **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | une **liste déroulante**, choisissez |
+| `Reçu` ou `Plaspak` dans **Frame** | une **liste déroulante** |
+| du texte libre dans **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | une **liste déroulante** |
 | un code comme `TE-Se-4` dans **Status** | deux champs : **Step Status** (choisir l'étape) et **Status Date** (choisir la date) |
 
 Quelques choses à savoir :
