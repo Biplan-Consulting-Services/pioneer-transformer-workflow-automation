@@ -33,8 +33,10 @@ CFG = [
          staff="staff-guide-sharepoint.md", views="views-guide-sharepoint.md",
          out="staff-handbook-sharepoint.md",
          title="# Order Items in SharePoint: staff handbook",
-         intro=("FRM10-12 has moved out of Excel and into SharePoint. This is everything you need\n"
-                "to work in it. Two parts: **doing the work**, then **the views** you do it in.\n\n"
+         intro=("FRM10-12 has moved out of Excel and into SharePoint. Your units are now in a\n"
+                "SharePoint list called **Order Items**.\n\n"
+                "**Part 1** is how to update a unit. **Part 2** is how the views work, so you can set\n"
+                "the list up the way you want it.\n\n"
                 "If you have questions or see anything wrong, you can contact\n"
                 "**Soleil Anker-Baril** on Teams or at soleil.anker@ermco-eci.com. Asking is always\n"
                 "better than guessing.\n"),
@@ -44,9 +46,10 @@ CFG = [
          staff="staff-guide-sharepoint-fr.md", views="views-guide-sharepoint-fr.md",
          out="staff-handbook-sharepoint-fr.md",
          title="# Order Items dans SharePoint : guide du personnel",
-         intro=("FRM10-12 sort d'Excel et s'en va dans SharePoint. Voici tout ce qu'il faut pour y\n"
-                "travailler. Deux parties : **faire le travail**, puis **les affichages** dans\n"
-                "lesquels vous le faites.\n\n"
+         intro=("FRM10-12 sort d'Excel et s'en va dans SharePoint. Vos unités sont maintenant dans\n"
+                "une liste SharePoint qui s'appelle **Order Items**.\n\n"
+                "La **partie 1**, c'est comment mettre une unité à jour. La **partie 2**, c'est comment\n"
+                "fonctionnent les affichages, pour que vous puissiez organiser la liste à votre goût.\n\n"
                 "Si vous avez des questions ou si vous voyez quelque chose d'anormal, vous pouvez\n"
                 "contacter **Soleil Anker-Baril** sur Teams ou à soleil.anker@ermco-eci.com.\n"
                 "Demander vaut toujours mieux que deviner.\n"),

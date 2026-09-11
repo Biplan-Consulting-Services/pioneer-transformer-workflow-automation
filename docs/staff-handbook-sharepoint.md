@@ -1,7 +1,10 @@
 # Order Items in SharePoint: staff handbook
 
-FRM10-12 has moved out of Excel and into SharePoint. This is everything you need
-to work in it. Two parts: **doing the work**, then **the views** you do it in.
+FRM10-12 has moved out of Excel and into SharePoint. Your units are now in a
+SharePoint list called **Order Items**.
+
+**Part 1** is how to update a unit. **Part 2** is how the views work, so you can set
+the list up the way you want it.
 
 If you have questions or see anything wrong, you can contact
 **Soleil Anker-Baril** on Teams or at soleil.anker@ermco-eci.com. Asking is always

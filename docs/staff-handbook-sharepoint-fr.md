@@ -1,8 +1,10 @@
 # Order Items dans SharePoint : guide du personnel
 
-FRM10-12 sort d'Excel et s'en va dans SharePoint. Voici tout ce qu'il faut pour y
-travailler. Deux parties : **faire le travail**, puis **les affichages** dans
-lesquels vous le faites.
+FRM10-12 sort d'Excel et s'en va dans SharePoint. Vos unités sont maintenant dans
+une liste SharePoint qui s'appelle **Order Items**.
+
+La **partie 1**, c'est comment mettre une unité à jour. La **partie 2**, c'est comment
+fonctionnent les affichages, pour que vous puissiez organiser la liste à votre goût.
 
 Si vous avez des questions ou si vous voyez quelque chose d'anormal, vous pouvez
 contacter **Soleil Anker-Baril** sur Teams ou à soleil.anker@ermco-eci.com.
