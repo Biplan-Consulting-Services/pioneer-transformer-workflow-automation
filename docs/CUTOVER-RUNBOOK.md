@@ -495,6 +495,30 @@ does not exist makes them doubt the parts that are right.
 
 ---
 
+## Cutover outcome — 2026-09-11
+
+Ran overnight 2026-09-10 22:00 into 09-11 07:4x. Stages 1, 2, 2b, 3 and most of 4 are
+complete and verified.
+
+| | evidence |
+|---|---|
+| the run | 18,946 values agree with the workbook, 3 differ and all three are understood (`verify_port.py`) |
+| units | zero workbook-only units, down from 3 (`rediff_units.py`) |
+| the status split | 139 exact + 10 `jui`, independently re-derived from Excel, 0 wrong (`verify_status_split.py`) |
+| the viewer | 3.2 passes — no Excel errors in 82 columns, `Location` in codes, `Status` 150/150, six formula columns intact (`verify_viewer.py`) |
+| the repoint | FRM09 refreshes and returns rows |
+| the sync flows | all four enabled, all three changed ones write-tested with real values in both directions |
+| order folders | 196 filled, 458 units now linked, 0 mismatched (x5) |
+
+**Left, and none of it is staff-facing:**
+
+- 🔴 **the trigger flow is OFF** — it fails on the 203 units with no Client/Model. First
+  daylight job; design is on the roadmap.
+- **x7** (`x7_verify_parent_sync.js`) once staff have made real edits, not our test ones.
+- **the parent `_TextField` drift**, three weeks of it, and the Power Apps read those.
+- `FRM10-12 Layout` as the default view.
+- The three French UI labels, on the Granby visit.
+
 ## Already done — do not redo
 
 | | |
