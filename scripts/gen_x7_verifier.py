@@ -29,3 +29,26 @@ js = js.replace("__MAP__", json.dumps(M, ensure_ascii=False, indent=2).replace("
 io.open(OUT, "w", encoding="utf-8", newline="\r\n").write(js)
 print("wrote %s  (%d + %d + %d fields)"
       % (os.path.basename(OUT), len(M["Order"]), len(M["Models"]), len(M["Model Revisions"])))
+
+# Syntax-check the thing we just wrote, if node is on PATH.
+#
+# On 2026-09-11 this generator shipped a script that died on paste with
+# "Uncaught SyntaxError: Invalid or unexpected token". The template carried three
+# string literals whose newline ESCAPE had been typed as a real line break, so
+# each string ran
+# off the end of its line. The generator was blameless - it copied the template
+# faithfully - which is exactly why the check belongs here: nothing between the
+# template and a user's browser console was reading the output as code.
+#
+# Non-fatal when node is absent: this is a safety net, not a build dependency.
+import shutil, subprocess
+node = shutil.which("node")
+if node:
+    r = subprocess.run([node, "--check", OUT], capture_output=True, text=True)
+    if r.returncode == 0:
+        print("  node --check: OK")
+    else:
+        raise SystemExit("node --check FAILED on the generated file - do not paste it:"
+                         + chr(10) + (r.stderr or r.stdout))
+else:
+    print("  node not on PATH - skipped the syntax check. Paste with care.")

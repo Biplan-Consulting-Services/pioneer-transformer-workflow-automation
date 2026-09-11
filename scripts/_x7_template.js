@@ -35,8 +35,7 @@
 
   const unit = await J(base+"/_api/web/lists(guid'"+OI+"')/items("+UNIT+")");
   if (!unit || unit.error) { console.error("could not read unit "+UNIT); return; }
-  console.log("unit "+UNIT+"  "+(unit.Title||"")+"
-");
+  console.log("unit "+UNIT+"  "+(unit.Title||"")+"\n");
 
   // Compare the way the flow does: coalesce both sides to '' and string-compare.
   // null and '' are different in Power Automate; the guard coalesces, so we do too.
@@ -50,13 +49,36 @@
     const p = PARENT[pname];
     const pid = unit[p.fk];
     console.log("=== "+pname+"  (unit."+p.fk+" = "+(pid==null?"NOT SET":pid)+") ===");
-    if (pid == null) { console.log("   unit is not linked to a "+pname+" -- this flow can never reach it
-"); continue; }
+    if (pid == null) { console.log("   unit is not linked to a "+pname+" -- this flow can never reach it\n"); continue; }
     const par = await J(base+"/_api/web/lists(guid'"+p.id+"')/items("+pid+")");
     if (!par || par.error) { console.error("   could not read parent "+pid); continue; }
+
+    // LOOKUPS ARE NOT IN THE PLAIN ITEM READ. Probed on the live tenant 2026-09-11,
+    // Models item 507:
+    //    plain REST            ModelRevision   -> undefined   (only ModelRevisionId = 390)
+    //    $expand + /Title      ModelRevision   -> {"Title":null}
+    //    FieldValuesAsText     ModelRevision   -> "MR-ATCO-0002-V1"   <-- correct
+    //
+    // So a lookup field is ABSENT from the item, not empty, and the obvious
+    // $expand=X&$select=X/Title returns NULL because these lookups do not show Title.
+    // Reaching for that would read as "the parent has no value" and send someone
+    // hunting a data problem that does not exist - which is exactly what the first
+    // version of this script did: it reported MISMATCH 2 on a healthy unit, because
+    // every populated lookup compared a real unit value against undefined.
+    // FieldValuesAsText renders every field as its display text, lookups included,
+    // without needing to know which column each lookup shows.
+    const parTxt = await J(base+"/_api/web/lists(guid'"+p.id+"')/items("+pid+")/FieldValuesAsText");
+    if (!parTxt || parTxt.error) {
+      // Do NOT fall through to the plain read for lookups - that silently reproduces
+      // the original false mismatch. Say so and skip this parent.
+      console.error("   FieldValuesAsText failed for "+pname+" "+pid
+                    +" - lookup fields cannot be verified, skipping this parent");
+      continue;
+    }
     for (const [tgt, src, kind] of MAP[pname]) {
-      let pv = par[src];
-      // a Choice/Lookup reads as an object over REST too; take the label the flow takes
+      // Lookup -> the display text; everything else -> the raw item value.
+      let pv = (kind === "lookup") ? parTxt[src] : par[src];
+      // a Choice reads as a plain string over REST; a URL field as an object.
       if (pv && typeof pv === "object") pv = pv.Value !== undefined ? pv.Value
                                          : (pv.Url !== undefined ? pv.Url : pv);
       if (Array.isArray(pv)) pv = pv.map(x => (x && x.Value !== undefined) ? x.Value : x).join("; ");
@@ -73,7 +95,6 @@
     console.log("");
   }
   console.log("match "+ok+"   both-empty "+blank+"   MISMATCH "+bad+"   (expect MISMATCH 0)");
-  console.log("
-note: a mismatch here is what the change-guard sees, so any nonzero count");
+  console.log("\nnote: a mismatch here is what the change-guard sees, so any nonzero count");
   console.log("means the next parent edit rewrites this unit again -- the guard cannot settle.");
 })();
