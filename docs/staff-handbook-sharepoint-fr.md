@@ -1,10 +1,20 @@
 # Order Items dans SharePoint : guide du personnel
 
-FRM10-12 sort d'Excel et s'en va dans SharePoint. Vos unités sont maintenant dans
-une liste SharePoint qui s'appelle **Order Items**.
+**Fini d'attendre que quelqu'un d'autre ferme le fichier. Fini les changements qui
+disparaissent.**
+
+FRM10-12 sort d'Excel et s'en va dans SharePoint. Vos unités sont maintenant dans une
+liste qui s'appelle **Order Items**, où plusieurs personnes peuvent travailler en même
+temps, où chaque changement s'enregistre à mesure que vous tapez, et où rien ne se
+perd parce que deux personnes avaient le fichier ouvert.
+
+Vous pouvez aussi arrêter de chercher à travers des colonnes que vous n'utilisez
+jamais. La liste s'ouvre dans la disposition que vous connaissez déjà, et à partir de
+là vous pouvez vous bâtir un affichage qui montre seulement ce avec quoi vous
+travaillez.
 
 La **partie 1**, c'est comment mettre une unité à jour. La **partie 2**, c'est comment
-fonctionnent les affichages, pour que vous puissiez organiser la liste à votre goût.
+fonctionnent les affichages.
 
 Si vous avez des questions ou si vous voyez quelque chose d'anormal, vous pouvez
 contacter **Soleil Anker-Baril** sur Teams ou à soleil.anker@ermco-eci.com.

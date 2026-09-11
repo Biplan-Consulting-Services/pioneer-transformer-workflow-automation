@@ -33,10 +33,15 @@ CFG = [
          staff="staff-guide-sharepoint.md", views="views-guide-sharepoint.md",
          out="staff-handbook-sharepoint.md",
          title="# Order Items in SharePoint: staff handbook",
-         intro=("FRM10-12 has moved out of Excel and into SharePoint. Your units are now in a\n"
-                "SharePoint list called **Order Items**.\n\n"
-                "**Part 1** is how to update a unit. **Part 2** is how the views work, so you can set\n"
-                "the list up the way you want it.\n\n"
+         intro=("**No more waiting for somebody else to close the file. No more changes that\n"
+                "disappear.**\n\n"
+                "FRM10-12 has moved out of Excel and into SharePoint. Your units are now in a list\n"
+                "called **Order Items**, where several people can work at the same time, every change\n"
+                "saves as you type it, and nothing is lost because two people had the file open.\n\n"
+                "You can also stop hunting through columns you never use. The list starts in the\n"
+                "layout you already know, and from there you can build a view showing only what you\n"
+                "work with.\n\n"
+                "**Part 1** is how to update a unit. **Part 2** is how the views work.\n\n"
                 "If you have questions or see anything wrong, you can contact\n"
                 "**Soleil Anker-Baril** on Teams or at soleil.anker@ermco-eci.com. Asking is always\n"
                 "better than guessing.\n"),
@@ -46,10 +51,18 @@ CFG = [
          staff="staff-guide-sharepoint-fr.md", views="views-guide-sharepoint-fr.md",
          out="staff-handbook-sharepoint-fr.md",
          title="# Order Items dans SharePoint : guide du personnel",
-         intro=("FRM10-12 sort d'Excel et s'en va dans SharePoint. Vos unités sont maintenant dans\n"
-                "une liste SharePoint qui s'appelle **Order Items**.\n\n"
+         intro=("**Fini d'attendre que quelqu'un d'autre ferme le fichier. Fini les changements qui\n"
+                "disparaissent.**\n\n"
+                "FRM10-12 sort d'Excel et s'en va dans SharePoint. Vos unités sont maintenant dans une\n"
+                "liste qui s'appelle **Order Items**, où plusieurs personnes peuvent travailler en même\n"
+                "temps, où chaque changement s'enregistre à mesure que vous tapez, et où rien ne se\n"
+                "perd parce que deux personnes avaient le fichier ouvert.\n\n"
+                "Vous pouvez aussi arrêter de chercher à travers des colonnes que vous n'utilisez\n"
+                "jamais. La liste s'ouvre dans la disposition que vous connaissez déjà, et à partir de\n"
+                "là vous pouvez vous bâtir un affichage qui montre seulement ce avec quoi vous\n"
+                "travaillez.\n\n"
                 "La **partie 1**, c'est comment mettre une unité à jour. La **partie 2**, c'est comment\n"
-                "fonctionnent les affichages, pour que vous puissiez organiser la liste à votre goût.\n\n"
+                "fonctionnent les affichages.\n\n"
                 "Si vous avez des questions ou si vous voyez quelque chose d'anormal, vous pouvez\n"
                 "contacter **Soleil Anker-Baril** sur Teams ou à soleil.anker@ermco-eci.com.\n"
                 "Demander vaut toujours mieux que deviner.\n"),

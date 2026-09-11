@@ -1,10 +1,17 @@
 # Order Items in SharePoint: staff handbook
 
-FRM10-12 has moved out of Excel and into SharePoint. Your units are now in a
-SharePoint list called **Order Items**.
+**No more waiting for somebody else to close the file. No more changes that
+disappear.**
 
-**Part 1** is how to update a unit. **Part 2** is how the views work, so you can set
-the list up the way you want it.
+FRM10-12 has moved out of Excel and into SharePoint. Your units are now in a list
+called **Order Items**, where several people can work at the same time, every change
+saves as you type it, and nothing is lost because two people had the file open.
+
+You can also stop hunting through columns you never use. The list starts in the
+layout you already know, and from there you can build a view showing only what you
+work with.
+
+**Part 1** is how to update a unit. **Part 2** is how the views work.
 
 If you have questions or see anything wrong, you can contact
 **Soleil Anker-Baril** on Teams or at soleil.anker@ermco-eci.com. Asking is always
