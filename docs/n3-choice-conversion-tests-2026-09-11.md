@@ -1,5 +1,28 @@
 # Testing the three N3 flows after the Choice conversion — 2026-09-11
 
+## ✅ ALL THREE PASSED — 2026-09-11 08:35 to 08:47
+
+Real writes, verified by reading the child row back over REST, and each reverted
+afterwards to prove the write works in both directions.
+
+| test | unit | column | wrote | reverted |
+|---|---|---|---|---|
+| 1 · Order | `21611-1/1` | `OrdOrderType` | `Repair` 08:35:01 | `Standard` 08:37:02 |
+| 2 · Models | `21040W2-1/1` | `MdlModificationStatus` | `Minor Changes` 08:41:01 | `Up to Date` 08:42:44 |
+| 3 · Model Revisions | `21657-1/1` | `RevModelDescription` | `NETWORK` 08:47:03 | `VAULT-1PH` |
+
+**Test 1 settles the strict case.** `Order Type` is fill-in FALSE, so a malformed
+`/Value` write is rejected outright rather than quietly ignored. It landed.
+
+**Test 3 settles the live risk.** `VAULT-1PH` → `NETWORK` are both OFF the option list
+and only writable because the column allows fill-in. It landed, so the 583 rows holding
+an off-list `Model Description` and the 735 holding an off-list `Model Type` survive
+their parents being edited. Had this come back blank, step 31 would not have happened.
+
+Nothing came back blank on any test, which was the failure this whole exercise existed
+to rule out: a plain key into a Choice column is accepted and lands nothing.
+
+
 The 2026-09-10 tests passed as **no-ops**: the change-guard found nothing different and
 skipped the write, so the write path was never executed. That is exactly how the
 `select()` defect survived its test and then took down the cutover run. These tests
