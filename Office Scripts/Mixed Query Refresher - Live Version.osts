@@ -1,0 +1,650 @@
+const FEATURES_TABLE_NAME = "TableScriptFeatures";
+const SCRIPT_STATUS_CELL = "ScriptStatusCell";
+const TOTAL_STEPS = 11;
+
+// Bounds the step 7 refresh wait so a desynced query cannot hang the script indefinitely.
+const REFRESH_TIMEOUT_SECONDS = 600;
+const REFRESH_POLL_SECONDS = 5;
+
+interface Features {
+    conserveFormulas: boolean;
+    conserveUniqueFormats: boolean;
+    tryResolveOverflows: boolean;
+    tryEnforceFormat: boolean;
+    reevalFormulas: boolean;
+}
+
+interface TreatableTable {
+    tableName: string;
+}
+
+interface TreateableWorksheet {
+    sheet: ExcelScript.Worksheet;
+    tables: TreatableTable[];
+    options?: Partial<ExcelScript.WorksheetProtectionOptions>;
+}
+
+function main(workbook: ExcelScript.Workbook) {
+    const startTime = new Date();
+    const application = workbook.getApplication();
+    const statusCell = workbook.getNamedItem(SCRIPT_STATUS_CELL).getRange();
+    let treateableWorksheets = gatherAndClearSheetConfigurations(workbook);
+
+    displayStatus("Starting update", statusCell);
+
+    const exclusionList = getTableContents(workbook, "ReevExclusionList", "Tables");
+
+    application.setCalculationMode(ExcelScript.CalculationMode.manual);
+
+    displayStatus(`Step 1/${TOTAL_STEPS}: Parsing features for refresh.`, statusCell);
+    const features = tryParseFeaturesTable(workbook);
+
+    displayStatus(`Step 2/${TOTAL_STEPS}: Saving comments.`, statusCell);
+    // let commentTables = getPresavedTableData(workbook);
+
+    displayStatus(`Step 3/${TOTAL_STEPS}: Temporarily removing comments in tables`, statusCell);
+    // deleteCommentsInTables(workbook, commentTables);
+
+    displayStatus(`Step 4/${TOTAL_STEPS}: Preparing file for refresh.`, statusCell);
+
+
+    if (features.tryEnforceFormat) {
+        displayStatus(`Step 5/${TOTAL_STEPS}: Preparing format enforcement table.`, statusCell);
+        arrangeDataFormatTable(workbook);
+    } else {
+        displayStatus(`Step 6/${TOTAL_STEPS}: Skipping format enforcement step.`, statusCell);
+    }
+
+    displayStatus(`Step 7/${TOTAL_STEPS}: Refreshing external data.`, statusCell);
+    refreshQueriesAndWaitForCompletion(workbook, statusCell);
+
+    displayStatus(`Step 8/${TOTAL_STEPS}: Forcing reevaluation of cell types (necessary for mixed types).`, statusCell);
+
+    if (features.reevalFormulas) {
+        reevaluateDesignatedFormulas(workbook);
+    }
+
+    // Re-assert the date formats every run. getValues() hands dates back as serial numbers,
+    // so the reevaluation below writes numbers into the date columns - which display as
+    // 45xxx rather than a date if the column's format was lost by an earlier failed sync.
+    // Enforcing the format here closes that loop instead of leaving it to be noticed later.
+    enforceDateFormats(workbook);
+
+    treateableWorksheets.forEach(treatableWorksheet => {
+        treatableWorksheet.tables.forEach(treatableTable => {
+            if (exclusionList.includes(treatableTable.tableName)) {
+                return;
+            }
+
+            let table = treatableWorksheet.sheet.getTable(treatableTable.tableName);
+
+            if (features.conserveFormulas) {
+                reevaluateCellsWithFormulas(table);
+            } else {
+                reevaluateCells(table);
+            }
+        });
+    });
+
+    if (features.tryResolveOverflows) {
+        displayStatus(`Step 9/${TOTAL_STEPS}: Attempting to resolve data overflows.`, statusCell);
+        treateableWorksheets.forEach(treatableWorksheet => {
+            treatableWorksheet.tables.forEach(treatableTable => {
+                let table = treatableWorksheet.sheet.getTable(treatableTable.tableName);
+                detectAndResolveOverflows(table);
+            });
+        });
+    } else {
+        displayStatus(`Step 9/${TOTAL_STEPS}: Skipping overflow resolution.`, statusCell);
+    }
+
+    displayStatus(`Step 10/${TOTAL_STEPS}: Restoring Comments`, statusCell);
+    // restoreComments(workbook, commentTables);
+
+    displayStatus(`Step 11/${TOTAL_STEPS}: Restoring sheet and table configuration.`, statusCell);
+
+    application.calculate(ExcelScript.CalculationType.recalculate);
+    application.calculate(ExcelScript.CalculationType.fullRebuild);
+    application.setCalculationMode(ExcelScript.CalculationMode.automatic);
+
+    const endTime = new Date();
+    const diffMs = endTime.getTime() - startTime.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffSeconds = Math.floor((diffMs % 60000) / 1000);
+
+    displayStatus(`Update done, finished at ${endTime}, ${diffMinutes}:${diffSeconds} mins elapsed.`, statusCell);
+    reapplySheetConfigurations(treateableWorksheets);
+}
+
+function reevaluateDesignatedFormulas(workbook: ExcelScript.Workbook) {
+    const controlTable = workbook.getTable("TableReevalColumns");
+    const header = controlTable.getHeaderRowRange().getValues()[0] as string[];
+    const data = controlTable.getRangeBetweenHeaderAndTotal().getValues();
+
+    const tableColIdx = header.indexOf("Table to Reevaluate");
+    const columnColIdx = header.indexOf("Column Name");
+
+    for (const row of data) {
+        const tableName = row[tableColIdx]?.toString().trim();
+        const columnName = row[columnColIdx]?.toString().trim();
+
+        if (!tableName || !columnName) continue;
+
+        const table = workbook.getTable(tableName);
+        const column = table.getColumnByName(columnName);
+        const range = column.getRangeBetweenHeaderAndTotal();
+
+        console.log(`Reevaling ${columnName} from ${tableName}`);
+
+        range.replaceAll("=", "==", {
+            completeMatch: false,
+            matchCase: false
+        });
+
+        range.replaceAll("==", "=", {
+            completeMatch: false,
+            matchCase: false
+        });
+
+        workbook.getApplication().calculate(ExcelScript.CalculationType.recalculate);
+    }
+}
+
+function getTableContents(
+    workbook: ExcelScript.Workbook,
+    tableName: string,
+    columnName: string
+): string[] {
+    const table = workbook.getTable(tableName);
+
+    if (!table) {
+        return [];
+    }
+
+    const column = table.getColumnByName(columnName);
+    const values = column.getRange().getValues();
+
+    return values.map(row => row[0]?.toString() ?? "");
+}
+
+// A type reevaluation can only ever change a cell holding TEXT that Excel would coerce to
+// some other type. Three shapes qualify, and all three occur in these workbooks:
+//
+//   numeric  "21930,34" (Price, 2,965 cells), "1 234.56", "74281.69 $"
+//   date     "2026-08-15" (Client Desired Date, 10 cells among 483 real dates)
+//   boolean  "VRAI" / "TRUE" (BO, mixed against 226 real booleans)
+//
+// Testing only for the numeric shape - as an earlier revision of this did - silently skips
+// the date-text and boolean-text columns, which are exactly the mixed-type cases this step
+// exists to fix. Everything failing all three tests is written back byte-identical, so
+// leaving those columns alone is safe by construction.
+const NUMERIC_TEXT = /^-?\d+(?:[.,]\d+)?$/;
+const DATE_TEXT = /^\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}$/;
+const BOOLEAN_TEXT = /^(true|false|vrai|faux)$/i;
+
+function isCoercibleText(value: string | number | boolean): boolean {
+    if (typeof value !== "string") {
+        return false;
+    }
+
+    const stripped = value.replace(/[\s\u00a0$]/g, "");
+
+    if (stripped.length === 0) {
+        return false;
+    }
+
+    return NUMERIC_TEXT.test(stripped) || DATE_TEXT.test(stripped) || BOOLEAN_TEXT.test(stripped);
+}
+
+// Indexes of the columns worth rewriting. Restricting the write to these is
+// behaviour-preserving by construction: every column left alone contains nothing a rewrite
+// could alter.
+function findColumnsNeedingReevaluation(grid: (string | number | boolean)[][], includeFormulas: boolean): number[] {
+    if (grid.length === 0) {
+        return [];
+    }
+
+    const columnCount = grid[0].length;
+    const targets: number[] = [];
+
+    for (let col = 0; col < columnCount; col++) {
+        for (let row = 0; row < grid.length; row++) {
+            const cell = grid[row][col];
+            const isFormula = includeFormulas && typeof cell === "string" && cell.charAt(0) === "=";
+
+            if (isFormula || isCoercibleText(cell)) {
+                targets.push(col);
+                break;
+            }
+        }
+    }
+
+    return targets;
+}
+
+// Saving and restoring per-column filter criteria costs two API round-trips per column - 96
+// on TableArchiveFRM10_12, 82 on TableOrders. Skip the whole dance when nothing is filtered.
+function withFiltersPreserved(table: ExcelScript.Table, action: () => void) {
+    const wasFiltered = table.getAutoFilter().getIsDataFiltered();
+    let columnFilters: ExcelScript.FilterCriteria[] = [];
+
+    if (wasFiltered) {
+        columnFilters = table.getColumns().map(column => column.getFilter().getCriteria());
+        table.clearFilters();
+    }
+
+    action();
+
+    if (wasFiltered) {
+        table.getColumns().forEach((column, index) => {
+            const criteria = columnFilters[index];
+            if (criteria) {
+                column.getFilter().apply(criteria);
+            }
+        });
+    }
+}
+
+// Every date column, and the one format they should all carry. The 2026-08-29 16:23 repair
+// reset all of them to "General" and the hand-repair afterwards was partial - five columns
+// were still stranded on "mm-dd-yy" (Excel's US default, what a cell reverts to when its
+// explicit format is lost) a full three days later. Re-asserting on every refresh means a
+// failed sync costs a display glitch until the next run, not a manual hunt.
+//
+// The ";@" section is deliberate: it renders text as text instead of coercing it. Several
+// date columns legitimately carry text markers - Coiling Date holds 9 "EC" placeholders.
+const DATE_FORMAT = "yyyy\\-mm\\-dd;@";
+
+const DATE_COLUMNS = [
+    "Order Date",
+    "Ing. Due Date",
+    "Initial Promised Date",
+    "Estimated Delivery Date",
+    "Coiling Date",
+    "Stacking Date",
+    "Assembly Date",
+    "Drying Date",
+    "Tanking Date",
+    "Testing Date",
+    "Finishing Date",
+    "Delivery Date",
+    "Tank Delivery Date",
+    "Original Tanking Date",
+    "Manual Estimated Delivery Date",
+    "Client Desired Date",
+];
+
+// Columns whose NAME contains "date" but which hold free text. Never reformatted.
+const TEXT_COLUMNS_WITH_DATE_IN_NAME = [
+    "Client Date Status",
+    "Tanking date change justification",
+    "Tanking Date Status",
+    "Tanking Date Change Justification",
+];
+
+// Excel is inconsistent about escaping literal characters in format codes, so compare on the
+// unescaped form rather than re-applying a correct format on every run.
+function normaliseFormat(format: string): string {
+    return format.replace(/\\/g, "").toLowerCase();
+}
+
+function enforceDateFormats(workbook: ExcelScript.Workbook) {
+    const wantedNormalised = normaliseFormat(DATE_FORMAT);
+    let fixed = 0;
+
+    for (const table of workbook.getTables()) {
+        const body = table.getRangeBetweenHeaderAndTotal();
+
+        if (body.getRowCount() === 0) {
+            continue;
+        }
+
+        const headers = table.getHeaderRowRange().getValues()[0];
+
+        headers.forEach((header, columnIndex) => {
+            const name = header === null ? "" : header.toString().trim();
+
+            if (name.length === 0) {
+                return;
+            }
+
+            if (TEXT_COLUMNS_WITH_DATE_IN_NAME.indexOf(name) !== -1) {
+                return;
+            }
+
+            if (DATE_COLUMNS.indexOf(name) === -1) {
+                return;
+            }
+
+            const columnRange = body.getColumn(columnIndex);
+
+            // The top-left cell is enough to spot a column that has reverted, and far
+            // cheaper than reading every cell.
+            const current = columnRange.getCell(0, 0).getNumberFormat();
+
+            if (normaliseFormat(current) === wantedNormalised) {
+                return;
+            }
+
+            // setNumberFormat, NOT setNumberFormatLocal: the code above is the invariant
+            // (English) one Excel stores. This workbook runs in a French locale, where the
+            // Local variant would expect "aaaa-mm-jj" and silently mangle it.
+            columnRange.setNumberFormat(DATE_FORMAT);
+            fixed++;
+            console.log(`Date format restored on ${table.getName()}.${name} (was "${current}")`);
+        });
+    }
+
+    if (fixed > 0) {
+        console.log(`Re-asserted the date format on ${fixed} column(s).`);
+    }
+}
+
+function reevaluateCells(table: ExcelScript.Table) {
+    const range = table.getRangeBetweenHeaderAndTotal();
+
+    // Reads are comparatively cheap; it is the write-back that costs. So read the body once,
+    // then write only the columns that can actually change.
+    //
+    // Measured across the live workbook and the archive (971,017 cells in the date-bearing
+    // tables), targeting cuts the write to about a tenth:
+    //   Archive FRM10-12    14 of 96 columns ->  71,680 of 491,520 cells
+    //   Archive FRM11        5 of 39 columns ->  20,265 of 158,067 cells
+    //   Archive FRM13        2 of 55 columns ->   2,610 of  71,775 cells
+    //   TableOrders (live)   3 of 82 columns ->   3,117 of  85,198 cells
+    //   Archive BO / Cedule_Production / Fournisseurs_Cuve
+    //                        nothing coercible ->     0 of 164,457 cells
+    //
+    // Those last three are a pure no-op: ~164k cells read and written back to change nothing.
+    // Beyond the time, each is a bulk write into a table that may be query-bound, which is
+    // the desync mechanism described in CONTEXT.md (2026-08-28).
+    const values = range.getValues();
+    const targets = findColumnsNeedingReevaluation(values, false);
+
+    if (targets.length === 0) {
+        return;
+    }
+
+    withFiltersPreserved(table, () => {
+        for (const col of targets) {
+            const columnRange = range.getColumn(col);
+            columnRange.setValues(columnRange.getValues());
+        }
+    });
+}
+
+function reevaluateCellsWithFormulas(table: ExcelScript.Table) {
+    const range = table.getRangeBetweenHeaderAndTotal();
+
+    // Same targeting as reevaluateCells, plus the columns carrying formulas. On TableOrders
+    // that is 6 formula columns of 82 (Price, Estimated Delivery Date, Price CAD, Price USD,
+    // Navigation Order, Navigation Model) - 6,234 cells instead of 85,198.
+    //
+    // The other 76 columns are Power Query output. Writing them back is not just wasted
+    // payload: it is a bulk write into a query-bound ListObject immediately after step 7
+    // refreshed it, which is exactly the collision behind the 2026-08-28 binding corruption
+    // (three trailing columns renamed to Column1/2/3, SourceType dropping to xlSrcRange).
+    const formulas = range.getFormulas();
+    const targets = findColumnsNeedingReevaluation(formulas, true);
+
+    if (targets.length === 0) {
+        return;
+    }
+
+    withFiltersPreserved(table, () => {
+        for (const col of targets) {
+            const columnRange = range.getColumn(col);
+            try {
+                columnRange.setFormulas(columnRange.getFormulas());
+            } catch (error) {
+                console.log(`Reevaluation failed on column index ${col}: ${error}`);
+            }
+        }
+    });
+}
+
+function detectAndResolveOverflows(table: ExcelScript.Table) {
+    let range = table.getRangeBetweenHeaderAndTotal(); // Get the entire table range
+
+    const overflowDisplay = "###############################################################################################################################################################################################################################################################"
+
+    const findIndexes = (arr: string[], searchTerm: string) => arr.reduce((acc, str, i) => str.includes(searchTerm) ? [...acc, i] : acc, []);
+
+    let texts = range.getTexts();
+    let types = range.getValues().map(r => r.map(rc => typeof rc));
+    let values = range.getValues();
+
+    let rowCount = texts.length;
+    let columnCount = texts[0].length;
+
+    for (let row = 0; row < rowCount; row++) {
+        let potentialOverflowIndexes: number[] = findIndexes(texts[row], overflowDisplay);
+
+        for (let i = 0; i < potentialOverflowIndexes.length; ++i) {
+            let potentialOverflowIndex = potentialOverflowIndexes[i];
+            let cellType = types[row][potentialOverflowIndex];
+
+            if (cellType === 'number') {
+                range.getCell(row, potentialOverflowIndex).setNumberFormat("General");
+            }
+        }
+    }
+}
+
+function arrangeDataFormatTable(workbook: ExcelScript.Workbook) {
+    const table = workbook.getTable("TableFormatParser");
+
+    if (!table) {
+        console.log("Table 'TableFormatParser' does not exist.");
+        return;
+    }
+
+    const requiredColumns = ["Data", "Type", "Enforced Characteristics", "Display Characteristics"];
+    const headers = table.getHeaderRowRange().getValues()[0];
+    if (!requiredColumns.every(col => headers.includes(col))) {
+        console.log("The required columns are not present.");
+        return;
+    }
+
+    let typeColumn = table.getColumnByName("Type").getRangeBetweenHeaderAndTotal().getValues();
+    let dataColumn = table.getColumnByName("Data").getRangeBetweenHeaderAndTotal();
+    let displayCharColumn = table.getColumnByName("Display Characteristics").getRangeBetweenHeaderAndTotal();
+
+    for (let i = 0; i < typeColumn.length; i++) {
+        if (typeColumn[i][0] === "Number") {
+            const testValue = 100000.75;
+            const defaultDecimalSeparator = ".";
+            // Get the number from "Data" and its display value
+            let dataCell = dataColumn.getCell(i, 0);
+            dataCell.setValue(testValue);
+            let displayValue = dataCell.getText();
+            let actualValue = dataCell.getValue();
+            let actualValueStr = actualValue.toString();
+
+            // Analyze the display value to determine digit group and decimal separators
+            let digitGroupSeparator: string = "";
+            let decimalSeparator: string = defaultDecimalSeparator;
+            let decimalSeparatorOffset = -(actualValueStr.length) + actualValueStr.indexOf(defaultDecimalSeparator);
+
+            decimalSeparator = displayValue.substr(decimalSeparatorOffset, 1);
+
+            let displayValueBeforeDecimal = displayValue.substr(0, displayValue.lastIndexOf(decimalSeparator));
+            let actualValueBeforeDecimal = actualValueStr.substr(0, actualValueStr.lastIndexOf(defaultDecimalSeparator))
+            const possibleDigitGroupSeparators = [" ", ","];
+
+            for (let separator of possibleDigitGroupSeparators) {
+                if (displayValueBeforeDecimal.includes(separator)) {
+                    digitGroupSeparator = separator;
+                    break;
+                }
+            }
+
+            let displayCharacteristics = `{"digitGroupSeparator":"${digitGroupSeparator}", "decimalSeparator":"${decimalSeparator}"}`;
+
+            displayCharColumn.getCell(i, 0).setValue(displayCharacteristics);
+        }
+    }
+}
+
+function displayStatus(status: string, cellRange?: ExcelScript.Range) {
+    if (!cellRange) {
+        console.log(status);
+    }
+
+    cellRange.setValue(status);
+}
+
+function reapplySheetConfigurations(treateableWorksheets: TreateableWorksheet[]) {
+    treateableWorksheets.forEach(treateableWorksheet => {
+        // Apply protection settings back
+        if (treateableWorksheet.options) {
+            treateableWorksheet.sheet.getProtection().protect(treateableWorksheet.options);
+        }
+    });
+}
+
+function gatherAndClearSheetConfigurations(workbook: ExcelScript.Workbook): TreateableWorksheet[] {
+    let treateableWorksheets: TreateableWorksheet[] = [];
+    let worksheets = workbook.getWorksheets();
+
+    // Remove protection from all worksheets if they are protected
+    worksheets.forEach(sheet => {
+        let protection = sheet.getProtection();
+
+        if (protection.getProtected()) {
+            // Store options directly without trying to create a reference to the API object
+            let options: Partial<ExcelScript.WorksheetProtectionOptions> = {
+                allowAutoFilter: protection.getOptions().allowAutoFilter,
+                allowDeleteColumns: protection.getOptions().allowDeleteColumns,
+                allowDeleteRows: protection.getOptions().allowDeleteRows,
+                allowFormatCells: protection.getOptions().allowFormatCells,
+                allowFormatColumns: protection.getOptions().allowFormatColumns,
+                allowFormatRows: protection.getOptions().allowFormatRows,
+                allowInsertColumns: protection.getOptions().allowInsertColumns,
+                allowInsertHyperlinks: protection.getOptions().allowInsertHyperlinks,
+                allowInsertRows: protection.getOptions().allowInsertRows,
+                allowPivotTables: protection.getOptions().allowPivotTables,
+                allowSort: protection.getOptions().allowSort,
+            };
+
+            try {
+                // Unprotect the worksheet
+                protection.unprotect(); // Directly use the method without aliasing
+
+                let tables: TreatableTable[] = sheet.getTables().map(t => ({
+                    tableName: t.getName()
+                }));
+
+                treateableWorksheets.push({
+                    sheet: sheet,
+                    tables: tables,
+                    options: options
+                });
+            } catch (error) {
+                console.log('Detected password protected sheet, skipping.');
+            }
+        } else {
+            let tables: TreatableTable[] = sheet.getTables().map(t => ({
+                tableName: t.getName()
+            }));
+
+            treateableWorksheets.push({
+                sheet: sheet,
+                tables: tables,
+                options: null
+            });
+        }
+
+    });
+
+    return treateableWorksheets;
+}
+
+function tryParseFeaturesTable(workbook: ExcelScript.Workbook): Features {
+    const table = workbook.getTable(FEATURES_TABLE_NAME);
+    let features: Features = {
+        conserveFormulas: false,
+        conserveUniqueFormats: false,
+        tryResolveOverflows: false,
+        tryEnforceFormat: false,
+        reevalFormulas: false
+    };
+
+    if (!table) {
+        console.log(`Table ${FEATURES_TABLE_NAME} doesn't exist. Using default features.`);
+        return features;
+    }
+
+    let featuresColumn = table.getColumnByName("Feature");
+    let activeColumn = table.getColumnByName("Active");
+
+    if (!featuresColumn || !activeColumn) {
+        console.log(`Table ${FEATURES_TABLE_NAME} does not have the required columns.`);
+        return features;
+    }
+
+    let featureNames = featuresColumn.getRangeBetweenHeaderAndTotal().getValues().map(row => row[0]);
+    let activeValues = activeColumn.getRangeBetweenHeaderAndTotal().getValues().map(row => row[0]);
+    let featuresDict = combineArraysToDictionary(featureNames, activeValues);
+
+    features.conserveFormulas = featuresDict["Conserve formulas"] as boolean ?? false;
+    features.conserveUniqueFormats = featuresDict["Conserve unique formats"] as boolean ?? false;
+    features.tryResolveOverflows = featuresDict["Try resolving overflows"] as boolean ?? false;
+    features.tryEnforceFormat = featuresDict["Try enforcing formats"] as boolean ?? false;
+    features.reevalFormulas = featuresDict["Reevalulate formulas"] as boolean ?? false;
+
+    return features;
+}
+
+function combineArraysToDictionary(keys: (string | number | boolean)[], values: (string | number | boolean)[]) {
+    let dictionary = {};
+
+    keys.forEach((key, index) => {
+        dictionary[key.toString()] = values[index];
+    });
+
+    return dictionary;
+}
+
+function sleep(seconds: number) {
+    var waitUntil = new Date().getTime() + seconds * 1000;
+    while (new Date().getTime() < waitUntil) { };
+}
+
+function refreshQueriesAndWaitForCompletion(workbook: ExcelScript.Workbook, statusCell: ExcelScript.Range) {
+    const startTime = new Date();
+    const queryNames: string[] = workbook.getQueries().map(q => q["instance"]["m_name"]);
+    let tableQueries: ExcelScript.Query[] = [];
+
+    queryNames.forEach((name) => {
+        let query = workbook.getQuery(name);
+        if (query.getLoadedTo() == ExcelScript.LoadToType.table) {
+            tableQueries.push(query);
+        }
+    });
+
+    workbook.refreshAllDataConnections();
+
+    // Bounded wait. This loop previously had no exit except every query reporting a refresh
+    // date later than startTime - so a query whose table binding has desynced (its QueryTable
+    // no longer connected, see CONTEXT.md) never reports and the script spins here forever.
+    // Give up instead, and name the queries that never came back.
+    while (tableQueries.length > 0) {
+        if (new Date().getTime() - startTime.getTime() > REFRESH_TIMEOUT_SECONDS * 1000) {
+            const stuck = tableQueries.map(q => q.getName()).join(", ");
+            displayStatus(`Step 7/${TOTAL_STEPS}: Timed out after ${REFRESH_TIMEOUT_SECONDS}s waiting on: ${stuck}`, statusCell);
+            console.log(`Refresh timed out. Queries that never reported completion: ${stuck}`);
+            console.log("A query that never reports usually means a broken table/query binding - check the table's SourceType before retrying.");
+            break;
+        }
+
+        tableQueries = tableQueries.filter(q => q.getRefreshDate() < startTime);
+        const pendingNames = tableQueries.map(q => q.getName()).join(", ");
+        displayStatus(`Step 7/${TOTAL_STEPS}: Refreshing external data. Waiting on: ${pendingNames || "none"}`, statusCell);
+
+        if (tableQueries.length > 0) {
+            sleep(REFRESH_POLL_SECONDS);
+        }
+    }
+    console.log("Finished Refreshing All Queries")
+}

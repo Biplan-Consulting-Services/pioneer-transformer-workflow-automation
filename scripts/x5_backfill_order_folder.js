@@ -57,7 +57,7 @@
 */
 
 (async () => {
-  const APPLY = false;                     // <-- set true to actually write
+  const APPLY = true;                     // <-- set true to actually write
   const base  = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
   const ORIGIN = "https://ermcopower.sharepoint.com";
   const CONC  = 4;

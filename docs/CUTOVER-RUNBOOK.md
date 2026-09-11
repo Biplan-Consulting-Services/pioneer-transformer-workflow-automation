@@ -497,7 +497,8 @@ does not exist makes them doubt the parts that are right.
 
 ## Cutover outcome — 2026-09-11
 
-Ran overnight 2026-09-10 22:00 into 09-11 07:4x. Stages 1, 2, 2b, 3 and most of 4 are
+Ran overnight 2026-09-10 22:00 into 09-11 06:4x, local time. (REST and run
+history timestamps in these notes are UTC, four hours ahead.) Stages 1, 2, 2b, 3 and most of 4 are
 complete and verified.
 
 | | evidence |
