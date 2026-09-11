@@ -323,6 +323,28 @@ tests `Location` in two-letter codes.
   operator keeps **Edit** — a Power Query refresh has to save, so read-only-for-everyone
   breaks the very thing keeping FRM09 alive.
 
+**3.6 · Retire the OLD staff workbook at `Revue/Formulaires/FRM10-12.xlsx`.**
+
+🔴 **Not covered anywhere else, and it is the quietest way this cutover fails.** 3.4 sets
+permissions on the file it *deploys* (`Revue/FRM10-12.xlsx`). The file staff have actually
+been working in all along is the one a level down in `Formulaires/`, and nothing touches
+it. After cutover it is still there, still writable, and still what every bookmark, Recent
+Files entry and Teams link opens. Someone works in it for a day and none of it reaches
+SharePoint — with no symptom, because unlike the viewer it does not even feel different.
+
+**Do this after Stage 2's final run has read from it, and after 3.4 has repointed `Index`:**
+
+- **Rename it**, e.g. `FRM10-12 ARCHIVE 2026-09-10 (ne plus utiliser).xlsx`. A rename makes
+  a stale bookmark fail loudly; read-only alone lets it open and look right.
+- **Then also set it read-only**, for anyone who reaches it through the folder.
+
+Safe once `Index` is repointed: nothing in the estate hardcodes a workbook path, every
+consumer resolves through `Index` (see `CLAUDE.md`), so FRM09 / FRM11 / FRM13 / BO Manager
+follow the row, not the filename.
+
+⚠️ Order matters. Rename it before Stage 2 finishes and the final transfer run loses its
+source.
+
 **3.5 · Name the refresh owners.** Decided 2026-09-01, still the plan: **the user
 (Soleil)**, **Angelique** (planning, so the person who feels stale data first), and **an
 automated refresh bot**. Three, not one, because a manual daily refresh with a single owner
