@@ -672,9 +672,22 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
   - `ConvertValue` reads `if v = true then arg else null` — false cannot produce `False`
   - no column is double-mapped across entities (only `Client` is, legitimately)
 
-  So the difference is not in any file in the repo, which means it needs Power Query's
-  own step-by-step preview on `#"Applied Order Items Column Map"` — compare `Tank` and
-  `Temperature Rise` side by side at that step and the divergence will be visible.
+  ✅ **CAUSE FOUND 2026-09-11 05:1x, by the user, and it is not Power Query at all.**
+  Those six columns have Excel's native **Checkbox** cell format applied, and applying
+  Checkbox to a range coerces every empty cell in it to `FALSE`. The four clean columns
+  simply never had the format. My conclusion above — that it needed a step-by-step
+  preview — was wrong: nothing in the M is at fault, and the four ruled-out items above
+  are ruled out precisely because the M is identical and correct.
+
+  **Fix:** select each column's data range, `Insert → Checkbox` to toggle the format off
+  (or `Home → Number Format → General`), then refresh via the Office Script button so
+  Power Query rewrites the coerced `FALSE` cells with its own null. Verify with
+  `scripts/verify_viewer.py`, which should then report `{'x': 4}` and no `False`.
+
+  🔑 **Worth remembering beyond this column set:** a cell format that rewrites values is
+  a category of bug that no amount of reading the query will find, and every check in
+  this repo that reads the workbook sees the coerced value rather than what the query
+  produced.
 
 - **`n8_split_status.js` creates duplicate columns on every re-run** (found 2026-09-11
   04:2x, during the cutover). Its header says column creation "skips what exists". It does
