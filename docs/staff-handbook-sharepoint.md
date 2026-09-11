@@ -116,7 +116,7 @@ from:
 | **Order -** | the **Order** list | facts about the whole order: the PO, the promised date, the order type, the sales notes |
 | **Model -** | the **Models** list | facts about the model, shared by every unit built to it |
 | **Mod. Rev. -** | the **Model Revisions** list | the technical spec: voltages, core type, oil, kVA, the drawing revision |
-| **Client -** | the **Clients** list | facts about the client, such as their lead time |
+| **Client -** | the **Clients** list | facts about the client, such as how long their long lead time items take |
 
 There are 48 of these. Most of them are hidden in the views you work in day to day; you meet the whole set
 only if you go looking.

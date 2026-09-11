@@ -128,7 +128,7 @@ la valeur provient :
 | **Order -** | la liste **Order** | ce qui concerne la commande au complet : le PO, la date promise, le type de commande, les notes de vente |
 | **Model -** | la liste **Models** | ce qui concerne le modèle, commun à toutes les unités bâties dessus |
 | **Mod. Rev. -** | la liste **Model Revisions** | la spec technique : voltages, type de noyau, huile, kVA, la révision du dessin |
-| **Client -** | la liste **Clients** | ce qui concerne le client, par exemple son délai |
+| **Client -** | la liste **Clients** | ce qui concerne le client, par exemple le temps que prennent ses pièces à long délai |
 
 Il y en a 48. La plupart sont masquées dans les affichages où vous travaillez au quotidien; vous ne
 voyez l'ensemble que si vous allez le chercher.
