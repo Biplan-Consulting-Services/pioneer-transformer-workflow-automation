@@ -85,9 +85,9 @@ n'est plus une convention à retenir.
 
 | ce que vous tapiez avant | maintenant |
 |---|---|
-| `R` dans **Tank**, **ISO Stack**, **ISO Coil**, **Lead Assembly** | une **case à cocher**, cochez-la |
-| `x` dans **Temperature Rise**, **Impulse**, **Partial D**, **Oil Analysis**, **DB** | une **case à cocher**, cochez-la |
-| `Y` dans **SFRA** | une **case à cocher**, cochez-la |
+| `R` dans **Tank**, **ISO Stack**, **ISO Coil**, **Lead Assembly** | une **case à cocher** |
+| `x` dans **Temperature Rise**, **Impulse**, **Partial D**, **Oil Analysis**, **DB** | une **case à cocher** |
+| `Y` dans **SFRA** | une **case à cocher** |
 | `Reçu` ou `Plaspak` dans **Frame** | une **liste déroulante**, choisissez |
 | du texte libre dans **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | une **liste déroulante**, choisissez |
 | un code comme `TE-Se-4` dans **Status** | deux champs : **Step Status** (choisir l'étape) et **Status Date** (choisir la date) |

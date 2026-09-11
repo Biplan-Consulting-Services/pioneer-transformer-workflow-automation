@@ -78,9 +78,9 @@ typed a letter into, the same information, just no longer a convention you had t
 
 | you used to type | now |
 |---|---|
-| `R` in **Tank**, **ISO Stack**, **ISO Coil**, **Lead Assembly** | a **checkbox**, tick it |
-| `x` in **Temperature Rise**, **Impulse**, **Partial D**, **Oil Analysis**, **DB** | a **checkbox**, tick it |
-| `Y` in **SFRA** | a **checkbox**, tick it |
+| `R` in **Tank**, **ISO Stack**, **ISO Coil**, **Lead Assembly** | a **checkbox** |
+| `x` in **Temperature Rise**, **Impulse**, **Partial D**, **Oil Analysis**, **DB** | a **checkbox** |
+| `Y` in **SFRA** | a **checkbox** |
 | `Reçu` or `Plaspak` in **Frame** | a **dropdown**, pick one |
 | free text in **Order Type**, **Order Step**, **Order Status**, **Indexing**, **WET-WETP**, **Client Date Status**, **Core Type**, **Family**, **Model Type**, **Oil Type**, **Modification Status**, **New model to be created** | a **dropdown**, pick one |
 | a code like `TE-Se-4` in **Status** | two fields: **Step Status** (pick the step) and **Status Date** (pick the date) |
