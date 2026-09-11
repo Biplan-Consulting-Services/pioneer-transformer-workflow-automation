@@ -22,8 +22,11 @@
 
 Il est encore là, et il a exactement la même allure : mêmes colonnes, même ordre, mêmes
 valeurs. C'est maintenant une **copie en lecture seule** qui se reconstruit toute seule à
-partir de SharePoint, alors consultez-le tant que vous voulez. Ce que vous changez, ça se
-fait dans SharePoint.
+partir de SharePoint, alors consultez-le tant que vous voulez.
+
+**La donnée voyage dans un seul sens, de SharePoint vers le fichier.** Rien de ce qui est
+tapé dans le fichier ne se rend à SharePoint, et la prochaine reconstruction l'efface.
+Faites vos changements dans `Order Items`.
 
 ## Trouver votre travail
 

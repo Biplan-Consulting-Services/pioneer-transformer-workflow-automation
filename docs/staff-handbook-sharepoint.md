@@ -25,7 +25,11 @@ better than guessing.
 
 It is still there, and it still looks the same: same columns, same order, same values. It
 is now a **read-only copy** that rebuilds itself from SharePoint, so open it and read it as
-much as you like. Anything you change goes in SharePoint.
+much as you like.
+
+**The data only travels one way, from SharePoint into the file.** Nothing typed into the
+file reaches SharePoint, and the next rebuild overwrites it. Make your changes in
+`Order Items`.
 
 ## Finding your work
 
