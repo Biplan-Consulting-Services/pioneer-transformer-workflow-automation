@@ -43,6 +43,25 @@
       },
       "appliedAt": "2026-09-10T18:12:24-04:00",
       "source": "n3-merged-Order_Items__sync_from_Models.json"
+    },
+    {
+      "v": 3,
+      "captured": "2026-09-11T04:20:05-04:00",
+      "state": "local",
+      "parent": 2,
+      "note": "choice /Value after n4 conversion",
+      "sha256": "6f34e92cc95c08f51842d8cddaa20ceec5ef93a923cef81d3be72212399fbdf3",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 2,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v003__2026-09-11T04-20__local__choice-Value-after-n4-conversion.json"
+      },
+      "appliedAt": null,
+      "source": "n3-merged-Order_Items__sync_from_Models.json"
     }
   ]
 }

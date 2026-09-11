@@ -62,6 +62,25 @@
       },
       "appliedAt": null,
       "source": "n3-merged-Order_Items__sync_from_Model_Revisions.json"
+    },
+    {
+      "v": 4,
+      "captured": "2026-09-11T04:20:05-04:00",
+      "state": "local",
+      "parent": 2,
+      "note": "choice /Value after n4 conversion",
+      "sha256": "16493e38bec63b956b4eb4f4bb1f3f4286c93ac29018339effaf37c200286a99",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 2,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v004__2026-09-11T04-20__local__choice-Value-after-n4-conversion.json"
+      },
+      "appliedAt": null,
+      "source": "n3-merged-Order_Items__sync_from_Model_Revisions.json"
     }
   ]
 }

@@ -16,15 +16,16 @@ snapshotted here.**
 
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
-| **v001** | 2026-09-10 16:00 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Order | — | — | 0 | 0 | `ef5081a3b084` |
-| **v002** | 2026-09-10 16:00 | `forked` | v001 | N3 Order_Items__sync_from_Order pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `aa9ee34d735b` |
-| **v003** | 2026-09-10 16:06 | `forked` | v001 | v003: OrdOrderFolder read is the bare string, not ?['Url'] -- proven by Test C | — | — | 0 | 0 | `55de185f0876` |
-| **v004** | 2026-09-10 17:42 | `pulled` | — | pulled after pasting v003 -- confirms what is live | — | — | 0 | 0 | `d1673cb8fe14` |
+| **v001** | 2026-09-10 16:00 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Order | — | — | 0 | 0 | `11cca0524a65` |
+| **v002** | 2026-09-10 16:00 | `forked` | v001 | N3 Order_Items__sync_from_Order pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `607e60ccc34d` |
+| **v003** | 2026-09-10 16:06 | `applied` | v001 | v003: OrdOrderFolder read is the bare string, not ?['Url'] -- proven by Test C | — | — | 0 | 0 | `afa72602caeb` |
+| **v004** | 2026-09-10 17:42 | `pulled` | — | pulled after pasting v003 -- confirms what is live | — | — | 0 | 0 | `afa72602caeb` |
+| **v005** | 2026-09-11 04:20 | `local` | v004 | choice /Value after n4 conversion | — | — | 0 | 0 | `2f9a7a078835` |
 
 ## Right now
 
 - **Live:** v004 — pulled after pasting v003 -- confirms what is live
-- **Pending (authored, not applied):** none
+- **Pending (authored, not applied):** v005
 
 ## Reading the columns
 

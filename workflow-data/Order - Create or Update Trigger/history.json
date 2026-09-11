@@ -83,6 +83,25 @@
       },
       "appliedAt": "2026-09-10T17:42:25-04:00",
       "source": "Order - Create or Update Trigger (post-v003 paste).json"
+    },
+    {
+      "v": 5,
+      "captured": "2026-09-11T04:20:05-04:00",
+      "state": "local",
+      "parent": 4,
+      "note": "choice /Value after n4 conversion",
+      "sha256": "2f9a7a078835f3dc7d0b45983c1f865a84b15c261c2fcca8744cf0a89f985523",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 2,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v005__2026-09-11T04-20__local__choice-Value-after-n4-conversion.json"
+      },
+      "appliedAt": null,
+      "source": "n3-merged-Order_Items__sync_from_Order.json"
     }
   ]
 }

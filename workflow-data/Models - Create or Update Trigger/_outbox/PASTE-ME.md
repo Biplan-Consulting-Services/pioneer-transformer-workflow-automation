@@ -2,7 +2,7 @@
 
 ## → `PASTE-ME.json`
 
-**v004 — choice /Value after n4 conversion**
+**v003 — choice /Value after n4 conversion**
 
 That is the file. It is the export's `properties` object — the shape the
 extension accepted for v004 — and `connectionReferences` inside it is carried
@@ -23,9 +23,9 @@ the editor rejects the file above; then try `definition-only.json` first.
 ## Then close the loop
 
 Save in Power Automate, copy the JSON back out into `_inbox/`, and tell me.
-`flow_version.py intake` will confirm by hash — if it matches, v004 flips to
+`flow_version.py intake` will confirm by hash — if it matches, v003 flips to
 `applied`. Until then it stays `local`: I do not mark my own work as landed.
 
-If it does **not** match, v004 is marked `forked` and I report exactly what
+If it does **not** match, v003 is marked `forked` and I report exactly what
 differs — which is the signal that something else changed underneath.
 

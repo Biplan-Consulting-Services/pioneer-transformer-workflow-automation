@@ -68,7 +68,7 @@
           "needsUpdate": {
             "runAfter": {},
             "type": "Compose",
-            "inputs": "@or(\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdClientDateStatus'], ''), coalesce(triggerOutputs()?['body/ClientDateStatus']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdEngineeringRequired'], ''), coalesce(triggerOutputs()?['body/EngineeringRequired'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdIndexing'], ''), coalesce(triggerOutputs()?['body/Indexing']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdInitialPromisedDate'], ''), coalesce(triggerOutputs()?['body/Initial_x0020_Promised_x0020_Dat'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdLDs'], ''), coalesce(triggerOutputs()?['body/LDs'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdNewmodeltobecreated'], ''), coalesce(triggerOutputs()?['body/New_x0020_model_x0020_to_x0020_b']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdNote'], ''), coalesce(triggerOutputs()?['body/Note'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderDate'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Date'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderStatus'], ''), coalesce(triggerOutputs()?['body/OrderStatus']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderStep'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Step']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderType'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Type1']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdPO'], ''), coalesce(triggerOutputs()?['body/PO'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdPrice'], ''), coalesce(triggerOutputs()?['body/Price'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdProvinceState'], ''), coalesce(triggerOutputs()?['body/Province_x002F_State'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdSalesNotes'], ''), coalesce(triggerOutputs()?['body/SalesNotes'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdWETWETP'], ''), coalesce(triggerOutputs()?['body/WET_x002d_WETP']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderFolder'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Folder'], '')))\n)"
+            "inputs": "@or(\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdClientDateStatus']?['Value'], ''), coalesce(triggerOutputs()?['body/ClientDateStatus']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdEngineeringRequired'], ''), coalesce(triggerOutputs()?['body/EngineeringRequired'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdIndexing']?['Value'], ''), coalesce(triggerOutputs()?['body/Indexing']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdInitialPromisedDate'], ''), coalesce(triggerOutputs()?['body/Initial_x0020_Promised_x0020_Dat'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdLDs'], ''), coalesce(triggerOutputs()?['body/LDs'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdNewmodeltobecreated']?['Value'], ''), coalesce(triggerOutputs()?['body/New_x0020_model_x0020_to_x0020_b']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdNote'], ''), coalesce(triggerOutputs()?['body/Note'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderDate'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Date'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderStatus']?['Value'], ''), coalesce(triggerOutputs()?['body/OrderStatus']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderStep']?['Value'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Step']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderType']?['Value'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Type1']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdPO'], ''), coalesce(triggerOutputs()?['body/PO'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdPrice'], ''), coalesce(triggerOutputs()?['body/Price'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdProvinceState'], ''), coalesce(triggerOutputs()?['body/Province_x002F_State'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdSalesNotes'], ''), coalesce(triggerOutputs()?['body/SalesNotes'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdWETWETP']?['Value'], ''), coalesce(triggerOutputs()?['body/WET_x002d_WETP']?['Value'], ''))),\n  not(equals(coalesce(items('Apply_to_each_unit')?['OrdOrderFolder'], ''), coalesce(triggerOutputs()?['body/Order_x0020_Folder'], '')))\n)"
           },
           "Only_if_something_changed": {
             "runAfter": {
@@ -92,22 +92,22 @@
                     "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
                     "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
                     "id": "@items('Apply_to_each_unit')?['ID']",
-                    "item/OrdClientDateStatus": "@triggerOutputs()?['body/ClientDateStatus']?['Value']",
+                    "item/OrdClientDateStatus/Value": "@triggerOutputs()?['body/ClientDateStatus']?['Value']",
                     "item/OrdEngineeringRequired": "@triggerOutputs()?['body/EngineeringRequired']",
-                    "item/OrdIndexing": "@triggerOutputs()?['body/Indexing']?['Value']",
+                    "item/OrdIndexing/Value": "@triggerOutputs()?['body/Indexing']?['Value']",
                     "item/OrdInitialPromisedDate": "@triggerOutputs()?['body/Initial_x0020_Promised_x0020_Dat']",
                     "item/OrdLDs": "@triggerOutputs()?['body/LDs']",
-                    "item/OrdNewmodeltobecreated": "@triggerOutputs()?['body/New_x0020_model_x0020_to_x0020_b']?['Value']",
+                    "item/OrdNewmodeltobecreated/Value": "@triggerOutputs()?['body/New_x0020_model_x0020_to_x0020_b']?['Value']",
                     "item/OrdNote": "@triggerOutputs()?['body/Note']",
                     "item/OrdOrderDate": "@triggerOutputs()?['body/Order_x0020_Date']",
-                    "item/OrdOrderStatus": "@triggerOutputs()?['body/OrderStatus']?['Value']",
-                    "item/OrdOrderStep": "@triggerOutputs()?['body/Order_x0020_Step']?['Value']",
-                    "item/OrdOrderType": "@triggerOutputs()?['body/Order_x0020_Type1']?['Value']",
+                    "item/OrdOrderStatus/Value": "@triggerOutputs()?['body/OrderStatus']?['Value']",
+                    "item/OrdOrderStep/Value": "@triggerOutputs()?['body/Order_x0020_Step']?['Value']",
+                    "item/OrdOrderType/Value": "@triggerOutputs()?['body/Order_x0020_Type1']?['Value']",
                     "item/OrdPO": "@triggerOutputs()?['body/PO']",
                     "item/OrdPrice": "@triggerOutputs()?['body/Price']",
                     "item/OrdProvinceState": "@triggerOutputs()?['body/Province_x002F_State']",
                     "item/OrdSalesNotes": "@triggerOutputs()?['body/SalesNotes']",
-                    "item/OrdWETWETP": "@triggerOutputs()?['body/WET_x002d_WETP']?['Value']",
+                    "item/OrdWETWETP/Value": "@triggerOutputs()?['body/WET_x002d_WETP']?['Value']",
                     "item/OrdOrderFolder": "@triggerOutputs()?['body/Order_x0020_Folder']"
                   },
                   "host": {
