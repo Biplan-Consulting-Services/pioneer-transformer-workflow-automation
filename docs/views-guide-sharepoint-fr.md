@@ -61,15 +61,18 @@ affichage. Rechangez-le, c'est tout.
 
 ## 3. Les affichages qui existent
 
-Les affichages partagés. Les trois affichages FRM10-12, ce sont les mêmes colonnes avec un
-filtre différent :
+**Les affichages FRM10-12.** Les mêmes 24 colonnes dans le même ordre, trois fois, avec un
+filtre différent sur chacun :
 
-| Affichage | Colonnes | À quoi il sert |
-|---|---|---|
-| **FRM10-12 Layout** | 24 | **Commencez ici.** La disposition du classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Trié par date de livraison prévue. Unités actives seulement. |
-| **FRM10-12 Completed** | 24 | Mêmes colonnes, unités livrées seulement. |
-| **FRM10-12 All** | 24 | Mêmes colonnes, sans filtre. **À vérifier en premier quand une unité semble manquer.** |
-| **BO Tracking** | 23 | Toutes les unités, **regroupées par statut de BO**, pour voir d'un coup ce qui attend une pièce et ce qui n'attend pas. |
+| Affichage | À quoi il sert |
+|---|---|
+| **FRM10-12 Layout** | **Commencez ici.** La disposition du classeur : les mêmes colonnes, dans le même ordre que vous avez l'habitude. Trié par date de livraison prévue. Unités actives seulement. |
+| **FRM10-12 Completed** | Les unités livrées seulement. |
+| **FRM10-12 All** | Sans filtre. **À vérifier en premier quand une unité semble manquer.** |
+
+**`BO Tracking`**, c'est autre chose, pas un quatrième affichage FRM10-12. Il contient
+toutes les unités lui aussi, mais avec ses propres 23 colonnes, et il est **regroupé par
+statut de BO** pour que ce qui attend une pièce et ce qui n'attend pas soient côte à côte.
 
 ### Vous allez en voir d'autres, et c'est normal
 

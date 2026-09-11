@@ -40,14 +40,18 @@ look the way you expect, that's usually why: you're still on a different view. J
 
 ## 3. The views that exist
 
-The shared ones. The three FRM10-12 views are the same columns with a different filter:
+**The FRM10-12 views.** The same 24 columns in the same order, three times over, with a
+different filter on each:
 
-| View | Columns | What it's for |
-|---|---|---|
-| **FRM10-12 Layout** | 24 | **Start here.** The workbook's layout: the same columns, in the same order you are used to. Sorted by planned delivery date. Active units only. |
-| **FRM10-12 Completed** | 24 | Same columns, delivered units only. |
-| **FRM10-12 All** | 24 | Same columns, no filter. **Check here first when a unit seems to be missing.** |
-| **BO Tracking** | 23 | Every unit, **grouped by BO status**, so you see what is waiting on a part and what is not. |
+| View | What it's for |
+|---|---|
+| **FRM10-12 Layout** | **Start here.** The workbook's layout: the same columns, in the same order you are used to. Sorted by planned delivery date. Active units only. |
+| **FRM10-12 Completed** | Delivered units only. |
+| **FRM10-12 All** | No filter. **Check here first when a unit seems to be missing.** |
+
+**`BO Tracking`** is a different thing, not a fourth FRM10-12 view. It has every unit too,
+but its own 23 columns, and it is **grouped by BO status** so that what is waiting on a
+part and what is not sit side by side.
 
 ### You'll see others, and that's fine
 
