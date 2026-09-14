@@ -129,6 +129,45 @@ is wrong in Excel too, and should be fixed in both or neither.
 
 ---
 
+## Audit — is this the only `TODAY()`-dependent calculated column?
+
+Asked 2026-09-14, answered by scanning every `calculatedColumnFormula` in each workbook's
+package rather than by reading any doc. **Three volatile calculated columns exist across
+the Pioneer workbooks. Only one of them is a problem.**
+
+| workbook | table / column | what `TODAY()` does there | freeze bites? |
+|---|---|---|---|
+| FRM10-12 | `TableOrders[Estimated Delivery Date]` | floor, so a unit in production never reports an estimate already in the past | 🔴 **yes** — the one being ported |
+| FRM10-12 | `TableValidationStatusCode[Code]` | builds today's stamp code, `TE-Se-14` | no |
+| FRM13 | `TableOrders[Priority]` | escalates anything below High once `Ing Due Date` is past | no |
+
+**`TableValidationStatusCode[Code]`** is a 9-row helper on the List sheet (`N18:P26`)
+feeding a data-validation dropdown — `Prefix & "-" & <French month abbr> & "-" & DAY()`.
+It is volatile *on purpose*: staff pick today's code out of it. It never ports, because
+N8 already split the composite `Status` into `Step Status` (Choice) + `Status Date`
+(Date), so staff no longer assemble the stamp at all. The composite is rebuilt by the
+viewer via `StatusStampCodes.pq` as a compatibility shim for FRM09 / FRM11 / FRM13 /
+BO Manager, and it is retired with FRM10-12 itself.
+
+**FRM13's `Priority`** stays in Excel — FRM13 is not being ported, it is the source of
+the `LeedTime` table. **Excel recalculates `TODAY()` on open and on any recalc.** The
+freeze is purely a SharePoint calculated-column behaviour, so a volatile formula is
+perfectly well-behaved where it currently lives. Only crossing into SharePoint breaks it.
+
+Also established by the same scan:
+
+- **`Order Items` has zero calculated columns today**, so there is nothing else on the
+  SharePoint side to audit. Estimated Delivery Date would be the first.
+- FRM09, `Archive active` and BO Manager have **no calculated columns at all**.
+- **Zero** volatile formulas in ordinary FRM10-12 worksheet cells outside table columns,
+  so the audit is complete rather than merely table-deep.
+- Of the **7** columns `infrastructure-overview.md` flagged for the port, only **6** carry
+  a calculated formula. **`Archived` has none** — independent corroboration of
+  `calculated-columns-plan.md:114`'s note that its formula was lost at some point and the
+  column now holds whatever was last computed.
+
+---
+
 ## Open question — does anything need to **sort or filter** a view by this?
 
 This is the one thing neither half covers, and it is the question the 2026-09-11
