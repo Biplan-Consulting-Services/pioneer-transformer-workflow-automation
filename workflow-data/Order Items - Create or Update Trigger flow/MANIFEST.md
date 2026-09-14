@@ -19,11 +19,12 @@ snapshotted here.**
 | **v001** | 2026-09-09 00:36 | `pulled` | — | baseline pulled from tenant, pre Status Date auto-stamp | — | — | 0 | 0 | `a95717bc9d7f` |
 | **v002** | 2026-09-09 00:48 | `forked` | v001 | X3 strip 2c stage-stamping + Status Date auto-stamp | — | — | 0 | 0 | `fd34a013378f` |
 | **v003** | 2026-09-11 06:00 | `pulled` | — | pasted from designer | — | — | 0 | 0 | `8952f0112e1b` |
+| **v004** | 2026-09-14 09:34 | `local` | v003 | guard both lookup gets + decouple the Status Date stamp; coalesce comparison and write | — | — | 0 | 0 | `558b95e86850` |
 
 ## Right now
 
 - **Live:** v003 — pasted from designer
-- **Pending (authored, not applied):** none
+- **Pending (authored, not applied):** v004
 
 ## Reading the columns
 

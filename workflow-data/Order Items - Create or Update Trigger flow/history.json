@@ -65,6 +65,25 @@
       },
       "appliedAt": "2026-09-11T06:00:33-04:00",
       "source": "OrderItems-CreateorUpdateTrigger_20260911100018.zip"
+    },
+    {
+      "v": 4,
+      "captured": "2026-09-14T09:34:34-04:00",
+      "state": "local",
+      "parent": 3,
+      "note": "guard both lookup gets + decouple the Status Date stamp; coalesce comparison and write",
+      "sha256": "558b95e86850417107e2693cc7c560110fecc4323ec79ff263eb0a9b3268696c",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 7,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v004__2026-09-14T09-34__local__guard-both-lookup-gets-decouple-the-Status-Date-.json"
+      },
+      "appliedAt": null,
+      "source": "v004.json"
     }
   ],
   "identity": {
