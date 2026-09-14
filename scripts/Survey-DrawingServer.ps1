@@ -25,6 +25,22 @@
                           and the reserved DOS device names. A migration that hits one
                           of these mid-run leaves a half-moved tree.
 
+                          HONESTY NOTE: on a Windows source the character check will
+                          almost always report zero, because Windows forbids those same
+                          characters itself. Do not read that zero as reassurance - it
+                          is checked because the source might one day be a NAS or a Mac
+                          share, which do allow them. The checks that genuinely earn
+                          their keep here are path length, the ~$ Office lock files
+                          (real, common, and NOT drawings - exclude them from any
+                          migration), reserved device names, and trailing space/period.
+
+                          Separately: the blue-folder sheet's own document labels DO
+                          contain forbidden characters - "Base Mod./ Tank Mod.",
+                          "Formulaire: Points a surveiller". Those are list-item titles
+                          and folder names we will CREATE, not files we will move, so
+                          they need sanitising on a different code path. This script
+                          cannot see them.
+
     4. IS THERE A CONVENTION
                           The whole index layer depends on extracting a stable document
                           identity and a revision from each file. This scores the names
@@ -188,14 +204,14 @@ foreach ($f in $files) {
 }
 
 # --- aggregate --------------------------------------------------------------
-$pdfs      = $rows | Where-Object { $_.Extension -eq '.pdf' }
-$tooLong   = $rows | Where-Object { $_.TooLong }
-$badNames  = $rows | Where-Object { $_.NameProblems -ne '' }
-$noVersion = $pdfs | Where-Object { $_.VersionScheme -eq '' }
-$multi     = $stemVersions.GetEnumerator() | Where-Object { $_.Value.Count -gt 1 }
+$pdfs      = @($rows | Where-Object { $_.Extension -eq '.pdf' })
+$tooLong   = @($rows | Where-Object { $_.TooLong })
+$badNames  = @($rows | Where-Object { $_.NameProblems -ne '' })
+$noVersion = @($pdfs | Where-Object { $_.VersionScheme -eq '' })
+$multi     = @($stemVersions.GetEnumerator() | Where-Object { $_.Value.Count -gt 1 })
 
-$topClients = $rows | ForEach-Object { ($_.RelativePath -split '\\')[0] } |
-              Group-Object | Sort-Object Count -Descending
+$topClients = @($rows | ForEach-Object { ($_.RelativePath -split '\\')[0] } |
+                Group-Object | Sort-Object Count -Descending)
 
 $inv = Join-Path $OutDir 'drawing-server-inventory.csv'
 $rows | Export-Csv -LiteralPath $inv -NoTypeInformation -Encoding UTF8
@@ -217,7 +233,7 @@ Add-Line ("- Total size: **{0:N1} GB**" -f (($rows | Measure-Object SizeKB -Sum)
 Add-Line ("- Top-level folders: **{0}**" -f $topClients.Count)
 Add-Line ("- Max folder depth: **{0}**" -f (($rows | Measure-Object Depth -Maximum).Maximum))
 if ($unreadable.Count -gt 0) {
-    Add-Line ("- ⚠️ **{0} paths could not be read** - likely already over the Windows limit" -f $unreadable.Count)
+    Add-Line ("- !! **{0} paths could not be read** - likely already over the Windows limit" -f $unreadable.Count)
 }
 Add-Line ""
 Add-Line "Extensions present:"
@@ -259,7 +275,7 @@ if ($badNames.Count -gt 0) {
     Add-Line "Examples:"
     Add-Line ""
     foreach ($r in ($badNames | Select-Object -First 12)) {
-        Add-Line ("- ``{0}`` — {1}" -f $r.RelativePath, $r.NameProblems)
+        Add-Line ("- ``{0}`` - {1}" -f $r.RelativePath, $r.NameProblems)
     }
 }
 Add-Line ""
@@ -289,15 +305,15 @@ if ($noVersion.Count -gt 0) {
 Add-Line ""
 Add-Line "## 5. Did old revisions survive anywhere?"
 Add-Line ""
-Add-Line ("Document stems with more than one version present in the same folder: **{0:N0}**" -f @($multi).Count)
+Add-Line ("Document stems with more than one version present in the same folder: **{0:N0}**" -f $multi.Count)
 Add-Line ""
 Add-Line "Today only the latest is kept at the model-code root, so a low number here confirms"
 Add-Line "that history is genuinely gone and baselines can only start from now. A high number"
 Add-Line "means some history survived and is worth migrating as real revisions."
-if (@($multi).Count -gt 0) {
+if ($multi.Count -gt 0) {
     Add-Line ""
-    foreach ($m in (@($multi) | Select-Object -First 12)) {
-        Add-Line ("- ``{0}`` — {1} versions: {2}" -f ($m.Key -split '\|')[0], $m.Value.Count, (($m.Value | Sort-Object) -join ', '))
+    foreach ($m in ($multi | Select-Object -First 12)) {
+        Add-Line ("- ``{0}`` - {1} versions: {2}" -f ($m.Key -split '\|')[0], $m.Value.Count, (($m.Value | Sort-Object) -join ', '))
     }
 }
 Add-Line ""

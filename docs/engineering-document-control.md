@@ -314,7 +314,7 @@ on the production board. Being solved elsewhere.
 
 | # | Phase | Depends on |
 |---|---|---|
-| 0 | **Discovery** — Vault edition + whether a `Revision Number` iProperty is maintained; directory listing of 2–3 model folders and one order folder; count PDFs, measure worst-case path length, scan for illegal characters | — |
+| 0 | **Discovery** — Vault edition + whether a `Revision Number` iProperty is maintained; then run the server survey below | — |
 | 1 | **Routing table** — ✅ parser done; reconcile the vocabularies with production; build `Document Types` + `Recipients` | production session |
 | 2 | **Library + metadata** — create `Engineering Drawings`, SPMT bulk move, tagging pass, stand up the publishing pipeline | 0 |
 | 3 | **Baseline + pin** — `Model Doc Sets`, `Unit Drawings` | 2 |
@@ -324,6 +324,33 @@ on the production board. Being solved elsewhere.
 
 `Unit Step History` (see above) is production-tracking scope rather than document scope, but it
 shares the step vocabulary from Phase 1 and should be designed in the same session.
+
+### Running Phase 0
+
+The drawing share is on Pioneer's network and is not reachable from the Biplan machine, so the
+survey runs where it is:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\Survey-DrawingServer.ps1 -Root "\\fileserver\Engineering"
+```
+
+Read-only — it never writes to, renames, moves or opens anything on the source. It writes
+`reports/drawing-server-survey.md` and `reports/drawing-server-inventory.csv`, and answers the
+four questions that decide the migration design:
+
+| Question | Why it decides something |
+|---|---|
+| How big is it | Sets the SPMT schedule |
+| Do the paths fit | It projects the **post-migration URL**, not today's UNC path — which is usually *longer*. Anything over 400 is rejected by SharePoint, so the folder depth may have to flatten. |
+| Do the names fit | `~$` Office lock files are real, common, and not drawings — exclude them. Reserved device names and trailing spaces/periods are the other genuine hits. |
+| Is there a convention | Scores names against the version schemes seen in the wild and reports the match rate. The dominant scheme is what the indexer parses; the rest is the exception list to fix by hand. |
+
+It also counts, per document stem, how many versions sit in one folder — the check on whether any
+history survived. A low number confirms baselines can only start from now.
+
+Verified 2026-09-14 against a synthetic tree exercising every branch: a 453-character projected
+URL, a `~$` lock file, a reserved `AUX` folder, four version schemes, an unparseable name, and a
+stem with two versions. All six detected.
 
 ---
 
