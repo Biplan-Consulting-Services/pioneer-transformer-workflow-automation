@@ -1,0 +1,15 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
+  "elmType": "a",
+  "txtContent": "='$' + toLocaleString(Number([$OrdPrice]))",
+  "attributes": {
+    "target": "_blank",
+    "title": "Ouvrir la commande dans la liste Order"
+  },
+  "style": {
+    "text-decoration": "none",
+    "white-space": "nowrap"
+  },
+  "customRowAction": null,
+  "href": "='https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/Lists/Order/AllItems.aspx?view=7&q=' + [$OrderNumber.lookupValue]"
+}

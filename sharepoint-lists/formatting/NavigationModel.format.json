@@ -1,0 +1,15 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
+  "elmType": "a",
+  "txtContent": "='Ouvrir mod\u00e8le ' + [$RevClientModelCode]",
+  "attributes": {
+    "target": "_blank",
+    "title": "Ouvrir la revision de modele"
+  },
+  "style": {
+    "text-decoration": "none",
+    "white-space": "nowrap"
+  },
+  "customRowAction": null,
+  "href": "='https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/Lists/Models%20Revisions/AllItems.aspx?viewid=5526fc48-6a40-4e8b-a015-7cb3f2c32705&view=7&q=' + [$RevClientModelCode]"
+}

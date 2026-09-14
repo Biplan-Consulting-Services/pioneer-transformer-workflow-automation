@@ -168,7 +168,27 @@ Also established by the same scan:
 
 ---
 
-## Open question — does anything need to **sort or filter** a view by this?
+## ✅ CLOSED 2026-09-14 — it has to be stored, and sorting was never the reason
+
+Left open below pending "does anyone need to sort a view by this". **Answered by
+dependency instead**, while porting the rest of FRM10-12's calculated columns
+(`calc-columns-port.md`): `Price CAD` and `Price USD` both read `Estimated Delivery Date`,
+taking `YEAR()` of it to pick an FX rate — and **a calculated column can only reference a
+stored field.** Column formatting renders a string into the page and stores nothing for a
+formula to read.
+
+So Estimated Delivery Date must be a **stored column**, whatever anyone wants to sort by.
+The column formatting below is still worth having as the live display, but it is no longer
+the whole answer.
+
+🔴 **And this rules out the unfloored-storage idea in the section below.** For a unit whose
+milestone is in the past, the floored and unfloored values can fall in **different calendar
+years**, picking a different FX rate and so a different price. Fidelity needs the floored
+value, which needs the daily pass over the ~21 stalled rows.
+
+The original question, kept because the reasoning about *cost* still stands:
+
+### Original open question — does anything need to **sort or filter** a view by this?
 
 This is the one thing neither half covers, and it is the question the 2026-09-11
 nightly-cleanup build left open in the same words: *"either a plain column the flow owns,
