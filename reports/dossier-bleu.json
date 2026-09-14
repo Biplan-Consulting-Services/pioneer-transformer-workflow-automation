@@ -1,0 +1,904 @@
+{
+  "source": "workflow-data/Utilisateurs dossier bleu V2.csv",
+  "departments": [
+    {
+      "name": "Essai",
+      "colour": "Rouge",
+      "kind": "station",
+      "sheet_total": 8
+    },
+    {
+      "name": "Qualité",
+      "colour": "Rose",
+      "kind": "office",
+      "sheet_total": 24
+    },
+    {
+      "name": "Isolation",
+      "colour": "Jaune",
+      "kind": "station",
+      "sheet_total": 11
+    },
+    {
+      "name": "Ass + Stacking",
+      "colour": "Gris",
+      "kind": "station",
+      "sheet_total": 26
+    },
+    {
+      "name": "Tanking",
+      "colour": "Bleu",
+      "kind": "station",
+      "sheet_total": 17
+    },
+    {
+      "name": "Test",
+      "colour": "Vert",
+      "kind": "station",
+      "sheet_total": 9
+    },
+    {
+      "name": "Finition",
+      "colour": "Orange",
+      "kind": "station",
+      "sheet_total": 19
+    },
+    {
+      "name": "Filerie",
+      "colour": "Violet",
+      "kind": "station",
+      "sheet_total": 9
+    },
+    {
+      "name": "Cuve",
+      "colour": "Beige",
+      "kind": "external",
+      "sheet_total": 26
+    },
+    {
+      "name": "Vente",
+      "colour": "Beige",
+      "kind": "office",
+      "sheet_total": 4
+    },
+    {
+      "name": "Achats",
+      "colour": "Beige",
+      "kind": "office",
+      "sheet_total": 10
+    }
+  ],
+  "documents": [
+    {
+      "row": 4,
+      "title": "Autres pièces",
+      "title_raw": "Autres pièces",
+      "drawing_numbers_raw": "G1168-, G1371, G1368",
+      "qualifier": "G1168",
+      "key": "autres-pieces",
+      "exemplaires": 2,
+      "routing": {
+        "Qualité": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 5,
+      "title": "Base",
+      "title_raw": "Base",
+      "drawing_numbers_raw": "G1354",
+      "qualifier": "G1354",
+      "key": "base",
+      "exemplaires": 2,
+      "routing": {
+        "Qualité": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 6,
+      "title": "Base Mod./ Tank Mod.",
+      "title_raw": "Base Mod./ Tank Mod.",
+      "drawing_numbers_raw": "G1168A",
+      "qualifier": "G1168A",
+      "key": "base-mod-tank-mod",
+      "exemplaires": 3,
+      "routing": {
+        "Qualité": 1,
+        "Tanking": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 7,
+      "title": "Base for C/C",
+      "title_raw": "Base for C/C",
+      "drawing_numbers_raw": "G1154A0240 et autres",
+      "qualifier": "G1154A0240",
+      "key": "base-for-c-c",
+      "exemplaires": 1,
+      "routing": {
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 8,
+      "title": "Boite de contrôle (CB)",
+      "title_raw": "Boite de contrôle (CB)",
+      "drawing_numbers_raw": "# du transfo suivit de CB",
+      "qualifier": null,
+      "key": "boite-de-controle-cb",
+      "exemplaires": 1,
+      "routing": {
+        "Qualité": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 9,
+      "title": "Bottom cross ch.",
+      "title_raw": "Bottom cross ch.",
+      "drawing_numbers_raw": "G1318A----",
+      "qualifier": "G1318A",
+      "key": "bottom-cross-ch",
+      "exemplaires": 2,
+      "routing": {
+        "Ass + Stacking": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 10,
+      "title": "Bottom lock. Arr.",
+      "title_raw": "Bottom lock. Arr.",
+      "drawing_numbers_raw": "G1331A0180 et autres",
+      "qualifier": "G1331A0180",
+      "key": "bottom-lock-arr",
+      "exemplaires": 1,
+      "routing": {
+        "Ass + Stacking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 11,
+      "title": "Busbar",
+      "title_raw": "Busbar",
+      "drawing_numbers_raw": "Si inscrit \"Metelec\" dans M.P.L.",
+      "qualifier": null,
+      "key": "busbar",
+      "exemplaires": 3,
+      "routing": {
+        "Ass + Stacking": 1,
+        "Tanking": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 12,
+      "title": "Bushings",
+      "title_raw": "Bushings",
+      "drawing_numbers_raw": "G1175",
+      "qualifier": "G1175",
+      "key": "bushings",
+      "exemplaires": 1,
+      "routing": {
+        "Tanking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 13,
+      "title": "C.L. Fuse Studs",
+      "title_raw": "C.L. Fuse Studs",
+      "drawing_numbers_raw": "G1168A",
+      "qualifier": "G1168A",
+      "key": "c-l-fuse-studs",
+      "exemplaires": 2,
+      "routing": {
+        "Tanking": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 14,
+      "title": "Clamps",
+      "title_raw": "Clamps",
+      "drawing_numbers_raw": "G1175",
+      "qualifier": "G1175",
+      "key": "clamps",
+      "exemplaires": 1,
+      "routing": {
+        "Tanking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 15,
+      "title": "Com. atelier",
+      "title_raw": "Com. atelier",
+      "drawing_numbers_raw": "",
+      "qualifier": null,
+      "key": "com-atelier",
+      "exemplaires": 2,
+      "routing": {
+        "Essai": 1,
+        "Test": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 16,
+      "title": "Connection Diagram",
+      "title_raw": "Connection Diagram",
+      "drawing_numbers_raw": "G1130, G1339",
+      "qualifier": "G1130",
+      "key": "connection-diagram__g1130",
+      "exemplaires": 6,
+      "routing": {
+        "Essai": 1,
+        "Qualité": 1,
+        "Ass + Stacking": 1,
+        "Tanking": 1,
+        "Test": 1,
+        "Filerie": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 17,
+      "title": "Connection Diagram",
+      "title_raw": "Connection Diagram",
+      "drawing_numbers_raw": "G1309C",
+      "qualifier": "G1309C",
+      "key": "connection-diagram__g1309c",
+      "exemplaires": 5,
+      "routing": {
+        "Essai": 1,
+        "Qualité": 1,
+        "Ass + Stacking": 1,
+        "Test": 1,
+        "Filerie": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 18,
+      "title": "Control Box Mod",
+      "title_raw": "Control Box Mod",
+      "drawing_numbers_raw": "G1368A1571",
+      "qualifier": "G1368A1571",
+      "key": "control-box-mod",
+      "exemplaires": 2,
+      "routing": {
+        "Qualité": 1,
+        "Filerie": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 19,
+      "title": "Core Blocking",
+      "title_raw": "Core Blocking",
+      "drawing_numbers_raw": "CB Master",
+      "qualifier": null,
+      "key": "core-blocking",
+      "exemplaires": 1,
+      "routing": {
+        "Ass + Stacking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 20,
+      "title": "Cover - Couvercle",
+      "title_raw": "Cover - Couvercle",
+      "drawing_numbers_raw": "G1161, G1361",
+      "qualifier": "G1161",
+      "key": "cover-couvercle",
+      "exemplaires": 4,
+      "routing": {
+        "Qualité": 1,
+        "Finition": 1,
+        "Cuve": 2
+      },
+      "notes": {}
+    },
+    {
+      "row": 21,
+      "title": "Estampes",
+      "title_raw": "Estampes",
+      "drawing_numbers_raw": "",
+      "qualifier": null,
+      "key": "estampes",
+      "exemplaires": 1,
+      "routing": {
+        "Qualité": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 22,
+      "title": "Bars (Extension )/Spacers",
+      "title_raw": "Bars (Extension )/Spacers",
+      "drawing_numbers_raw": "G1368A / G13",
+      "qualifier": "G1368A",
+      "key": "bars-extension-spacers",
+      "exemplaires": 4,
+      "routing": {
+        "Isolation": 1,
+        "Ass + Stacking": 1,
+        "Finition": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 23,
+      "title": "Extention hardware",
+      "title_raw": "Extention hardware",
+      "drawing_numbers_raw": "G1368A",
+      "qualifier": "G1368A",
+      "key": "extention-hardware",
+      "exemplaires": 3,
+      "routing": {
+        "Isolation": 1,
+        "Ass + Stacking": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 24,
+      "title": "Flange Network",
+      "title_raw": "Flange Network",
+      "drawing_numbers_raw": "",
+      "qualifier": null,
+      "key": "flange-network",
+      "exemplaires": 2,
+      "routing": {
+        "Qualité": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 25,
+      "title": "Formulaire: Points a surveiller",
+      "title_raw": "Formulaire: Points a surveiller",
+      "drawing_numbers_raw": "Copie sur des feuilles oranges *",
+      "qualifier": null,
+      "key": "formulaire-points-a-surveiller",
+      "exemplaires": 7,
+      "routing": {
+        "Qualité": 1,
+        "Isolation": 1,
+        "Ass + Stacking": 1,
+        "Tanking": 1,
+        "Finition": 1,
+        "Filerie": 1,
+        "Vente": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 26,
+      "title": "Frame",
+      "title_raw": "Frame",
+      "drawing_numbers_raw": "G1117, *G1117B, G1317, G1318B, G1318C",
+      "qualifier": "G1117",
+      "key": "frame",
+      "exemplaires": 3,
+      "routing": {
+        "Qualité": 1,
+        "Ass + Stacking": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 27,
+      "title": "Gaskets",
+      "title_raw": "Gaskets",
+      "drawing_numbers_raw": "G1175",
+      "qualifier": "G1175",
+      "key": "gaskets",
+      "exemplaires": 2,
+      "routing": {
+        "Tanking": 1,
+        "Finition": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 28,
+      "title": "Glastic",
+      "title_raw": "Glastic",
+      "drawing_numbers_raw": "G1185 / G1368",
+      "qualifier": "G1185",
+      "key": "glastic",
+      "exemplaires": 5,
+      "routing": {
+        "Qualité": 1,
+        "Isolation": 1,
+        "Ass + Stacking": 1,
+        "Finition": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 29,
+      "title": "Ground bar",
+      "title_raw": "Ground bar",
+      "drawing_numbers_raw": "G1335, G1135",
+      "qualifier": "G1335",
+      "key": "ground-bar",
+      "exemplaires": 3,
+      "routing": {
+        "Qualité": 1,
+        "Isolation": 1,
+        "Ass + Stacking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 30,
+      "title": "Ground bar / bus",
+      "title_raw": "Ground bar / bus",
+      "drawing_numbers_raw": "G1335A--",
+      "qualifier": "G1335A",
+      "key": "ground-bar-bus",
+      "exemplaires": 2,
+      "routing": {
+        "Ass + Stacking": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 31,
+      "title": "Ground spade/pad",
+      "title_raw": "Ground spade/pad",
+      "drawing_numbers_raw": "G1135A",
+      "qualifier": "G1135A",
+      "key": "ground-spade-pad",
+      "exemplaires": 3,
+      "routing": {
+        "Isolation": 1,
+        "Ass + Stacking": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 32,
+      "title": "Ground Strap Network",
+      "title_raw": "Ground Strap Network",
+      "drawing_numbers_raw": "G1135A",
+      "qualifier": "G1135A",
+      "key": "ground-strap-network",
+      "exemplaires": 3,
+      "routing": {
+        "Qualité": 1,
+        "Isolation": 1,
+        "Ass + Stacking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 33,
+      "title": "HV & LV Cutout detail",
+      "title_raw": "HV & LV Cutout detail",
+      "drawing_numbers_raw": "G1168B",
+      "qualifier": "G1168B",
+      "key": "hv-lv-cutout-detail",
+      "exemplaires": 2,
+      "routing": {
+        "Qualité": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 34,
+      "title": "HV busbar",
+      "title_raw": "HV busbar",
+      "drawing_numbers_raw": "",
+      "qualifier": null,
+      "key": "hv-busbar",
+      "exemplaires": 1,
+      "routing": {
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 35,
+      "title": "Insulation (List of)",
+      "title_raw": "Insulation (List of)",
+      "drawing_numbers_raw": "G1131, FLE en titre",
+      "qualifier": "G1131",
+      "key": "insulation-list-of",
+      "exemplaires": 2,
+      "routing": {
+        "Isolation": 1,
+        "Ass + Stacking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 36,
+      "title": "L.V. Bushing Spacer",
+      "title_raw": "L.V. Bushing Spacer",
+      "drawing_numbers_raw": "G1368A21522",
+      "qualifier": "G1368A21522",
+      "key": "l-v-bushing-spacer",
+      "exemplaires": 2,
+      "routing": {
+        "Finition": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 37,
+      "title": "L.V. Extention bar support",
+      "title_raw": "L.V. Extention bar support",
+      "drawing_numbers_raw": "G1168",
+      "qualifier": "G1168",
+      "key": "l-v-extention-bar-support",
+      "exemplaires": 3,
+      "routing": {
+        "Ass + Stacking": 1,
+        "Tanking": 1,
+        "Finition": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 38,
+      "title": "L.V. supports",
+      "title_raw": "L.V. supports",
+      "drawing_numbers_raw": "G1133A0390 et autres",
+      "qualifier": "G1133A0390",
+      "key": "l-v-supports",
+      "exemplaires": 4,
+      "routing": {
+        "Isolation": 1,
+        "Ass + Stacking": 1,
+        "Finition": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 39,
+      "title": "M.P.L",
+      "title_raw": "M.P.L",
+      "drawing_numbers_raw": "G1190, G1390, G1391",
+      "qualifier": "G1190",
+      "key": "m-p-l",
+      "exemplaires": 10,
+      "routing": {
+        "Essai": 1,
+        "Qualité": 1,
+        "Ass + Stacking": 1,
+        "Tanking": 1,
+        "Test": 1,
+        "Finition": 1,
+        "Filerie": 1,
+        "Cuve": 2,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 40,
+      "title": "N/P-Ext. Nameplate(Étiquette)",
+      "title_raw": "N/P-Ext. Nameplate(Étiquette)",
+      "drawing_numbers_raw": "G2104",
+      "qualifier": "G2104",
+      "key": "n-p-ext-nameplate-etiquette",
+      "exemplaires": 4,
+      "routing": {
+        "Qualité": 1,
+        "Tanking": 1,
+        "Finition": 1,
+        "Achats": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 41,
+      "title": "Nameplate - Plaque signalet.",
+      "title_raw": "Nameplate - Plaque signalet.",
+      "drawing_numbers_raw": "G2102, G2112 (sans +)",
+      "qualifier": "sans +",
+      "key": "nameplate-plaque-signalet__sans",
+      "exemplaires": 5,
+      "routing": {
+        "Essai": 1,
+        "Ass + Stacking": 1,
+        "Tanking": 1,
+        "Test": 1,
+        "Finition": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 42,
+      "title": "Nameplate - Plaque signalet.",
+      "title_raw": "Nameplate - Plaque signalet. ",
+      "drawing_numbers_raw": "G2102, G2112 (avec +)",
+      "qualifier": "avec +",
+      "key": "nameplate-plaque-signalet__avec",
+      "exemplaires": 1,
+      "routing": {
+        "Finition": 1
+      },
+      "notes": {
+        "Essai": "placer dans chemise sur la table à dessins"
+      }
+    },
+    {
+      "row": 43,
+      "title": "Network Piping",
+      "title_raw": "Network Piping",
+      "drawing_numbers_raw": "G1368 B",
+      "qualifier": "G1368",
+      "key": "network-piping",
+      "exemplaires": 1,
+      "routing": {
+        "Filerie": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 44,
+      "title": "Network Support",
+      "title_raw": "Network Support",
+      "drawing_numbers_raw": "G1183",
+      "qualifier": "G1183",
+      "key": "network-support",
+      "exemplaires": 2,
+      "routing": {
+        "Qualité": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 45,
+      "title": "Order Check List",
+      "title_raw": "Order Check List",
+      "drawing_numbers_raw": "C1120, C1122, C1115, C1116",
+      "qualifier": "C1120",
+      "key": "order-check-list",
+      "exemplaires": 5,
+      "routing": {
+        "Essai": 1,
+        "Isolation": 1,
+        "Ass + Stacking": 1,
+        "Test": 1,
+        "Vente": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 46,
+      "title": "Outline - Encombrement",
+      "title_raw": "Outline - Encombrement",
+      "drawing_numbers_raw": "G1103, G1303",
+      "qualifier": "G1103",
+      "key": "outline-encombrement",
+      "exemplaires": 10,
+      "routing": {
+        "Essai": 1,
+        "Qualité": 1,
+        "Ass + Stacking": 1,
+        "Tanking": 1,
+        "Test": 1,
+        "Finition": 1,
+        "Filerie": 1,
+        "Cuve": 2,
+        "Vente": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 47,
+      "title": "Palette",
+      "title_raw": "Palette",
+      "drawing_numbers_raw": "PL-Master",
+      "qualifier": null,
+      "key": "palette",
+      "exemplaires": 3,
+      "routing": {
+        "Finition": 1,
+        "Cuve": 1,
+        "Vente": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 48,
+      "title": "Switch chamber",
+      "title_raw": "Switch chamber",
+      "drawing_numbers_raw": "G1368B",
+      "qualifier": "G1368B",
+      "key": "switch-chamber",
+      "exemplaires": 2,
+      "routing": {
+        "Qualité": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 49,
+      "title": "Tank - Cuve",
+      "title_raw": "Tank - Cuve",
+      "drawing_numbers_raw": "G1158D",
+      "qualifier": "G1158D",
+      "key": "tank-cuve__g1158d",
+      "exemplaires": 6,
+      "routing": {
+        "Qualité": 1,
+        "Tanking": 1,
+        "Finition": 1,
+        "Cuve": 3
+      },
+      "notes": {}
+    },
+    {
+      "row": 50,
+      "title": "Tank - Cuve",
+      "title_raw": "Tank - Cuve",
+      "drawing_numbers_raw": "G1150, G1350, G1158C",
+      "qualifier": "G1150",
+      "key": "tank-cuve__g1150",
+      "exemplaires": 5,
+      "routing": {
+        "Qualité": 1,
+        "Tanking": 1,
+        "Finition": 1,
+        "Filerie": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 51,
+      "title": "Top locating bolt",
+      "title_raw": "Top locating bolt",
+      "drawing_numbers_raw": "G1318A----",
+      "qualifier": "G1318A",
+      "key": "top-locating-bolt",
+      "exemplaires": 2,
+      "routing": {
+        "Ass + Stacking": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 52,
+      "title": "Top location angle",
+      "title_raw": "Top location angle",
+      "drawing_numbers_raw": "G1318A----",
+      "qualifier": "G1318A",
+      "key": "top-location-angle",
+      "exemplaires": 2,
+      "routing": {
+        "Ass + Stacking": 1,
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 53,
+      "title": "Window Blocking",
+      "title_raw": "Window Blocking",
+      "drawing_numbers_raw": "WB Master",
+      "qualifier": null,
+      "key": "window-blocking",
+      "exemplaires": 1,
+      "routing": {
+        "Ass + Stacking": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 54,
+      "title": "Wiring - Shéma éléctrique",
+      "title_raw": "Wiring - Shéma éléctrique",
+      "drawing_numbers_raw": "G1339",
+      "qualifier": "G1339",
+      "key": "wiring-shema-electrique",
+      "exemplaires": 6,
+      "routing": {
+        "Essai": 1,
+        "Qualité": 1,
+        "Tanking": 1,
+        "Test": 1,
+        "Finition": 1,
+        "Filerie": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 55,
+      "title": "X0 Bar support",
+      "title_raw": "X0 Bar support",
+      "drawing_numbers_raw": "",
+      "qualifier": null,
+      "key": "x0-bar-support",
+      "exemplaires": 0,
+      "routing": {},
+      "notes": {}
+    },
+    {
+      "row": 56,
+      "title": "X0 Connection",
+      "title_raw": "X0 Connection",
+      "drawing_numbers_raw": "",
+      "qualifier": null,
+      "key": "x0-connection",
+      "exemplaires": 2,
+      "routing": {
+        "Tanking": 1,
+        "Finition": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 57,
+      "title": "X0 Neutral sp.",
+      "title_raw": "X0 Neutral sp.",
+      "drawing_numbers_raw": "G1135A0149 et autres",
+      "qualifier": "G1135A0149",
+      "key": "x0-neutral-sp",
+      "exemplaires": 1,
+      "routing": {
+        "Cuve": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 58,
+      "title": "LY Layout",
+      "title_raw": "LY Layout",
+      "drawing_numbers_raw": "",
+      "qualifier": null,
+      "key": "ly-layout",
+      "exemplaires": 2,
+      "routing": {
+        "Test": 1,
+        "Finition": 1
+      },
+      "notes": {}
+    },
+    {
+      "row": 59,
+      "title": "Ext.Bar",
+      "title_raw": "Ext.Bar",
+      "drawing_numbers_raw": "G21152-MOD",
+      "qualifier": "G21152",
+      "key": "ext-bar",
+      "exemplaires": 2,
+      "routing": {
+        "Isolation": 1,
+        "Ass + Stacking": 1
+      },
+      "notes": {}
+    }
+  ]
+}
