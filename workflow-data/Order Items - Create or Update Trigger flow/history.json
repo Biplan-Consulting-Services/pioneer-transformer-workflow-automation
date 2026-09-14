@@ -69,7 +69,7 @@
     {
       "v": 4,
       "captured": "2026-09-14T09:34:34-04:00",
-      "state": "forked",
+      "state": "applied",
       "parent": 3,
       "note": "guard both lookup gets + decouple the Status Date stamp; coalesce comparison and write",
       "sha256": "558b95e86850417107e2693cc7c560110fecc4323ec79ff263eb0a9b3268696c",
@@ -80,9 +80,10 @@
         "excelFile": null
       },
       "files": {
-        "definition": "v004__2026-09-14T09-34__local__guard-both-lookup-gets-decouple-the-Status-Date-.json"
+        "definition": "v004__2026-09-14T09-34__local__guard-both-lookup-gets-decouple-the-Status-Date-.json",
+        "package": "v004__2026-09-14T09-34__local__guard-both-lookup-gets-decouple-the-Status-Date-.zip"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-14T14:49:23-04:00",
       "source": "v004.json",
       "forkedAt": "2026-09-14T12:40:09-04:00"
     },

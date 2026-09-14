@@ -146,6 +146,33 @@ Save. Export again, intake, and confirm `status` flips v004 to `applied`.
 ⚠️ Expect `recurrence.interval` to survive at **5**. A FORKED report on **only** that key
 is the designer rewriting it on save — known 09-11 behaviour, not a bad paste.
 
+> ### ✅ Done 2026-09-14 14:48 — `v004 CONFIRMED APPLIED`
+>
+> **Paste the editor wrapper, not the bare definition.** Two attempts vanished silently
+> before this was spotted — pasted, saved, re-exported, and the export still hashed as
+> v003. The extension takes a flow-editor wrapper, `{connectionReferences, definition}`;
+> a bare definition drops `connectionReferences`, which is the object carrying the real
+> connection id, so the editor has nothing to bind and discards it. Saving then just
+> re-saves what was already there. `n3-deploy-and-test.md` documents this and this
+> runbook pointed at `definition-only.json` anyway.
+>
+> **The file that worked:** `_outbox/alternate-shapes/definition-plus-connections.json`,
+> written by `flow_version.py stage`. Note that `stage`'s default `PASTE-ME.json` is the
+> `properties` shape, chosen because it suited a *different* flow — for this one, use the
+> alternate.
+>
+> Verified in the tenant's own export afterwards, not just by hash: both guards present,
+> both gets nested inside them, `Condition_StatusDate` on `Initialize_vStatusDateValue`,
+> 4 coalesces, interval still 5.
+>
+> **Two defects in `flow_version.py` surfaced and were fixed:**
+> - A version already labelled `forked` could never afterwards be confirmed `applied`, so
+>   v004 — demonstrably live — kept reading `forked`. Both labels are inferences; a pull
+>   carrying the exact definition is direct evidence and outranks the earlier guess.
+> - `live()` ordered by version NUMBER, so it reported v005 (captured 12:40) over v004
+>   (applied 14:49). A local version is authored before it is pasted, so its number can be
+>   lower than a pull that happened in between. Now ordered by when the proof arrived.
+
 ---
 
 ## 🔴 5 onward — one sitting, no breaks

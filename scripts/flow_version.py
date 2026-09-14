@@ -279,9 +279,20 @@ def newest(h, state=None):
 
 
 def live(h):
-    """The newest version we have PROOF was live: newest pulled-or-applied."""
+    """The newest version we have PROOF was live: newest pulled-or-applied.
+
+    Ordered by WHEN THE PROOF ARRIVED, not by version number. A local version is
+    authored before it is pasted, so its number can be lower than a pull that
+    happened in between -- on 2026-09-14 v004 was authored at 09:34, v005 pulled at
+    12:40, and v004 then confirmed applied at 14:49 by a pull carrying its exact
+    definition. By number the answer is v005; the tenant was holding v004. Sorting
+    by number reported the superseded definition as live, which is the one question
+    this command exists to answer.
+    """
     vs = [v for v in h["versions"] if v["state"] in ("pulled", "applied")]
-    return vs[-1] if vs else None
+    if not vs:
+        return None
+    return max(vs, key=lambda v: (v.get("appliedAt") or v.get("captured") or "", v["v"]))
 
 
 def pending(h):
@@ -412,10 +423,19 @@ def cmd_snapshot(a):
 
     same = [v for v in h["versions"] if v["sha256"] == sha]
     if same and not a.local:
-        # A pull that matches something we already have. If it matches a pending
-        # local version, that is PROOF the paste landed.
+        # A pull that matches something we already have. If it matches a local
+        # version, that is PROOF the paste landed.
+        #
+        # `forked` counts too, and that is not a loophole. Both labels are
+        # INFERENCES: `forked` means "a later pull did not match, so this was
+        # probably never applied", and it can be wrong -- on 2026-09-14 v004 was
+        # forked by a pull that turned out to be byte-identical to its own parent,
+        # the difference being a stale hash of ours rather than any change in the
+        # tenant. A pull carrying this version's exact definition is direct
+        # evidence and outranks the earlier guess. Refusing to reconsider left a
+        # version that was demonstrably live reading `forked` in status.
         for v in same:
-            if v["state"] == "local":
+            if v["state"] in ("local", "forked"):
                 v["state"] = "applied"
                 v["appliedAt"] = now_iso(a.at)
                 print("v%03d CONFIRMED APPLIED -- this pull carries its exact definition." % v["v"])
