@@ -49,11 +49,17 @@ Separate question, same evening, and it has to be after 8pm.
 UTC-based rather than site-local, so a row edited between roughly **20:00 and midnight
 Eastern** recomputes with UTC already on tomorrow and reads **a day ahead**.
 
-- Open the hidden **`test calculated column`** on `Order Items`.
+**Step 2 ran first, so test the real column rather than the proxy:** open a few units and
+read **`Estimated Delivery Date`** itself. The old hidden `test calculated column` is the
+fallback if that is somehow unreadable.
+
 - **If it shows tomorrow's date, the trap is real.**
 
-This decides whether `Estimated Delivery Date` can be a calculated column at all, so run
-it before `n9`. If it fails, the fallback is already built — column formatting's `@now` is
+Read at least one unit from each branch — one delivered (branch 1, no `TODAY()`, so it
+must NOT move), and one stalled in production (a `TODAY()` branch). If the non-`TODAY()`
+branch also reads a day ahead, the problem is not the trap and is something else entirely.
+
+This decides whether `Estimated Delivery Date` survives as a calculated column. If it fails, the fallback is already built — column formatting's `@now` is
 browser-evaluated and has neither the freeze nor the UTC trap
 (`sharepoint-lists/formatting/EstimatedDeliveryDate.format.json`).
 
@@ -66,6 +72,29 @@ scripts/n9_create_calc_columns.js        DRY RUN by default
 Independent of the flow work; nothing below depends on it. Creates columns, writes no
 items. `Options: 8` is `AddFieldInternalNameHint`, so they do **not** land in the default
 view and staff will not see them until someone adds them.
+
+> ### ✅ Done 2026-09-14 ~14:20 — all eight created, nothing downgraded
+>
+> Run **before** step 1 deliberately, reversing this file's original order: it means the
+> UTC test tonight reads the **real `Estimated Delivery Date` column** rather than the old
+> hidden `test calculated column` proxy, which the cutover runbook says was hidden and may
+> not be usable anyway.
+>
+> Eight POSTs, eight `200`s — and the read-back is what matters, since a `200` is not proof
+> of the stored `ResultType`. Decoding `OutputType` (SP.FieldType):
+>
+> | column | TypeAsString | OutputType | |
+> |---|---|---|---|
+> | `CalcRefreshed` | DateTime | — | plain column, correct |
+> | `BoPenalty` | Calculated | 9 = Number | ✓ |
+> | `EstimatedDeliveryDate` | Calculated | **4 = DateTime** | ✓ |
+> | `IsCanadian` | Calculated | 8 = Boolean | ✓ |
+> | `FxYear` · `FxRate` | Calculated | 9 = Number | ✓ |
+> | `PriceCAD` · `PriceUSD` | Calculated | **10 = Currency** | ✓ |
+>
+> The two Currency columns were the likeliest to be silently coerced to Number. They were
+> not. The 828-character `Estimated Delivery Date` formula was also accepted whole, so the
+> 1024 limit held with room to spare.
 
 ## 3 · Confirm v004's parent is still current
 
