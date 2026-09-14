@@ -513,7 +513,8 @@ complete and verified.
 
 **Left, and none of it is staff-facing:**
 
-- 🔴 **the trigger flow is OFF** — it fails on the 203 units with no Client/Model. First
+- 🔴 **the trigger flow is OFF** — it fails on the ~20 units with no Client/Model (recorded
+  as 203 at the time; that was the stale mirrors, corrected 2026-09-14). First
   daylight job; design is on the roadmap.
 - **x7** (`x7_verify_parent_sync.js`) once staff have made real edits, not our test ones.
 - **the parent `_TextField` drift**, three weeks of it, and the Power Apps read those.

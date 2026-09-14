@@ -1,4 +1,4 @@
-# Trigger flow v004 — fixing the 203, and how to know it worked
+# Trigger flow v004 — fixing the model-less units, and how to know it worked
 
 Written 2026-09-14. This is handover job 1: the `Order Items` create-or-update trigger
 flow has been **disabled since 2026-09-11 07:1x** and this is what turns it back on.
@@ -82,8 +82,10 @@ letting it write. x10 reads it and nothing else.
 counts the rows that were relying on R14, i.e. how load-bearing the coalesce on the write
 turns out to be. Record the number here when it is first run.
 
-x10 also prints the thing the handover asks for and nothing supplied: **which units are
-the 203**, and which of them are usable as a test row.
+x10 also prints the thing the handover asks for and nothing supplied: **which units they
+are**, and which of them are usable as a test row. Measured 2026-09-14: **16** with
+all three lookups empty and **4** with some — not the 203 the handover recorded, which
+came from the stale `_TextField` mirrors.
 
 ---
 
@@ -125,7 +127,7 @@ overwrite the definition in the designer with the browser extension that exposes
 
 ---
 
-## Part 2 · Test — on one of the 203, not on a healthy unit
+## Part 2 · Test — on a model-less unit, not on a healthy one
 
 Testing the happy path is how this flow reached production broken. x10 prints candidates:
 model-less units whose Step Status already equals its mirror, so a deliberate change

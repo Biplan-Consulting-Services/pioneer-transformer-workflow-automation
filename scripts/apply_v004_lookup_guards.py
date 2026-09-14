@@ -12,10 +12,16 @@ Enabled 2026-09-11 07:1x, failed within minutes, turned off again:
     'Get_Model' ... 'id' may not be null or empty
 
 `Get_Client` and `Get_Model` read a lookup id straight off the trigger row with no
-guard, and 203 of 1,189 units have no Client, Model or Model Revision -- the same 203
-rows in all three. Editing one of them fails the flow at `Get_Client`, and because
-everything downstream hangs off `Get_Model [Succeeded]`, the Status Date auto-stamp is
-skipped with it. About 17% of units would silently stop stamping.
+guard, and some units have no Client, Model or Model Revision. That population was
+recorded as 203 of 1,189; measured directly on 2026-09-14 it is ~20 (16 with all three
+empty, 4 with some). The 203 came from the `*_TextField` mirrors, whose sync has been off
+since 2026-08-21 -- the trap x6_check_lookup_coverage.js exists to expose. The fix is
+unchanged either way; only the blast radius was overstated.
+
+Editing one of those units fails the flow at `Get_Client`, and because everything
+downstream hangs off `Get_Model [Succeeded]`, the Status Date auto-stamp is skipped
+with it. About 1.7% of units would silently stop stamping -- recorded at the time as
+17%, on the same overstated population.
 
 This predates v002. What changed is that the stamp came to depend on those two gets,
 turning a dormant weakness into a user-visible one. The 2026-09-10 tests missed it
@@ -55,7 +61,7 @@ guard and once in `Update_item`'s field map:
 When a Get is skipped both evaluate to null. The comparison one is the bug the roadmap
 names: null vs a populated mirror compares unequal, so `Condition` would report a
 change that has not happened and rewrite the row on every poll -- an unbounded write
-loop on the 203, because the write never makes the two sides agree.
+loop on those rows, because the write never makes the two sides agree.
 
 The write one is milder than it looks and it is worth being exact about why, since the
 reasoning is the same one v002 relies on: R14 established that this connector does NOT
@@ -79,7 +85,7 @@ would make every future pull report FORKED on that one key forever.
 row directly, not an action output, so they are null on exactly the rows where their
 mirror is also null and compare equal without help.
 
-TERMINATION still holds, and now on the 203 as well. Pass 2 after a write: Step Status
+TERMINATION still holds, and now on the model-less rows as well. Pass 2 after a write: Step Status
 equals its mirror so the stamp is false, and each coalesced lookup equals its own mirror
 whether the Get ran or was skipped, so `Condition` is true, its `else` does not run,
 `vUpdateOrderItem` stays false and `Condition_3` writes nothing.
@@ -88,8 +94,8 @@ BEFORE THIS GOES LIVE
 ---------------------
 - Re-run the `StepStatusStamped = StepStatus` check. It was 262/262 at 05:55 and it is
   the gate that stops 246 historical dates being re-stamped to today.
-- Test on a unit that HAS NO MODEL -- one of the 203. Testing the happy path is how the
-  flow reached production broken.
+- Test on a unit that HAS NO MODEL -- x10_trigger_flow_gate.js prints them. Testing the
+  happy path is how the flow reached production broken.
 """
 import json, io, os, argparse
 

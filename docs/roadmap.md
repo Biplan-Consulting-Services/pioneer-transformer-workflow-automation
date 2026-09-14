@@ -821,9 +821,18 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
   definition — depopulated, not deleted, despite `FRM10-12/CONTEXT.md` saying it was dropped.
   Cosmetic, but it makes column-count audits confusing.
 
-## 🔴 FIRST daylight job — the trigger flow fails on 203 units, and is OFF because of it
+## 🔴 FIRST daylight job — the trigger flow fails on the model-less units, and is OFF because of it
 
 Found 2026-09-11 07:1x, minutes after enabling it. **The flow is currently disabled.**
+> ⚠️ **The "203" is wrong — measured 2026-09-14 it is ~20.** `x10_trigger_flow_gate.js`
+> read the lookups directly: **16** units with all three empty, **4** with some but not
+> all. Every earlier count came from `*_TextField` mirrors in a CSV export, and that sync
+> has been off since **2026-08-21**, so the mirrors say nothing about the lookups the flow
+> actually reads — which is the exact trap `x6_check_lookup_coverage.js` was written to
+> expose. **The fix does not change; 20 rows still break the flow.** The severity does:
+> ~1.7% of units, not ~17%.
+
+
 
     WorkflowOperationParametersRuntimeMissingValue
     'Get_Model' ... 'id' may not be null or empty
@@ -835,8 +844,8 @@ guard:
     Get_Model    id = @triggerBody()?['Model/Id']
     Condition    runAfter = Get_Model [Succeeded]
 
-**203 of 1,189 units have no Client, Model or Model Revision** — the same 203 rows in all
-three. Editing one fails the flow at `Get_Client`, and because `Condition` runs only on
+**~20 of 1,195 units have no Client, Model or Model Revision** (16 with all three empty,
+4 with some — corrected 2026-09-14, this read 203 and was measuring stale mirrors). Editing one fails the flow at `Get_Client`, and because `Condition` runs only on
 `Get_Model [Succeeded]`, everything downstream is skipped **including the `Status Date`
 auto-stamp**. About 17% of units would silently stop stamping.
 
@@ -865,7 +874,7 @@ Two changes, and the second is the real one:
 - Re-run the `StepStatusStamped = StepStatus` check. It was 262/262 at 05:55 and nothing
   should have moved it, but it is the gate that stops 246 historical dates being
   re-stamped to today.
-- Test on a unit that **has no model** — one of the 203 — not on a healthy one. That is
+- Test on a unit that **has no model** — `x10_trigger_flow_gate.js` prints them — not on a healthy one. That is
   the case that broke it, and testing the happy path is how it got here.
 
 ### While it is off

@@ -15,7 +15,9 @@
           shape for a precondition.
 
        2. "Test on a unit that has no model -- one of the 203, not a healthy one."
-          Nothing anywhere says WHICH 203. Picking one by hand out of 1,189 rows is how
+          Nothing anywhere says WHICH. (And it is not 203: this script measured 16 with
+          all three lookups empty on 2026-09-14. The 203 came from the *_TextField
+          mirrors, off since 2026-08-21.) Picking one by hand out of ~1,190 rows is how
           the happy path gets tested again.
 
    WHAT IT CHECKS
@@ -36,7 +38,7 @@
 
      TEST UNITS -- model-less units that already satisfy Gate A, so a deliberate Step
        Status change on one produces a clean, attributable stamp. It prints the three
-       lookup ids as nulls so you can see at a glance that it really is one of the 203.
+       lookup ids as nulls so you can see at a glance that it really is model-less.
 */
 (async () => {
   const base = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio";
@@ -80,14 +82,15 @@
     console.log("  GATE A PASSES.");
   }
 
-  /* ---------------------------------------------------------------- the 203 */
+  /* ------------------------------------------------- the model-less units */
   const isNull = v => v == null || v === "";
   const modelless = units.filter(u => isNull(u.ClientId) && isNull(u.ModelId) && isNull(u.ModelRevisionId));
   const partial = units.filter(u => !modelless.includes(u)
                    && (isNull(u.ClientId) || isNull(u.ModelId) || isNull(u.ModelRevisionId)));
 
   console.log("\n=== the units the flow used to fail on ===");
-  console.log("  all three lookups empty : " + modelless.length + "   (the 203)");
+  console.log("  all three lookups empty : " + modelless.length
+    + "   (recorded as 203 in the handover -- that was the stale _TextField mirrors)");
   console.log("  SOME but not all empty  : " + partial.length
     + (partial.length ? "   <-- not the documented shape; v004 guards each get separately so these are handled, but they were never counted before" : ""));
   for (const u of partial.slice(0, 10))
