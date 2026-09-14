@@ -378,12 +378,33 @@ removes that free signal, so the logic has to do it explicitly instead.
 `Client`-sync flow — don't build one, it would be thrown away.
 
 ### 5. Monday.com production-tracking integration
-→ `docs/document-library-plan.md` (document library / NC storage / design-doc routing)
+→ **`docs/engineering-document-control.md`** — the real design, written 2026-09-14.
+→ `docs/document-library-plan.md` — **superseded**, kept for its dsapps.dev research only.
 
-**Blocked, 2026-08-21**: user's Monday.com account access is pending approval — anything
-requiring a Monday login (native automations, the Link-column inline-preview test) waits on
-that. The SharePoint-side half of `document-library-plan.md` (library/view setup, tagging
-drawings) has no such dependency and can proceed now.
+**Unblocked 2026-09-14.** Monday access granted; board `Transformers Production` inspected
+live (workspace *Pioneer Production Control*, account `powerpartners.monday.com`). Item =
+`Numéro de série`, one per unit; **steps are board groups, ~26 of them**; advance is a
+"Prochaine Étape" button backed by 55 automations; 44 columns. **Still under construction**,
+so the step vocabulary can still be shaped — which is why the reconciliation work is cheap
+now and expensive later.
+
+Three hard findings that gate the build:
+- 🔴 **A Monday formula column cannot read an item's group.** An `Étape actuelle` column,
+  written by the same automation that moves the group, is a prerequisite for any filtered
+  document link.
+- 🔴 **`Code Produit` is empty** and is the join key from a unit to its model document set.
+- **Decision 2026-09-14: Monday's ~26 steps are the current truth and every step is tracked**,
+  including the `Stockage *` buffers, until production confirms otherwise. A step needing no
+  documents is a valid state — routing and tracking are independent axes. Carrying that in
+  SharePoint wants a **`Unit Step History` child list**, not ~52 more columns on the
+  already-141-column `Order Items`; and `Location` must stay at its 12 coarse values because
+  FRM11's purge rule reads it in two-letter codes.
+
+**NC photos/notes are no longer in scope** — `NC_Pioneer_Transformers` and
+`NC_Rapport_TEMPLATE` boards already exist and `NC Ouverte` is live on the production board.
+
+✅ **Routing table parsed 2026-09-14** — `scripts/parse_dossier_bleu.py` turns the blue-folder
+matrix into 159 routing rows, cross-foot verified against both independent totals (163).
 
 **Added 2026-08-21**, per a meeting the user attended that day. **Confirmed scope:
 production tracking only** — this does not touch Phase 1 (`phase1-plan.md`'s Workflow

@@ -1,5 +1,24 @@
 # Document Library / NC Storage Plan (seed doc)
 
+> ## 📍 SUPERSEDED 2026-09-14 — see `engineering-document-control.md`
+>
+> This was the seed doc, written 2026-08-21 before Monday access existed and before anyone
+> knew engineering ran a CAD vault. **Do not build from it.** Three of its load-bearing
+> assumptions turned out to be wrong:
+>
+> | This doc says | Actually |
+> |---|---|
+> | Drawings are *mostly order-item-specific*, so the structure is `{Order Number}/{Order Item}` folders | Three levels — plant masters, model-generic, order/unit-specific — and **most are model-generic**. Most-specific-wins resolution, not one flat level. |
+> | Blocked on Monday access | Access granted. Board `Transformers Production` exists, item = `Numéro de série`, steps are **board groups** (~26 of them), and it is still under construction. |
+> | NC photos/notes are in scope | Out of scope — `NC_Pioneer_Transformers` and `NC_Rapport_TEMPLATE` boards already exist. |
+>
+> It also did not know that **engineering runs Inventor + the bundled Vault**, which moves the
+> real design boundary to the PDF publishing step.
+>
+> **What is still good here and was carried forward:** the dsapps.dev research (kept as a live
+> option for the last mile, not the critical path), the stacked-URL-filter mechanism (now the
+> primary mechanism), the seed-spreadsheet analysis, and the `/`-in-unit-ID gotcha.
+
 **Status: early — problem and goal confirmed, seed data found, real design not started.**
 **Blocked on Monday.com access (2026-08-21)**: user's account access to Monday.com is
 pending approval — nothing that requires logging into Monday (the Formula column, the live

@@ -337,6 +337,37 @@ table without them. Office Script button only.
 - These are separate git repos — the cross-links above are documentation only (relative
   folder paths under the same client directory), not a git/build dependency.
 
+### 🔑 Two systems outside SharePoint that this project now depends on
+
+Discovered 2026-09-14 while designing the engineering document control
+(`docs/engineering-document-control.md`). Neither has a repo, both are real dependencies.
+
+- **Inventor + the bundled Autodesk Vault** — engineering's CAD system, and the upstream
+  authority for drawing revisions. The printed PDF is a *published artifact*, not a master.
+  - 🔴 **The Vault file store, its SQL database and Inventor working folders must never live on
+    SharePoint or in a OneDrive-synced folder.** Inventor assemblies use file references that
+    break under cloud sync; Autodesk requires Vault workspaces to be local. This is the one
+    thing the "move everything to SharePoint" direction explicitly excludes.
+  - The bundled edition is almost certainly **Vault Basic**, which has version history but *no*
+    lifecycle states, *no* controlled revision scheme and *no* Job Processor — so it cannot
+    auto-publish PDFs. Confirm the edition before designing around it. The no-new-licence path
+    is an iLogic export rule naming files from iProperties into a watched drop folder.
+  - **The revision must come from the CAD iProperty, never be typed by a human.** Everything
+    downstream (the pin, the change check, the as-built record) is only as trustworthy as that.
+
+- **monday.com** — `powerpartners.monday.com`, workspace *Pioneer Production Control*, board
+  **`Transformers Production`** (`18416970916`). The tool production works in day to day;
+  SharePoint's `Order Items` stays the authoritative database it syncs against.
+  - Item = **`Numéro de série`**, one per unit (`G21458-1/12` — the `Order Items` unit ID with a
+    `G` prefix). **Steps are board groups (~26), not subitems and not a column.**
+  - 🔴 **A Monday formula column cannot read an item's group.** Any per-step behaviour needs an
+    `Étape actuelle` column written by the automation that moves the group.
+  - ⚠️ Board is **still under construction** and carries test rows (`Kdjddjd`, `465`, `1253`).
+    Do not treat its current contents as data.
+  - ⚠️ `Location` on `Order Items` must stay at its **12 coarse values** even though Monday has
+    ~26 steps — FRM11's purge rule reads it in two-letter codes (`{XT,TE,FI,LI}`). Carry the
+    finer vocabulary in a new column, never by widening `Location`.
+
 ## Working notes
 - Binary Office files here are tracked via **Git LFS** — see `.gitattributes`.
 - This repo has no live workbook of its own — nothing here should be treated as a source of
