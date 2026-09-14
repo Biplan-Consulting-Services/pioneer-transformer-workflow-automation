@@ -110,6 +110,77 @@
         }
       }
     },
+    "B1_Get_stall_candidates": {
+      "type": "OpenApiConnection",
+      "inputs": {
+        "parameters": {
+          "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+          "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+          "$filter": "ItemStatus eq 'Active' and Planned_x0020_Delivery_x0020_Dat eq null and ManualEstimatedDeliveryDate eq null",
+          "$top": 5000
+        },
+        "host": {
+          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+          "connectionName": "shared_sharepointonline",
+          "operationId": "GetItems"
+        }
+      },
+      "runtimeConfiguration": {
+        "paginationPolicy": {
+          "minimumItemCount": 5000
+        }
+      },
+      "runAfter": {
+        "A2_For_each_delivery_candidate": [
+          "Succeeded"
+        ]
+      }
+    },
+    "B2_Where_TODAY_is_the_answer": {
+      "runAfter": {
+        "B1_Get_stall_candidates": [
+          "Succeeded"
+        ]
+      },
+      "type": "Query",
+      "inputs": {
+        "from": "@outputs('B1_Get_stall_candidates')?['body/value']",
+        "where": "@if(not(equals(coalesce(item()?['FinishingDate'],''),'')),less(formatDateTime(coalesce(item()?['FinishingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')),if(not(equals(coalesce(item()?['TestingDate'],''),'')),less(formatDateTime(coalesce(item()?['TestingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')),if(not(equals(coalesce(item()?['Planned_x0020_Tanking_x0020_Date'],''),'')),less(formatDateTime(coalesce(item()?['Planned_x0020_Tanking_x0020_Date'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')),and(or(not(equals(coalesce(item()?['CoilingDate'],''),'')),not(equals(coalesce(item()?['StackingDate'],''),'')),not(equals(coalesce(item()?['AssemblyDate'],''),'')),not(equals(coalesce(item()?['DryingDate'],''),''))),not(or(and(not(equals(coalesce(item()?['CoilingDate'],''),'')),not(less(formatDateTime(coalesce(item()?['CoilingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['StackingDate'],''),'')),not(less(formatDateTime(coalesce(item()?['StackingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['AssemblyDate'],''),'')),not(less(formatDateTime(coalesce(item()?['AssemblyDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['DryingDate'],''),'')),not(less(formatDateTime(coalesce(item()?['DryingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['TankDeliveryDate'],''),'')),not(less(formatDateTime(coalesce(item()?['TankDeliveryDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd'))))))))))"
+      }
+    },
+    "B3_Touch_each_stalled_unit": {
+      "runAfter": {
+        "B2_Where_TODAY_is_the_answer": [
+          "Succeeded"
+        ]
+      },
+      "type": "Foreach",
+      "foreach": "@body('B2_Where_TODAY_is_the_answer')",
+      "runtimeConfiguration": {
+        "concurrency": {
+          "repetitions": 1
+        }
+      },
+      "actions": {
+        "B4_Write_Calc_Refreshed": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+              "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+              "id": "@items('B3_Touch_each_stalled_unit')?['ID']",
+              "item/CalcRefreshed": "@formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "connectionName": "shared_sharepointonline",
+              "operationId": "PatchItem"
+            }
+          },
+          "runAfter": {}
+        }
+      }
+    },
     "C1_Get_deletion_candidates_REPORT_ONLY": {
       "type": "OpenApiConnection",
       "inputs": {
@@ -131,7 +202,7 @@
         }
       },
       "runAfter": {
-        "A2_For_each_delivery_candidate": [
+        "B3_Touch_each_stalled_unit": [
           "Succeeded"
         ]
       }

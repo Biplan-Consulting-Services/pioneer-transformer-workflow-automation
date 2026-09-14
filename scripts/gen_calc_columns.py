@@ -112,6 +112,29 @@ PROVINCES = ["AB", "BC", "MB", "NB", "NL", "NT", "NS", "NU", "ON", "PE", "QC", "
 # rate rather than render an error in a money column.
 FX = [(2024, 1.35), (2025, 1.44), (2026, 1.38), (2027, 1.39), (2028, 1.43), (2029, 1.47)]
 
+# (display name, internal name) for Estimated Delivery Date's inputs. The two PLANNING
+# columns are the field-mapping trap: workbook "Delivery Date" and "Tanking Date" are
+# these, NOT DeliveryDate / TankingDate, which are the completion stamps and have no
+# workbook column at all. Settled by the viewer's ColumnMap.pq, verified value-for-value
+# at cutover. Mapping by name computes a different formula on all 1,189 rows and still
+# looks plausible.
+M_DELIVERY  = ("Planned Delivery Date", "Planned_x0020_Delivery_x0020_Dat")
+M_MANUAL    = ("Manual Estimated Delivery Date", "ManualEstimatedDeliveryDate")
+M_FINISHING = ("Finishing End Date", "FinishingDate")
+M_TESTING   = ("Testing End Date", "TestingDate")
+M_TANKING   = ("Planned Tanking Date", "Planned_x0020_Tanking_x0020_Date")
+M_TANKDELIV = ("Tank Delivery Date", "TankDeliveryDate")
+M_ORDERDATE = ("Order - Order Date", "OrdOrderDate")
+M_LEADWEEKS = ("Client - Lead Time (weeks)", "CliLeadTimeWeeks")
+M_BO        = ("BO", "BO")
+COILING_RANGE = [("Coiling End Date", "CoilingDate"), ("Stacking End Date", "StackingDate"),
+                 ("Assembly End Date", "AssemblyDate"), ("Drying End Date", "DryingDate")]
+
+# Branch 7's fallback when a unit's client has no lead time. FRM13's GENERIC VALUE of
+# 26 SEM, not the Excel formula's XLOOKUP default of 52 -- calculated-columns-plan.md
+# settled that the 52 contradicts FRM13 itself and should be retired.
+GENERIC_WEEKS = 26
+
 # (display name, internal name). These are the N3 "Parent Sync" copies, and they are the
 # ONLY copies on Order Items -- the originals are on the Order list. See the docstring.
 SRC = {"price":    ("Order - Price", "OrdPrice"),
@@ -149,7 +172,63 @@ def calc_fields():
 
     date_cascade = 'IF(ISBLANK([%s]),[%s],[%s])' % (ed, md, ed)
 
+    # MAX() over TODAY and the milestone(s); SharePoint takes multiple arguments, so the
+    # 2^n nesting the column-formatting version needed does not arise here.
+    def milestone(terms, buffer_days):
+        return "MAX(TODAY(),%s)+%d+[Bo Penalty]" % (
+            ",".join("[%s]" % d for d, _ in terms), buffer_days)
+
+    any_coiling = "OR(%s)" % ",".join("NOT(ISBLANK([%s]))" % d for d, _ in COILING_RANGE)
+    weeks = "IF(ISBLANK([%s]),%d,[%s])" % (M_LEADWEEKS[0], GENERIC_WEEKS, M_LEADWEEKS[0])
+
+    edd = (
+        '=IF(NOT(ISBLANK([{dlv}])),[{dlv}],'
+        'IF(NOT(ISBLANK([{man}])),[{man}],'
+        'IF(NOT(ISBLANK([{fin}])),{b_fin},'
+        'IF(NOT(ISBLANK([{tst}])),{b_tst},'
+        'IF(NOT(ISBLANK([{tnk}])),{b_tnk},'
+        'IF({any_coil},{b_coil},'
+        'IF(NOT(ISBLANK([{ord}])),[{ord}]+90+({wk})*7,'
+        '"")))))))'
+    ).format(dlv=M_DELIVERY[0], man=M_MANUAL[0], fin=M_FINISHING[0], tst=M_TESTING[0],
+             tnk=M_TANKING[0], ord=M_ORDERDATE[0], wk=weeks, any_coil=any_coiling,
+             b_fin=milestone([M_FINISHING], 7), b_tst=milestone([M_TESTING], 10),
+             b_tnk=milestone([M_TANKING], 14),
+             b_coil=milestone(COILING_RANGE + [M_TANKDELIV], 21))
+
     return [
+        # The only NON-calculated column here, and the only one anything writes to.
+        dict(disp="Calc Refreshed", name="CalcRefreshed", rtype="DateTime", plain=True,
+             refs=[],
+             formula="",
+             why="What the nightly touch writes. A calculated column re-evaluates when the "
+                 "ITEM is written, so keeping TODAY() honest on a stalled unit means "
+                 "writing something to that row -- and 'write any field back' is the kind "
+                 "of clever-but-opaque trick that later reads as a bug. A dedicated, "
+                 "flow-owned timestamp says outright why the row has a version every "
+                 "night, and gives you a way to check the pass actually ran. Nothing else "
+                 "reads it."),
+
+        dict(disp="Bo Penalty", name="BoPenalty", rtype="Number", dec=0, refs=[M_BO[1]],
+             formula='=IF(OR(LOWER(TRIM([%s]))="ok",TRIM([%s])=""),0,30)' % (M_BO[0], M_BO[0]),
+             why="The 30-day back-order penalty, split out because it appears in all four "
+                 "milestone branches and inlining it four times costs ~200 characters "
+                 "against a 1024 limit. LOWER+TRIM for the same reason as Is Canadian: BO "
+                 "is a Choice, so the vocabulary is controlled, but this repo's P3 pass "
+                 "exists because an uppercase-only test was assumed safe once already."),
+
+        dict(disp=EDD[0], name=EDD[1], rtype="DateTime", refs=[
+                 M_DELIVERY[1], M_MANUAL[1], M_FINISHING[1], M_TESTING[1], M_TANKING[1],
+                 M_TANKDELIV[1], M_ORDERDATE[1], M_LEADWEEKS[1], "BoPenalty"]
+                 + [i for _, i in COILING_RANGE],
+             formula=edd,
+             why="The eight-branch formula, ported from TableOrders' own "
+                 "calculatedColumnFormula. A CALCULATED column rather than a stored one "
+                 "(user, 2026-09-14): it cannot be hand-edited, it recomputes on save "
+                 "rather than after a 5-minute poll, it works while the trigger flow is "
+                 "off, and the whole chain below is then one mechanism. TODAY() freezes at "
+                 "last write, so the nightly touch keeps the ~21 stalled rows honest."),
+
         # Split out so each piece is independently readable and checkable in a view.
         dict(disp="Is Canadian", name="IsCanadian", rtype="Boolean", refs=[vi],
              formula="=" + "OR(%s)" % ",".join(
@@ -185,6 +264,10 @@ def calc_fields():
 
 
 def schema_xml(f):
+    if f.get("plain"):
+        return ('<Field Type="%s" DisplayName="%s" Name="%s" StaticName="%s" '
+                'Required="FALSE" Group="%s" Format="DateOnly" />'
+                % (f["rtype"], f["disp"], f["name"], f["name"], GROUP))
     extra = ""
     if f["rtype"] in ("Number", "Currency"):
         extra += ' Decimals="%d"' % f.get("dec", 2)
@@ -206,11 +289,11 @@ CREATOR_HEAD = """/* N9 -- create the five calculated columns ported from FRM10-
 
    DRY RUN by default: it creates nothing until APPLY = true.
 
-   IT REFUSES TO RUN until `Estimated Delivery Date` exists as a STORED column on the
-   list. Fx Year reads it, and Price CAD / Price USD read Fx Year, so creating the chain
-   first would give three columns that silently evaluate against a field that is not
-   there. A calculated column cannot read a column-formatting result -- that renders in
-   the browser and is never stored. See docs/estimated-delivery-date-today.md.
+   It creates SEVEN columns, Estimated Delivery Date included, in dependency order.
+   Nothing has to exist first -- but the whole chain is calculated, so each row is only
+   as fresh as its last write. TODAY() freezes at last save, which is exactly what the
+   nightly touch stage in the cleanup flow exists to fix for the stalled rows.
+   See docs/calc-columns-port.md.
 */
 (async () => {
   const APPLY = false;
@@ -230,20 +313,14 @@ CREATOR_HEAD = """/* N9 -- create the five calculated columns ported from FRM10-
   const have = new Map(f.value.map(x => [x.InternalName, x.TypeAsString]));
 
   const edd = have.get(EDD_INTERNAL);
-  if (!edd) {
-    console.error("ABORT: '" + EDD_INTERNAL + "' does not exist on " + LIST + ".");
-    console.error("  Fx Year reads it and the two price columns read Fx Year.");
-    console.error("  Create it as a STORED column first -- a calculated column cannot");
-    console.error("  read a column-formatting result.");
+  if (edd) {
+    console.error("ABORT: '" + EDD_INTERNAL + "' already exists (type " + edd + ").");
+    console.error("  This script CREATES it. If a stored version was built first, decide");
+    console.error("  which one wins before running -- do not end up with both, and note");
+    console.error("  that a stored one can be hand-edited, which is the whole reason this");
+    console.error("  chain is calculated. See docs/calc-columns-port.md.");
     return;
   }
-  if (edd === "Calculated") {
-    console.error("ABORT: '" + EDD_INTERNAL + "' is a Calculated column.");
-    console.error("  It uses TODAY(), which SharePoint evaluates only on write, so it");
-    console.error("  freezes at last save. That is the bug this whole port exists past.");
-    return;
-  }
-  console.log("Estimated Delivery Date present, type " + edd + " -- ok\\n");
 
   const dup = FIELDS.filter(x => have.has(x.name));
   if (dup.length) {
@@ -325,14 +402,20 @@ def main():
             known.add(m.group(1))
     known |= LOOKUPS      # real columns, absent from the doc by its own admission
     made = {f["name"] for f in fields}
-    # EstimatedDeliveryDate is deliberately allowed to be absent here: it is the one
-    # prerequisite this port cannot create for itself, and the generated script gates on
-    # it at run time with an explanation. Generating the chain while it is missing is
-    # correct; CREATING it would not be.
     for f in fields:
         for r in f["refs"]:
-            assert r in known or r in made or r == EDD[1], \
+            assert r in known or r in made, \
                 "%s references %s, which is neither on the list nor created here" % (f["name"], r)
+
+    # The creator posts these in list order, and SharePoint rejects a FieldRef naming a
+    # field that does not exist yet -- so a field may only reference one appearing EARLIER
+    # in the chain. Asserted rather than assumed, because the failure is a bare 400.
+    seen = set()
+    for f in fields:
+        for r in f["refs"]:
+            assert r in known or r in seen, \
+                "%s references %s, which this chain creates LATER -- reorder" % (f["name"], r)
+        seen.add(f["name"])
         assert f["name"] not in known, "%s already exists on the list" % f["name"]
     for k in ("price", "province", "promised"):
         assert SRC[k][1] in known, "source column %s not on the list" % SRC[k][1]

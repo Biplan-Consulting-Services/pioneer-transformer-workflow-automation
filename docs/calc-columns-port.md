@@ -29,7 +29,7 @@ is six rows. Both are inlined. A SharePoint list around either would be ceremony
 | `Archived` | ❌ dropped — deprecated, and the workbook has no formula left for it |
 | `Price CAD` | ✅ calculated column |
 | `Price USD` | ✅ calculated column |
-| `Estimated Delivery Date` | ⛔ **stored column + flow** — the prerequisite for the two above |
+| `Estimated Delivery Date` | ✅ **calculated column** + a nightly touch |
 
 ### Why the three hyperlink columns go rather than becoming column formatting
 
@@ -48,25 +48,85 @@ argument is not re-derived and re-lost a third time.
 number clickable — `HYPERLINK(order url, [Price Value])` — and once the click-through is
 redundant there is nothing left for it to add over the real currency column.
 
-## 🔴 The dependency that settles the Estimated Delivery Date question
+## Estimated Delivery Date is a calculated column, not a stored one
 
-`Price CAD` and `Price USD` both read `Estimated Delivery Date` — they take `YEAR()` of it
-to pick an FX rate. **A calculated column can only reference a stored field.**
+`Price CAD` and `Price USD` read it — they take `YEAR()` of it to pick an FX rate — and a
+calculated column can only reference a **stored** field. So column formatting alone was
+never going to satisfy them: it renders a string into the page and stores nothing for a
+formula to read.
 
-So **Estimated Delivery Date must be a stored column.** Column formatting alone does not
-satisfy them: it renders a string into the page and stores nothing for a formula to read.
-The open question in `estimated-delivery-date-today.md` is therefore closed by
-**dependency, not preference** — and it was never really about sorting.
+That left two ways to make it real, and **they cost the same**:
 
-It also **rules out the unfloored-storage idea** (store `milestone + buffer`, apply the
-`@now` floor at display, zero daily writes). For a unit whose milestone is in the past,
-floored and unfloored can land in **different calendar years**, which picks a different FX
-rate and so a different price. Fidelity to the workbook needs the floored value, which
-needs the daily pass over the stalled rows — ~21 of them, not 915.
+| | rows written per night |
+|---|---|
+| Calculated column + touch to force re-evaluation | ~21 |
+| Stored column + a flow that writes the value | ~21 |
 
-`n9_create_calc_columns.js` **refuses to run** until that column exists, and refuses again
-if it finds it is itself a Calculated column — which would reintroduce the `TODAY()` freeze
-this whole port exists to get past.
+Same rows, same versions, same action count — so cost does not decide it. **Calculated
+wins on everything else** (user, 2026-09-14):
+
+- **It cannot be hand-edited.** Read-only in the UI. A stored column can be overwritten,
+  and only self-heals if the trigger flow's change-guard compares the estimate *itself*
+  rather than just its inputs — which it does not, today.
+- **It works right now.** The create-or-update trigger flow has been **off** since
+  09-11. A stored-column design is inert until v004 lands; this is live the moment the
+  column exists.
+- **It recomputes on save**, not after a ≤5 minute poll.
+- **The formula is visible in list settings** instead of buried in a flow definition.
+- **The whole chain becomes one mechanism** rather than a flow stitched to five
+  calculated columns.
+
+### The one thing it costs: `TODAY()` freezes at last write
+
+Which is what **stage B of the nightly cleanup flow** is for — see below. And it is why
+`gen_estimated_delivery_format.py` and its column-formatting JSON are **kept, not
+deleted**: column formatting's `@now` is evaluated in the browser, so it has no freeze
+*and no UTC trap*. If the calculated column's evening-UTC behaviour turns out to be
+intolerable, that is the escape hatch, already built.
+
+⚠️ **Test the UTC trap before trusting evening readings.**
+`calculated-columns-plan.md:528` flags that `TODAY()` in a SharePoint calculated column is
+UTC-based rather than site-local. The 01:00 Eastern refresh neutralises it for the day, but
+a row edited between roughly **20:00 and midnight Eastern** recomputes with UTC already on
+tomorrow and reads **a day ahead** until the next pass. There is a written-down test:
+*check the existing test column on `Order Items` after 8pm Eastern.*
+
+## The nightly touch — stage B of the cleanup flow
+
+Added to the **existing, already-built** `Nightly_Cleanup` flow rather than a new one. It
+runs at 01:00 Eastern, which is also what neutralises the UTC trap above.
+
+| action | what |
+|---|---|
+| `B1_Get_stall_candidates` | `Active`, no `Planned Delivery Date`, no `Manual Estimated Delivery Date` |
+| `B2_Where_TODAY_is_the_answer` | **one** Query action narrowing those to the rows where `TODAY()` is the value being returned |
+| `B3_Touch_each_stalled_unit` | writes `Calc Refreshed`, forcing re-evaluation |
+
+🔑 **This is not the stage B killed on 09-11**, and the difference is the point. That one
+touched every candidate row to force a re-evaluation and measured 915 a night. Two things
+were wrong with that measurement:
+
+1. It filtered on **`Delivery End Date`** — the completion stamp — where the formula reads
+   **`Planned Delivery Date`**. *"The second clause is a no-op"* was an artefact of
+   filtering on a column the formula never looks at.
+2. More importantly, 915 was never the target. It counts rows that *reach* a `TODAY()`
+   branch; the rows whose value actually **moves** nightly are the subset where the unit
+   is stalled and `TODAY()` is what gets returned. B2 is the action that closes that gap —
+   the flow **reads many and writes few**, and reads are batched and cheap.
+
+**One Query action, not a Condition in a loop.** A Condition inside a Foreach over ~900
+items costs ~900 actions against a 2,000/day allowance and would starve the five
+event-triggered flows. A Query evaluates the same predicate over the whole array once.
+
+⚠️ **Re-measure on the first run.** The ~21 comes from the same 08-31 table whose rows are
+labelled *"Delivery End Date"* / *"Tanking End Date"*, so it may be counting a different
+population too. **B2's output count is the honest number** — read it off run 1 before
+quoting 21 to anyone.
+
+🔴 **`ItemStatus eq 'Active'` in B1 is load-bearing for stage C, not for stage B.** A touch
+bumps `Modified`, and stage C's grace period keys on `Modified` — so a pass that touched
+Delivered/Cancelled rows would reset the grace clock every night, forever, and the archive
+sweep would silently never fire. Do not drop that clause to widen the refresh.
 
 ## The currency rule — decided, not inherited
 
@@ -117,22 +177,20 @@ fields are genuinely `Order Items` columns, so nothing there needed changing.
 
 ## Setup
 
-### Part 1 · Estimated Delivery Date as a stored column — the prerequisite
-
-Not built yet. It needs the create-or-update trigger flow to compute it on change, plus a
-small daily recurrence for the stalled rows. **Nothing below works until this exists.**
-
-### Part 2 · The five calculated columns
+### Part 1 · The seven columns
 
 ```
 scripts/n9_create_calc_columns.js      DRY RUN by default; set APPLY = true
 ```
 
-Five, not two, because the chain is split so each piece is independently readable and
+Seven, not two, because the chain is split so each piece is independently readable and
 checkable in a view rather than buried in one unreadable formula:
 
 | column | type | why it exists |
 |---|---|---|
+| `Calc Refreshed` | DateTime | the **only** non-calculated column, and the only thing anything writes to — what stage B touches |
+| `Bo Penalty` | Number | the 30-day back-order penalty, split out because it appears in all four milestone branches |
+| `Estimated Delivery Date` | DateTime | the eight-branch formula, **828 chars** against the 1024 limit |
 | `Is Canadian` | Boolean | `TableCanadianProvince`, inlined, `TRIM`-ed |
 | `Fx Year` | Number | Excel's two-deep date cascade: Estimated Delivery Date, else Initial Promised Date. `0` = neither is set |
 | `Fx Rate` | Number | **the one place to edit when a new year's rate is agreed** |
@@ -159,5 +217,7 @@ afterwards, because a `200` is not proof SharePoint stored the `ResultType` you 
 
 - **FX rates stop at 2029.** `Fx Rate` returns 1.47 for anything later, which is correct
   until it silently is not. Add years to `FX` in the generator.
-- **Estimated Delivery Date itself** — Part 1 above is the only remaining blocker, and it
-  is a flow, not a column definition.
+- **The UTC evening trap**, untested — see above. It is the one thing that could send us
+  back to column formatting for the display.
+- **Stage B's real row count**, unknown until run 1.
+- **Deploying the cleanup flow.** It has never been deployed at all, stage A included.

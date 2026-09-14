@@ -5,11 +5,11 @@
 
    DRY RUN by default: it creates nothing until APPLY = true.
 
-   IT REFUSES TO RUN until `Estimated Delivery Date` exists as a STORED column on the
-   list. Fx Year reads it, and Price CAD / Price USD read Fx Year, so creating the chain
-   first would give three columns that silently evaluate against a field that is not
-   there. A calculated column cannot read a column-formatting result -- that renders in
-   the browser and is never stored. See docs/estimated-delivery-date-today.md.
+   It creates SEVEN columns, Estimated Delivery Date included, in dependency order.
+   Nothing has to exist first -- but the whole chain is calculated, so each row is only
+   as fresh as its last write. TODAY() freezes at last save, which is exactly what the
+   nightly touch stage in the cleanup flow exists to fix for the stalled rows.
+   See docs/calc-columns-port.md.
 */
 (async () => {
   const APPLY = false;
@@ -21,6 +21,43 @@
               headers:{Accept:"application/json;odata=nometadata"}})).json();
 
   const FIELDS = [
+    {
+        "name": "CalcRefreshed",
+        "rtype": "DateTime",
+        "refs": [],
+        "formula": "",
+        "xml": "<Field Type=\"DateTime\" DisplayName=\"Calc Refreshed\" Name=\"CalcRefreshed\" StaticName=\"CalcRefreshed\" Required=\"FALSE\" Group=\"Calculated\" Format=\"DateOnly\" />"
+    },
+    {
+        "name": "BoPenalty",
+        "rtype": "Number",
+        "refs": [
+            "BO"
+        ],
+        "formula": "=IF(OR(LOWER(TRIM([BO]))=\"ok\",TRIM([BO])=\"\"),0,30)",
+        "xml": "<Field Type=\"Calculated\" DisplayName=\"Bo Penalty\" Name=\"BoPenalty\" StaticName=\"BoPenalty\" Required=\"FALSE\" Group=\"Calculated\" ResultType=\"Number\" Decimals=\"0\"><Formula>=IF(OR(LOWER(TRIM([BO]))=&quot;ok&quot;,TRIM([BO])=&quot;&quot;),0,30)</Formula><FieldRefs><FieldRef Name=\"BO\" /></FieldRefs></Field>"
+    },
+    {
+        "name": "EstimatedDeliveryDate",
+        "rtype": "DateTime",
+        "refs": [
+            "Planned_x0020_Delivery_x0020_Dat",
+            "ManualEstimatedDeliveryDate",
+            "FinishingDate",
+            "TestingDate",
+            "Planned_x0020_Tanking_x0020_Date",
+            "TankDeliveryDate",
+            "OrdOrderDate",
+            "CliLeadTimeWeeks",
+            "BoPenalty",
+            "CoilingDate",
+            "StackingDate",
+            "AssemblyDate",
+            "DryingDate"
+        ],
+        "formula": "=IF(NOT(ISBLANK([Planned Delivery Date])),[Planned Delivery Date],IF(NOT(ISBLANK([Manual Estimated Delivery Date])),[Manual Estimated Delivery Date],IF(NOT(ISBLANK([Finishing End Date])),MAX(TODAY(),[Finishing End Date])+7+[Bo Penalty],IF(NOT(ISBLANK([Testing End Date])),MAX(TODAY(),[Testing End Date])+10+[Bo Penalty],IF(NOT(ISBLANK([Planned Tanking Date])),MAX(TODAY(),[Planned Tanking Date])+14+[Bo Penalty],IF(OR(NOT(ISBLANK([Coiling End Date])),NOT(ISBLANK([Stacking End Date])),NOT(ISBLANK([Assembly End Date])),NOT(ISBLANK([Drying End Date]))),MAX(TODAY(),[Coiling End Date],[Stacking End Date],[Assembly End Date],[Drying End Date],[Tank Delivery Date])+21+[Bo Penalty],IF(NOT(ISBLANK([Order - Order Date])),[Order - Order Date]+90+(IF(ISBLANK([Client - Lead Time (weeks)]),26,[Client - Lead Time (weeks)]))*7,\"\")))))))",
+        "xml": "<Field Type=\"Calculated\" DisplayName=\"Estimated Delivery Date\" Name=\"EstimatedDeliveryDate\" StaticName=\"EstimatedDeliveryDate\" Required=\"FALSE\" Group=\"Calculated\" ResultType=\"DateTime\"><Formula>=IF(NOT(ISBLANK([Planned Delivery Date])),[Planned Delivery Date],IF(NOT(ISBLANK([Manual Estimated Delivery Date])),[Manual Estimated Delivery Date],IF(NOT(ISBLANK([Finishing End Date])),MAX(TODAY(),[Finishing End Date])+7+[Bo Penalty],IF(NOT(ISBLANK([Testing End Date])),MAX(TODAY(),[Testing End Date])+10+[Bo Penalty],IF(NOT(ISBLANK([Planned Tanking Date])),MAX(TODAY(),[Planned Tanking Date])+14+[Bo Penalty],IF(OR(NOT(ISBLANK([Coiling End Date])),NOT(ISBLANK([Stacking End Date])),NOT(ISBLANK([Assembly End Date])),NOT(ISBLANK([Drying End Date]))),MAX(TODAY(),[Coiling End Date],[Stacking End Date],[Assembly End Date],[Drying End Date],[Tank Delivery Date])+21+[Bo Penalty],IF(NOT(ISBLANK([Order - Order Date])),[Order - Order Date]+90+(IF(ISBLANK([Client - Lead Time (weeks)]),26,[Client - Lead Time (weeks)]))*7,&quot;&quot;)))))))</Formula><FieldRefs><FieldRef Name=\"Planned_x0020_Delivery_x0020_Dat\" /><FieldRef Name=\"ManualEstimatedDeliveryDate\" /><FieldRef Name=\"FinishingDate\" /><FieldRef Name=\"TestingDate\" /><FieldRef Name=\"Planned_x0020_Tanking_x0020_Date\" /><FieldRef Name=\"TankDeliveryDate\" /><FieldRef Name=\"OrdOrderDate\" /><FieldRef Name=\"CliLeadTimeWeeks\" /><FieldRef Name=\"BoPenalty\" /><FieldRef Name=\"CoilingDate\" /><FieldRef Name=\"StackingDate\" /><FieldRef Name=\"AssemblyDate\" /><FieldRef Name=\"DryingDate\" /></FieldRefs></Field>"
+    },
     {
         "name": "IsCanadian",
         "rtype": "Boolean",
@@ -80,20 +117,14 @@
   const have = new Map(f.value.map(x => [x.InternalName, x.TypeAsString]));
 
   const edd = have.get(EDD_INTERNAL);
-  if (!edd) {
-    console.error("ABORT: '" + EDD_INTERNAL + "' does not exist on " + LIST + ".");
-    console.error("  Fx Year reads it and the two price columns read Fx Year.");
-    console.error("  Create it as a STORED column first -- a calculated column cannot");
-    console.error("  read a column-formatting result.");
+  if (edd) {
+    console.error("ABORT: '" + EDD_INTERNAL + "' already exists (type " + edd + ").");
+    console.error("  This script CREATES it. If a stored version was built first, decide");
+    console.error("  which one wins before running -- do not end up with both, and note");
+    console.error("  that a stored one can be hand-edited, which is the whole reason this");
+    console.error("  chain is calculated. See docs/calc-columns-port.md.");
     return;
   }
-  if (edd === "Calculated") {
-    console.error("ABORT: '" + EDD_INTERNAL + "' is a Calculated column.");
-    console.error("  It uses TODAY(), which SharePoint evaluates only on write, so it");
-    console.error("  freezes at last save. That is the bug this whole port exists past.");
-    return;
-  }
-  console.log("Estimated Delivery Date present, type " + edd + " -- ok\n");
 
   const dup = FIELDS.filter(x => have.has(x.name));
   if (dup.length) {

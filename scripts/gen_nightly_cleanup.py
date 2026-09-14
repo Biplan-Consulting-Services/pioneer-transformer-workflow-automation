@@ -5,53 +5,56 @@
 
 Writes workflow-data/nightly-cleanup/Nightly_Cleanup.definition.json.
 
-WHAT THE FLOW DOES -- two stages, one daily run at 01:00 Eastern
+WHAT THE FLOW DOES -- three stages, one daily run at 01:00 Eastern
 
   A  SET DELIVERED    Active units at Location = Livraison with a delivery date
                       become Item Status = Delivered / Delivery Status = Completed.
+  B  REFRESH STALLED  Touches only the units whose Estimated Delivery Date is
+                      currently TODAY()-derived, so the calculated column
+                      re-evaluates. See "STAGE B EXISTS AGAIN".
   C  ARCHIVE SWEEP    REPORT ONLY. Counts the rows old enough to delete.
                       IT DELETES NOTHING -- see "STAGE C IS DELIBERATELY INERT".
 
-THERE IS NO STAGE B, AND THAT IS THE POINT -- measured 2026-09-11
-  The plan called for a third stage: touch rows nightly so SharePoint
-  re-evaluates the `Estimated Delivery Date` calculated column, which freezes at
-  write time because its formula uses TODAY(). Two measurements killed it.
+STAGE B EXISTS AGAIN -- added 2026-09-14, and it is NOT the one killed on 09-11
+  The original stage B touched rows nightly so SharePoint would re-evaluate the
+  `Estimated Delivery Date` calculated column, which freezes at write time
+  because its formula uses TODAY(). It was dropped on two measurements, and both
+  have since been answered rather than overturned:
 
-  1. THE COLUMN DOES NOT EXIST. `Order Items` has no `Estimated Delivery Date`
-     and no calculated column at all. The only estimate columns are
-     `Manual Estimated Delivery Date` (hand-typed) and `Model - Estimated
-     Effort` (parent-sync). Roadmap item 20 reads "SharePoint accepts TODAY(),
-     so the column is buildable" -- buildable, not built. A refresh pass for a
-     column nobody has created is pure cost.
+  1. THE COLUMN DID NOT EXIST. True on 09-11. It does now, or will:
+     `gen_calc_columns.py` creates it, as a CALCULATED column, decided by the
+     user on 09-14 for integrity -- a calculated column cannot be hand-edited,
+     recomputes on save rather than after a 5-minute poll, and works while the
+     create-or-update trigger flow is off, which it currently is.
 
-  2. THE FILTER DOES NOT FILTER. calculated-columns-plan.md:548 says narrowing
-     to `Item Status = Active` + both delivery-date columns null "cuts the work
-     by roughly 50x". Counted against the live list it cuts it by 1.3x:
+  2. THE FILTER DID NOT FILTER -- and the reason turns out to be a WRONG COLUMN,
+     not a bad idea. The 09-11 count was:
 
          total rows                                  1,189
          Item Status = Active                        1,087
            + no Delivery End Date                    1,087   (unchanged!)
            + no Manual Estimated Delivery Date         915
 
-     Of course it does -- an Active unit has no delivery date BY DEFINITION, so
-     the second clause is a no-op and the third removes 172. That is 915 writes
-     a night: ~334,000 versions a year, and ~1,830 Power Automate actions every
-     night, which on a standard Office 365 allowance of 2,000/day consumes the
-     entire daily budget and starves the five event-triggered flows.
+     `Delivery End Date` is the COMPLETION stamp. The formula's first branch
+     reads `Planned Delivery Date`, a different column -- the field-mapping trap
+     documented in gen_calc_columns.py. So "the second clause is a no-op" was an
+     artefact of filtering on a column the formula never looks at.
 
-  WHEN THE COLUMN IS ACTUALLY BUILT, do not build it as calculated + touch pass.
-  Either:
-    - make it a PLAIN column this flow owns, computed in the flow and written
-      only when the value differs -- the same needsUpdate -> If -> Patch shape
-      the N3 flows already use, which tested clean on 2026-09-10 ("needsUpdate
-      false, write skipped"). Steady-state writes fall to the few rows that
-      actually crossed a boundary, and a plain column sorts, filters and indexes
-      properly, which a TODAY()-based calculated column does badly anyway; or
-    - do not store it at all -- compute it in Power Query for the viewer and in
-      DAX for Power BI. Zero writes, never stale, but no SharePoint view can
-      sort or filter on it.
-  The deciding question is whether anyone needs to sort/filter a list view by
-  it. Yes -> plain flow-owned column. No -> compute it in the consumers.
+     More importantly, 915 was never the right target anyway. It is the count of
+     rows that REACH a TODAY() branch; the rows whose value actually MOVES each
+     night are the subset where TODAY() is the value being returned -- the unit
+     is stalled, its latest milestone already in the past. The 2026-08-31
+     analysis measured that at ~21 and said so plainly: "It does not need to
+     rewrite all 1038 items daily ... ~21 rows/day. Trivial flow."
+
+     B2 is what closes that gap: one Query action filters the ~900 down to the
+     rows where TODAY() wins, so the flow READS many and WRITES few. Reads are
+     batched and cheap; writes are the cost.
+
+  ⚠️ RE-MEASURE ON THE FIRST RUN. The ~21 comes from the same 08-31 table whose
+     rows are labelled "Delivery End Date" / "Tanking End Date", so it may be
+     counting a different population too. B2's output count is the honest
+     number -- read it off run 1 before quoting 21 to anyone.
 
 WHY A GENERATOR AND NOT HAND-WRITTEN JSON
   Same reason as gen_n3_flows.py: the OData filters and the write payloads carry
@@ -102,13 +105,18 @@ TWO GUARDS THAT ARE NOT DECORATION
      with a heuristic, which is the failure mode the whole Item Status design
      exists to prevent (infrastructure-overview.md:445).
 
-🔴 IF A TOUCH PASS IS EVER ADDED, IT MUST NOT TOUCH Delivered/Cancelled ROWS
+🔴 THE TOUCH PASS MUST NOT TOUCH Delivered/Cancelled ROWS -- and stage B does not
   A touch bumps `Modified`, and Stage C's grace period keys on `Modified`. A
   pass that touched Delivered/Cancelled rows would reset the grace clock on
   exactly the rows Stage C is waiting on -- every night, forever -- so nothing
   would ever become eligible for deletion and the archive sweep would silently
-  never fire. Whatever replaces the dropped stage, keep it off those rows, or
-  move Stage C onto a dedicated "delivered on" timestamp instead of `Modified`.
+  never fire, with no error anywhere.
+
+  B1's filter opens with `ItemStatus eq 'Active'`, which is what keeps stage B
+  clear of it. That clause is load-bearing for STAGE C, not for stage B's own
+  correctness, so it does not look important from where it is written -- do not
+  drop it to widen the refresh. If stage B ever has to cover non-Active rows,
+  move Stage C onto a dedicated "delivered on" timestamp first.
 
 STAGE C IS DELIBERATELY INERT
   archiving-plan.md lists three questions with no answer yet:
@@ -250,13 +258,116 @@ A["A2_For_each_delivery_candidate"] = {
 }
 
 # ------------------------------------------------------------------ stage C
-# (no stage B -- see "THERE IS NO STAGE B" in the module docstring)
+# ------------------------------------------------------------------ stage B
+# Keep TODAY() honest on the units nobody is editing.
+#
+# `Estimated Delivery Date` is a CALCULATED column (see docs/calc-columns-port.md), so
+# SharePoint re-evaluates it when the ITEM is written and at no other time. For most rows
+# that is enough -- the value only moves when someone changes a milestone, which is itself
+# a write. The exception is a unit STALLED in production: its latest milestone is already
+# in the past, so the formula returns `MAX(TODAY(), milestone) + buffer` = today + buffer,
+# which moves every day while nobody touches the row. Those rows, and only those, need a
+# nightly touch.
+#
+# 🔑 THIS IS NOT THE STAGE B THAT WAS KILLED ON 2026-09-11, and the difference is the
+# whole point. That one touched every candidate row to force a calculated column to
+# re-evaluate, and measured at 915 of 1,189 rows a night -- because "Active with no
+# delivery date" is nearly every active unit, by definition. This filters further, to
+# rows where TODAY() is actually the value being returned, which the 2026-08-31 analysis
+# measured at ~21. Reads are cheap and batched; WRITES are the cost, and this writes ~21.
+#
+# ⚠️ Re-measure before trusting the 21. That figure came from a table labelled "Delivery
+# End Date" / "Tanking End Date", and the formula reads the PLANNED columns. B2's output
+# count is the honest number -- read it off the first run.
+
+COILING = ["CoilingDate", "StackingDate", "AssemblyDate", "DryingDate"]
+
+
+def _set(f):
+    return "not(equals(coalesce(item()?['%s'],''),''))" % f
+
+
+def _past(f):
+    # ⚠️ coalesce to a sentinel rather than guarding: Logic Apps evaluates BOTH branches
+    # of if() and both arguments of and() eagerly, so a formatDateTime() sitting on the
+    # unselected branch still runs and still throws on a null. The sentinel never reaches
+    # a result -- it only stops the expression exploding on rows where the field is blank.
+    return ("less(formatDateTime(coalesce(item()?['%s'],'1900-01-01T00:00:00Z'),"
+            "'yyyy-MM-dd'), %s)" % (f, TODAY_EASTERN))
+
+
+def _still_ahead(f):
+    return "and(%s,not(%s))" % (_set(f), _past(f))
+
+
+# Branch 6: at least one coiling-range date is set, and NONE of the five dates it maxes
+# over is still today or later. Expressed as "nothing is ahead" rather than as a max(),
+# which the expression language has no equivalent of.
+_coiling_stalled = "and(or(%s),not(or(%s)))" % (
+    ",".join(_set(f) for f in COILING),
+    ",".join(_still_ahead(f) for f in COILING + ["TankDeliveryDate"]))
+
+# The same exclusive cascade the calculated column walks, in the same order. Branches 1,
+# 2 and 7 never call TODAY() and are excluded by B1's filter or fall through to false.
+TODAY_WINS = "if(%s,%s,if(%s,%s,if(%s,%s,%s)))" % (
+    _set("FinishingDate"), _past("FinishingDate"),
+    _set("TestingDate"), _past("TestingDate"),
+    _set("Planned_x0020_Tanking_x0020_Date"), _past("Planned_x0020_Tanking_x0020_Date"),
+    _coiling_stalled)
+
+A["B1_Get_stall_candidates"] = get_items(
+    # Branches 1 and 2 short-circuit the whole formula, so a row with either of these
+    # never reaches a TODAY() branch at all. Note these are the PLANNING columns.
+    #
+    # 🔴 `ItemStatus eq 'Active'` is ALSO what keeps this pass off Delivered/Cancelled
+    # rows, whose `Modified` stamp is stage C's grace clock. See the module docstring --
+    # that clause protects stage C, not stage B, so it does not look load-bearing here.
+    "ItemStatus eq 'Active' and Planned_x0020_Delivery_x0020_Dat eq null "
+    "and ManualEstimatedDeliveryDate eq null"
+)
+A["B1_Get_stall_candidates"]["runAfter"] = {"A2_For_each_delivery_candidate": ["Succeeded"]}
+
+# ONE action, not one per row. A Condition inside a Foreach over ~900 items would cost
+# ~900 actions against a 2,000/day allowance and starve the five event-triggered flows;
+# a Query action evaluates the same predicate over the whole array for the price of one.
+A["B2_Where_TODAY_is_the_answer"] = {
+    "runAfter": {"B1_Get_stall_candidates": ["Succeeded"]},
+    "type": "Query",
+    "inputs": {
+        "from": "@outputs('B1_Get_stall_candidates')?['body/value']",
+        "where": "@" + TODAY_WINS,
+    },
+}
+
+A["B3_Touch_each_stalled_unit"] = {
+    "runAfter": {"B2_Where_TODAY_is_the_answer": ["Succeeded"]},
+    "type": "Foreach",
+    "foreach": "@body('B2_Where_TODAY_is_the_answer')",
+    "runtimeConfiguration": {"concurrency": {"repetitions": 1}},
+    "actions": {
+        "B4_Write_Calc_Refreshed": dict(sp("PatchItem", {
+            "dataset": SITE,
+            "table": ORDER_ITEMS,
+            "id": "@items('B3_Touch_each_stalled_unit')?['ID']",
+            # The write itself is the point; the value is only so the row says why it has
+            # a version. Everything real on the row is recomputed by SharePoint, not here.
+            "item/CalcRefreshed": "@%s" % TODAY_EASTERN,
+        }), runAfter={}),
+    },
+}
+
+# Each touch fires the Order Items create-or-update trigger flow once -- ~21 runs that
+# find nothing changed and write nothing, which is the flow's own change-guard doing its
+# job. calculated-columns-plan.md:546 proposes a trigger CONDITION so a touch-only update
+# never creates a run at all. Worth it at 915 rows; not worth it at 21.
+
+# ------------------------------------------------------------------ stage C
 A["C1_Get_deletion_candidates_REPORT_ONLY"] = get_items(
     "(ItemStatus eq 'Delivered' or ItemStatus eq 'Cancelled') "
     "and Modified lt '@{addDays(utcNow(), -%d)}'" % GRACE_DAYS
 )
 A["C1_Get_deletion_candidates_REPORT_ONLY"]["runAfter"] = {
-    "A2_For_each_delivery_candidate": ["Succeeded"]
+    "B3_Touch_each_stalled_unit": ["Succeeded"]
 }
 
 A["C2_Deletion_candidate_report"] = {
@@ -283,7 +394,8 @@ def main():
     print("  trigger : daily 01:00 %s" % TZ)
     print("  stage A : promote Active + Livraison + delivery date -> Delivered")
     print("  stage C : REPORT ONLY, grace %d days" % GRACE_DAYS)
-    print("  (no stage B - see the module docstring)")
+    print("  stage B : touch the units where TODAY() is the answer "
+          "(B2 reports the real count)")
 
 
 if __name__ == "__main__":
