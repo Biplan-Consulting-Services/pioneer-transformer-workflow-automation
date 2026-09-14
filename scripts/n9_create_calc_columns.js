@@ -5,7 +5,7 @@
 
    DRY RUN by default: it creates nothing until APPLY = true.
 
-   It creates SEVEN columns, Estimated Delivery Date included, in dependency order.
+   It creates EIGHT columns, Estimated Delivery Date included, in dependency order.
    Nothing has to exist first -- but the whole chain is calculated, so each row is only
    as fresh as its last write. TODAY() freezes at last save, which is exactly what the
    nightly touch stage in the cleanup flow exists to fix for the stalled rows.

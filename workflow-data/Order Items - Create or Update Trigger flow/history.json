@@ -52,7 +52,7 @@
       "state": "pulled",
       "parent": null,
       "note": "pasted from designer",
-      "sha256": "8952f0112e1b3a7bea634c729dd281b3108cfca9005c0172d493dd57d5d8c7a0",
+      "sha256": "26d75bd9e1cc2d3203b7b37fe56174ade8a7331241a7e9fdd1ba77b24461b321",
       "fingerprint": {
         "toLower": 0,
         "ecUpper": 0,
@@ -69,7 +69,7 @@
     {
       "v": 4,
       "captured": "2026-09-14T09:34:34-04:00",
-      "state": "local",
+      "state": "forked",
       "parent": 3,
       "note": "guard both lookup gets + decouple the Status Date stamp; coalesce comparison and write",
       "sha256": "558b95e86850417107e2693cc7c560110fecc4323ec79ff263eb0a9b3268696c",
@@ -83,7 +83,28 @@
         "definition": "v004__2026-09-14T09-34__local__guard-both-lookup-gets-decouple-the-Status-Date-.json"
       },
       "appliedAt": null,
-      "source": "v004.json"
+      "source": "v004.json",
+      "forkedAt": "2026-09-14T12:40:09-04:00"
+    },
+    {
+      "v": 5,
+      "captured": "2026-09-14T12:40:09-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "pasted from designer",
+      "sha256": "26d75bd9e1cc2d3203b7b37fe56174ade8a7331241a7e9fdd1ba77b24461b321",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 7,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v005__2026-09-14T12-40__pulled__pasted-from-designer.json",
+        "package": "v005__2026-09-14T12-40__pulled__pasted-from-designer.zip"
+      },
+      "appliedAt": "2026-09-14T12:40:09-04:00",
+      "source": "OrderItems-CreateorUpdateTrigger_20260914163821.zip"
     }
   ],
   "identity": {

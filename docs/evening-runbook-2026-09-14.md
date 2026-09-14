@@ -57,7 +57,7 @@ it before `n9`. If it fails, the fallback is already built — column formatting
 browser-evaluated and has neither the freeze nor the UTC trap
 (`sharepoint-lists/formatting/EstimatedDeliveryDate.format.json`).
 
-## 2 · `n9` — the seven calculated columns
+## 2 · `n9` — the eight columns (seven calculated, plus `Calc Refreshed`)
 
 ```
 scripts/n9_create_calc_columns.js        DRY RUN by default
@@ -81,6 +81,26 @@ Export the live definition from the designer into `_inbox/` first.
   on a stale parent. Re-run `apply_v004_lookup_guards.py` against the newer pull. **Do not
   paste v004 as it stands** — that is the silent-fork case the whole versioning system
   exists to catch.
+
+> ### ✅ Done 2026-09-14 12:40 — and it reported a fork that was not one
+>
+> The export came in as **v005** and `intake` marked v004 FORKED. A structural diff of
+> v003 against v005 found **zero** differing lines — byte-identical, same actions, same
+> recurrence. The tenant had not moved.
+>
+> **The stale thing was our own hash.** `content_sha` gained its second
+> `authentication`-stripping rule at 06:0x on 09-11, minutes *after* v003 was captured at
+> 06:00, so v003's stored sha was computed by an older canonicaliser and no longer matched
+> what the same file hashes to today. `rehash_flow_versions.py` exists for exactly this
+> and fixed it: `v003 8952f0112e1b -> 26d75bd9e1cc`, which is v005's sha.
+>
+> Then the real check: regenerating v004 from **v005** produces `558b95e86850` — identical
+> to the stored v004. **v004 is valid and paste-ready.**
+>
+> ⚠️ v004 still shows `forked` in `status`, and that is now cosmetic: the rule is "a later
+> pull did not match", and v005 is a later pull of the *parent*, not of v004. Do not
+> re-author on the strength of that label alone — diff first. A fork report is a prompt to
+> investigate, not a verdict.
 
 ## 4 · Paste v004
 

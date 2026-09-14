@@ -3,8 +3,9 @@
 
     python gen_calc_columns.py
 
-Emits `scripts/n9_create_calc_columns.js` -- the five calculated columns, created over
-REST -- from the formulas read out of the workbook package rather than from any prose.
+Emits `scripts/n9_create_calc_columns.js` -- eight columns created over REST (seven
+calculated, plus the `Calc Refreshed` timestamp the nightly touch writes) -- from the
+formulas read out of the workbook package rather than from any prose.
 
 WHAT CHANGED, AND WHY THIS IS NOW POSSIBLE
 ------------------------------------------
@@ -61,7 +62,9 @@ whose milestone is in the past, the floored and unfloored values can fall in dif
 calendar years, which picks a different FX rate and so a different price. Fidelity to the
 workbook needs the floored value, which needs the daily pass over the stalled rows.
 
-`n9_create_calc_columns.js` refuses to create the chain until that column exists.
+`n9_create_calc_columns.js` CREATES it, at the head of the chain, and aborts if it
+already exists -- a stored version built separately would be hand-editable, which is the
+whole reason this chain is calculated.
 
 WHERE THE PRICE AND PROVINCE ACTUALLY LIVE -- corrected 2026-09-14
 ------------------------------------------------------------------
@@ -289,7 +292,7 @@ CREATOR_HEAD = """/* N9 -- create the five calculated columns ported from FRM10-
 
    DRY RUN by default: it creates nothing until APPLY = true.
 
-   It creates SEVEN columns, Estimated Delivery Date included, in dependency order.
+   It creates EIGHT columns, Estimated Delivery Date included, in dependency order.
    Nothing has to exist first -- but the whole chain is calculated, so each row is only
    as fresh as its last write. TODAY() freezes at last save, which is exactly what the
    nightly touch stage in the cleanup flow exists to fix for the stalled rows.

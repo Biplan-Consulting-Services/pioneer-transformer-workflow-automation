@@ -177,13 +177,13 @@ fields are genuinely `Order Items` columns, so nothing there needed changing.
 
 ## Setup
 
-### Part 1 · The seven columns
+### Part 1 · The eight columns
 
 ```
 scripts/n9_create_calc_columns.js      DRY RUN by default; set APPLY = true
 ```
 
-Seven, not two, because the chain is split so each piece is independently readable and
+Eight, not two, because the chain is split so each piece is independently readable and
 checkable in a view rather than buried in one unreadable formula:
 
 | column | type | why it exists |
