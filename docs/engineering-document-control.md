@@ -354,6 +354,24 @@ stem with two versions. All six detected.
 
 ---
 
+## Where this stopped — 2026-09-14
+
+Paused here deliberately. Three things are ready and waiting on somebody else:
+
+| Waiting on | What to do | Artifact |
+|---|---|---|
+| **Engineering** | Confirm the Vault edition (Basic / Workgroup / Professional) and whether drawing `Revision Number` iProperties are actually maintained | — |
+| **A machine on Pioneer's network** | Run the server survey | `scripts/Survey-DrawingServer.ps1` |
+| **A session with production** | Settle the step vocabulary | `reports/step-mapping-worksheet.xlsx` (regenerate with `scripts/gen_step_mapping_workbook.py`) |
+
+Nothing else can start until at least the third lands — the routing table is built and verified,
+but it cannot be pointed at a step until the 11 → 26 mapping exists.
+
+**First thing to do on resuming:** re-read the Monday board's group list against the worksheet.
+The 24 steps in it were read off the live board by eye, and two stretches scrolled past too fast
+to capture — between `Inspection Mise en Cuve` and `Vaccum`, and between `Montage Électrique` and
+`Finition`. A missing step is a missing row, and the worksheet cannot know it.
+
 ## Open questions
 
 - Vault edition, and whether drawing `Revision Number` iProperties are actually maintained.
