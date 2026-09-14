@@ -4,7 +4,31 @@ Deploy v004 and turn the `Order Items` trigger flow back on. **After staff have 
 because enabling is the irreversible moment and the exposure window is where their work
 gets caught.
 
-Steps 1–3 are safe with staff still in. **Step 5 onward must be one unbroken sitting.**
+---
+
+## Where this stands — updated 2026-09-14 15:0x
+
+| # | step | state |
+|---|---|---|
+| 2 | `n9` — eight columns | ✅ **done** ~14:20. All eight created, every `ResultType` stored as asked |
+| 3 | confirm v004's parent | ✅ **done** 12:40. Reported a fork; it was our own stale hash, not a changed flow |
+| 4 | paste v004 | ✅ **done** 14:48. `v004 CONFIRMED APPLIED`, verified in the tenant's own export |
+| 1 | UTC trap test | ⬜ **after 20:00 ET** — `x12`, dry run then `APPLY` |
+| 5 | re-mirror | ⬜ `x11`, **`APPLY = true`** |
+| 6 | confirm the gate | ⬜ `x10`, Gate A must read `DRIFTED: 0` |
+| 7 | **enable the flow** | ⬜ immediately after 6 |
+| 8 | test on a model-less unit | ⬜ wait one 5-minute poll |
+| 9 | test on a healthy unit | ⬜ |
+| 10 | watch two more polls | ⬜ |
+
+**The flow is still `Off`. Nothing is stamping. Nothing is at risk until step 7.**
+
+🔴 **Steps 5, 6 and 7 are one unbroken sitting.** Every minute between the re-mirror and
+the enable is a minute of fresh staff drift that gets stamped with today's date. Step 1
+is independent and can happen before or after.
+
+If something goes wrong at any point: **turn the flow Off.** That undoes everything except
+a `Status Date` already overwritten, which is why step 5 comes first and step 6 verifies it.
 
 ---
 
