@@ -1,0 +1,186 @@
+# Evening runbook — 2026-09-14
+
+Deploy v004 and turn the `Order Items` trigger flow back on. **After staff have gone**,
+because enabling is the irreversible moment and the exposure window is where their work
+gets caught.
+
+Steps 1–3 are safe with staff still in. **Step 5 onward must be one unbroken sitting.**
+
+---
+
+## Why this is an evening job at all
+
+Measured today, twenty minutes apart, while we worked:
+
+| | 11:2x | 11:4x |
+|---|---|---|
+| units | 1,193 | **1,195** |
+| `Step Status` ≠ its mirror | 65 | **72** |
+
+Staff are advancing units and typing dates right now. Every row they touch between the
+re-mirror and the enable drifts again, and the flow's first poll stamps *those* with
+today. The gap has to be seconds, not minutes — which is why the re-mirror comes **last**,
+not first.
+
+Precedent: the cutover itself ran 03:41–06:45 for this reason, and the 09-11
+enable-then-fail landed at 07:1x, just as people arrived.
+
+## The decision this runbook encodes
+
+**Staff enter `Status Date` by hand today and want it auto-filled** (user, 2026-09-14).
+So v004 ships unchanged.
+
+⚠️ **Do not add a "only stamp when `Status Date` is blank" guard.** It was proposed here
+this morning and it is wrong: a row already carrying a date from its previous step would
+never stamp again, so the second transition and every one after would silently keep the
+old date. The guard breaks the feature it looks like it protects.
+
+The one behaviour to tell staff: *change the step and leave the date alone — it fills in
+within 5 minutes. If the real date differs, correct it **after** the stamp lands and it
+sticks*, because by then the mirror matches and the flow will not touch the row again.
+
+---
+
+## 1 · After 20:00 Eastern — the UTC trap test
+
+Separate question, same evening, and it has to be after 8pm.
+
+`calculated-columns-plan.md:528`: `TODAY()` in a SharePoint calculated column is widely
+UTC-based rather than site-local, so a row edited between roughly **20:00 and midnight
+Eastern** recomputes with UTC already on tomorrow and reads **a day ahead**.
+
+- Open the hidden **`test calculated column`** on `Order Items`.
+- **If it shows tomorrow's date, the trap is real.**
+
+This decides whether `Estimated Delivery Date` can be a calculated column at all, so run
+it before `n9`. If it fails, the fallback is already built — column formatting's `@now` is
+browser-evaluated and has neither the freeze nor the UTC trap
+(`sharepoint-lists/formatting/EstimatedDeliveryDate.format.json`).
+
+## 2 · `n9` — the seven calculated columns
+
+```
+scripts/n9_create_calc_columns.js        DRY RUN by default
+```
+
+Independent of the flow work; nothing below depends on it. Creates columns, writes no
+items. `Options: 8` is `AddFieldInternalNameHint`, so they do **not** land in the default
+view and staff will not see them until someone adds them.
+
+## 3 · Confirm v004's parent is still current
+
+```bash
+python scripts/flow_version.py --flow "Order Items - Create or Update Trigger flow" intake
+python scripts/flow_version.py --flow "Order Items - Create or Update Trigger flow" status
+```
+
+Export the live definition from the designer into `_inbox/` first.
+
+- **Matches v003** → v004 is good, continue.
+- **Does not match** → the designer has been touched since 09-11 06:00 and v004 was built
+  on a stale parent. Re-run `apply_v004_lookup_guards.py` against the newer pull. **Do not
+  paste v004 as it stands** — that is the silent-fork case the whole versioning system
+  exists to catch.
+
+## 4 · Paste v004
+
+Confirm the flow is still **Off**. Paste the definition object — not the full export
+document:
+
+```
+workflow-data/Order Items - Create or Update Trigger flow/
+  v004__2026-09-14T09-34__local__guard-both-lookup-gets-decouple-the-Status-Date-.definition-only.json
+```
+
+Save. Export again, intake, and confirm `status` flips v004 to `applied`.
+
+⚠️ Expect `recurrence.interval` to survive at **5**. A FORKED report on **only** that key
+is the designer rewriting it on save — known 09-11 behaviour, not a bad paste.
+
+---
+
+## 🔴 5 onward — one sitting, no breaks
+
+### 5 · Re-mirror
+
+```
+scripts/x11_remirror_step_status.js      set APPLY = true
+```
+
+Run the DRY RUN first and read the list. It writes **one field** — `StepStatusStamped` —
+and never `StatusDate`.
+
+Two numbers at the end, and the second matters more:
+
+| | expect | proves |
+|---|---|---|
+| mirror still drifted | 0 | the write landed |
+| **StatusDate CHANGED** | **0** | it landed on the **right field** |
+
+**Anything but 0 / 0 → stop. Do not enable.**
+
+### 6 · Confirm the gate
+
+```
+scripts/x10_trigger_flow_gate.js
+```
+
+Gate A must now read `DRIFTED: 0`. Note the count of model-less units — see the footnote
+below, it is not 203.
+
+### 7 · Enable the flow
+
+Immediately. Every minute here is a minute of fresh drift that will be stamped with today.
+
+### 8 · Test on a unit with NO model
+
+Not a healthy one — testing the happy path is how this reached production broken.
+Candidates from x10's last run: **`22021-14/20`** (id 21), `21881-1/2` (id 22),
+`22032-1/20` (id 25).
+
+Change **Step Status**, wait one poll — **5 minutes, not 1**.
+
+| # | expect | if not |
+|---|---|---|
+| 8.1 | run **succeeded** | still `WorkflowOperationParametersRuntimeMissingValue`? a guard missed the empty shape — read the trigger body and widen it |
+| 8.2 | `Get_Client`, `Get_Model` show **Skipped**, not Failed | the guard evaluated true on an empty lookup |
+| 8.3 | `Status Date` = today | the stamp is still coupled to something — check `Condition_StatusDate`'s `runAfter` in the **saved** definition, not the file we pasted |
+| 8.4 | `Step Status Stamped` follows the new value | `Update_item` never ran |
+| 8.5 | the four `_TextField` mirrors **unchanged** | the coalesce did not take |
+| 8.6 | the **next** poll writes nothing | termination is broken |
+
+### 9 · Then a healthy unit
+
+One with all three lookups, to confirm the guards did not break the path that already
+worked.
+
+### 10 · Watch two more polls
+
+Confirm no runaway writes. The failure mode to watch for is a row being rewritten every
+poll because a comparison never settles.
+
+---
+
+## Footnote — the "203" is wrong, and it is ~20
+
+`x10` measured it directly on 2026-09-14:
+
+```
+all three lookups empty : 16
+some but not all        : 4      <- a shape nobody had counted
+```
+
+Not 203. `x6_check_lookup_coverage.js` says why in its own header: every earlier count
+came from `*_TextField` mirrors in a CSV export, and that sync has been off since
+**2026-08-21**, so those mirrors say nothing reliable about the lookups the flow actually
+reads. Gate B is consistent — **0** rows have a populated mirror over an empty lookup, and
+the reverse case is invisible to it.
+
+The fix does not change; 20 rows still break the flow. But `roadmap.md`'s *"203 of
+1,189"* and *"about 17% of units would silently stop stamping"* are measuring stale
+mirrors. Real figure: **~20 units, ~1.7%.** Three documents need correcting once the
+deploy is done.
+
+The 4 partial rows — `P1_001-1/1`, `P20001-1/1`, `20877R1-1/1`, `P20002-1/1` — have a
+Client but no Model or Revision. They would fail v003 at `Get_Model`; v004 guards each get
+separately, so they are handled.
