@@ -49,17 +49,38 @@ Separate question, same evening, and it has to be after 8pm.
 UTC-based rather than site-local, so a row edited between roughly **20:00 and midnight
 Eastern** recomputes with UTC already on tomorrow and reads **a day ahead**.
 
-**Step 2 ran first, so test the real column rather than the proxy:** open a few units and
-read **`Estimated Delivery Date`** itself. The old hidden `test calculated column` is the
-fallback if that is somehow unreadable.
+```
+scripts/x12_utc_trap_test.js       DRY RUN by default
+```
 
-- **If it shows tomorrow's date, the trap is real.**
+It refuses to run before 20:00 Eastern, and refuses again if Eastern and UTC happen to be
+on the same date — in which case the test cannot discriminate and a pass would mean
+nothing.
 
-Read at least one unit from each branch — one delivered (branch 1, no `TODAY()`, so it
-must NOT move), and one stalled in production (a `TODAY()` branch). If the non-`TODAY()`
-branch also reads a day ahead, the problem is not the trap and is something else entirely.
+🔴 **This cannot be a read-only test, and the original plan missed that.** A SharePoint
+calculated column is **stored**, not evaluated on read: it recomputes when the **item** is
+written and at no other time. Every row's `Estimated Delivery Date` was computed when the
+column was created (~14:20 Eastern = 18:20Z), which is *before* 20:00 — so simply reading
+at 21:00 returns this afternoon's answer and proves nothing. *"Check the test column after
+8pm"* would have looked like a clean pass whatever the truth is.
 
-This decides whether `Estimated Delivery Date` survives as a calculated column. If it fails, the fallback is already built — column formatting's `@now` is
+So the script writes `Calc Refreshed` — our own column, read by nothing, and the exact
+mechanism the nightly touch uses — then re-reads. One row per case:
+
+| | | |
+|---|---|---|
+| **STALLED** | a unit on a `TODAY()` branch | should read **today + buffer + penalty** |
+| **CONTROL** | a unit on branch 1 (`Planned Delivery Date` set) | that branch never calls `TODAY()`, so it **must not move at all** |
+
+| result | meaning |
+|---|---|
+| stalled = today + buffer | no trap — `Estimated Delivery Date` stays a calculated column |
+| stalled = tomorrow + buffer | **the trap is real** — decide whether evening-only staleness is tolerable; the fallback is the column formatting already built |
+| **control moved** | stop. Branch 1 has no `TODAY()` in it, so the cause is something else entirely — do not redesign around a trap that is not the problem |
+
+The dry run also prints **how many units are on a `TODAY()` branch right now**, which is
+the honest count for stage B's nightly touch — the number the ~21 estimate needs replacing
+with. If it fails, the fallback is already built — column formatting's `@now` is
 browser-evaluated and has neither the freeze nor the UTC trap
 (`sharepoint-lists/formatting/EstimatedDeliveryDate.format.json`).
 
