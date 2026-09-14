@@ -3,12 +3,8 @@
 
     python gen_calc_columns.py
 
-Emits, from the formulas read out of the workbook package rather than from any prose:
-
-    scripts/n9_create_calc_columns.js               the five calculated columns, over REST
-    sharepoint-lists/formatting/Price.format.json           the three UI columns,
-    sharepoint-lists/formatting/NavigationOrder.format.json  as column formatting
-    sharepoint-lists/formatting/NavigationModel.format.json
+Emits `scripts/n9_create_calc_columns.js` -- the five calculated columns, created over
+REST -- from the formulas read out of the workbook package rather than from any prose.
 
 WHAT CHANGED, AND WHY THIS IS NOW POSSIBLE
 ------------------------------------------
@@ -24,12 +20,27 @@ the list too, which retires that doc's "needs a BO field created first -- it exi
 neither list today". The two Excel lookup tables never needed to be lists: 13 province
 codes that have not changed since 1999, and six rows of FX rate, both inlined below.
 
-Wall 2 stands, and splits the remaining columns cleanly in two:
+Wall 2 stands, and it turns out to settle three of the six by deletion rather than by
+porting them:
 
-    UI     Price, Navigation Order, Navigation Model   -- all three are HYPERLINK().
-           They were never data. Column formatting renders a link natively, so they
-           become formatting, not columns.
-    DATA   Price CAD, Price USD                        -- money. Real calculated columns.
+    Price, Navigation Order, Navigation Model   -- all three are HYPERLINK(). DROPPED.
+    Price CAD, Price USD                        -- money. Real calculated columns.
+
+DROPPED, decided by the user 2026-09-14: the two navigation columns ARE the lookup
+columns. `Order Items` already carries `Order Number` and `Model Revision` as real
+lookups, whose own UI navigates to the parent -- so a column whose entire content is a
+link to the parent is a second copy of a control SharePoint already renders.
+
+An earlier pass here argued they were not redundant, because Excel's hyperlink opens a
+FILTERED VIEW of every row for that order while a lookup opens the single parent item.
+That distinction is real but it is not worth a column: this is now a list, and filtering
+`Order Items` by order is what the list view does natively. Recorded so the argument is
+not re-derived and re-lost.
+
+`Price` goes with them. Excel's version existed only to make the number clickable --
+`HYPERLINK(order url, [Price Value])` -- and `Order - Price` is already on the list as
+real, sortable, summable currency. There is nothing left for it to add once the
+click-through is redundant.
 
 `Archived` is excluded: the user says it is deprecated, and the workbook has no formula
 left for it anyway (confirmed by scanning the package -- 6 of the 7 flagged columns carry
@@ -65,19 +76,31 @@ that N3 fanned them down. Before that, these were the cross-list lookups that di
 the columns. The check at the bottom of this file is now section-aware, because a
 whole-document grep is what produced the wrong answer.
 
-UI_LANGUAGE is a real choice. The two navigation columns read Excel's `SelectedLanguage`
-defined name, and column formatting cannot see the viewer's UI language.
+THE PROVINCE RULE, decided by the user 2026-09-14
+-------------------------------------------------
+**A recognised Canadian province code prices in CAD. Everything else -- blank, a US
+state, an unrecognised code -- prices in USD.** No exceptions and no data cleanup first.
+
+This is what the ported formula already did, since `OR()` over the 13 codes is false for
+a blank and false for anything unrecognised. What changes is that it is now a decision
+rather than the two open questions `calculated-columns-plan.md` carried (30 of 441 orders
+with no `Province/State`, and 1 holding `NO`). Both are answered: USD, deliberately.
+
+`LOWER(TRIM())` is applied on both sides, because the rule says "is one of the Canadian
+provinces" and a trailing space or a lowercase `qc` would otherwise quietly flip an
+order's currency.
+
+A first pass here applied only `TRIM` and asserted that SharePoint's `=` is
+case-insensitive so `LOWER` was unnecessary. Do not take that back out. Excel's `=` is
+case-insensitive; the SharePoint calculated-column engine is Excel-LIKE and documents no
+such guarantee, and this repo has already paid for assuming a comparison was
+case-forgiving -- the whole P3 `toLower` pass exists because unguarded uppercase-only
+tests were a live bug class, and `flow_version.py`'s manifest still carries `toLower` and
+`'EC'` as columns to watch it. Different engine, same cheap guard.
 """
 import json, io, os, re, argparse
 
-# ----------------------------------------------------------------- the choice
-UI_LANGUAGE = "FR"               # "FR" or "EN" -- the two navigation columns
-
 SITE = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio"
-ORDER_VIEW = SITE + "/Lists/Order/AllItems.aspx?view=7&q="
-MODELREV_VIEW = (SITE + "/Lists/Models%20Revisions/AllItems.aspx"
-                 "?viewid=5526fc48-6a40-4e8b-a015-7cb3f2c32705&view=7&q=")
-
 # Canadian province/territory codes, inlined from TableCanadianProvince (AL1:AM14).
 # Static reference data -- a list would be ceremony around 13 strings.
 PROVINCES = ["AB", "BC", "MB", "NB", "NL", "NT", "NS", "NU", "ON", "PE", "QC", "SK", "YT"]
@@ -96,14 +119,7 @@ SRC = {"price":    ("Order - Price", "OrdPrice"),
        "promised": ("Order - Initial Promised Date", "OrdInitialPromisedDate")}
 
 EDD = ("Estimated Delivery Date", "EstimatedDeliveryDate")
-# The lookup, not `Order_Number_TextField`. The mirror is written by the create-or-update
-# trigger flow, which is OFF, so it is the one field on the row that may be stale; the
-# lookup cannot be. Internal name read off the live flow definition
-# (`triggerBody()?['OrderNumber/Value']`) rather than column-reference.md, which states
-# outright that lookup columns are absent from it because an export cannot show them.
-ORDER_LOOKUP = "OrderNumber"
 LOOKUPS = {"OrderNumber", "Client", "Model", "ModelRevision"}
-MODELCODE = "RevClientModelCode"      # workbook "PO Item #"
 
 GROUP = "Calculated"
 
@@ -136,8 +152,12 @@ def calc_fields():
     return [
         # Split out so each piece is independently readable and checkable in a view.
         dict(disp="Is Canadian", name="IsCanadian", rtype="Boolean", refs=[vi],
-             formula="=" + "OR(%s)" % ",".join('[%s]="%s"' % (vd, p) for p in PROVINCES),
-             why="TableCanadianProvince, inlined. Non-Canadian orders are priced in USD."),
+             formula="=" + "OR(%s)" % ",".join(
+                 'LOWER(TRIM([%s]))="%s"' % (vd, p.lower()) for p in PROVINCES),
+             why="TableCanadianProvince, inlined. A recognised code prices in CAD; blank, "
+                 "a US state and an unrecognised code all fall through to USD, which is "
+                 "the rule the user settled 2026-09-14 rather than an accident of OR(). "
+                 "LOWER+TRIM on both sides -- see the docstring, do not simplify."),
 
         dict(disp="Fx Year", name="FxYear", rtype="Number", dec=0, refs=[ei, mi],
              formula="=IF(AND(ISBLANK([%s]),ISBLANK([%s])),0,YEAR(%s))" % (ed, md, date_cascade),
@@ -177,46 +197,6 @@ def schema_xml(f):
             % (f["disp"], f["name"], f["name"], GROUP, f["rtype"], extra,
                xesc(f["formula"]), refs))
 
-
-def link(href_expr, text_expr, title):
-    return {
-        "$schema": "https://developer.microsoft.com/json-schemas/sp/v2/column-formatting.schema.json",
-        "elmType": "a",
-        "txtContent": "=" + text_expr,
-        "attributes": {"target": "_blank", "title": title},
-        "style": {"text-decoration": "none", "white-space": "nowrap"},
-        "customRowAction": None,
-        "href": "=" + href_expr,
-    }
-
-
-def ui_formats():
-    order = "[$%s.lookupValue]" % ORDER_LOOKUP
-    code = "[$%s]" % MODELCODE
-    pd, _ = SRC["price"]
-    open_order = "'Ouvrir commande '" if UI_LANGUAGE == "FR" else "'Navigate to Order '"
-    open_model = "'Ouvrir " + "modèle '" if UI_LANGUAGE == "FR" else "'Navigate to model '"
-
-    return {
-        # Applied to the EXISTING Price column, which is why this one is strictly better
-        # than the Excel original: Excel's HYPERLINK() replaced the number with a link and
-        # lost it as a value. Formatting paints over a column that still holds real
-        # currency, so Price stays sortable, filterable and summable AND gets the link.
-        "Price": (link("'%s' + %s" % (ORDER_VIEW, order),
-                       "'$' + toLocaleString(Number([$%s]))" % SRC["price"][1],
-                       "Ouvrir la commande dans la liste Order"),
-                  "formats the existing '%s' column -- no new column needed" % pd),
-
-        "NavigationOrder": (link("'%s' + %s" % (ORDER_VIEW, order),
-                                 "%s + %s" % (open_order, order),
-                                 "Ouvrir la commande dans la liste Order"),
-                            "needs an empty Text column named 'Navigation Order'"),
-
-        "NavigationModel": (link("'%s' + %s" % (MODELREV_VIEW, code),
-                                 "%s + %s" % (open_model, code),
-                                 "Ouvrir la revision de modele"),
-                            "needs an empty Text column named 'Navigation Model'"),
-    }
 
 
 CREATOR_HEAD = """/* N9 -- create the five calculated columns ported from FRM10-12.
@@ -356,8 +336,14 @@ def main():
         assert f["name"] not in known, "%s already exists on the list" % f["name"]
     for k in ("price", "province", "promised"):
         assert SRC[k][1] in known, "source column %s not on the list" % SRC[k][1]
-    assert ORDER_LOOKUP in known, "%s not on the list" % ORDER_LOOKUP
-    assert MODELCODE in known, "%s not on the list" % MODELCODE
+
+    # SharePoint caps a calculated column's Formula at 1024 characters and does not say
+    # so when you exceed it -- createfieldasxml returns an unhelpful 400. `Is Canadian`
+    # is the one at risk: LOWER(TRIM([Order - Province/State])) is 38 characters and it
+    # appears once per province, so adding codes or renaming that column moves it fast.
+    for f in fields:
+        assert len(f["formula"]) <= 1024, \
+            "%s formula is %d chars, over SharePoint's 1024 limit" % (f["disp"], len(f["formula"]))
     assert EDD[1] not in known, \
         "Estimated Delivery Date already exists -- re-check the chain before creating it"
 
@@ -368,20 +354,10 @@ def main():
                               indent=4)}) + CREATOR_TAIL
     io.open("scripts/n9_create_calc_columns.js", "w", encoding="utf-8").write(js)
 
-    os.makedirs("sharepoint-lists/formatting", exist_ok=True)
-    fmts = ui_formats()
-    for name, (doc, note) in fmts.items():
-        io.open("sharepoint-lists/formatting/%s.format.json" % name, "w",
-                encoding="utf-8").write(json.dumps(doc, indent=2) + "\n")
-
     print("source columns    : %s" % ", ".join(v[1] for v in SRC.values()))
-    print("navigation labels : %s" % UI_LANGUAGE)
     print("\nwrote scripts/n9_create_calc_columns.js")
     for f in fields:
         print("  %-14s %-9s %s" % (f["disp"], f["rtype"], f["formula"][:88]))
-    print("\nwrote sharepoint-lists/formatting/")
-    for name, (_, note) in fmts.items():
-        print("  %-18s %s" % (name + ".json", note))
     print("\n  every FieldRef resolves, no column collides with an existing one,")
     print("  and Estimated Delivery Date is confirmed absent (the creator gates on it).")
 
