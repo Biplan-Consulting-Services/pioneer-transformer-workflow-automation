@@ -58,13 +58,25 @@
   const units = await page(L("Order Items") + "/items?$top=500&$select=Id,Title,ModelId,ModelRevisionId,Model_Revision_ID_TextField");
   if (!units.length) { console.error("ABORT: read 0 units."); return; }
 
-  const isMR  = v => /^MR-/i.test(s(v));
+  // ⚠️ `/^MR-/` IS WRONG and the first run of this script used it. SA models are `MSA-`,
+  // so their revisions are `MRSA-HYQU-0064-V1` -- correct ids that the pattern rejected,
+  // inflating the suspect set from 29 to 45 and inverting the SA conclusion.
+  //
+  // The real rule is derivable: a revision's id is its MODEL's code with an `R` inserted
+  // after the leading `M`, plus a version suffix.
+  //     M-HYQU-0092    ->  MR-HYQU-0092-V1
+  //     MSA-HYQU-0064  ->  MRSA-HYQU-0064-V1
+  // Checking against the model it actually points at beats any prefix guess.
+  const expected = r => { const m = s(r.Pioneer_Model_Code_TextField);
+    return m ? "M" + "R" + m.slice(1) : null; };            // prefix, without the -V<n>
+  const isMR  = (v, r) => { const e = expected(r);
+    return e ? s(v).toUpperCase().startsWith(e.toUpperCase() + "-V") : /^MRS?A?-/i.test(s(v)); };
   const isSA  = r => /SA/.test(s(r.Model_x0020_Type)) || /SA/.test(s(r.Description))
                   || /MSA-|MRSA-/i.test(s(r.ModelID)) || /MSA-/i.test(s(r.Pioneer_Model_Code_TextField));
 
-  const bad = revs.filter(r => !isMR(r.ModelID));
+  const bad = revs.filter(r => !isMR(r.ModelID, r));
   console.log("revisions read        : " + revs.length);
-  console.log("ModelID is an MR- id  : " + revs.filter(r => isMR(r.ModelID)).length);
+  console.log("ModelID matches model : " + revs.filter(r => isMR(r.ModelID, r)).length);
   console.log("NOT an MR- id         : " + bad.length + "   <- the suspect set");
   console.log("  of those, empty     : " + bad.filter(r => s(r.ModelID) === "").length);
   console.log("  equal to their model: " + bad.filter(r => s(r.ModelID) !== "" && s(r.ModelID) === s(r.Pioneer_Model_Code_TextField)).length);
@@ -91,7 +103,10 @@
   /* ---- blast radius on Order Items ------------------------------------------ */
   const badIds = new Set(bad.map(r => r.Id));
   const hit = units.filter(u => u.ModelRevisionId != null && badIds.has(u.ModelRevisionId));
-  const mirrorStillRight = hit.filter(u => isMR(u.Model_Revision_ID_TextField));
+  const revById = new Map(revs.map(r => [r.Id, r]));
+  const mirrorStillRight = hit.filter(u => {
+    const r = revById.get(u.ModelRevisionId);
+    return r ? isMR(u.Model_Revision_ID_TextField, r) : false; });
   console.log("\n=== blast radius on Order Items ===");
   console.log("  units pointing at a suspect revision : " + hit.length + " of " + units.length);
   console.log("  ...whose mirror still holds an MR- id: " + mirrorStillRight.length
@@ -104,6 +119,7 @@
     console.log("  id " + String(r.Id).padEnd(5)
       + "ModelID=" + (s(r.ModelID) || "(empty)").padEnd(18)
       + "model=" + s(r.Pioneer_Model_Code_TextField).padEnd(18)
+      + "want=" + (expected(r) ? expected(r)+"-V?" : "?").padEnd(22)
       + "type=" + s(r.Model_x0020_Type).padEnd(16)
       + "mod=" + s(r.Modified).slice(0,10));
   if (bad.length > 40) console.log("  ... and " + (bad.length - 40) + " more");
