@@ -81,28 +81,69 @@
   // mirror is only a fallback, and a disagreement between the two is itself reported.
   const models = await page(L("Models") + "/items?$top=2000&$select=Id,ModelID");
   if (!models.length) { console.error("ABORT: read 0 models -- a zero-row read is a failed read."); return; }
-  const MODELS = new Map(models.map(m => [m.Id, s(m.ModelID)]));
-  console.log("models read    : " + models.length);
 
+  // 🔴 TRIM. At least one Models row stores its code with a TRAILING NEWLINE
+  // ("M-FIEN-0004\n"), which is invisible in every report and made a correct revision
+  // look broken while proposing "MR-FIEN-0004\n-V1" as its repair. Writing that would
+  // have corrupted a clean row, and no guard here would have caught it -- the value
+  // matched its own derived prefix, because the prefix carried the newline too.
+  const dirty = models.filter(m => s(m.ModelID) !== s(m.ModelID).trim());
+  const MODELS = new Map(models.map(m => [m.Id, s(m.ModelID).trim()]));
+  console.log("models read    : " + models.length
+    + (dirty.length ? "   ⚠️ " + dirty.length + " with leading/trailing whitespace" : ""));
+  for (const m of dirty.slice(0,10))
+    console.log("      model id " + m.Id + "  " + JSON.stringify(s(m.ModelID)));
+
+  // null  = no model to derive from (the revision has no Model lookup)
   const modelCodeOf = r => {
     const live = r.ModelId != null ? MODELS.get(r.ModelId) : undefined;
     if (live) return live;
-    return s(r.Pioneer_Model_Code_TextField) || null;     // fallback only
+    const mir = s(r.Pioneer_Model_Code_TextField).trim();   // fallback only
+    return mir || null;
   };
   const prefixOf = r => { const m = modelCodeOf(r);
     return m ? "MR" + m.slice(1) : null; };
-  const looksRight = r => { const p = prefixOf(r);
-    return p ? s(r.ModelID).toUpperCase().startsWith(p.toUpperCase() + "-V") : false; };
 
-  const broken = revs.filter(r => !looksRight(r) && !SKIP.includes(r.Id));
-  const healthy = revs.filter(looksRight);
+  // true = matches its model, false = does not, NULL = cannot be judged (no model).
+  // The three must stay distinct: collapsing null into false is what put 8 orphaned
+  // revisions into the repair set, 7 of which were already perfectly correct.
+  const looksRight = r => { const p = prefixOf(r);
+    if (!p) return null;
+    return s(r.ModelID).trim().toUpperCase().startsWith(p.toUpperCase() + "-V"); };
+
+  // shape check for rows with no model to compare against
+  const looksLikeRevisionId = v => /^MRS?A?-[A-Z0-9]+-\d+-V\d+$/i.test(s(v).trim());
+
+  const healthy    = revs.filter(r => looksRight(r) === true);
+  const broken     = revs.filter(r => looksRight(r) === false && !SKIP.includes(r.Id));
+  const unjudgeable = revs.filter(r => looksRight(r) === null);
+
   console.log("already correct : " + healthy.length);
   console.log("to repair       : " + broken.length + (SKIP.length ? "   (skipping " + SKIP.length + ")" : ""));
-  if (!broken.length) { console.log("Nothing to do."); return; }
+  console.log("cannot judge    : " + unjudgeable.length + "   (no Model lookup -- see below)");
+
+  /* ---- revisions with no Model lookup: a DIFFERENT defect, not this repair's -- */
+  if (unjudgeable.length) {
+    const shaped = unjudgeable.filter(r => looksLikeRevisionId(r.ModelID));
+    const unshaped = unjudgeable.filter(r => !looksLikeRevisionId(r.ModelID));
+    console.log("\n=== revisions with NO Model lookup ===");
+    console.log("  These have no `Pioneer Model Code` lookup and no mirror, so there is");
+    console.log("  nothing to derive an id from. That is an orphaned-revision problem, not");
+    console.log("  the ModelID problem this script repairs. Listed, not touched.");
+    console.log("  id already shaped like a revision id : " + shaped.length + "   (leave alone)");
+    for (const r of shaped) console.log("      id " + String(r.Id).padEnd(5) + s(r.ModelID));
+    console.log("  id NOT usable                        : " + unshaped.length + "   🔴 needs a human");
+    for (const r of unshaped) console.log("      id " + String(r.Id).padEnd(5)
+      + (s(r.ModelID) || "(empty)") + "   ModelName=" + (s(r.ModelName) || "(none)"));
+    if (unshaped.length)
+      console.log("  Fix these by setting their Model lookup, then re-run -- do not hand-type an id.");
+  }
+
+  if (!broken.length) { console.log("\nNothing to repair."); return; }
 
   // every ModelID currently in use, so a proposal cannot collide with one
   const taken = new Map();
-  for (const r of revs) if (s(r.ModelID)) taken.set(s(r.ModelID).toUpperCase(), r.Id);
+  for (const r of revs) if (s(r.ModelID).trim()) taken.set(s(r.ModelID).trim().toUpperCase(), r.Id);
 
   // siblings, so the version number can be judged rather than assumed
   const byModel = new Map();
@@ -234,7 +275,10 @@
   // mirror reports as still-broken after a perfectly good write, which is a false alarm
   // raised at the exact moment this check needs to be trustworthy.
   const after = await page(L("Model Revisions") + "/items?$top=2000&$select=Id,ModelId,ModelID,Pioneer_Model_Code_TextField");
-  const stillBroken = after.filter(r => !looksRight(r));
+  // `=== false` only. looksRight returns NULL for the orphaned revisions that have no
+  // Model lookup, and `!null` is true -- which would report them as failures of a repair
+  // that deliberately never touched them.
+  const stillBroken = after.filter(r => looksRight(r) === false);
   console.log("  revisions still not matching their model prefix : " + stillBroken.length
     + "   (expect " + SKIP.length + " -- the skipped ones)");
   for (const r of stillBroken.slice(0,10)) console.log("      id " + r.Id + "  " + (s(r.ModelID)||"(empty)"));
