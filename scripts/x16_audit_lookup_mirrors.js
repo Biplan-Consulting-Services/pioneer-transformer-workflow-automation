@@ -9,14 +9,19 @@
 
          21408-1/1   MR-HYQU-0092-V1  ->  M-HYQU-0092
 
-     The mapping is `@triggerBody()?['ModelRevision/Value']` -- the lookup's DISPLAY value,
-     which on this tenant renders the model rather than the revision. Client and Model are
-     sourced correctly from their Get_ actions; the revision has no Get_ at all, so it has
-     no correct source to fall back on. Identical in v003 and v005, so this predates v004
-     and is not something the guard work introduced.
+     ⚠️ THE FIRST TWO DIAGNOSES WERE BOTH WRONG. The flow is fine.
 
-     `lookup-textfield-reference.md` called for the **Get-item** pattern here in August.
-     The flow implements the **Simple** pattern. This script measures the consequence.
+     `ModelID` on `Model Revisions` IS the revision identifier -- 348 of 393 rows hold MR-
+     values in it -- and the lookup's ShowField resolves to it, so
+     `@triggerBody()?['ModelRevision/Value']` is the correct expression and always was.
+
+     The defect is in the DATA: revision 344's own `ModelID` reads "M-HYQU-0092", its
+     model's code, where it should read "MR-HYQU-0092-V1". The flow mirrored a corrupt
+     source faithfully. The Order Items mirror still held the right value only because the
+     *_TextField sync has been off since 2026-08-21 while the revision was modified
+     2026-09-01 -- the stale copy was more accurate than the live list.
+
+     See x17 for the revision-side audit. This script measures the Order Items side.
 
    WHAT IT CANNOT ASSUME, AND WHY IT PROBES INSTEAD
      A bad $select returns 400, and the usual `rows.concat(j.value||[])` turns that into
@@ -66,8 +71,11 @@
   };
 
   console.log("=== probing field names on the live lists ===");
+  // `ModelID` -- NOT `Model_Revion_ID`. lookup-textfield-reference.md names a field that
+  // does not exist on this list; `ModelID` on `Model Revisions` is the revision id (MR-...)
+  // and is what the lookup's ShowField resolves to. Confirmed against live values, not names.
   const fRev = await probe("Model Revisions",
-        ["Model_Revion_ID","Model_Revision_ID","ModelRevisionID","ModelRevision_ID"]);
+        ["ModelID","Model_Revion_ID","Model_Revision_ID","ModelRevisionID"]);
   const fMod = await probe("Models", ["ModelID","Model_ID","ModelId"]);
   const fCli = await probe("Clients", ["Client_ID","ClientID"]);
   if (!fRev || !fMod || !fCli) return;
