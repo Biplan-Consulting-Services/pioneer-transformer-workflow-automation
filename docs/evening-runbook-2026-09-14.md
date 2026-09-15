@@ -1,5 +1,16 @@
 # Evening runbook — 2026-09-14
 
+> ## 🔴 STOP — read `status-date-null-write-2026-09-14.md` before re-enabling the flow
+>
+> Found 00:1x on 2026-09-15, after everything below had passed. The flow **erases**
+> `Status Date` on any row where a `_TextField` mirror needs refreshing **and** the step did
+> not change. Predates v004 — the same expression is in v003 and v005. The `x18` revision
+> repair armed it for roughly 724 units. **The flow should be OFF until v006 is applied.**
+>
+> Everything in this runbook still stands: v004 works, and steps 8 and 9 passed honestly.
+> The happy path is not where this lives.
+
+
 Deploy v004 and turn the `Order Items` trigger flow back on. **After staff have gone**,
 because enabling is the irreversible moment and the exposure window is where their work
 gets caught.
