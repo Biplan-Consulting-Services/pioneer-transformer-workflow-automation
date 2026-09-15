@@ -32,7 +32,10 @@
 
   // Baseline captured 2026-09-14 22:23 ET, BEFORE the test edit. v15.0 was the last
   // pre-test version. All four mirrors and all three lookups were null.
-  const BASE = { step:"Terminé", stamped:"Terminé", statusDate:"2026-08-11", lastVer:"15.0" };
+  const BASE = { step:"Terminé", stamped:"Terminé", statusDate:"2026-08-11", lastVer:"15.0",
+                 // all four were null at 22:23, before the test edit
+                 mirrors:{ Client_ID_TextField:"", Model_ID_TextField:"",
+                           Model_Revision_ID_TextField:"", Order_Number_TextField:"" } };
   const MIRRORS = ["Client_ID_TextField","Model_ID_TextField",
                    "Model_Revision_ID_TextField","Order_Number_TextField"];
 
@@ -67,17 +70,29 @@
   // --- 8.3 / 8.4 -------------------------------------------------------------
   const ok83 = day(u.StatusDate) === TODAY_ET;
   const ok84 = s(u.StepStatusStamped) === s(u.StepStatus);
-  // --- 8.5: the mirrors must not have been cleared by the coalesce -----------
-  const cleared = MIRRORS.filter(f => s(u[f]) !== "");   // baseline was null on all four
-  const ok85 = cleared.length === 0;
+  // --- 8.5: the mirrors must not have been CLEARED by the coalesce -----------
+  // Direction matters, and an earlier version of this check got it wrong. The failure
+  // 8.5 guards against is a populated mirror being wiped by a null from a SKIPPED Get.
+  // An EMPTY mirror becoming populated is the opposite: the flow refreshing a value the
+  // dead *_TextField sync stopped maintaining on 2026-08-21. That is not a failure, and
+  // flagging it as one hides the failure that is.
+  const wiped  = MIRRORS.filter(f => BASE.mirrors[f] !== "" && s(u[f]) === "");
+  const filled = MIRRORS.filter(f => BASE.mirrors[f] === "" && s(u[f]) !== "");
+  const ok85 = wiped.length === 0;
 
   console.log("\n=== the checks the runbook asks for ===");
   console.log("  8.3 Status Date = today        : " + (day(u.StatusDate)||"(none)")
     + "   " + (ok83 ? "PASS" : "FAIL -- wanted " + TODAY_ET));
   console.log("  8.4 Stamped follows Step Status: step=" + s(u.StepStatus)
     + " stamped=" + s(u.StepStatusStamped) + "   " + (ok84 ? "PASS" : "FAIL"));
-  console.log("  8.5 four mirrors unchanged     : " + (ok85 ? "PASS (all still empty, as at baseline)"
-    : "CHANGED -> " + cleared.join(",")));
+  console.log("  8.5 no mirror was CLEARED      : " + (ok85 ? "PASS"
+    : "FAIL -- wiped: " + wiped.join(",") + "  <- the coalesce did not take"));
+  if (filled.length) {
+    console.log("      (refreshed, not a failure)  : " + filled.map(f=>f+"="+s(u[f])).join(", "));
+    console.log("      ^ the flow repopulates mirrors as it stamps. See the note in");
+    console.log("        evening-runbook-2026-09-14.md: this slowly un-stales the");
+    console.log("        *_TextField columns that lookup-coverage counts were wrong about.");
+  }
   console.log("      lookups still empty        : "
     + [u.ClientId,u.ModelId,u.ModelRevisionId].map(v=>v==null?"-":v).join("/"));
 

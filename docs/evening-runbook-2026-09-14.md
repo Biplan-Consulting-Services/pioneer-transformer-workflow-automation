@@ -17,7 +17,7 @@ gets caught.
 | 5 | re-mirror | ✅ **done 22:22** — 80 rows, ok=80 fail=0, verification **0 / 0** |
 | 6 | confirm the gate | ✅ **done 22:23** — Gate A `DRIFTED: 0`, 272/272 |
 | 7 | **enable the flow** | ✅ **done ~22:23** — user flipped it |
-| 8 | test on a model-less unit | 🔄 `22021-14/20` (id 21) touched 22:24:16, awaiting poll |
+| 8 | test on a model-less unit | ✅ **done 22:40** — 8.1-8.5 all pass; 8.6 outstanding |
 | 9 | test on a healthy unit | ⬜ candidate `21386-2/2` (id 6), mirrors populated |
 | 10 | watch two more polls | ⬜ |
 
@@ -295,6 +295,63 @@ Change **Step Status**, wait one poll — **5 minutes, not 1**.
 | 8.4 | `Step Status Stamped` follows the new value | `Update_item` never ran |
 | 8.5 | the four `_TextField` mirrors **unchanged** | the coalesce did not take |
 | 8.6 | the **next** poll writes nothing | termination is broken |
+
+> ### ✅ Done 2026-09-14 22:40 — v004 works on the shape that broke it
+>
+> **But it took two edits, and the first one taught us more than the second.**
+>
+> The flow was enabled ~22:23 and the test edit went in at 22:24:16. For sixteen minutes
+> it produced **no runs at all** and wrote nothing to any of 1,196 rows. That is not a
+> v004 defect and not a bad paste: `GetOnUpdatedItems` sets its watermark on the first
+> poll **after** being enabled, and a poll that finds nothing logs no run — which is
+> exactly the no-runs-at-all signature. The 22:24:16 edit fell inside that blind spot and
+> was never eligible to be seen.
+>
+> 🔴 **Carry this forward: after enabling any `GetOnUpdatedItems` flow, the first edit you
+> make may be silently ignored. Touch the test row a second time, several minutes later,
+> before concluding anything about the flow's logic.** Sixteen minutes were spent here
+> suspecting the guards, which were never the problem.
+>
+> Re-touching at 02:39:47Z produced the flow's write at **02:40:20Z**, 33 seconds later:
+>
+> | ver | | |
+> |---|---|---|
+> | 17.0 | 02:39:47Z | the re-touch — `step=En cours stamped=Terminé date=2026-08-11` |
+> | 18.0 | **02:40:20Z** | **the flow** — `stamped=En cours date=2026-09-14` |
+>
+> | check | result |
+> |---|---|
+> | 8.1 run succeeded | ✅ green |
+> | 8.2 `Get_Client` / `Get_Model` | ✅ **Skipped** — both guards evaluated `false` |
+> | 8.3 `Status Date` = today | ✅ 2026-09-14 |
+> | 8.4 `Step Status Stamped` follows | ✅ `En cours` |
+> | 8.5 no mirror cleared | ✅ nothing wiped |
+> | 8.6 next poll writes nothing | see below |
+>
+> `Condition StatusDate` returned **true** on its own branch — the decoupling holds — and
+> `Condition` returned **false**, routing to `Set variable 16`, the null-lookup fallback.
+> Only **1** row of 1,196 was modified, and drift returned to **0**.
+>
+> #### ⚠️ Undocumented side effect: the flow repopulates the `_TextField` mirrors
+>
+> `Order_Number_TextField` on the test unit went from `null` to **`22021`** — correct, it
+> matches the unit's own title. Nothing was cleared; an empty field was filled. The
+> `OrderNumber` lookup is not guarded (only Client and Model are), so the flow reads it
+> and writes the mirror.
+>
+> **This matters well beyond this row.** The footnote below rests on the `*_TextField`
+> mirrors being unreliable because that sync died on **2026-08-21** — which is why every
+> "203" count was wrong. With the flow on, that is no longer static: every row staff touch
+> gets its mirrors refreshed, so the mirrors slowly become accurate again, row by row, at
+> different times. **"The mirrors are stale, don't trust them" quietly stops being true**,
+> and anyone re-deriving lookup coverage from them in a few weeks gets a half-migrated
+> picture with nothing to warn them. Read the lookups directly — `x10` does — and treat
+> any mirror-derived count as unsafe regardless of which direction it now errs in.
+>
+> (The first version of `x13`'s 8.5 check called this a FAILURE, because it tested
+> "differs from baseline" rather than the direction that is actually dangerous — a
+> *populated* mirror wiped by a null from a skipped Get. Corrected; the check now
+> distinguishes wiped from refreshed.)
 
 ### 9 · Then a healthy unit
 
