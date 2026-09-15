@@ -17,8 +17,8 @@ gets caught.
 | 5 | re-mirror | ✅ **done 22:22** — 80 rows, ok=80 fail=0, verification **0 / 0** |
 | 6 | confirm the gate | ✅ **done 22:23** — Gate A `DRIFTED: 0`, 272/272 |
 | 7 | **enable the flow** | ✅ **done ~22:23** — user flipped it |
-| 8 | test on a model-less unit | ✅ **done 22:40** — 8.1-8.5 all pass; 8.6 outstanding |
-| 9 | test on a healthy unit | ⬜ candidate `21386-2/2` (id 6), mirrors populated |
+| 8 | test on a model-less unit | ✅ **done 22:40** — 8.1 through 8.6 all pass |
+| 9 | test on a healthy unit | 🔄 `x14`, two-phase (`arm` then `verify`) |
 | 10 | watch two more polls | ⬜ |
 
 **The flow was enabled at ~22:23 on 2026-09-14. It is now polling every 5 minutes.**
@@ -326,7 +326,7 @@ Change **Step Status**, wait one poll — **5 minutes, not 1**.
 > | 8.3 `Status Date` = today | ✅ 2026-09-14 |
 > | 8.4 `Step Status Stamped` follows | ✅ `En cours` |
 > | 8.5 no mirror cleared | ✅ nothing wiped |
-> | 8.6 next poll writes nothing | see below |
+> | 8.6 next poll writes nothing | ✅ still v18.0 after 4 polls / 20 min |
 >
 > `Condition StatusDate` returned **true** on its own branch — the decoupling holds — and
 > `Condition` returned **false**, routing to `Set variable 16`, the null-lookup fallback.
