@@ -1,5 +1,36 @@
 # Lookup → TextField Reference
 
+> ## 🔴 The field names in this document are not reliable. Verified 2026-09-14.
+>
+> Three errors found in adjacent rows of the table below, while diagnosing a live data
+> corruption. **Do not design a flow, script or query against a name taken from here** —
+> read it off the live list first.
+>
+> | this doc says | the live list has |
+> |---|---|
+> | `Model_Revion_ID` on `Model Revisions` (with a note calling the missing "s" a deliberate pre-existing typo) | **no such field.** The revision id lives in **`ModelID`** |
+> | `Client_ID_TextField` on `Model Revisions` | **`Client_ID_TextFiel`** — genuinely truncated, missing its final `d` |
+> | `Model Revision` needs the **Get-item** pattern, pulling a separate id field | **Simple is correct.** The lookup's `ShowField` already resolves to `ModelID` |
+>
+> **Why it drifted:** the header says it was "pulled directly from the live schema exports
+> in `sharepoint-lists/*.csv`". Per `CLAUDE.md`, a SharePoint CSV export **omits every
+> Lookup column entirely — values *and* schema**; only the `_TextField` mirrors appear. So
+> the source it was built from could not have contained the lookup facts it asserts. The
+> table's *shape* (which lookup pairs with which mirror, which pattern each needs) is still
+> the useful part; its *names* were reconstructed.
+>
+> ⚠️ **This cost real time.** On 2026-09-14 the `Model Revision` row led to two wrong
+> diagnoses in a row — first "the flow writes the wrong field, fix the mapping", then "no
+> field holds these values, stop writing the column". Both would have broken a mapping that
+> works. The actual defect was 29 corrupt rows in `Model Revisions` itself. Reasoning about
+> field *names* instead of reading field *values* is what produced both errors.
+>
+> **To verify a name**, probe it — `scripts/x16_audit_lookup_mirrors.js` and
+> `x17_audit_revision_modelid.js` both try candidate names against the live list and abort
+> rather than report a clean result they did not measure. Note that a bad `$select` returns
+> 400, and the usual `j.value||[]` turns that into **zero rows**, which reads as "nothing
+> wrong" rather than "broken query".
+
 **What this is**: every Lookup column across the live SharePoint lists, its companion
 `_TextField` (plain-text mirror, per the user's standing convention — every Lookup gets a
 sibling `{Field}_TextField` for search/filtering), and which sync pattern it needs. Built
