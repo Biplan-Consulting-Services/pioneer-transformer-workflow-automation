@@ -30,8 +30,11 @@
      field name is probed one at a time against the live list and the script ABORTS rather
      than reporting a clean result it did not actually measure.
 
-     In particular `Model Revisions` spells its id field `Model_Revion_ID` -- one "s"
-     short. That is a pre-existing typo on the list, documented, and NOT to be "fixed".
+     ⚠️ Do not take field names from `lookup-textfield-reference.md`. It names
+     `Model_Revion_ID` (does not exist; the field is `ModelID`) and `Client_ID_TextField`
+     (the real internal name is `Client_ID_TextFiel`, genuinely truncated). It says it was
+     built from the CSV exports, and CLAUDE.md records that those omit every Lookup's
+     values AND schema -- which is how it drifted. Probe, do not trust.
 
    WHAT IT REPORTS
      For each of Client / Model / Model Revision, every Order Items row is classified:
