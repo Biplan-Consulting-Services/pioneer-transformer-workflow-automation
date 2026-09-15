@@ -94,16 +94,14 @@
   /* ---- check the "-V1 only" rule before relying on it ---------------------- */
   const notV1 = healthy.filter(r => !/-V1$/i.test(s(r.ModelID)));
   const multi = [...byModel.entries()].filter(([,rs]) => rs.length > 1);
-  console.log("
-=== the -V1 rule ===");
+  console.log("\n=== the -V1 rule ===");
   console.log("  healthy revisions NOT ending -V1 : " + notV1.length + "   (expect 0)");
   for (const r of notV1.slice(0,15)) console.log("      id " + r.Id + "  " + s(r.ModelID));
   console.log("  models with >1 revision          : " + multi.length + "   (expect 0)");
   for (const [mid, rs] of multi.slice(0,15))
     console.log("      model " + mid + " -> " + rs.map(z => z.Id + ":" + (s(z.ModelID)||"(empty)")).join("  "));
   if (notV1.length || multi.length) {
-    console.error("
-🔴 The -V1 rule does not hold on this list. Those rows are an exception");
+    console.error("\n🔴 The -V1 rule does not hold on this list. Those rows are an exception");
     console.error("   nobody has named, and deriving 29 ids from a rule with unexplained");
     console.error("   counter-examples is how the last three wrong answers happened.");
     console.error("   Resolve them (or SKIP them) before repairing anything.");
@@ -128,7 +126,7 @@
     plan.push({r, proposed, why, sibs, p});
   }
 
-  console.log("\n=== proposed repairs -- READ THIS, the version suffix is a guess ===");
+  console.log("\n=== proposed repairs -- every id is derived, not guessed ===");
   for (const x of plan) {
     const dup = x.proposed && taken.has(s(x.proposed).toUpperCase());
     console.log("  id " + String(x.r.Id).padEnd(5)
