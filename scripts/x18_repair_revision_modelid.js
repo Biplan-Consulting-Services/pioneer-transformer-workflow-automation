@@ -71,7 +71,25 @@
   if (!revs.length) { console.error("ABORT: read 0 revisions -- a zero-row read is a failed read."); return; }
   console.log("revisions read: " + revs.length);
 
-  const prefixOf = r => { const m = s(r.Pioneer_Model_Code_TextField);
+  // ⚠️ The first version of this script derived the model code from
+  // `Pioneer_Model_Code_TextField` -- A MIRROR, and the very class of stale data this
+  // whole repair exists to fix. The TextField sync has been off since 2026-08-21, so the
+  // 8 revisions created since then have an empty mirror and could not be derived at all,
+  // while any row whose mirror is merely WRONG would have derived a wrong id silently.
+  //
+  // Resolve through the `ModelId` lookup against the live `Models` list instead. The
+  // mirror is only a fallback, and a disagreement between the two is itself reported.
+  const models = await page(L("Models") + "/items?$top=2000&$select=Id,ModelID");
+  if (!models.length) { console.error("ABORT: read 0 models -- a zero-row read is a failed read."); return; }
+  const MODELS = new Map(models.map(m => [m.Id, s(m.ModelID)]));
+  console.log("models read    : " + models.length);
+
+  const modelCodeOf = r => {
+    const live = r.ModelId != null ? MODELS.get(r.ModelId) : undefined;
+    if (live) return live;
+    return s(r.Pioneer_Model_Code_TextField) || null;     // fallback only
+  };
+  const prefixOf = r => { const m = modelCodeOf(r);
     return m ? "MR" + m.slice(1) : null; };
   const looksRight = r => { const p = prefixOf(r);
     return p ? s(r.ModelID).toUpperCase().startsWith(p.toUpperCase() + "-V") : false; };
@@ -108,6 +126,23 @@
     return;
   }
   console.log("  rule holds.");
+
+  /* ---- how far the Pioneer_Model_Code_TextField mirror has drifted ---------- */
+  // Reported, not acted on. It is the same mirror the first draft of this script
+  // wrongly trusted, and it says how unreliable the *_TextField columns have become
+  // since their sync stopped on 2026-08-21.
+  let mirrorEmpty = 0, mirrorWrong = 0; const wrongRows = [];
+  for (const r of revs) {
+    const live = r.ModelId != null ? MODELS.get(r.ModelId) : undefined;
+    if (!live) continue;
+    const mir = s(r.Pioneer_Model_Code_TextField);
+    if (!mir) mirrorEmpty++;
+    else if (mir !== live) { mirrorWrong++; wrongRows.push(r.Id + ": mirror=" + mir + " live=" + live); }
+  }
+  console.log("\n=== Pioneer_Model_Code_TextField vs the live Models list ===");
+  console.log("  mirror empty : " + mirrorEmpty + "   (created since the sync stopped)");
+  console.log("  mirror WRONG : " + mirrorWrong + "   (would have derived a wrong id from the mirror)");
+  for (const w of wrongRows.slice(0,10)) console.log("      " + w);
 
   const plan = [];
   for (const r of broken) {
