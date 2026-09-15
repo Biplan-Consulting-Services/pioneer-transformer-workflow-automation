@@ -83,7 +83,7 @@ counts the rows that were relying on R14, i.e. how load-bearing the coalesce on 
 turns out to be. Record the number here when it is first run.
 
 x10 also prints the thing the handover asks for and nothing supplied: **which units they
-are**, and which of them are usable as a test row. Measured 2026-09-14: **16** with
+are**, and which of them are usable as a test row. Measured 2026-09-14: **19** with
 all three lookups empty and **4** with some — not the 203 the handover recorded, which
 came from the stale `_TextField` mirrors.
 

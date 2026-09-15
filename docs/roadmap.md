@@ -846,8 +846,10 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
 
 Found 2026-09-11 07:1x, minutes after enabling it. **The flow is currently disabled.**
 > ⚠️ **The "203" is wrong — measured 2026-09-14 it is ~20.** `x10_trigger_flow_gate.js`
-> read the lookups directly: **16** units with all three empty, **4** with some but not
-> all. Every earlier count came from `*_TextField` mirrors in a CSV export, and that sync
+> read the lookups directly: **19** units with all three empty, **4** with some but not
+> all. (It read **16** at midday and **19** at 22:2x the same evening, with the list
+> growing 1,193 -> 1,196: the all-empty count tracks new unit creation, so treat any
+> single reading as point-in-time and re-run x10 rather than quoting this number.) Every earlier count came from `*_TextField` mirrors in a CSV export, and that sync
 > has been off since **2026-08-21**, so the mirrors say nothing about the lookups the flow
 > actually reads — which is the exact trap `x6_check_lookup_coverage.js` was written to
 > expose. **The fix does not change; 20 rows still break the flow.** The severity does:

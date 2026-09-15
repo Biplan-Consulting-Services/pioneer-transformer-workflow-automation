@@ -533,6 +533,27 @@ and reads **a day ahead** until the next pass. That is the same symptom the whol
 workstream exists to fix, arriving by a different route. **Check the existing test column on
 `Order Items` after 8pm Eastern**: if it shows tomorrow's date, this is real.
 
+> ### ✅ Tested 2026-09-14 22:20 Eastern — the trap is NOT real on this tenant
+>
+> `scripts/x12_utc_trap_test.js`, run with Eastern on 09-14 and UTC already on 09-15.
+> A stalled unit on the `TODAY()`-fed 10-day branch was written at **02:20Z** — UTC
+> firmly on tomorrow — and its `Estimated Delivery Date` recomputed to **Eastern-today
+> + 10**, not tomorrow + 10. A branch-1 control, which never calls `TODAY()`, did not
+> move. `TODAY()` resolves **site-local**, so evening edits do not read a day ahead.
+>
+> **`Estimated Delivery Date` stays a calculated column**; the `@now` column-formatting
+> fallback in `sharepoint-lists/formatting/EstimatedDeliveryDate.format.json` is not
+> needed for this reason (it remains useful for the freeze, which is a separate problem
+> and is still real).
+>
+> ⚠️ **The check this paragraph originally proposed — "check the existing test column
+> after 8pm" — could not have answered the question.** A calculated column is *stored*,
+> not evaluated on read: it recomputes when the item is written and at no other time.
+> Every row was last written in the afternoon, so a 9pm read returns the afternoon's
+> answer and looks like a clean pass whatever the truth is. The test has to **write**
+> first, then re-read. Keeping this note because the UTC claim is widely repeated and
+> will be raised again.
+
 ## The nightly refresh — 01:00 Eastern, and the two costs to design around
 
 Decided: a nightly pass that touches rows so SharePoint re-evaluates the formula. The flow computes

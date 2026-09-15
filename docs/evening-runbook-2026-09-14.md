@@ -13,15 +13,15 @@ gets caught.
 | 2 | `n9` — eight columns | ✅ **done** ~14:20. All eight created, every `ResultType` stored as asked |
 | 3 | confirm v004's parent | ✅ **done** 12:40. Reported a fork; it was our own stale hash, not a changed flow |
 | 4 | paste v004 | ✅ **done** 14:48. `v004 CONFIRMED APPLIED`, verified in the tenant's own export |
-| 1 | UTC trap test | ⬜ **after 20:00 ET** — `x12`, dry run then `APPLY` |
-| 5 | re-mirror | ⬜ `x11`, **`APPLY = true`** |
-| 6 | confirm the gate | ⬜ `x10`, Gate A must read `DRIFTED: 0` |
-| 7 | **enable the flow** | ⬜ immediately after 6 |
-| 8 | test on a model-less unit | ⬜ wait one 5-minute poll |
-| 9 | test on a healthy unit | ⬜ |
+| 1 | UTC trap test | ✅ **done 22:20** — `VERDICT: clean`, there is no trap |
+| 5 | re-mirror | ✅ **done 22:22** — 80 rows, ok=80 fail=0, verification **0 / 0** |
+| 6 | confirm the gate | ✅ **done 22:23** — Gate A `DRIFTED: 0`, 272/272 |
+| 7 | **enable the flow** | ✅ **done ~22:23** — user flipped it |
+| 8 | test on a model-less unit | 🔄 `22021-14/20` (id 21) touched 22:24:16, awaiting poll |
+| 9 | test on a healthy unit | ⬜ candidate `21386-2/2` (id 6), mirrors populated |
 | 10 | watch two more polls | ⬜ |
 
-**The flow is still `Off`. Nothing is stamping. Nothing is at risk until step 7.**
+**The flow was enabled at ~22:23 on 2026-09-14. It is now polling every 5 minutes.**
 
 🔴 **Steps 5, 6 and 7 are one unbroken sitting.** Every minute between the re-mirror and
 the enable is a minute of fresh staff drift that gets stamped with today's date. Step 1
@@ -107,6 +107,32 @@ the honest count for stage B's nightly touch — the number the ~21 estimate nee
 with. If it fails, the fallback is already built — column formatting's `@now` is
 browser-evaluated and has neither the freeze nor the UTC trap
 (`sharepoint-lists/formatting/EstimatedDeliveryDate.format.json`).
+
+> ### ✅ Done 2026-09-14 22:20 — VERDICT: clean, there is no UTC trap
+>
+> Run at **22:20 ET**, with Eastern on 09-14 and UTC already on 09-15 — the script
+> confirmed the two dates differ before testing anything, which is the precondition that
+> makes the result mean something.
+>
+> | | before | after the `Calc Refreshed` write |
+> |---|---|---|
+> | **STALLED** `21611-1/1` (id 7) | 2026-09-24 | **2026-09-24** — Eastern-today + 10 |
+> | **CONTROL** `21408-1/1` (id 4) | 2026-08-31 | 2026-08-31 — unchanged, as required |
+>
+> The stalled row genuinely recomputed at 02:20**Z**, with UTC on tomorrow, and still
+> resolved `TODAY()` to the **Eastern** date. So `TODAY()` here is site-local, not UTC.
+>
+> **Consequences:** `Estimated Delivery Date` stays a calculated column, and the
+> `EstimatedDeliveryDate.format.json` `@now` fallback is not needed. The
+> `calculated-columns-plan.md:528` warning does not hold on this tenant — it should be
+> annotated rather than deleted, since the claim is widely made and the next person will
+> re-raise it.
+>
+> ⚠️ The write mattered exactly as the script argued: reading without writing would have
+> returned the 14:20 value and looked like a pass no matter what the truth was.
+>
+> **Also measured: 20 units are on a `TODAY()` branch right now** — that is the real
+> number for stage B's nightly touch, replacing the ~21 estimate.
 
 ## 2 · `n9` — the eight columns (seven calculated, plus `Calc Refreshed`)
 
