@@ -229,7 +229,11 @@
   for (const b of badRows) console.error(b);
 
   // and the global check the audit uses, so the two agree
-  const after = await page(L("Model Revisions") + "/items?$top=2000&$select=Id,ModelID,Pioneer_Model_Code_TextField");
+  // `ModelId` MUST be selected here. looksRight() resolves the model code through that
+  // lookup and only falls back to the mirror -- omit it and every row with an empty
+  // mirror reports as still-broken after a perfectly good write, which is a false alarm
+  // raised at the exact moment this check needs to be trustworthy.
+  const after = await page(L("Model Revisions") + "/items?$top=2000&$select=Id,ModelId,ModelID,Pioneer_Model_Code_TextField");
   const stillBroken = after.filter(r => !looksRight(r));
   console.log("  revisions still not matching their model prefix : " + stillBroken.length
     + "   (expect " + SKIP.length + " -- the skipped ones)");
