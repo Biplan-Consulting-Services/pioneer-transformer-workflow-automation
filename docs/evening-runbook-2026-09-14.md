@@ -29,8 +29,8 @@ gets caught.
 | 6 | confirm the gate | ✅ **done 22:23** — Gate A `DRIFTED: 0`, 272/272 |
 | 7 | **enable the flow** | ✅ **done ~22:23** — user flipped it |
 | 8 | test on a model-less unit | ✅ **done 22:40** — 8.1 through 8.6 all pass |
-| 9 | test on a healthy unit | 🔄 `x14`, two-phase (`arm` then `verify`) |
-| 10 | watch two more polls | ⬜ |
+| 9 | test on a healthy unit | ✅ **done 23:01** — stamp correct, lookups intact, coalesce holds |
+| 10 | watch two more polls | ✅ four polls watched, no runaway, 1 row of 1,196 touched |
 
 **The flow was enabled at ~22:23 on 2026-09-14. It is now polling every 5 minutes.**
 

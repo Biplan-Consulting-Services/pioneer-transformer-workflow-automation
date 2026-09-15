@@ -53,6 +53,31 @@ made every Order Items mirror still holding `M-HYQU-0092` disagree again. Until 
 mirror is refreshed, any edit that does not change its step will erase its `Status Date`.
 **Roughly 724 units point at a repaired revision.**
 
+## Confirmed ONE-SHOT per row, not a loop — measured 2026-09-15 03:4x
+
+Version trail of `21408-1/1` (id 4), flow running throughout:
+
+| ver | time (Z) | `Status Date` | |
+|---|---|---|---|
+| 35.0 | 03:31:11 | 2026-09-14 | flow stamps after a step change — correct |
+| 37.0 | **03:38:53** | **(EMPTY)** | the flow, moments after `x18` repaired revision 344 |
+| 38.0 | 03:41:56 | 2026-07-16 | restored by hand — **and it survived the next poll** |
+
+The write that erased the date **also refreshed the mirror** to `MR-HYQU-0092-V1` in the
+same `Update_item`. With the mirrors matching again, `Condition` passes, `Update_item` never
+fires, and the row is stable.
+
+**So each affected row loses its `Status Date` exactly once** — on the first trigger after
+the mirror goes stale, if that edit does not change the step — and is then safe.
+
+⚠️ A prediction that the clearing would repeat was made and was **wrong**. It is bounded
+damage, not a runaway. That lowers the urgency; it does not make it harmless, because the
+erased value is a real hand-entered date and nothing announces its loss.
+
+🔑 **This also validates the staff instruction.** "Change the step, leave the date alone, and
+if the real date differs correct it *after* the stamp lands — it sticks." Tested on both
+units: the corrections held through a full poll with the flow live. Staff can be told this.
+
 ## R14 is false for this column
 
 The design relied on **R14 — "the connector ignores a null rather than clearing the
