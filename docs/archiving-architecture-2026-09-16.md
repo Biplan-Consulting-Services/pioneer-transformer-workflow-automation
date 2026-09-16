@@ -254,6 +254,23 @@ do not start it to solve this problem.
 7. **Tier 0** (freeze published KPI results) and the `Order` price-source fix — any time,
    independent of everything above.
 
+> **→ Checked against industry practice 2026-09-16:
+> [`sharepoint-as-erp-industry-check-2026-09-16.md`](sharepoint-as-erp-industry-check-2026-09-16.md).**
+> The recommendation survives, and the dated-file archive gains a second, independent
+> argument: **SharePoint lists are not a foldable Power BI source**, so incremental refresh
+> buys nothing against a list, while a folder of dated files folds and prunes. Three changes
+> come back from it:
+>
+> - **Add an `As of Date` column inside each snapshot file** — the community snapshot pattern's
+>   own refinement, free now and painful to retrofit. Folder dates alone are not enough.
+> - 🔴 **Test the 12-lookup-column threshold before it bites.** Separate from the 5,000-item
+>   limit, it caps a *view or query* at 12 lookup/person/managed-metadata columns — `Created By`
+>   and `Modified By` included. `Order Items` has 5 lookups + those 2 before counting its 24
+>   projected parent fields, and whether projected fields count is undocumented.
+> - **Dataverse is the substrate Microsoft would steer this to**, and its long-term retention
+>   ships the mechanism being hand-built here. Not recommended now — volume, cost, and an
+>   in-flight cutover — but recorded with tripwires.
+
 ## 8. Decisions needed
 
 1. **Accept "stop deleting" as the answer to G1?** This is the load-bearing one. It says the
