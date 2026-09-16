@@ -151,22 +151,31 @@ to a real pass in the run graph. Check `A1`'s output count before believing step
 ## Part 4 · Stage C, and what it is waiting on
 
 `C1` lists `Delivered`/`Cancelled` rows whose `Modified` is older than `GRACE_DAYS`
-(30, set at the top of the generator). `C2` composes the count. **Nothing is deleted.**
+(**7** since 2026-09-16, was 30 — set at the top of the generator). `C2` composes the
+count. **Nothing is deleted.**
 
-Before the delete can be wired, `archiving-plan.md` needs three answers:
+Before the delete can be wired, `archiving-plan.md` needs three answers, one now settled:
 
-1. Is one month the right grace period?
-2. Should the sweep run nightly, weekly or monthly?
+1. ~~Is one month the right grace period?~~ **7 days, decided 2026-09-16.**
+2. Should the sweep run nightly, weekly or monthly? — reopen against 7 days; the old
+   "weekly is plenty" reasoning assumed a month.
 3. Does the `Order` row need the same reconfirm rigor, or is deleting an order once
    all its units are gone safe to do immediately?
 
 And the plan requires reconfirming each row against `Archive active.xlsx` **before**
-deleting — read-only, the flow never writes to Excel. That is not built here.
+deleting — read-only, the flow never writes to Excel. That reconfirm now exists as
+`scripts/verify_archive_done_not_in_list.py` (match on unit id, confirm `Location = LI`
+with a populated `Delivery Date`), though it is not wired into the flow.
 
-🔴 **`Modified` is a fragile clock.** Any future pass that touches Delivered or
-Cancelled rows resets the grace period on exactly the rows stage C is waiting on, and
-the sweep would silently never fire. If anything like that gets added, move stage C
-onto a dedicated "delivered on" timestamp instead.
+🔴 **`Modified` is a fragile clock — and at 7 days it is decisive, not just fragile.**
+Any pass that touches Delivered or Cancelled rows resets the grace period on exactly the
+rows stage C is waiting on, and the sweep would silently never fire. A month absorbed an
+incidental touch; a week does not. On 2026-09-16 every already-`Delivered` row sat within
+**1.5 days** of the threshold — `E21010-1/2`, `E21010-2/2`, `E21014-1/1` within **0.4
+days** — entirely because the 09-09/09-10 migration passes had touched them, not because
+anything happened to the units: they were really delivered 62, 20 and 16 days earlier.
+Hold B1's `ItemStatus eq 'Active'` clause as a hard constraint, or move stage C onto a
+dedicated "delivered on" timestamp. At this grace length the timestamp is the better design.
 
 ---
 

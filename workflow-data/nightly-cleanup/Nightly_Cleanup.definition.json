@@ -187,7 +187,7 @@
         "parameters": {
           "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
           "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
-          "$filter": "(ItemStatus eq 'Delivered' or ItemStatus eq 'Cancelled') and Modified lt '@{addDays(utcNow(), -30)}'",
+          "$filter": "(ItemStatus eq 'Delivered' or ItemStatus eq 'Cancelled') and Modified lt '@{addDays(utcNow(), -7)}'",
           "$top": 5000
         },
         "host": {
@@ -215,7 +215,7 @@
       },
       "type": "Compose",
       "inputs": {
-        "graceDays": 30,
+        "graceDays": 7,
         "candidateCount": "@length(outputs('C1_Get_deletion_candidates_REPORT_ONLY')?['body/value'])",
         "note": "REPORT ONLY - nothing is deleted. Wiring the delete needs the Archive active.xlsx reconfirm plus the three open answers in archiving-plan.md."
       }

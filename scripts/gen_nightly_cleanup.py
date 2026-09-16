@@ -119,8 +119,8 @@ TWO GUARDS THAT ARE NOT DECORATION
   move Stage C onto a dedicated "delivered on" timestamp first.
 
 STAGE C IS DELIBERATELY INERT
-  archiving-plan.md lists three questions with no answer yet:
-    - is one month the right grace period?
+  archiving-plan.md lists three questions, one of them now answered:
+    - is one month the right grace period?          ANSWERED 2026-09-16: no, 7 days
     - nightly, weekly or monthly?
     - does the `Order` row need the same reconfirm rigor?
   and the plan requires reconfirming each row against `Archive active.xlsx`
@@ -136,9 +136,16 @@ SITE = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio"
 ORDER_ITEMS = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
 TZ = "Eastern Standard Time"
 
-# Grace period for stage C's report, in days. archiving-plan.md proposes one
-# month and flags the number itself as an open question -- change it here.
-GRACE_DAYS = 30
+# Grace period for stage C's report, in days. Was 30 (archiving-plan.md's proposed
+# "one month", flagged there as an open question). SETTLED 2026-09-16: 7 days.
+#
+# ⚠️ At 7 days the `Modified` clock below is no longer merely fragile, it is decisive.
+# A month absorbed an incidental touch; a week does not. The 2026-09-09/09-10 migration
+# passes put every already-Delivered row within a day or two of the new threshold, so a
+# single further pass over those rows now defers them past it. Read the 🔴 note in the
+# docstring as a hard constraint, not a caution -- or move stage C onto a dedicated
+# "delivered on" timestamp, which at this grace length is the sounder design.
+GRACE_DAYS = 7
 
 SP_HOST = {
     "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",

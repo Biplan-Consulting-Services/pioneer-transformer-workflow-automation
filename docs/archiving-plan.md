@@ -91,9 +91,22 @@ actually has a live signal to act on for a given row does the deleting.
 
 ## Open questions — need answers before building, not blocking the plan existing
 
-- **Is one month the right grace period**, or should it be shorter/longer/configurable?
-- **How often should the scheduled flow run** — nightly vs. weekly vs. monthly (given the
-  grace period itself is a month, running more than roughly weekly is probably unnecessary).
+- ~~**Is one month the right grace period**, or should it be shorter/longer/configurable?~~
+  **ANSWERED 2026-09-16: 7 days.** `GRACE_DAYS` in `gen_nightly_cleanup.py` updated and the
+  definition regenerated; the only changes are C1's `$filter` and C2's reported `graceDays`.
+
+  🔴 **This makes the `Modified` clock decisive rather than merely fragile.** A month
+  absorbed an incidental touch; a week does not. Measured the day it was decided, every
+  already-`Delivered` row sat within **1.5 days** of the new threshold purely because the
+  09-09/09-10 migration passes had touched them — the `E21010`/`E21014` rows by **0.4
+  days**. One more pass over those rows defers them again, and stage C would report a
+  shrinking candidate list with nothing wrong anywhere. Either hold the "no pass touches
+  Delivered/Cancelled rows" rule as a hard constraint, or move stage C onto a dedicated
+  *delivered-on* timestamp. At 7 days the timestamp is the sounder design.
+- **How often should the scheduled flow run** — nightly vs. weekly vs. monthly. Reconsider
+  against the 7-day grace: the old reasoning ("the grace period itself is a month, so
+  running more than roughly weekly is probably unnecessary") assumed 30 and no longer
+  holds — a weekly sweep against a 7-day grace means a row waits up to 14 days.
 - **Does the `Order` row treatment need the same grace period+reconfirm rigor**, or is
   deleting an `Order` once every `Order Items` row under it is gone safe to do immediately
   (no separate Excel-side signal to reconfirm against for the order-level record)? Not
