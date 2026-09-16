@@ -195,19 +195,65 @@ into the traps this repo has already logged — French decimal commas, lookups s
 **Write JSON. Convert to Parquet later if volume ever justifies it** — at ~3 MB a snapshot,
 it will not for years.
 
-### On cadence — daily, and why that is not extravagant
+### On cadence — REVISED: two archives, because they answer different questions
 
-`analytics-history-options.md` rejects daily snapshots as "~438,000 rows/year — **Don't.**
-Heavy, and redundant." That is correct *if the snapshot lands in a SharePoint list*, where
-rows are the cost unit. As **files in a library** it is 365 files a year at a few MB each —
-low single-digit GB annually, against a tenant allowance measured in terabytes.
+**Revised 2026-09-16 after a good objection: "if someone wants to go through the archived
+items, isn't that heavier and heavier and unwieldy?"** Yes, for daily full snapshots, and the
+original recommendation deserved the hit. The fix is to notice that *two different questions*
+were being answered by one pile of files.
 
-The cost model changes with the destination, and the conclusion changes with it. Daily also
-buys the one thing that actually fixes the retroactivity problem in that document's §2:
-**you can reconstruct any number you published, on the date you published it.**
+| question | shape that answers it |
+|---|---|
+| "what did unit `21670-5/5` end up as?" | one **record per completed entity** |
+| "what did the whole system say on 3 August?" | a **snapshot of everything at a date** |
 
-Suggested retention: daily for 90 days, then keep month-end only, forever. Prune on a
-schedule, not by hand.
+A snapshot archive answers the second well and the first terribly: finding one unit means
+guessing which date's file to open, and its row is duplicated in every snapshot taken while it
+existed. That is exactly the unwieldiness in the objection.
+
+🔑 **But note who is actually asking.** Under this recommendation *nothing is deleted*, so a
+human wanting to go through past items uses **the live list** — searchable, filterable, in the
+UI they already know. There are no "archived items" to trudge through. The files are never
+browsed by a person; they exist for Power BI, audit and disaster recovery.
+
+**So the objection is an argument FOR "don't delete", not against it.** The moment rows start
+being deleted, a browsable archive becomes necessary, and every cost rejected in §4-B comes
+back. Keeping the rows is what keeps the archive simple.
+
+The archive still gets restructured, because the objection exposes real redundancy:
+
+**Layer 2 — completion records, append-only.** When a unit passes `Delivered` + grace, append
+its **full row, once**, to a monthly partition. ~1,100 records/yr. This is the durable record
+of what each unit finished as, it is the natural BI table for completion KPIs, and it is what
+makes deletion *safe* if it is ever wanted. It is what `Archive active.xlsx` does today — but
+complete, immutable, and covering `Order` too.
+
+**Layer 3 — full snapshots, monthly, not daily.** For "what did everything look like then":
+audit and DR. Daily is redundant once Layer 2 carries per-unit outcomes and Tier 0 freezes
+published KPI results — which fixes the retroactivity problem more directly and more cheaply
+than snapshotting everything every night ever could.
+
+Measured across all six lists at today's ~4,106 rows:
+
+| cadence | files/yr | row-copies/yr | files after 5 yr |
+|---|---:|---:|---:|
+| daily full snapshots | 2,555 | 1,498,690 | **12,775** |
+| weekly full snapshots | 364 | 213,512 | 1,820 |
+| **monthly + completion records** | **~96** | **~50,400** | **480** |
+
+**27× fewer files, and Power BI stays fast.** A folder of 12,775 JSON files is its own
+performance problem; 480 is not. The earlier "daily is cheap because files are cheap" was true
+about *storage* and wrong about *everything else* — enumeration, refresh time, and a human ever
+finding anything in it.
+
+Retention: keep monthly snapshots forever (they are small), completion records forever (they
+are the record). Nothing needs pruning at this volume, which removes a moving part.
+
+> ⚠️ **Assumption worth confirming:** that "going through archived items" means an occasional
+> lookup of a specific past unit, served by the live list. If it instead means routinely
+> browsing completed work as a *set* — a monthly review of everything delivered — say so: that
+> wants a filtered view on `Item Status = Delivered`, still no deletion, and it makes Layer 2's
+> partitioning worth designing around the review period rather than the calendar month.
 
 ### What this does NOT do
 
