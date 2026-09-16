@@ -39,6 +39,11 @@ import argparse, csv, io, os, re, shutil, sys, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
+try:      # a cp1252 console cannot print 🔴, and it crashed mid-report on the one
+    sys.stdout.reconfigure(encoding="utf-8")   # line that matters most: the row-drop warning
+except Exception:
+    pass
+
 TARGETS = [("sharepoint-lists", (".csv",)),
            ("workbooks", (".xlsx", ".xlsm"))]
 
