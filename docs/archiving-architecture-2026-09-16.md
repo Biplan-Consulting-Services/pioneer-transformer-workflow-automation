@@ -263,10 +263,12 @@ do not start it to solve this problem.
 >
 > - **Add an `As of Date` column inside each snapshot file** — the community snapshot pattern's
 >   own refinement, free now and painful to retrofit. Folder dates alone are not enough.
-> - 🔴 **Test the 12-lookup-column threshold before it bites.** Separate from the 5,000-item
->   limit, it caps a *view or query* at 12 lookup/person/managed-metadata columns — `Created By`
->   and `Modified By` included. `Order Items` has 5 lookups + those 2 before counting its 24
->   projected parent fields, and whether projected fields count is undocumented.
+> - ~~Test the 12-lookup-column threshold.~~ **Raised and retired the same day.** The
+>   parent-prefixed columns are flow-synced plain columns (`Text`/`Choice`/`Number`/…), not
+>   projected lookups, so `Order Items` sits at ~7–8 of the 12. What survives is the trade it
+>   reveals: ~47 columns of flow-maintained denormalised copy, the same pattern behind `x16`,
+>   `x17`/`x18` and the `Status Date` erasure. It *helps* the archive case — those columns hold
+>   what the parent said at the time, so a row snapshot is real history, not a live projection.
 > - **Dataverse is the substrate Microsoft would steer this to**, and its long-term retention
 >   ships the mechanism being hand-built here. Not recommended now — volume, cost, and an
 >   in-flight cutover — but recorded with tripwires.

@@ -5,9 +5,11 @@ actually do. Sources at the bottom; Microsoft Learn / Microsoft Support / PnP pr
 vendor blogs, and where the two disagree the primary source wins.
 
 **Short version: the design holds up better than the loud consensus would suggest, because the
-loud consensus is aimed at a different size class. But the research surfaced one real risk that
-was not on anyone's radar, and it is schema-shaped, not volume-shaped — see §4.** It also
-settles the archive-format argument from
+loud consensus is aimed at a different size class.** The one risk this raised — the 12-lookup
+threshold — was **measured and downgraded the same day** (§4): the parent-prefixed columns are
+flow-synced plain columns, not projected lookups, so the list sits at roughly 7–8 of 12. What
+survives from it is the observation that the cost of that choice is a 47-column consistency
+burden this project has already paid for in bugs. It also settles the archive-format argument from
 [`archiving-architecture-2026-09-16.md`](archiving-architecture-2026-09-16.md) on independent
 grounds.
 
@@ -76,40 +78,63 @@ the earlier assessment did not use.
 > The earlier recommendation reached "files, not a list" from schema-drift reasoning. The BI
 > constraint reaches the same answer independently. Two unrelated arguments, one conclusion.
 
-## 4. 🔴 The risk nobody flagged: the 12-lookup-column threshold
+## 4. The 12-lookup-column threshold — flagged, then measured, then downgraded
 
-**This is the finding worth the whole exercise, and it is not about row count at all.**
+**Corrected 2026-09-16, same day, after the user pointed out the premise was wrong.** Kept
+in full rather than deleted, because the limit is real and the reasoning about *which* shape
+trips it is worth having on file.
 
-SharePoint Online caps a single view or query at **12 "lookup-type" columns**, and this limit
-is separate from the 5,000-item threshold. What counts toward it is broader than it sounds:
+SharePoint Online caps a single view or query at **12 "lookup-type" columns**, separate from
+the 5,000-item threshold, and it counts more than it sounds like: lookup columns, managed
+metadata, **and person columns including the built-in `Created By` and `Modified By`**.
+Exceeding it does not degrade the query, it **fails** it — *"the number of lookup columns it
+contains exceeds the lookup column threshold"* — and the view becomes inaccessible.
 
-- Lookup columns
-- **Person/Group columns — including the built-in `Created By` and `Modified By`**
-- Managed Metadata columns and Enterprise Keywords
+The alarm here assumed `Order Items`' 47 parent-prefixed columns (`Order - Order Status`,
+`Mod. Rev. - kVA`, `Model - Model_ID`, …) were SharePoint **projected lookup fields**, which
+would have put the list far past 12. **They are not.** Measured from the export's own
+`ListSchema` record:
 
-Exceed it and the query does not degrade, it **fails**: *"The query cannot be completed because
-the number of lookup columns it contains exceeds the lookup column threshold."* The view becomes
-inaccessible.
+| the 47 `Order - X` / `Mod. Rev. - X` columns are declared as | count |
+|---|---:|
+| `Text` | 16 |
+| `Choice` | 13 |
+| `Number` | 8 |
+| `DateTime` | 3 |
+| `Note` | 3 |
+| `Boolean` | 2 |
+| `URL` / `Currency` | 1 each |
 
-`Order Items` is exactly the shape that hits this. It carries **five** lookups — `Order Number`,
-`Client`, `Model`, `Model Revision`, `Regrouped Into` — plus `Created By` and `Modified By`,
-which is **seven before a single projected field**. And the 2026-09-16 All-Items export carries
-**24 projected parent fields** (`Order - Order Status`, `Mod. Rev. - kVA`, `Model - Model_ID`, …).
+**Plain columns, every one of them** — kept in step by Power Automate, not projected through a
+lookup. Lookups are used only to *link* the entities: `Order Items` ↔ `Order`, `Models`,
+`Model Revisions`, `Engineering Change Orders`, `Model Changes`.
 
-⚠️ **Whether each projected field counts separately is genuinely undocumented.** Three sources
-were checked, including Microsoft Support's own page, and none states it either way. The
-empirical evidence here is that the 151-column All-Items export **succeeded**, which suggests
-projected fields either do not count or are not counted the same way through the export/`$select`
-path as through a rendered view.
+So the count against the threshold is roughly **five or six lookups plus `Created By` and
+`Modified By` ≈ 7–8**, against a limit of 12. Headroom, not a ceiling. **No test needed and no
+action required** — though the margin is worth remembering before anyone adds four more
+lookups to one view.
 
-**That is not the same as being safe, and it should be tested deliberately rather than
-discovered.** The cheap test: build a view exposing a dozen-plus of the projected parent fields
-and see whether it renders. Five minutes, and it either retires the risk or reveals a ceiling
-that constrains every future view, Power Apps screen, and `$select` in a flow.
+⚠️ **One thing this exercise did establish, and it matters for other work:** the export's
+`ListSchema` record is **not a complete description of the list**. It carries 152 field
+definitions, and *none* of the relationship columns — `Order Number`, `Client`, `Model`,
+`Model Revision`, `Regrouped Into` — appears among them. So the schema record cannot be used
+to enumerate lookups, and "zero lookup-type fields in the schema" means the export omits them,
+not that the list has none. `infrastructure-overview.md`'s relationship graph remains the
+authority there, because it was read from `_api/…/fields` directly.
 
-If it does bite, the documented workarounds are all "show fewer lookups per view" — split across
-multiple views, hide columns, or replace lookups with plain columns. Note that the `_TextField`
-mirror pattern this project already built is, accidentally, exactly that last workaround.
+> 🔑 **The real cost of this design is not a platform limit, it is a consistency burden — and
+> it has already been paid, repeatedly.** Avoiding projected lookups means ~47 columns of
+> flow-maintained denormalised copy on `Order Items`, on top of the `_TextField` mirrors. That
+> is the same pattern that produced the mirror-drift audit (`x16`), the 29 corrupt
+> `Model Revisions.ModelID` values (`x17`/`x18`), and the `Status Date` erasure that fires
+> precisely *when a mirror refreshes without a step change*. The platform limit was avoided;
+> the reconciliation problem was bought.
+>
+> It also cuts the other way for archiving, in a good direction: because those columns hold a
+> real value written to the row rather than a live projection, **a snapshot of the row captures
+> what the parent said at that moment.** That is better history than a lookup, which would
+> always render today's parent value. It strengthens the export-archive case rather than
+> weakening it.
 
 ## 5. The bigger question the research raises: Dataverse
 
@@ -174,7 +199,7 @@ Less than expected, which is itself the answer to the question asked.
 | **Add an `As of Date` column inside each snapshot file** | **NEW** — the community pattern's own refinement. Free now, painful later. |
 | Archive-as-a-second-list | **Further weakened.** It was rejected on schema drift; the Power BI connector's behaviour rejects it again. |
 | JSON over Parquet | **Unchanged.** Note the snapshot pattern is usually described with CSV; the type-loss and lookup-serialisation traps this repo has already logged still argue for JSON. |
-| Test the 12-lookup threshold | **NEW, and it is the near-term action.** |
+| Test the 12-lookup threshold | **Raised, then retired.** Measured: ~7–8 of 12, with headroom. No action. |
 | Dataverse | **New section, deliberately not a recommendation.** Documented with tripwires so it is a decision, not a surprise. |
 
 ---
