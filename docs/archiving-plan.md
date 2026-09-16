@@ -31,6 +31,14 @@ a separate workbook instead of the live table.
 
 ## Mechanism — redesigned 2026-08-31: grace period + reconfirm against Excel, then delete
 
+🔴 **The MECHANISM below is under review as of 2026-09-16 — see
+[`archiving-architecture-2026-09-16.md`](archiving-architecture-2026-09-16.md).** It
+recommends not deleting at all: an indexed `Item Status` with filtered views answers the
+"live lists grow forever" motivation for years at zero risk, while a nightly immutable export
+of every list becomes the permanent record. If that is accepted, this plan's copy/delete
+mechanism is replaced rather than repaired, and `Order` needs neither an archive list nor a
+cleanup.
+
 🔴 **The premise below is in question as of 2026-09-16 — read
 [`archive-coverage-gap-2026-09-16.md`](archive-coverage-gap-2026-09-16.md) before wiring
 any delete.** "Excel already holds everything" was true when `Order Items` mirrored

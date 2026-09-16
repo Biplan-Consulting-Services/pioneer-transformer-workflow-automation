@@ -218,6 +218,22 @@ and roughly a day of work.
 
 ---
 
+> **→ Extended 2026-09-16 by [`archiving-architecture-2026-09-16.md`](archiving-architecture-2026-09-16.md)**,
+> which takes the question to the whole multi-list architecture and the Power BI dependency.
+> It agrees with §1 and §2 and refines three things here:
+>
+> - **Power BI reads Excel, not SharePoint** — `ArchivedOrders.pq` is one line pointing at
+>   `Archive active.xlsx`. Not stated here, and it decides the sequencing: nothing breaks on
+>   day one because the charts never saw the SharePoint rows.
+> - **Daily snapshots are cheap if they are FILES, not list rows.** §4's "~438,000 rows/year —
+>   Don't" is right for a SharePoint list and wrong for a document library, where it is 365
+>   files at a few MB.
+> - **JSON, not Parquet** — Power Automate has no native Parquet writer, so Tier 2's format
+>   puts an Azure Function on the critical path. `Get items` already returns lossless JSON.
+>
+> And it argues G1 does not need deletion at all — an indexed `Item Status` plus filtered
+> views, with Monday taking over as the staff UI, defers it for years at zero risk.
+
 ## 6. Decisions needed
 
 1. **Does the cleanup flow ship before `Unit Step History` exists?** If yes, Tier 1 option 2 or
