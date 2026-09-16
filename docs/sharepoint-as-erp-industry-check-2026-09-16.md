@@ -114,13 +114,19 @@ So the count against the threshold is roughly **five or six lookups plus `Create
 action required** — though the margin is worth remembering before anyone adds four more
 lookups to one view.
 
-⚠️ **One thing this exercise did establish, and it matters for other work:** the export's
-`ListSchema` record is **not a complete description of the list**. It carries 152 field
-definitions, and *none* of the relationship columns — `Order Number`, `Client`, `Model`,
-`Model Revision`, `Regrouped Into` — appears among them. So the schema record cannot be used
-to enumerate lookups, and "zero lookup-type fields in the schema" means the export omits them,
-not that the list has none. `infrastructure-overview.md`'s relationship graph remains the
-authority there, because it was read from `_api/…/fields` directly.
+⚠️ **Re-confirming something CLAUDE.md already says, which I should have read first:** *"Lookup
+columns are absent from the export entirely — values **and** schema"*, measured 2026-09-07 at 90
+fields with not one of type `Lookup`. Measured again here at **152 fields**, same result, and
+none of the relationship columns — `Order Number`, `Client`, `Model`, `Model Revision`,
+`Regrouped Into` — appears among them. So "zero lookup-type fields in the schema" means the
+export omits them, not that the list has none, and the schema record can never be used to
+enumerate lookups.
+
+For the lookup inventory use `infrastructure-overview.md`'s relationship graph. ⚠️ Note it
+claims to have been read from `_api/…/fields`, while CLAUDE.md records that endpoint **hanging
+on this tenant** — reproduced twice, two 45-second timeouts each. The route CLAUDE.md confirms
+working is **list settings → click the column → the `Field=` parameter in the URL**. Worth
+reconciling before anyone relies on that provenance.
 
 > 🔑 **The real cost of this design is not a platform limit, it is a consistency burden — and
 > it has already been paid, repeatedly.** Avoiding projected lookups means ~47 columns of
