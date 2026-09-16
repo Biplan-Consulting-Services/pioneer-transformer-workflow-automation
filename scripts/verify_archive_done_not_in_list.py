@@ -40,6 +40,23 @@ WHY THIS IS THE INVERSE OF `rediff_units.py`
 
      Export from **All Items** for a conclusive run.
 
+THE ARCHIVE IS AUTHORITATIVE ON *DONE*, NOT ON *DATES*
+  Each hit prints the archive's `Delivery Date` beside the list's `Planned Delivery Date`
+  -- the same field under two names, per docs/column-reference.md -- and marks them `=`
+  or `≠`. The verdict does NOT depend on them agreeing. The presence test is safe; a
+  date-VALUE test would not be, and the column exists so a stale archive value is visible
+  instead of quietly trusted.
+
+  It is there because of `21792-3/5` and `-4/5`. The archive dated both 2026-09-24, eight
+  days in the future, which read as suspicious. They had been corrected on the list to
+  2026-09-03 on 2026-09-15 at 14:39 -- the two rows stamped seconds apart, one deliberate
+  fix -- and the archive workbook had simply not caught up. Both units are genuinely done.
+  The drift is not one-directional either: on 2026-09-11 the archive held 09-02/09-02/09-08
+  for `21792-1/5`, `-2/5`, `-5/5` where the list held 09-05/09-05/09-24.
+
+  So a `≠` means "these two records disagree, go look", not "this unit is not done", and
+  the list's `Modified` stamp is printed with it because that is usually what settles it.
+
 COLUMNS ARE FOUND BY VALUE, NOT BY LABEL
   The unit id lives under `Order` in the archive and `Unit ID` on the list, and both
   names have moved before.  x8 matched `ServerRedirectedEmbedUrl` by name and printed 24
@@ -93,6 +110,11 @@ DEFAULT_SHEET = "Archive FRM10-12"
 
 UNIT = re.compile(r"^[A-Za-z0-9_]+-\d+/\d+(?: SA)?$")
 DONE_LOCATION = "LI"
+# The archive's `Delivery Date` and the list's `Planned Delivery Date` are the SAME
+# field -- docs/column-reference.md maps `Planned_x0020_Delivery_x0020_Dat` to the
+# workbook's `Delivery Date`. Printed side by side, because they drift; see the docstring.
+ARCHIVE_DATE = "Delivery Date"
+LIST_DATE = "Planned Delivery Date"
 EPOCH = datetime.date(1899, 12, 30)   # the flow's own addDays('1899-12-30', int(x))
 
 
@@ -177,7 +199,7 @@ def read_archive(path, sheet):
     # codes in it, or a date column with no dates, means the sheet moved under us.
     loc, _ = column("Location", lambda v: str(v or "").strip().upper() == DONE_LOCATION,
                     "%r values" % DONE_LOCATION)
-    dd, _ = column("Delivery Date", lambda v: as_date(v) is not None, "dates")
+    dd, _ = column(ARCHIVE_DATE, lambda v: as_date(v) is not None, "dates")
 
     done, li_no_date, odd, seen = {}, [], [], collections.Counter()
     for r in body:
@@ -332,7 +354,17 @@ def main():
 
     # The list's own columns are CONTEXT for triage, never part of the verdict.
     hdr = lst["header"]
-    ctx = [c for c in ("Location", "Step Status", "Item Status", "Delivery Date") if c in hdr]
+    ctx = [c for c in ("Location", "Step Status", "Item Status") if c in hdr]
+
+    def list_date(uid):
+        """(the list's date or None, the mark). `?` where the list has nothing to say."""
+        if LIST_DATE not in hdr:
+            return None, "?"
+        row, i = lst["ids"][uid], hdr.index(LIST_DATE)
+        d = as_date(row[i]) if i < len(row) else None
+        if d is None:
+            return None, "?"
+        return d, ("=" if d == arc["done"][uid] else "≠")
 
     if not offenders:
         print("%s none of the %d units the archive calls DONE appears in this export."
@@ -343,15 +375,34 @@ def main():
         print("❌ %d unit(s) are DONE in the archive and STILL on the list%s:\n"
               % (len(offenders), " (at least — see the view warning above)" if view_shaped else ""))
         w = max(len(u) for u in offenders)
+        disagree = []
         for uid in offenders:
             row = lst["ids"][uid]
-            bits = ["%-*s  archive Delivery Date %s" % (w, uid, arc["done"][uid].isoformat())]
+            d, mark = list_date(uid)
+            if mark == "≠":
+                disagree.append(uid)
+            bits = ["%-*s  %s %s %s" % (w, uid, arc["done"][uid].isoformat(), mark,
+                                        d.isoformat() if d else "(none)")]
             for c in ctx:
                 i = hdr.index(c)
                 v = str(row[i]).strip() if i < len(row) and row[i] is not None else ""
-                bits.append("list %s=%s" % (c, v if v else "(blank)"))
+                bits.append("%s=%s" % (c, v if v else "(blank)"))
+            if "Modified" in hdr:
+                i = hdr.index("Modified")
+                v = str(row[i]).strip()[:10] if i < len(row) and row[i] is not None else ""
+                bits.append("modified %s" % (v or "-"))
             print("  " + "  |  ".join(bits))
-        print("\n  (the `list ...` values are context for triage only -- DONE is decided"
+        print("\n  columns: unit | archive %s  vs  list %s | list state | list Modified"
+              % (ARCHIVE_DATE, LIST_DATE))
+        print("  The two dates are the same field under two names. They are NOT part of"
+              "\n  the verdict -- every unit above is DONE whether they agree or not.")
+        if disagree:
+            print("\n  ⚠️  %d of them disagree (≠): %s"
+                  "\n      The archive is authoritative on done-ness, not on dates, and it"
+                  "\n      goes stale. Check the list's Modified stamp before believing"
+                  "\n      either one -- that is how the 21792 pair was settled."
+                  % (len(disagree), ", ".join(disagree)))
+        print("\n  (the list values are context for triage only -- DONE is decided"
               "\n   entirely by the archive, so a row still marked Active here is exactly"
               "\n   the case this check exists to surface)")
 
@@ -362,13 +413,20 @@ def main():
             os.makedirs(d)
         with io.open(out, "w", encoding="utf-8-sig", newline="") as fh:
             w = csv.writer(fh)
-            w.writerow(["Unit ID", "Archive Delivery Date"] + ["List " + c for c in ctx])
+            w.writerow(["Unit ID", "Archive " + ARCHIVE_DATE, "List " + LIST_DATE,
+                        "Dates Agree"] + ["List " + c for c in ctx] + ["List Modified"])
             for uid in offenders:
                 row = lst["ids"][uid]
-                w.writerow([uid, arc["done"][uid].isoformat()] +
-                           [(str(row[hdr.index(c)]).strip()
-                             if hdr.index(c) < len(row) and row[hdr.index(c)] is not None else "")
-                            for c in ctx])
+                d, mark = list_date(uid)
+
+                def cell(c):
+                    i = hdr.index(c) if c in hdr else -1
+                    return (str(row[i]).strip()
+                            if 0 <= i < len(row) and row[i] is not None else "")
+
+                w.writerow([uid, arc["done"][uid].isoformat(), d.isoformat() if d else "",
+                            {"=": "yes", "≠": "NO", "?": "list has no date"}[mark]] +
+                           [cell(c) for c in ctx] + [cell("Modified")])
         rel = os.path.relpath(out, ROOT)
         print("\nwrote %s  (%d row(s))" % (out if rel.startswith("..") else rel, len(offenders)))
 
