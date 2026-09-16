@@ -39,10 +39,13 @@ lists" mechanism below (kept struck through for context — superseded, not curr
 
 - **Scheduled flow** (e.g. nightly or weekly — see open question below), not triggered on
   `Item Status`/`Order Status` change.
-- Finds `Order Items` rows where `Item Status` is `Delivered` or `Cancelled` **and** the
-  row's `Modified` date is at least **one month** ago — the grace period exists so a row
-  isn't yanked out of SharePoint the moment it's marked done, giving time for it to still be
+- Finds `Order Items` rows where `Item Status` is `Delivered` and the row's **delivery
+  date** (`DeliveryDate` = `Delivery End Date`) is at least **7 days** ago, or `Cancelled`
+  and its `Modified` date is at least 7 days ago — the grace period exists so a row isn't
+  yanked out of SharePoint the moment it's marked done, giving time for it to still be
   visible/referenceable there if something comes up shortly after completion.
+  *(Revised 2026-09-16 from "one month, measured on `Modified`" — see the answered
+  questions below for why both halves of that changed.)*
 - **Reconfirms against the Excel Archive before deleting** — same check Workstream 1's
   reconciliation pass already does (pull `Archive active.xlsx`'s `TableArchiveFRM10_12`,
   match on `Order`/`Unit ID`, confirm `Location = AN` or `Location = LI` with a populated
@@ -95,14 +98,25 @@ actually has a live signal to act on for a given row does the deleting.
   **ANSWERED 2026-09-16: 7 days.** `GRACE_DAYS` in `gen_nightly_cleanup.py` updated and the
   definition regenerated; the only changes are C1's `$filter` and C2's reported `graceDays`.
 
-  🔴 **This makes the `Modified` clock decisive rather than merely fragile.** A month
-  absorbed an incidental touch; a week does not. Measured the day it was decided, every
-  already-`Delivered` row sat within **1.5 days** of the new threshold purely because the
-  09-09/09-10 migration passes had touched them — the `E21010`/`E21014` rows by **0.4
-  days**. One more pass over those rows defers them again, and stage C would report a
-  shrinking candidate list with nothing wrong anywhere. Either hold the "no pass touches
-  Delivered/Cancelled rows" rule as a hard constraint, or move stage C onto a dedicated
-  *delivered-on* timestamp. At 7 days the timestamp is the sounder design.
+- ~~**What does the grace period measure from?**~~ **ANSWERED 2026-09-16: the delivery
+  date (`DeliveryDate`, the list's `Delivery End Date`), not `Modified`.**
+
+  The 7-day grace made the old clock untenable. `Modified` recorded when a row was last
+  *touched*, so routine housekeeping reset it: measured the day this was decided, every
+  already-`Delivered` row sat within **1.5 days** of the threshold — the `E21010`/`E21014`
+  rows within **0.4 days** — purely because the 09-09/09-10 migration passes had touched
+  them, though the units were delivered 62, 20 and 16 days earlier. The sweep could have
+  been deferred indefinitely with nothing visibly wrong.
+
+  🔑 `DeliveryDate` is written by delivery and never rewritten, so the failure mode is
+  removed rather than guarded against. Verified on the 11 rows retired 2026-09-16: all 11
+  matched `Archive active.xlsx`'s `Delivery Date` exactly. Stage A keys on the same
+  column, so the two stages agree by construction.
+
+  ⚠️ **`Cancelled` rows keep the `Modified` clock** — a cancelled unit has no delivery
+  date (73 of the archive's 116 `AN` units carry none), so C1 is two clauses, one per
+  status. There are 0 `Cancelled` rows today; a single-clause filter would have looked
+  correct until the first one aged out.
 - **How often should the scheduled flow run** — nightly vs. weekly vs. monthly. Reconsider
   against the 7-day grace: the old reasoning ("the grace period itself is a month, so
   running more than roughly weekly is probably unnecessary") assumed 30 and no longer

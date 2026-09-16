@@ -150,9 +150,26 @@ to a real pass in the run graph. Check `A1`'s output count before believing step
 
 ## Part 4 · Stage C, and what it is waiting on
 
-`C1` lists `Delivered`/`Cancelled` rows whose `Modified` is older than `GRACE_DAYS`
-(**7** since 2026-09-16, was 30 — set at the top of the generator). `C2` composes the
-count. **Nothing is deleted.**
+`C1` lists rows older than `GRACE_DAYS` (**7** since 2026-09-16, was 30 — set at the top
+of the generator). `C2` composes the count. **Nothing is deleted.**
+
+**The clock is `DeliveryDate` — the list's `Delivery End Date` — not `Modified`**, decided
+2026-09-16. `Modified` recorded when a row was last *touched*; `DeliveryDate` records when
+the unit was *delivered*, and housekeeping never rewrites it. Stage A keys on the same
+column, so the two stages agree by construction.
+
+⚠️ **`Cancelled` rows still ride on `Modified`, and have to.** A cancelled unit was never
+delivered and carries no delivery date — 73 of the archive's 116 `AN` units have none — so
+a `DeliveryDate` filter would match no cancellation, ever, and the count would silently
+omit them. Hence two halves:
+
+```
+(ItemStatus eq 'Delivered' and DeliveryDate lt '@{addDays(utcNow(), -7)}')
+  or (ItemStatus eq 'Cancelled' and Modified  lt '@{addDays(utcNow(), -7)}')
+```
+
+There are 0 `Cancelled` rows today, so a single-clause version would have looked correct
+until the first cancellation aged out.
 
 Before the delete can be wired, `archiving-plan.md` needs three answers, one now settled:
 
@@ -167,15 +184,24 @@ deleting — read-only, the flow never writes to Excel. That reconfirm now exist
 `scripts/verify_archive_done_not_in_list.py` (match on unit id, confirm `Location = LI`
 with a populated `Delivery Date`), though it is not wired into the flow.
 
-🔴 **`Modified` is a fragile clock — and at 7 days it is decisive, not just fragile.**
-Any pass that touches Delivered or Cancelled rows resets the grace period on exactly the
-rows stage C is waiting on, and the sweep would silently never fire. A month absorbed an
-incidental touch; a week does not. On 2026-09-16 every already-`Delivered` row sat within
-**1.5 days** of the threshold — `E21010-1/2`, `E21010-2/2`, `E21014-1/1` within **0.4
-days** — entirely because the 09-09/09-10 migration passes had touched them, not because
-anything happened to the units: they were really delivered 62, 20 and 16 days earlier.
-Hold B1's `ItemStatus eq 'Active'` clause as a hard constraint, or move stage C onto a
-dedicated "delivered on" timestamp. At this grace length the timestamp is the better design.
+### The `Modified` clock bug, and how it was closed
+
+Worth keeping, because it is why the column changed. Stage C originally keyed on
+`Modified`, so any pass touching Delivered/Cancelled rows reset the grace period on
+exactly the rows it was waiting on — the sweep could be deferred forever with no error
+anywhere. At 30 days that was a caution; a month absorbs an incidental touch. **At 7 days
+it was live.** On 2026-09-16 every already-`Delivered` row sat within **1.5 days** of the
+threshold — `E21010-1/2`, `E21010-2/2`, `E21014-1/1` within **0.4 days** — purely because
+the 09-09/09-10 migration passes had touched them. Nothing had happened to the units: they
+were delivered 62, 20 and 16 days earlier.
+
+🔑 Keying on `DeliveryDate` removes it rather than guarding against it. No pass can change
+when a delivery happened. Verified on the 11 rows retired 2026-09-16: `Delivery End Date`
+matched `Archive active.xlsx`'s `Delivery Date` on all 11.
+
+B1's `ItemStatus eq 'Active'` clause is still worth keeping — a touch costs a trigger-flow
+run and a version — but it no longer props up another stage, and widening stage B can no
+longer break the sweep. The one residue is `Cancelled`, above.
 
 ---
 

@@ -105,18 +105,27 @@ TWO GUARDS THAT ARE NOT DECORATION
      with a heuristic, which is the failure mode the whole Item Status design
      exists to prevent (infrastructure-overview.md:445).
 
-🔴 THE TOUCH PASS MUST NOT TOUCH Delivered/Cancelled ROWS -- and stage B does not
-  A touch bumps `Modified`, and Stage C's grace period keys on `Modified`. A
-  pass that touched Delivered/Cancelled rows would reset the grace clock on
-  exactly the rows Stage C is waiting on -- every night, forever -- so nothing
-  would ever become eligible for deletion and the archive sweep would silently
-  never fire, with no error anywhere.
+THE TOUCH-RESETS-THE-CLOCK BUG, AND WHY IT IS GONE -- fixed 2026-09-16
+  It used to read: a touch bumps `Modified`, stage C's grace period keys on
+  `Modified`, so any pass over Delivered/Cancelled rows resets the clock on
+  exactly the rows stage C is waiting on -- every night, forever -- and nothing
+  ever becomes eligible, with no error anywhere. B1's `ItemStatus eq 'Active'`
+  clause was the only thing preventing it, load-bearing for a stage it is not
+  written in.
 
-  B1's filter opens with `ItemStatus eq 'Active'`, which is what keeps stage B
-  clear of it. That clause is load-bearing for STAGE C, not for stage B's own
-  correctness, so it does not look important from where it is written -- do not
-  drop it to widen the refresh. If stage B ever has to cover non-Active rows,
-  move Stage C onto a dedicated "delivered on" timestamp first.
+  Shortening the grace period to 7 days turned that from a caution into a live
+  problem: measured 2026-09-16, the 09-09/09-10 migration passes had put every
+  Delivered row within 1.5 days of the threshold -- three of them within 0.4 --
+  though the units had really been finished 16 to 62 days earlier.
+
+  🔑 Stage C now keys on `DeliveryDate`, which records WHEN THE UNIT WAS
+  DELIVERED and is never rewritten by housekeeping. A touch cannot defer a
+  deletion any more, because nothing a pass does changes when delivery happened.
+
+  B1's `ItemStatus eq 'Active'` clause is still worth keeping -- a touch still
+  costs a trigger-flow run and a version -- but it is no longer holding up stage
+  C, and widening stage B can no longer break the sweep. Cancelled rows do still
+  ride on `Modified`; see C1 for why that is unavoidable and what it costs.
 
 STAGE C IS DELIBERATELY INERT
   archiving-plan.md lists three questions, one of them now answered:
@@ -137,14 +146,9 @@ ORDER_ITEMS = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
 TZ = "Eastern Standard Time"
 
 # Grace period for stage C's report, in days. Was 30 (archiving-plan.md's proposed
-# "one month", flagged there as an open question). SETTLED 2026-09-16: 7 days.
-#
-# ⚠️ At 7 days the `Modified` clock below is no longer merely fragile, it is decisive.
-# A month absorbed an incidental touch; a week does not. The 2026-09-09/09-10 migration
-# passes put every already-Delivered row within a day or two of the new threshold, so a
-# single further pass over those rows now defers them past it. Read the 🔴 note in the
-# docstring as a hard constraint, not a caution -- or move stage C onto a dedicated
-# "delivered on" timestamp, which at this grace length is the sounder design.
+# "one month", flagged there as an open question). SETTLED 2026-09-16: 7 days, measured
+# from the DELIVERY DATE -- see C1. The short grace is only safe because of that: on
+# `Modified` it would have been reset by routine housekeeping.
 GRACE_DAYS = 7
 
 SP_HOST = {
@@ -326,9 +330,12 @@ A["B1_Get_stall_candidates"] = get_items(
     # Branches 1 and 2 short-circuit the whole formula, so a row with either of these
     # never reaches a TODAY() branch at all. Note these are the PLANNING columns.
     #
-    # 🔴 `ItemStatus eq 'Active'` is ALSO what keeps this pass off Delivered/Cancelled
-    # rows, whose `Modified` stamp is stage C's grace clock. See the module docstring --
-    # that clause protects stage C, not stage B, so it does not look load-bearing here.
+    # `ItemStatus eq 'Active'` also keeps this pass off Delivered/Cancelled rows. That
+    # used to protect stage C, whose grace clock was their `Modified` stamp; since
+    # 2026-09-16 stage C keys on `DeliveryDate` and a touch cannot defer a deletion.
+    # Keep the clause anyway -- a touch still costs a trigger-flow run and a version --
+    # but it is no longer load-bearing for another stage. Cancelled rows are the
+    # exception that still rides on `Modified`; see C1.
     "ItemStatus eq 'Active' and Planned_x0020_Delivery_x0020_Dat eq null "
     "and ManualEstimatedDeliveryDate eq null"
 )
@@ -370,8 +377,30 @@ A["B3_Touch_each_stalled_unit"] = {
 
 # ------------------------------------------------------------------ stage C
 A["C1_Get_deletion_candidates_REPORT_ONLY"] = get_items(
-    "(ItemStatus eq 'Delivered' or ItemStatus eq 'Cancelled') "
-    "and Modified lt '@{addDays(utcNow(), -%d)}'" % GRACE_DAYS
+    # 🔑 THE GRACE CLOCK IS THE DELIVERY DATE, NOT `Modified` -- decided 2026-09-16.
+    #
+    # `Modified` measured the wrong thing: when a row was last TOUCHED, not when the
+    # unit was finished. Every pass over the list reset it, so the 7-day grace could
+    # be deferred indefinitely by housekeeping -- see the module docstring's red note.
+    # `DeliveryDate` is written once, by delivery, and never moves. Verified on the 11
+    # rows retired 2026-09-16: all 11 matched `Archive active.xlsx`'s `Delivery Date`
+    # exactly, and all 11 were 16-62 days old while `Modified` put them at 5-6 days.
+    #
+    # ⚠️ `DeliveryDate` IS `Delivery End Date`. Not `DeliveryEndDate`, which 400s --
+    # the same trap already recorded at the top of this file. Not `Planned Delivery
+    # Date` either: that is the PLAN (sparse, 781 of 1085 rows empty, and editable
+    # after the fact -- `21792-3/5` was corrected on 2026-09-15), where this is the
+    # EVENT. Stage A keys on the same column, so the two stages agree by construction.
+    #
+    # 🔴 CANCELLED ROWS KEEP THE `Modified` CLOCK, and must. A cancelled unit was never
+    # delivered and has no delivery date -- 73 of the archive's 116 `AN` units carry
+    # none at all. Filtering them on `DeliveryDate` would match nothing, forever, and
+    # stage C would report a candidate count that silently omitted every cancellation.
+    # There are 0 `Cancelled` rows today, so this would have gone unnoticed until the
+    # first one aged out. Two halves, because the two statuses record different events.
+    "(ItemStatus eq 'Delivered' and DeliveryDate lt '@{addDays(utcNow(), -%d)}') "
+    "or (ItemStatus eq 'Cancelled' and Modified lt '@{addDays(utcNow(), -%d)}')"
+    % (GRACE_DAYS, GRACE_DAYS)
 )
 A["C1_Get_deletion_candidates_REPORT_ONLY"]["runAfter"] = {
     "B3_Touch_each_stalled_unit": ["Succeeded"]

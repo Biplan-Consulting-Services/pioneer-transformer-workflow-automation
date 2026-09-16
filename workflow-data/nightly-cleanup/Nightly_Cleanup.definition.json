@@ -187,7 +187,7 @@
         "parameters": {
           "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
           "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
-          "$filter": "(ItemStatus eq 'Delivered' or ItemStatus eq 'Cancelled') and Modified lt '@{addDays(utcNow(), -7)}'",
+          "$filter": "(ItemStatus eq 'Delivered' and DeliveryDate lt '@{addDays(utcNow(), -7)}') or (ItemStatus eq 'Cancelled' and Modified lt '@{addDays(utcNow(), -7)}')",
           "$top": 5000
         },
         "host": {
