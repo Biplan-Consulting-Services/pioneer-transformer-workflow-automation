@@ -497,6 +497,13 @@ derivation can't represent cancelling an order before any units exist).
   FRM10-12 — consistent with the rest of this migration's direction (SharePoint as the
   source, Excel/Power BI as consumers).
 
+  > **→ `analytics-history-options.md` (2026-09-16)** turns this into three sized options.
+  > 🔴 It also flags a conflict that is not visible from this section alone: the 24 per-unit
+  > stage columns documented below (`{Stage} Start Date`/`End Date`/`Status`) are **not**
+  > carried by the Excel Archive, so `roadmap.md`'s 2026-08-31 delete-after-`Delivered`
+  > mechanism destroys every unit's production timeline permanently. **This needs settling
+  > before the nightly cleanup flow is deployed.**
+
 ## List relationship graph — read before designing any cross-list sync (mapped 2026-09-05)
 
 Every lookup below was read from `_api/…/fields` (`LookupList` + `LookupField`), not inferred from
@@ -700,7 +707,8 @@ Anything parsing these must know which column it is reading. Worth stating in th
       AND `Location = LI`) once `Order Items` exists to test against.
 - [ ] Design the archiving mechanism (SharePoint-sourced, Power BI-consumable) — decide
       whether to repoint the existing `ArchivedOrders` Power Query at SharePoint instead of
-      FRM10-12.
+      FRM10-12. **Options and sizing: `analytics-history-options.md` (2026-09-16)** — which
+      also carries the 🔴 stage-history/cleanup-flow conflict noted above.
 - [ ] Revisit FRM09's raw-column-letter fragility (see FRM09's `CLAUDE.md`) as a candidate
       for the same structured-reference treatment once `Order Items` exists.
 - [ ] **Future review point (user's call, 2026-08-12):** once `Order Items` and the other
