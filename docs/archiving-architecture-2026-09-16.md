@@ -284,9 +284,25 @@ do not start it to solve this problem.
 
 > ⚠️ **Independent of all of the above, and worth doing on its own:** `PriceReg.pq` documents
 > 394 archive rows with `[Price] = 0` and `[Price Value] = null` — **33 of 71 rows in the
-> August KPI window, ~$1.0M USD** — recoverable from the `Order` list, which prices 403 of 417
-> orders. That is a live reporting error today, unrelated to archiving, already diagnosed in
+> August KPI window, ~$1.0M USD**. That is a live reporting error today, already diagnosed in
 > the query's own comments.
+>
+> 🔴 **CORRECTED 2026-09-16 (other session).** This block previously said those rows were
+> *"recoverable from the `Order` list, which prices 403 of 417 orders"* — carried over from
+> `analytics-history-options.md`, which had in turn repeated `PriceReg.pq`'s closing line.
+> **It is backwards.** The user confirmed `Price Value` **is refreshed from** the `Order`
+> list, so `Order` is where the null originates.
+>
+> It is also **not** unrelated to archiving — it is the same mechanism this document is about.
+> `AccumulateIntoLocal` keeps only *"local rows whose key is NOT in the source"* and takes
+> every source row wholesale, so a **still-live** order's archive row is overwritten from
+> source on each refresh, nulls included. When that order later departs, the anti-join freezes
+> the null in permanently. **Recovery is possible only while the order is still live**, and the
+> real source is the pre-SharePoint snapshots — which the user recovers from by hand today.
+>
+> Full correction, the proposed static-price-table fix, and the open question about which
+> snapshots the user actually opens: `analytics-history-options.md` §2. **Step 7 below still
+> names the `Order` price-source fix and is wrong for the same reason.**
 
 ## 7. Suggested order of work
 
@@ -297,8 +313,10 @@ do not start it to solve this problem.
 4. **Let it run and check it**, including through a schema change.
 5. **BI-1**: repoint `ArchivedOrders.pq`.
 6. **Only then** revisit whether deletion is wanted at all. It may simply never be.
-7. **Tier 0** (freeze published KPI results) and the `Order` price-source fix — any time,
-   independent of everything above.
+7. **Tier 0** (freeze published KPI results) — any time, independent of everything above.
+   ~~and the `Order` price-source fix~~ 🔴 **struck 2026-09-16**: `Order` is the source of the
+   nulls, not the cure. The replacement is a static price table built once from the
+   pre-SharePoint snapshots — see the corrected block in §6 and `analytics-history-options.md` §2.
 
 > **→ Checked against industry practice 2026-09-16:
 > [`sharepoint-as-erp-industry-check-2026-09-16.md`](sharepoint-as-erp-industry-check-2026-09-16.md).**

@@ -90,10 +90,43 @@ a formula bug — the formula is correct and carefully verified. The *input* los
 distinction between "zero" and "unknown" before Power Query ever saw it, and a derived model
 has no way to recover what was never recorded.
 
-> ⚠️ **Actionable and separate from everything else in this document:** that same comment notes
-> those rows *are* recoverable from the SharePoint `Order` list, which prices **403 of 417**
-> orders. Adding `Order` as a third price source looks like it closes most of a ~$1.0M
-> reporting gap. Worth doing on its own merits, independent of any decision below.
+> 🔴 **CORRECTED 2026-09-16 16:xx — the `Order` list is NOT the recovery source, and this
+> document said it was.** The original text here repeated `PriceReg.pq`'s closing line: that
+> those rows *"are only recoverable from the SharePoint `Order` list, which prices 403 of 417
+> orders."* **That is backwards**, and the wrong version propagated from here into
+> `archiving-architecture-2026-09-16.md` §6 and its step 7 before it was caught.
+>
+> The user settled it: **`Price Value` IS refreshed from the `Order` list.** So `Order` is
+> where the null comes *from*, not a place to recover it. Sending the next reader there sends
+> them to the one source that cannot help.
+>
+> **The real mechanism** — `AccumulateIntoLocal`'s own comment states it: the archive keeps
+> *"local rows whose key is NOT in the source"* and takes **every source row** wholesale. So
+> for an order still live, the archive is a **mirror, not an archive**: the refresh copies the
+> `0` over the good value it was holding. `HYPERLINK` renders a null label as `0`, so the
+> overwrite arrives looking like a real price.
+>
+> ⏳ **And the window closes silently.** The moment that order leaves the live system the
+> anti-join engages and the archive keeps its copy forever — *including the null just written*.
+> The loss becomes permanent at departure, with nothing announcing it. A price is only
+> recoverable while its order is still live.
+>
+> **The actual recovery source is the pre-SharePoint snapshots**, which is what the user
+> already does by hand, order by order, every time a KPI figure is questioned. Repo copies:
+> `FRM10-12/live-workbook-data/FRM10-12_2026-08-11_16h17m.xlsx` and
+> `Archive_2026-08-28_03h51m.xlsx`. ❓ **Unconfirmed: whether the user opens something older
+> than these** — if so, that is the real source and these are not it. Ask before building on
+> them.
+>
+> **What to do instead of the `Order` fix:** lift order → price out of the oldest snapshots
+> once into a **static** table that nothing refreshes, and have `PriceReg` fall back to it when
+> `Price` is 0 or null. That records the ~$1.0M once instead of re-investigating it every
+> reporting cycle — the same recorded-vs-derived principle as the rest of this document,
+> applied to the example that proves it.
+>
+> ⚠️ **`PriceReg.pq`'s own closing comment still carries the wrong claim and was NOT edited** —
+> another session was active in the archive queries at the time. That one-line fix is
+> outstanding.
 
 **c. The inputs are scheduled for deletion.** See §3.
 
