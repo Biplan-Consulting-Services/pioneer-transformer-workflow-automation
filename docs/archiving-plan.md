@@ -31,6 +31,14 @@ a separate workbook instead of the live table.
 
 ## Mechanism — redesigned 2026-08-31: grace period + reconfirm against Excel, then delete
 
+🔴 **The premise below is in question as of 2026-09-16 — read
+[`archive-coverage-gap-2026-09-16.md`](archive-coverage-gap-2026-09-16.md) before wiring
+any delete.** "Excel already holds everything" was true when `Order Items` mirrored
+`TableOrders`. It no longer is: **22 populated unit-data columns have no counterpart in the
+archive workbook** — every step `Status`, `Item Status`, `Step Status`, and the
+hand-entered `Status Date` among them — and `Order` has no archive at all. Deleting a row
+destroys them. The 7-day grace makes that reachable in a week rather than a month.
+
 **No SharePoint-side archive list at all.** Excel's Archive workbook (`Archive
 active.xlsx`) already is the permanent historical record — this plan's only job is
 removing rows from the *live* `Order Items`/`Order` lists once they're safely stale, not
@@ -117,10 +125,22 @@ actually has a live signal to act on for a given row does the deleting.
   date (73 of the archive's 116 `AN` units carry none), so C1 is two clauses, one per
   status. There are 0 `Cancelled` rows today; a single-clause filter would have looked
   correct until the first one aged out.
-- **How often should the scheduled flow run** — nightly vs. weekly vs. monthly. Reconsider
-  against the 7-day grace: the old reasoning ("the grace period itself is a month, so
-  running more than roughly weekly is probably unnecessary") assumed 30 and no longer
-  holds — a weekly sweep against a 7-day grace means a row waits up to 14 days.
+- ~~**How often should the scheduled flow run** — nightly vs. weekly vs. monthly.~~
+  **ANSWERED 2026-09-16: nightly.** The old reasoning ("the grace period itself is a month,
+  so running more than roughly weekly is probably unnecessary") assumed 30 days; against a
+  7-day grace a weekly sweep makes a row wait up to 14. No code change — stage C already
+  runs inside `Nightly Cleanup`, whose trigger is daily at 01:00 Eastern.
+- 🔴 **NEW, 2026-09-16 — where do the 22 unit-data columns go when the row is deleted?**
+  Blocking: the delete cannot be wired until this is answered. Three shapes, none chosen —
+  a SharePoint archive list (what this plan ruled out, on a premise that has since
+  changed), widening the Excel archive (means writing to Excel, which this plan forbids),
+  or accepting the loss column by column and writing down which. See
+  [`archive-coverage-gap-2026-09-16.md`](archive-coverage-gap-2026-09-16.md) for the
+  measurements and for the pending — not yet realised — BO question.
+- 🔴 **NEW, 2026-09-16 — `Order` needs an archive before it can have a cleanup.** There is
+  no `Order` sheet in `Archive active.xlsx`, so the reconfirm-before-delete step this plan
+  requires has nothing to read for an order. Order `22021` is the first live case: all its
+  units were deleted on 2026-09-16 and the order row now has nothing under it.
 - **Does the `Order` row treatment need the same grace period+reconfirm rigor**, or is
   deleting an `Order` once every `Order Items` row under it is gone safe to do immediately
   (no separate Excel-side signal to reconfirm against for the order-level record)? Not
