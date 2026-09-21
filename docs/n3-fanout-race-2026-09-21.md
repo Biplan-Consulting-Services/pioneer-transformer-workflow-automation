@@ -358,3 +358,58 @@ actor, and the next bulk operation on that list planned accordingly.
 - `x19`'s `ERASED` verdict on units 7–10 is a false positive from a hand test at
   2026-09-21 04:59 UTC (`OrdPO` blank → `5` → blank, twenty minutes before the run). The
   original loss has no version at all, which is the whole point.
+
+---
+
+# Status at close of 2026-09-21 — what is done, what is parked
+
+## ✅ Done
+
+| | |
+|---|---|
+| **The client's three orders** | repaired and verified. `x19` reports **no sibling divergence** on 22169, 22172 or 22175. 11 writes, all landed. |
+| **Root cause** | the Power Apps save ordering — see above. Understood, written up, not yet fixed. |
+| **`Model Revisions.ModelID`** | source was the Power App carrying the old model id through on creation; fixed by the user. `x17` now reads 393 of 394 clean. The Rev sync flow then refreshed `RevModelRevionID` on the affected units by itself. |
+
+## 🅿️ Parked, in the order they matter
+
+1. **Fill parent columns in the app's unit `Patch`.** The real fix. One writer at a moment
+   when no other exists — retires the race, the Save Conflicts and the post-backfill gap
+   together, with no flow changes. Everything it needs (`varNewOrder`, `SelectedModel`,
+   `SelectedModelRevision`, `SelectedClient`) is already in scope at that point.
+2. **`MdlLatestModelRevision` is stale list-wide.** It mirrors `Model Revisions.ModelID`
+   through the Models lookup, so every unit whose revision id was corrected still holds the
+   pre-fix value — the six healthy 22169 units read `M-HYQU-0093` where the correct value is
+   now `MR-HYQU-0093-V1`. The Rev flow refreshed its own columns; the **Models** flow never
+   fired, because no `Models` row was touched. Fix by touching the affected `Models` rows and
+   letting the flow fan out. ⚠️ `x22` will not do it: it only writes fields that are blank.
+   ⚠️ And re-running `x22` on the four repaired units will fill them with the **correct**
+   value, re-creating divergence against their stale siblings — right answer, wrong-looking
+   report. Do the `Models` refresh first or accept the mismatch knowingly.
+3. **Re-run `x22` for the four lookup-sourced fields** it skipped
+   (`MdlLatestModelRevision`, `MdlParentModel`, `RevDuplicateOrder`, `RevPioneerModelCode`).
+   Fixed in the script, not yet run. See item 2 before running it.
+4. **The `Clients` sync flow** reads `body/CliLeadTimeWeeks` — its own destination column
+   name. `Cli*` is blank on every unit checked. Confirm the real source field on the `Clients`
+   list first.
+5. **Retry scope on the N3 `Update_unit` actions.** None of the four sets a `retryPolicy`, and
+   the Logic Apps default retries only 408/429/5xx — a Save Conflict is a 400 and is lost for
+   good. Less urgent once (1) ships, but parent edits can still collide.
+6. **Error handling in the Power Apps save.** Every `Patch` is unchecked. Silent partial saves
+   are not hypothetical on a list that is already losing writes.
+7. **Re-run `x21`** for the whole-list picture. Its first run predates the `Ord*`/`Cli*` fix,
+   so its numbers are stale, and it only ever finds entirely-empty groups — 22172 proves that
+   partial damage slips past it. Sibling divergence is the sharper test.
+
+## Loose ends, low priority
+
+- `21792` — 2 of 2 units, whole order, created 2026-08-17. Predates the N3 flows; should have
+  been caught by the 09-08 R3 backfill and was not. If R3 missed one order it may have missed
+  others in a way no current scan would show.
+- Revision **417** — orphaned, empty `ModelID`, no `Model` lookup. 0 units point at it. Fix by
+  setting its `Model` lookup, not by typing an id.
+- `Frame = Plaspak` applied by column default on units whose create payload omits `Frame`.
+- `PriceCAD`, `FxRate`, `FxYear` return `{"ErrorMessage":"256"}` on every row.
+- The `test calculated column` is still on the list.
+- Angelique's `RevModelDescription` write-then-clear three seconds apart on four units
+  (2026-09-18 15:51:36 → 15:51:39) — suggests something in the app does a two-step.
