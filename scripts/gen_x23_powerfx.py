@@ -57,7 +57,44 @@ def main():
 
     js = TEMPLATE.replace("__MAPPING__", json.dumps(mapping, indent=2, ensure_ascii=False))
     OUT.write_text(js, encoding="utf-8")
+
+    # 🔴 `Mdl*/Rev*` inside a block comment CLOSES IT. The `*/` is a comment
+    # terminator and the rest of the prose becomes code. This has now broken a
+    # generated file twice - x21 and x23 - and the symptom is a syntax error
+    # pointing at English text, which reads like nonsense. So: check, every time.
+    check(js)
     print("\nwrote %s" % OUT.relative_to(HERE.parent))
+
+
+def check(js):
+    """Refuse to ship a file that will not parse. `node --check` when node is
+    available; otherwise at least catch the comment-terminator trap."""
+    import shutil
+    import subprocess
+
+    if shutil.which("node"):
+        r = subprocess.run(["node", "--check", str(OUT)], capture_output=True, text=True)
+        if r.returncode:
+            raise SystemExit("ABORT: emitted file does not parse.\n" + (r.stderr or r.stdout))
+        print("  node --check: OK")
+        return
+
+    depth, i = 0, 0
+    while i < len(js) - 1:
+        two = js[i:i + 2]
+        if depth == 0 and two == "/*":
+            depth, i = 1, i + 2
+            continue
+        if depth == 1 and two == "*/":
+            # A terminator followed by more prose on the same line is the trap.
+            rest = js[i + 2:js.find("\n", i) if js.find("\n", i) != -1 else len(js)]
+            if rest.strip() and not rest.lstrip().startswith(("\n",)):
+                raise SystemExit("ABORT: `*/` mid-comment at offset %d - the `Mdl*/Rev*` trap:\n  %s"
+                                 % (i, rest.strip()[:80]))
+            depth, i = 0, i + 2
+            continue
+        i += 1
+    print("  comment scan: OK (node not found, so no full parse)")
 
 
 TEMPLATE = r"""/* X23 -- READ-ONLY. Emits the Power Fx that fixes the race at its source.
@@ -167,40 +204,61 @@ TEMPLATE = r"""/* X23 -- READ-ONLY. Emits the Power Fx that fixes the race at it
         expr = ref;
       }
 
-      lines[g].push("        " + q(t.displayName) + ": " + expr);
+      lines[g].push({ name: q(t.displayName), expr: expr });
     }
   }
 
-  const block = (groups) => groups
-    .map(g => "        // --- " + MAP[g].parent + " (" + lines[g].length + " fields) ---\n"
-              + lines[g].join(",\n"))
+  /* `swap` rewrites a group's source variable for the SA branch, and `guard`
+     wraps it so a missing twin writes nothing.
+
+     🔑 THE ZERO-MATCH RULE, and why the guard is not optional. 15 of 390 models
+     have an SA twin -- 96% do not. `If()` with no else returns Blank(), so a
+     twinless SA unit gets blank Mdl* / Rev*, which is correct and is exactly what
+     the existing `Model:` / `'Model Revision':` lines in the save already do.
+     Writing the MAIN model's values there instead is the failure the N3 spec's
+     zero-match branch exists to prevent. */
+  const render = (g, swap, guard) => lines[g].map(l => {
+    let e = l.expr;
+    if (swap) for (const from of Object.keys(swap))
+      e = e.split(from + ".").join(swap[from] + ".").split("(" + from + ")").join("(" + swap[from] + ")");
+    if (guard) e = "If(!IsBlank(SelectedSAModel), " + e + ")";
+    return "        " + l.name + ": " + e;
+  }).join(",\n");
+
+  const block = (groups, swap, guardGroups) => groups
+    .map(g => "        // --- " + MAP[g].parent + " (" + lines[g].length + " fields)"
+              + ((guardGroups || []).indexOf(g) >= 0 ? ", SA twin, blank when there is none" : "") + " ---\n"
+              + render(g, (guardGroups || []).indexOf(g) >= 0 ? swap : null,
+                          (guardGroups || []).indexOf(g) >= 0))
     .join(",\n");
 
-  console.log("=== paste into the MAIN unit Patch, after 'Model Revision' ===\n");
+  console.log("=== 1. paste into the MAIN unit Patch, after 'Model Revision' ===\n");
   console.log(",\n" + block(["Ord", "Mdl", "Rev", "Cli"]));
 
-  console.log("\n\n=== the SA unit Patch ===");
-  console.log("SA units carry the TWIN model, so Mdl*/Rev* must come from it -- not from");
-  console.log("SelectedModel. SelectedSAModel holds the model; its revision is only a lookup,");
-  console.log("so resolve the row first, next to the existing SelectedSAModel Set():\n");
+  console.log("\n\n=== 2. resolve the SA twin's revision row ===");
+  console.log("SelectedSAModel holds the twin MODEL, but its revision is only a lookup, so the");
+  console.log("Rev* fields have nothing to read. Add this beside the existing SelectedSAModel");
+  console.log("Set(), inside the same If(varNewOrder.SA, ...) block:\n");
   console.log("    Set(");
   console.log("        SelectedSAModelRevision,");
   console.log("        LookUp('Model Revisions', ID = SelectedSAModel.'Latest Model Revision'.Id)");
-  console.log("    );\n");
-  console.log("Then paste this into the SA Patch, keeping the existing IsBlank guard:\n");
-  console.log(",\n" + block(["Ord", "Cli"]));
-  console.log("\n        // Mdl*/Rev* for SA units: same lines as above with");
-  console.log("        //   SelectedModel          -> SelectedSAModel");
-  console.log("        //   SelectedModelRevision  -> SelectedSAModelRevision");
-  console.log("        // ⚠️ 96% of models have NO twin (15 of 390). When SelectedSAModel is");
-  console.log("        //    blank, write NOTHING for those two groups -- the N3 spec's");
-  console.log("        //    zero-match rule. Writing the main model there is the failure");
-  console.log("        //    that guard exists to prevent.");
+  console.log("    );");
+  console.log("\n    // LookUp on a blank SelectedSAModel returns blank, which the guards below expect.");
+
+  console.log("\n\n=== 3. paste into the SA unit Patch, after 'Model Revision' ===\n");
+  console.log(",\n" + block(["Ord", "Mdl", "Rev", "Cli"],
+                            { "SelectedModel": "SelectedSAModel",
+                              "SelectedModelRevision": "SelectedSAModelRevision" },
+                            ["Mdl", "Rev"]));
+  console.log("\n        // Ord*/Cli* are order-level and client-level, so an SA unit takes the");
+  console.log("        // same values as its non-SA siblings -- unguarded, above.");
+  console.log("        // Mdl*/Rev* come from the TWIN and are guarded: 15 of 390 models have one.");
 
   console.log("\n\n=== check before pasting ===");
+  const n = lines.Ord.length + lines.Mdl.length + lines.Rev.length + lines.Cli.length;
   console.log("  fields emitted: Ord " + lines.Ord.length + "  Mdl " + lines.Mdl.length
     + "  Rev " + lines.Rev.length + "  Cli " + lines.Cli.length
-    + "   total " + (lines.Ord.length + lines.Mdl.length + lines.Rev.length + lines.Cli.length));
+    + "   total " + n + " per unit, on both the main and the SA Patch");
   if (problems.length) {
     console.log("  🔴 " + problems.length + " unresolved -- do NOT paste until these are understood:");
     for (const p of problems) console.log("      " + p);
