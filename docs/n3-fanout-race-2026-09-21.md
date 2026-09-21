@@ -169,6 +169,63 @@ has no value, so both numbers are printed rather than one replacing the other.
 
 **Re-run `x21` before acting on any `Ord*` or `Cli*` figure.**
 
+## Confirmed 2026-09-21: the three flagged orders are TWO different failures
+
+`x19` with sibling divergence, over the orders the client flagged. All three were created by
+Patrick Vaillancourt through Power Apps on 2026-09-17.
+
+### 22169 — the fan-out race
+
+A clean contiguous tail. Units created 17:39:44–17:40:07 got everything; the four created
+17:40:12–17:40:25 got nothing from `Order` or `Models`. Thirteen `Ord*` fields diverge between
+the six good siblings and the four bad ones, all the same way.
+
+### 22172 and 22175 — Save Conflict, and the timestamps prove it is not the race
+
+**This is the important distinction, and 22172 is what makes it visible.**
+
+| | |
+|---|---|
+| `1235` 22172-1/2 | created **17:57:20** — lost `Ord*` |
+| `1236` 22172-2/2 | created **17:57:24** — has everything |
+
+The damaged unit was created **first**. Both existed well before the flows ran at 17:57:51.
+So the fan-out read them both, and the write to 1235 simply failed. Its own history shows why:
+`v2.0` (`Mdl*`) and `v3.0` (`Rev*`) are both stamped **17:57:51** — two flows writing the same
+row in the same second. The Order flow was the third, and it lost.
+
+22175 is the same thing, scattered further:
+
+| | |
+|---|---|
+| `1245` 22175-1/2 | lost `Ord*` **and** `Mdl*` — this is the unit whose run threw the 400 |
+| `1246` 22175-2/2 | lost `Rev*` |
+
+Two siblings, **different groups lost on each**. No race produces that. And on 1236 the version
+labels are not in timestamp order — `v4.0` is stamped 17:57:52 against `v3.0` at 17:57:53 —
+which is concurrency visible in the version numbering itself.
+
+🔑 **So the race is the smaller problem.** It needs a burst of creates to bite. The Save
+Conflict needs only two flows and one row, which is every single order.
+
+### 🔴 And a third, unrelated bug: the `Clients` sync flow reads a field that is not there
+
+`Cli*` came back `0/1` on **all 14 units across all three orders**. The flow definition says
+why — its one mapping is:
+
+```
+'item/CliLeadTimeWeeks' = "@triggerOutputs()?['body/CliLeadTimeWeeks']"
+```
+
+`CliLeadTimeWeeks` is the **destination** column on `Order Items`. The source, per the N3 spec,
+is `Clients.Lead Time`. The destination name was pasted into the source expression, so the
+flow reads a field the `Clients` list does not have, gets null, and writes null — which the
+connector turns into "leave it alone". It has been enabled since the cutover doing nothing at
+all, on every unit, silently.
+
+⚠️ Confirm the real internal name off the `Clients` list before fixing it — this repo's record
+on reasoning about field names is bad enough that the rule is now read-values-only.
+
 ## Three things the raw version dump surfaced on the way past
 
 Each one is independent of the above and independently checkable.
