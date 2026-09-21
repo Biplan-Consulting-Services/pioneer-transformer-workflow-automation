@@ -256,6 +256,45 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
      early on an Eastern site. */
   const asDate = (v) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}T/.test(v)) ? v.slice(0, 10) : v;
 
+  /* 🔴 A LOOKUP source does not come back from a plain item read.
+     `items(498)` returns `ModelRevisionId`, an integer - there is no
+     `ModelRevision` property at all. The flow gets the display value because
+     the Power Automate connector expands lookups for it; raw REST does not.
+     So four fields (MdlLatestModelRevision, MdlParentModel, RevDuplicateOrder,
+     RevPioneerModelCode) read as `undefined`, which `isBlank` calls blank, and
+     the repair skipped them SILENTLY - visible only as Mdl 3/5 on a repaired
+     unit against 4/5 on its siblings.
+
+     Resolved here the way the N3 spec documents as the one route that works on
+     this tenant: _api/v2.0/.../columns gives each lookup its target listId and
+     the column it displays. `_api/web/lists/.../fields` HANGS here - four
+     45-second timeouts on record - so do not "simplify" this to that. */
+  const lookupMeta = {};   // parent list GUID -> {fieldName: {listId, columnName}}
+  const lookupsOf = async (listGuid) => {
+    if (lookupMeta[listGuid]) return lookupMeta[listGuid];
+    const m = {};
+    try {
+      const cols = await J(base + "/_api/v2.0/sites/root/lists/" + listGuid + "/columns");
+      for (const c of (cols.value || [])) if (c.lookup && c.lookup.listId)
+        m[c.name] = { listId: c.lookup.listId, columnName: c.lookup.columnName };
+    } catch (e) { console.log("  (columns unreadable for " + listGuid + ": " + e.message + ")"); }
+    lookupMeta[listGuid] = m;
+    return m;
+  };
+  const rowCache = {};
+  const resolveLookup = async (listGuid, field, parentRow) => {
+    const meta = (await lookupsOf(listGuid))[field];
+    const id = parentRow[field + "Id"];
+    if (!meta || id === null || id === undefined || id === "") return null;
+    const key = meta.listId + "/" + id;
+    if (!(key in rowCache)) {
+      try { rowCache[key] = await J(base + "/_api/web/lists(guid'" + meta.listId + "')/items(" + id + ")"); }
+      catch (e) { rowCache[key] = null; }
+    }
+    const row = rowCache[key];
+    return row ? (row[meta.columnName] === undefined ? null : row[meta.columnName]) : null;
+  };
+
   const digest = await J(base + "/_api/contextinfo", { method: "POST" })
     .then(j => j.FormDigestValue).catch(() => null);
   if (!DRY && !digest) { console.error("ABORT: no form digest, cannot write."); return; }
@@ -279,7 +318,12 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
       let already = 0, empty = 0;
       for (const f of m.fields) {
         if (!isBlank(unit[f.target])) { already++; continue; }
-        let v = unwrap(parent[f.source], f.sourceChoice);
+        let raw = parent[f.source];
+        /* Present as `<name>Id` but absent as `<name>` = a lookup. Resolve it
+           rather than treating it as blank. */
+        if (raw === undefined && parent[f.source + "Id"] !== undefined)
+          raw = await resolveLookup(m.list, f.source, parent);
+        let v = unwrap(raw, f.sourceChoice);
         v = asDate(v);
         if (isBlank(v)) { empty++; continue; }
         /* Nothing structured may reach a write. If unwrap left an object or an
