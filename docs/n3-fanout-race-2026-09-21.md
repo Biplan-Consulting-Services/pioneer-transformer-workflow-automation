@@ -226,16 +226,96 @@ all, on every unit, silently.
 ⚠️ Confirm the real internal name off the `Clients` list before fixing it — this repo's record
 on reasoning about field names is bad enough that the rule is now read-values-only.
 
+## ✅ ROOT CAUSE FOUND — the Power Apps order-creation save
+
+Supplied by the user 2026-09-21. The save button's Power Fx does this, in this order:
+
+```
+ 4  SubmitForm(Form2)                    -> creates the Model Revision   ⚡ fires Rev sync
+ 6  Patch(Models, SelectedModel, {...})  -> sets Latest Model Revision   ⚡ fires Mdl sync
+ 7  Patch(Order, Defaults(Order), {...}) -> creates the Order            ⚡ fires Ord sync
+ 8  ForAll(Sequence(varNewOrder.Qty),
+        Patch('Order Items', Defaults(...), {...}))   <- the units, ONE AT A TIME
+```
+
+**Both defects fall straight out of that ordering.**
+
+### The race: the Order exists before its units do
+
+Step 7 creates the `Order` row, which fires the Order sync flow immediately. Step 8 then
+creates the units one at a time — measured at **4–5 seconds each**, because each iteration
+does a server round-trip for its `LookUp('Order Items', 'Unit ID' = …)` duplicate check. So
+for a Qty-10 order the flow fans out into a list that is still being written for **~45
+seconds** after it was triggered.
+
+That is 22169 exactly: Order created ~17:39:4x, units trickling in until 17:40:25, the flow's
+`Get items` landing at 17:40:07–12 and seeing six.
+
+🔑 **The race window is Qty × ~4.5s.** It is not a fluke of that afternoon — it is a property
+of every order, and it scales with quantity. Small orders escape it; big ones cannot.
+
+### The conflicts: three flows fired within one second of each other
+
+Steps 4, 6 and 7 are three writes to three different parent lists inside one save, a second or
+so apart. Each fires its own sync flow, and all three fan out onto **the same** `Order Items`
+rows. That is the collision — and it needs no burst of creates at all, which is why the
+two-unit orders 22172 and 22175 were hit while being far too small to race.
+
+### 🔑 The fix that removes both, and needs no flow change at all
+
+**The app already holds every value the sync flows would write.** At step 8 it has
+`varNewOrder` (order number, qty, PO, price, province, WET-WETP, indexing, order date, initial
+promised date, order step, order type, note, order folder), `SelectedModel`,
+`SelectedModelRevision` and `SelectedClient` — all in scope, all already fetched.
+
+So populate `Ord*` / `Mdl*` / `Rev*` **in the same `Patch` that creates the unit**. One write,
+by one writer, at a moment when no other writer exists:
+
+- no read to race, because the child is born complete;
+- no second writer, so no Save Conflict;
+- and it retires the post-backfill gap as well — a unit created at any time is correct.
+
+The N3 flows then keep their real job, which is propagating *later* parent edits, and the
+damage they can do shrinks to that.
+
+⚠️ This does not make the flows safe on its own. A parent edit still fans out and two flows
+can still collide, so the retry scope is still worth adding. But it takes the common path —
+order creation — off the collision course entirely.
+
+### Three other things in that save worth a look
+
+- 🔴 **`SelectedModel` is only `Set` inside `If(varNewModel, …)`.** On the existing-model path
+  nothing in this code assigns it, so it carries whatever the *previous* save left in it
+  unless some other control sets it. Step 6 then patches that model's `Latest Model Revision`,
+  and steps 7–8 stamp it onto the Order and every unit. Confirm a picker sets it; if not, this
+  is a live cross-order contamination bug and a much worse one than the sync gaps.
+- 🔴 **No error handling anywhere.** Every `Patch` is unchecked — no `IfError`, no `Errors()`.
+  If one unit's create fails, `ForAll` carries on and nothing reports it. Given that Save
+  Conflicts are already landing on this list, silent partial saves are not hypothetical.
+- ⚠️ **The duplicate-check `LookUp` inside `ForAll`** is what makes each iteration cost 4–5
+  seconds, and therefore what sets the width of the race window. If the parent fields move
+  into the create, this stops mattering; if they do not, hoisting the check out of the loop
+  shrinks the exposure.
+
 ## Three things the raw version dump surfaced on the way past
 
 Each one is independent of the above and independently checkable.
 
-- 🔴 **`Model Revisions.ModelID` is corrupt again, or was never fully repaired.** Revision
-  `LookupId 387` resolves to `M-HYQU-0093` — a *model* code where a revision id belongs, and
-  all ten units mirror it into `RevModelRevionID`. That is exactly the defect
-  `model-revision-modelid-repair-2026-09-14.md` fixed on 29 rows a week ago. Revision 387 was
-  either missed or created afterwards, which means **the repair addressed instances, not the
-  cause.** Re-run `x17_audit_revision_modelid.js`.
+- ✅ **`Model Revisions.ModelID` — cause found and closed 2026-09-21.** Revisions `387` and
+  `106` resolve to `M-HYQU-0093` / `M-HYQU-0037` — *model* codes where a revision id belongs,
+  and the units mirror them into `RevModelRevionID`. Same defect
+  `model-revision-modelid-repair-2026-09-14.md` fixed on 29 rows, recurring because that
+  repair fixed instances and never found the source.
+
+  **The source was the Power App**, which carried the old model id through on creation. The
+  user fixed it 2026-09-21. So the open question at the bottom of that repair doc — *"what
+  corrupted them: unknown"* — is now answered, and `EditorId 106` was a red herring: it is
+  simply the account the bulk scripts run as.
+
+  🔑 **Sequencing:** the source is closed, so a repair now holds. Run
+  `x17_audit_revision_modelid.js` for the current count, then `x18_repair_revision_modelid.js`
+  — and only then `x22`, which **refuses** to write a `RevModelRevionID` that is not
+  `MR-…-V1` / `MRSA-…-V1` rather than spreading a model code under cover of a repair.
 - ⚠️ **`Frame = Plaspak` on v1.0 of all ten units.** `fix_created_units.js` documented this
   exact trap: a create payload that omits `Frame` gets the column's **default** applied
   silently, and blank is the normal state on 735 of 1,117 rows. The Power Apps create path
