@@ -39,8 +39,23 @@ SOURCES = {
     "Order_Items__sync_from_Clients.definition.json":         ("Cli", "ClientId",         "Clients"),
 }
 
-# `@triggerOutputs()?['body/Foo']?['Value']` -> ("Foo", True)
-TRIGGER = re.compile(r"triggerOutputs\(\)\?\['body/([^']+)'\](\?\['Value'\])?")
+# A BARE read: `@triggerOutputs()?['body/Foo']` or the same with ?['Value'].
+BARE = re.compile(r"^@triggerOutputs\(\)\?\['body/([^']+)'\](\?\['Value'\])?$")
+# Any read at all, used only to name the source inside a complex expression.
+TRIGGER = re.compile(r"triggerOutputs\(\)\?\['body/([^']+)'\]")
+
+# 🔴 The one mapping that is NOT a bare read, and the reason this distinction
+# exists. RevModelDescription's source is a MultiChoice, so the flow does:
+#   @if(empty(coalesce(body/Description, [])), null,
+#       first(coalesce(body/Description, []))?['Value'])
+# i.e. take the FIRST entry's Value. A regex that just grabs the first
+# `triggerOutputs` match reduces that to a bare read, and over REST a
+# MultiChoice comes back as `["PADMOUNT"]` - so the repair writes the ARRAY
+# into the column. That is R22 exactly: the write-side trap that put 110
+# characters of JSON into 979 rows, and it lands silently because the target is
+# a Note field that accepts any string.
+# Anything that is neither bare nor this shape aborts rather than being guessed.
+FIRST_VALUE = re.compile(r"first\(.*?triggerOutputs\(\)\?\['body/([^']+)'\].*?\)\?\['Value'\]", re.S)
 
 
 def find_update(node):
@@ -85,13 +100,29 @@ def extract(path):
             target = target[: -len("/Value")]
         if not isinstance(expr, str):
             continue
-        m = TRIGGER.search(expr)
-        if not m:
-            # A constant or a composed expression - the repair cannot reproduce
-            # it from the parent row, so it is skipped rather than guessed at.
-            out.append((target, target_is_choice, None, False))
+
+        bare = BARE.match(expr.strip())
+        if bare:
+            out.append((target, target_is_choice, bare.group(1), bool(bare.group(2)), False))
             continue
-        out.append((target, target_is_choice, m.group(1), bool(m.group(2))))
+
+        multi = FIRST_VALUE.search(expr)
+        if multi:
+            out.append((target, target_is_choice, multi.group(1), True, True))
+            continue
+
+        if not TRIGGER.search(expr):
+            # A constant. The repair cannot reproduce it from the parent row.
+            out.append((target, target_is_choice, None, False, False))
+            continue
+
+        # Reads the parent, but in a shape this generator does not understand.
+        # Guessing here is how R22 happened, so: stop.
+        raise SystemExit(
+            "ABORT: %s in %s reads the parent through an expression this "
+            "generator cannot reproduce:\n    %s\n"
+            "Teach gen_x22_repair.py the shape rather than letting it guess."
+            % (target, path.name, expr))
     return parent_guid(d), out
 
 
@@ -103,12 +134,16 @@ def main():
             raise SystemExit("ABORT: missing %s" % path)
         guid, raw = extract(path)
         fields = []
-        for target, tgt_choice, source, src_choice in raw:
+        for target, tgt_choice, source, src_choice, src_multi in raw:
             if source is None:
                 skipped.append("%s (%s): not read from the parent row" % (target, prefix))
                 continue
+            if src_multi:
+                print("  %s: MultiChoice source %r - takes first().Value, as the flow does"
+                      % (target, source))
             fields.append({"target": target, "targetChoice": tgt_choice,
-                           "source": source, "sourceChoice": src_choice})
+                           "source": source, "sourceChoice": src_choice,
+                           "sourceMulti": src_multi})
         mapping[prefix] = {"parent": parent, "list": guid, "fk": fk, "fields": fields}
         print("%-4s %-16s %2d fields   %s" % (prefix, parent, len(fields), guid))
 
@@ -194,10 +229,26 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   const items = base + "/_api/web/lists(guid'" + OI + "')/items";
   const isBlank = (v) => v === null || v === undefined || String(v).trim() === "";
 
-  /* A parent value on its way into a child column. */
+  /* A parent value on its way into a child column.
+
+     🔴 The array case is R22. A MultiChoice source comes back from REST as
+     `["PADMOUNT"]`, and the target (`RevModelDescription`) is a Note field that
+     will accept the stringified array without complaint - which is how 979 rows
+     ended up holding 110 characters of JSON. The flow itself does
+     `first(...)?['Value']`, so this does the same.
+
+     ⚠️ Taking first() loses the rest when a revision carries several values.
+     The N3 spec argues against it ("a MultiChoice returns several entries --
+     join them, do not take first() blindly"), but v007 shipped first(). The
+     repair MATCHES the flow rather than improving on it, so repaired rows and
+     synced rows cannot disagree. Change both together or neither. */
   const unwrap = (v, isChoice) => {
     if (v === null || v === undefined) return null;
-    if (isChoice || (typeof v === "object" && v !== null && "Value" in v))
+    if (Array.isArray(v)) {
+      if (!v.length) return null;
+      return unwrap(v[0], isChoice);
+    }
+    if (isChoice || (typeof v === "object" && "Value" in v))
       return (typeof v === "object") ? (v.Value === undefined ? null : v.Value) : v;
     return v;
   };
@@ -210,6 +261,7 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   if (!DRY && !digest) { console.error("ABORT: no form digest, cannot write."); return; }
 
   const plan = [];
+  let bail = false;
   for (const id of UNITS) {
     const unit = await J(items + "(" + id + ")");
     console.log("--- Id " + id + "  " + unit.Title + " ---");
@@ -230,6 +282,27 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
         let v = unwrap(parent[f.source], f.sourceChoice);
         v = asDate(v);
         if (isBlank(v)) { empty++; continue; }
+        /* Nothing structured may reach a write. If unwrap left an object or an
+           array here, the mapping is one this generator does not understand -
+           refuse rather than write JSON into a column. */
+        if (typeof v === "object" && !(v && v.Url !== undefined)) {
+          console.log("      🔴 " + f.target + " would receive " + JSON.stringify(v)
+            + " -- structured value, refusing. Teach gen_x22_repair.py this mapping.");
+          bail = true; continue;
+        }
+        /* 🔴 Do not propagate the Model Revisions.ModelID corruption.
+           A revision id is `MR-…-V1` (or `MRSA-…-V1` for an SA model). Rows
+           holding their MODEL's code instead were repaired on 2026-09-14 by
+           x18_repair_revision_modelid.js -- 29 of them -- but the CAUSE was
+           never found, and revisions 106 and 387 hold model codes again today.
+           Writing one here would spread damage under cover of a repair. */
+        if (f.target === "RevModelRevionID" && !/^MRS?A?-.+-V\d+$/.test(String(v))) {
+          console.log("      🔴 " + f.target + " = " + JSON.stringify(v)
+            + " is a MODEL code, not a revision id. Revision " + pid + " is corrupt."
+            + "\n         Run x17_audit_revision_modelid.js / x18_repair_revision_modelid.js"
+            + " FIRST, then re-run this.");
+          bail = true; continue;
+        }
         /* 🔴 NO `/Value` SUFFIX HERE. `item/OrdOrderType/Value` is the Power
            Automate CONNECTOR's parameter name; raw REST takes a Choice as a
            plain string on the field itself. Copying the flow's key shape into
@@ -246,6 +319,7 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   }
 
   console.log("\n=== " + plan.length + " writes planned across " + UNITS.length + " units ===");
+  if (bail) { console.error("🔴 ABORT: a structured value reached a write. Nothing written."); return; }
   if (DRY) { console.log("DRY RUN - nothing written. Set DRY = false and paste again."); return; }
 
   /* One PATCH per group per unit, mirroring what the flow would have done. */

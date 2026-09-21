@@ -67,103 +67,120 @@
         "target": "OrdClientDateStatus",
         "targetChoice": true,
         "source": "ClientDateStatus",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "OrdEngineeringRequired",
         "targetChoice": false,
         "source": "EngineeringRequired",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdIndexing",
         "targetChoice": true,
         "source": "Indexing",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "OrdInitialPromisedDate",
         "targetChoice": false,
         "source": "Initial_x0020_Promised_x0020_Dat",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdLDs",
         "targetChoice": false,
         "source": "LDs",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdNewmodeltobecreated",
         "targetChoice": true,
         "source": "New_x0020_model_x0020_to_x0020_b",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "OrdNote",
         "targetChoice": false,
         "source": "Note",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdOrderDate",
         "targetChoice": false,
         "source": "Order_x0020_Date",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdOrderStatus",
         "targetChoice": true,
         "source": "OrderStatus",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "OrdOrderStep",
         "targetChoice": true,
         "source": "Order_x0020_Step",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "OrdOrderType",
         "targetChoice": true,
         "source": "Order_x0020_Type1",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "OrdPO",
         "targetChoice": false,
         "source": "PO",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdPrice",
         "targetChoice": false,
         "source": "Price",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdProvinceState",
         "targetChoice": false,
         "source": "Province_x002F_State",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdSalesNotes",
         "targetChoice": false,
         "source": "SalesNotes",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "OrdWETWETP",
         "targetChoice": true,
         "source": "WET_x002d_WETP",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "OrdOrderFolder",
         "targetChoice": false,
         "source": "Order_x0020_Folder",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       }
     ]
   },
@@ -176,31 +193,36 @@
         "target": "MdlEstimatedEffort",
         "targetChoice": false,
         "source": "Estimated_x0020_Effort",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "MdlLatestModelRevision",
         "targetChoice": false,
         "source": "ModelRevision",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "MdlModelID",
         "targetChoice": false,
         "source": "ModelID",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "MdlModificationStatus",
         "targetChoice": true,
         "source": "ModificationStatus",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "MdlParentModel",
         "targetChoice": false,
         "source": "ParentModel",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       }
     ]
   },
@@ -213,145 +235,169 @@
         "target": "RevCable",
         "targetChoice": false,
         "source": "Cable",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevClientModelCode",
         "targetChoice": false,
         "source": "ModelName",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevCopperLV",
         "targetChoice": false,
         "source": "Copper_x0028_LV_x0029_",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevCoreType",
         "targetChoice": true,
         "source": "Core_x0020_Type",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "RevDuplicateOrder",
         "targetChoice": false,
         "source": "DuplicateOrder",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "RevFamily",
         "targetChoice": true,
         "source": "Family",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "RevForm",
         "targetChoice": false,
         "source": "Form",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevJS",
         "targetChoice": false,
         "source": "JS_x0020__x0023_",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevModelDescription",
         "targetChoice": true,
         "source": "Description",
-        "sourceChoice": false
+        "sourceChoice": true,
+        "sourceMulti": true
       },
       {
         "target": "RevModelType",
         "targetChoice": true,
         "source": "Model_x0020_Type",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "RevModelRevionID",
         "targetChoice": false,
         "source": "ModelID",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevNotes",
         "targetChoice": false,
         "source": "Notes",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevOilAmount",
         "targetChoice": false,
         "source": "OilAmount",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevOilType",
         "targetChoice": true,
         "source": "Oil_x0020_Type",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "RevOvercoil",
         "targetChoice": false,
         "source": "Overcoil",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevPhases",
         "targetChoice": false,
         "source": "Phases",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevPioneerModelCode",
         "targetChoice": false,
         "source": "Model",
-        "sourceChoice": true
+        "sourceChoice": true,
+        "sourceMulti": false
       },
       {
         "target": "RevPrimaryVoltage",
         "targetChoice": false,
         "source": "PrimaryVoltage",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevSecondaryVoltage",
         "targetChoice": false,
         "source": "SecondaryVoltage",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevSpecDate",
         "targetChoice": false,
         "source": "Spec_Date",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevSpecID",
         "targetChoice": false,
         "source": "SpecID",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevSpecRevision",
         "targetChoice": false,
         "source": "Spec_Revision",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevWireHV",
         "targetChoice": false,
         "source": "Wire_x0028_HV_x0029_",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       },
       {
         "target": "RevkVA",
         "targetChoice": false,
         "source": "kVA_x0020_and_x0020_kV",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       }
     ]
   },
@@ -364,7 +410,8 @@
         "target": "CliLeadTimeWeeks",
         "targetChoice": false,
         "source": "CliLeadTimeWeeks",
-        "sourceChoice": false
+        "sourceChoice": false,
+        "sourceMulti": false
       }
     ]
   }
@@ -383,10 +430,26 @@
   const items = base + "/_api/web/lists(guid'" + OI + "')/items";
   const isBlank = (v) => v === null || v === undefined || String(v).trim() === "";
 
-  /* A parent value on its way into a child column. */
+  /* A parent value on its way into a child column.
+
+     🔴 The array case is R22. A MultiChoice source comes back from REST as
+     `["PADMOUNT"]`, and the target (`RevModelDescription`) is a Note field that
+     will accept the stringified array without complaint - which is how 979 rows
+     ended up holding 110 characters of JSON. The flow itself does
+     `first(...)?['Value']`, so this does the same.
+
+     ⚠️ Taking first() loses the rest when a revision carries several values.
+     The N3 spec argues against it ("a MultiChoice returns several entries --
+     join them, do not take first() blindly"), but v007 shipped first(). The
+     repair MATCHES the flow rather than improving on it, so repaired rows and
+     synced rows cannot disagree. Change both together or neither. */
   const unwrap = (v, isChoice) => {
     if (v === null || v === undefined) return null;
-    if (isChoice || (typeof v === "object" && v !== null && "Value" in v))
+    if (Array.isArray(v)) {
+      if (!v.length) return null;
+      return unwrap(v[0], isChoice);
+    }
+    if (isChoice || (typeof v === "object" && "Value" in v))
       return (typeof v === "object") ? (v.Value === undefined ? null : v.Value) : v;
     return v;
   };
@@ -399,6 +462,7 @@
   if (!DRY && !digest) { console.error("ABORT: no form digest, cannot write."); return; }
 
   const plan = [];
+  let bail = false;
   for (const id of UNITS) {
     const unit = await J(items + "(" + id + ")");
     console.log("--- Id " + id + "  " + unit.Title + " ---");
@@ -419,6 +483,27 @@
         let v = unwrap(parent[f.source], f.sourceChoice);
         v = asDate(v);
         if (isBlank(v)) { empty++; continue; }
+        /* Nothing structured may reach a write. If unwrap left an object or an
+           array here, the mapping is one this generator does not understand -
+           refuse rather than write JSON into a column. */
+        if (typeof v === "object" && !(v && v.Url !== undefined)) {
+          console.log("      🔴 " + f.target + " would receive " + JSON.stringify(v)
+            + " -- structured value, refusing. Teach gen_x22_repair.py this mapping.");
+          bail = true; continue;
+        }
+        /* 🔴 Do not propagate the Model Revisions.ModelID corruption.
+           A revision id is `MR-…-V1` (or `MRSA-…-V1` for an SA model). Rows
+           holding their MODEL's code instead were repaired on 2026-09-14 by
+           x18_repair_revision_modelid.js -- 29 of them -- but the CAUSE was
+           never found, and revisions 106 and 387 hold model codes again today.
+           Writing one here would spread damage under cover of a repair. */
+        if (f.target === "RevModelRevionID" && !/^MRS?A?-.+-V\d+$/.test(String(v))) {
+          console.log("      🔴 " + f.target + " = " + JSON.stringify(v)
+            + " is a MODEL code, not a revision id. Revision " + pid + " is corrupt."
+            + "\n         Run x17_audit_revision_modelid.js / x18_repair_revision_modelid.js"
+            + " FIRST, then re-run this.");
+          bail = true; continue;
+        }
         /* 🔴 NO `/Value` SUFFIX HERE. `item/OrdOrderType/Value` is the Power
            Automate CONNECTOR's parameter name; raw REST takes a Choice as a
            plain string on the field itself. Copying the flow's key shape into
@@ -435,6 +520,7 @@
   }
 
   console.log("\n=== " + plan.length + " writes planned across " + UNITS.length + " units ===");
+  if (bail) { console.error("🔴 ABORT: a structured value reached a write. Nothing written."); return; }
   if (DRY) { console.log("DRY RUN - nothing written. Set DRY = false and paste again."); return; }
 
   /* One PATCH per group per unit, mirroring what the flow would have done. */
