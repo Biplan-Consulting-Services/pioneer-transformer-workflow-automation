@@ -551,7 +551,22 @@
       const flat = (v) => (v && typeof v === "object")
         ? (v.Url !== undefined ? v.Url : (v.Value !== undefined ? v.Value : JSON.stringify(v)))
         : v;
-      if (String(flat(got)) !== String(flat(want))) {
+
+      /* ⚠️ A Date-Only column NEVER reads back in the shape it was written.
+         We send a bare `2026-09-16`; SharePoint stores site-local midnight and
+         returns `2026-09-16T04:00:00Z` (05:00Z outside DST). That is the
+         CORRECT result - a full instant would store UTC midnight and render as
+         the previous day, which is the bug the 2026-09-08 backfill existed to
+         fix. The first version of this read-back compared the strings raw and
+         called all 12 date writes failures when every one of them was right.
+         So: when we sent a bare date, compare only the date part. */
+      const same = (w, g) => {
+        const a = flat(w), b = flat(g);
+        if (typeof a === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a) && typeof b === "string")
+          return b.slice(0, 10) === a;
+        return String(a) === String(b);
+      };
+      if (!same(want, got)) {
         bad++;
         console.log("  🔴 " + p.id + " " + field + ": wanted " + JSON.stringify(want) + " got " + JSON.stringify(got));
       }
