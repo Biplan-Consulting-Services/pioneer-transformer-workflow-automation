@@ -110,6 +110,65 @@ the inverse case — a `Failed` that genuinely is data loss. Nobody is watching 
    child resolves all its parents in a single `Update item` at create/update time, there is no
    second writer to conflict with, and no read to race.
 
+## The measured damage — and a third cause that is not a bug
+
+`x21_parent_sync_gaps.js` over all 1,102 units. **The blast radius is small**, and the gaps
+are not all the same thing:
+
+| group | units with no synced data | orders |
+|---|---|---|
+| `Mdl*` | 11 | 21792, 22098, 22107, 22108, 22110, 22169, 22175 |
+| `Rev*` | 4 | 22098, 22107, 22108, 22175 |
+| `Cli*` | 1 | 22167 |
+| `Ord*` | **not yet known** — see the correction below |
+
+Sorted by actual cause:
+
+- 🟢 **4 units are the documented SA zero-match branch, not a defect.** `22098-1/1 SA`,
+  `22107-1/1 SA`, `22108-1/1 SA`, `22110-1/1 SA`, all created 2026-08-21. The N3 spec named
+  these in August: *"Five SA units already sit on plain `M-` models … Resolve those by hand
+  before the flow runs, or they take the zero-match branch on the first edit."* They did. The
+  guard worked as designed — writing nothing was the correct behaviour. `22099-1/1 SA`, the
+  fifth, is **not** in the gap list, so it was resolved at some point; worth confirming how,
+  because that is the repair recipe for the other four.
+- 🔴 **7 units are the race / Save Conflict**: `22169` (1223–1226, 09-17), `22175` (1245 lost
+  `Mdl*`, 1246 lost `Rev*`, 09-17), `22167` (1204 lost `Cli*`, 09-11). Note 22175's two units
+  lost *different* groups — two flows colliding on two rows at two moments, which is the
+  Save Conflict signature rather than the race's clean cut line.
+- ⚠️ **`21792` is neither.** 2 of 2 units, created 2026-08-17, a **whole** order. Nothing
+  partial about it, and it predates the N3 flows being enabled at the 09-11 cutover — so this
+  one should have been covered by the R3 backfill of 09-08 and was not. Separate question.
+
+### 🔴 Correction: the first `Ord*` and `Cli*` numbers were wrong
+
+The first run reported `Ord* 0` and `Cli* 1`. Both were artefacts of this script, not facts
+about the list, and the script's own column listing showed why:
+
+> `Ord* (Order): 19   OrderNumber, Order_Number_TextField, OrdOrderType, …`
+> `Cli* (Clients): 3   Client_ID_TextField, Client, CliLeadTimeWeeks`
+
+`OrderNumber` and `Order_Number_TextField` begin with `Ord`; `Client` and
+`Client_ID_TextField` begin with `Cli`. They are the **lookup and its mirror**, not N3 synced
+columns, and they are populated on essentially every row — so "every column in this group is
+blank" could never be true and the test could never fire. Units 1223–1226 are known from
+`x19` to be missing `OrdOrderDate`, `OrdOrderStatus` and `OrdPO`, and `Ord*` still reported
+zero.
+
+Two fixes, both now in the script:
+
+- The four names are **excluded outright**. The tempting general rule — require an uppercase
+  letter after the prefix — is also wrong: `RevkVA` has a lowercase `k`.
+- **Boolean columns no longer count as evidence.** SharePoint returns `false` whether a
+  Boolean was written false or never written at all, so `OrdEngineeringRequired` and `OrdLDs`
+  would mark an untouched row as populated. Same class of false negative.
+
+A **sentinel check** was added alongside the strict test — one key column per group
+(`OrdOrderDate`, `MdlModelID`, `RevkVA`, `CliLeadTimeWeeks`) — because the strict test also
+misses any unit that received *part* of its group. It over-reports where a parent genuinely
+has no value, so both numbers are printed rather than one replacing the other.
+
+**Re-run `x21` before acting on any `Ord*` or `Cli*` figure.**
+
 ## Three things the raw version dump surfaced on the way past
 
 Each one is independent of the above and independently checkable.

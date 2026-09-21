@@ -46,6 +46,27 @@
   const GROUPS = { Ord: "Order", Mdl: "Models", Rev: "Model Revisions", Cli: "Clients" };
   const FK     = { Ord: "OrderNumberId", Mdl: "ModelId", Rev: "ModelRevisionId", Cli: "ClientId" };
 
+  /* 🔴 A prefix match is NOT enough, and the first run of this script proved it.
+     `OrderNumber` and `Order_Number_TextField` both begin with "Ord", and
+     `Client` / `Client_ID_TextField` both begin with "Cli" -- but they are the
+     LOOKUP and its mirror, not N3 synced columns, and they are populated on
+     essentially every row. Sweeping them into the group made "every column in
+     this group is blank" impossible to satisfy, so Ord* and Cli* reported
+     0 and 1 gaps when the real answer was unknown.
+     The obvious fix -- require an uppercase letter after the prefix -- is wrong
+     too: `RevkVA` has a lowercase k. So the exclusions are named outright. */
+  const NOT_SYNCED = ["OrderNumber", "Order_Number_TextField", "Client", "Client_ID_TextField"];
+
+  /* A Boolean column cannot distinguish "never written" from "written false",
+     and SharePoint hands back `false` either way -- so counting one as
+     populated hides a gap. They are excluded from the evidence test below. */
+  const isEvidence = (v) => typeof v !== "boolean" && v !== null && v !== undefined && String(v).trim() !== "";
+
+  /* The one column per group that a healthy unit essentially always carries.
+     Sanity numbers from docs/n3-parent-sync-flow-spec.md after the R3 run:
+     MdlModelID 1,008 · RevkVA 1,006 · OrdOrderNumber 1,013 of 1,117 rows. */
+  const SENTINEL = { Ord: "OrdOrderDate", Mdl: "MdlModelID", Rev: "RevkVA", Cli: "CliLeadTimeWeeks" };
+
   const J = async (u) => {
     const r = await fetch(u, { credentials: "include",
       headers: { Accept: "application/json;odata=nometadata" } });
@@ -64,11 +85,18 @@
   const cols = await J(base + "/_api/v2.0/sites/root/lists/" + OI + "/columns");
   const all = (cols.value || []).map(c => c.name);
   if (!all.length) { console.error("ABORT: read 0 columns."); return; }
-  const inGroup = {};
-  for (const g of Object.keys(GROUPS)) inGroup[g] = all.filter(n => n.indexOf(g) === 0 && n !== g);
+  const inGroup = {}, dropped = [];
+  for (const g of Object.keys(GROUPS)) {
+    inGroup[g] = all.filter(n => {
+      if (n.indexOf(g) !== 0 || n === g) return false;
+      if (NOT_SYNCED.indexOf(n) >= 0) { dropped.push(n); return false; }
+      return true;
+    });
+  }
   console.log("=== synced parent columns found on the list ===");
   for (const g of Object.keys(GROUPS))
     console.log("  " + g + "* (" + GROUPS[g] + "): " + inGroup[g].length + "   " + inGroup[g].join(", "));
+  console.log("  excluded as lookup/mirror, not N3 synced: " + dropped.join(", "));
   console.log("");
 
   /* ---- 2. read every unit, chunking $select to stay under URL limits ------ */
@@ -104,14 +132,31 @@
   const gaps = {};
   for (const g of Object.keys(GROUPS)) {
     if (!inGroup[g].length) continue;
-    gaps[g] = units.filter(u => norm(u[FK[g]]) && inGroup[g].every(f => !norm(u[f])));
+    gaps[g] = units.filter(u => norm(u[FK[g]]) && !inGroup[g].some(f => isEvidence(u[f])));
   }
 
-  console.log("=== gaps: lookup set, every " + "group" + " column blank ===");
+  console.log("=== gaps: lookup set, not one non-Boolean column in the group populated ===");
   for (const g of Object.keys(gaps)) {
     const linked = units.filter(u => norm(u[FK[g]])).length;
     console.log("  " + g + "*  " + String(gaps[g].length).padStart(5) + " of " + linked
       + " units that HAVE a " + GROUPS[g] + " lookup");
+  }
+  console.log("");
+
+  /* A second, more sensitive reading. The strict test above misses a unit that
+     got SOME of its group -- a partial write, or a conflict that landed one
+     flow and lost another. The sentinel catches those; it over-reports when a
+     parent genuinely has no value, so the two numbers are shown side by side
+     rather than one replacing the other. */
+  console.log("=== sentinel check: lookup set but the group's key column blank ===");
+  for (const g of Object.keys(gaps)) {
+    const s = SENTINEL[g];
+    if (inGroup[g].indexOf(s) < 0) { console.log("  " + g + "*  sentinel " + s + " not on this list -- skipped"); continue; }
+    const miss = units.filter(u => norm(u[FK[g]]) && !isEvidence(u[s]));
+    const extra = miss.filter(m => gaps[g].indexOf(m) < 0);
+    console.log("  " + g + "*  " + String(miss.length).padStart(5) + " missing " + s
+      + (extra.length ? "   (" + extra.length + " of them have SOME group data = partial write: "
+          + extra.slice(0, 25).map(u => u.Id).join(",") + (extra.length > 25 ? ",…" : "") + ")" : ""));
   }
   console.log("");
 
