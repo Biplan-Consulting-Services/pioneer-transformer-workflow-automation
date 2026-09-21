@@ -47,6 +47,7 @@
   // Leave empty to auto-pick the affected units. Or set explicit ids, e.g. [1128, 1163].
   const UNITS = [];
   const MAX_AUTO = 10;          // how many auto-picked units to probe in detail
+  const RAW = true;             // dump the first version's stored object verbatim
 
   const LOOKUPS = ["OrderNumberId", "ModelId", "ModelRevisionId", "ClientId"];
 
@@ -175,6 +176,19 @@
         console.log("  ANOMALY: v" + first.VersionLabel + " is stamped " + first.Created
           + " but the item's own Created is " + item.Created
           + " -- the version stamp does not come from this row's creation.");
+      }
+
+      /* The decisive artifact. If the pane shows a date the REST payload does
+         not contain, the pane is rendering something other than this item's
+         versions and the whole reading has to be thrown out. Nothing here is
+         interpreted -- it is what SharePoint actually stores. */
+      if (RAW) {
+        console.log("  --- raw v" + first.VersionLabel + ", verbatim ---");
+        for (const k of Object.keys(first).sort()) {
+          const v = first[k];
+          if (v === null || v === "") continue;
+          console.log("      " + k.padEnd(34) + " " + (typeof v === "object" ? JSON.stringify(v) : v));
+        }
       }
     }
   }
