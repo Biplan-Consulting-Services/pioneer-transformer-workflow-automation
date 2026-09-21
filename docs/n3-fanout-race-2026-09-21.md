@@ -284,11 +284,10 @@ order creation — off the collision course entirely.
 
 ### Three other things in that save worth a look
 
-- 🔴 **`SelectedModel` is only `Set` inside `If(varNewModel, …)`.** On the existing-model path
-  nothing in this code assigns it, so it carries whatever the *previous* save left in it
-  unless some other control sets it. Step 6 then patches that model's `Latest Model Revision`,
-  and steps 7–8 stamp it onto the Order and every unit. Confirm a picker sets it; if not, this
-  is a live cross-order contamination bug and a much worse one than the sync gaps.
+- ✅ **`SelectedModel` — checked and fine.** It is only `Set` inside `If(varNewModel, …)` in
+  this code, which reads like a stale global on the existing-model path. It is not: the model
+  picker sets it (confirmed by the user 2026-09-21). Recorded because the save script alone
+  does not show it, and the next person reading this code will have the same doubt.
 - 🔴 **No error handling anywhere.** Every `Patch` is unchecked — no `IfError`, no `Errors()`.
   If one unit's create fails, `ForAll` carries on and nothing reports it. Given that Save
   Conflicts are already landing on this list, silent partial saves are not hypothetical.
