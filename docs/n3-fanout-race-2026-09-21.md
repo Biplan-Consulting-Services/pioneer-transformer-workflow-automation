@@ -65,6 +65,51 @@ blank. The race just makes it reachable in under a minute instead of requiring a
 four — writing `null` through the connector leaves the old value, and these are blank rather
 than wrong. They need an explicit write.
 
+## 🔴 The second cause, same symptom: Save Conflict
+
+Found the same day, from a failed `Order Items - sync from Order` run writing unit **1245**
+(order 22175). The payload was well-formed — choices as `/Value`, `OrdInitialPromisedDate` as
+a bare `2027-03-25`, so the `N4` conversion and the date rule are both holding:
+
+```
+{"status":400,"message":"Save Conflict\n\nYour changes conflict with those made
+ concurrently by another user. ..."}
+```
+
+**All four N3 flows write to the same `Order Items` row.** One new order can change `Order`,
+`Models`, `Model Revisions` and `Clients` at once; four flows then fan out onto the same
+children and collide on `Update item`.
+
+🔑 **The write is lost permanently, and this is a configuration gap, not bad luck.** Checked
+across all four definitions in `workflow-data/n3-flows/`:
+
+| | |
+|---|---|
+| `retryPolicy` on `Update_unit` | **absent in all four** |
+| `concurrency` on `Apply_to_each_unit` | **absent in all four** |
+
+With no explicit policy, Logic Apps applies its default — which retries **408, 429 and 5xx
+only**. A Save Conflict arrives as **400**, a client error, so it is never retried. The run is
+marked `Failed`, the row keeps its blank parent columns, and the flow does not fire again
+because the parent is not edited again.
+
+⚠️ And run status is not a usable alarm here: the handover already records *"a healthy
+transfer-flow run reported `Failed`"*, so Failed runs are not being treated as real. This is
+the inverse case — a `Failed` that genuinely is data loss. Nobody is watching either way.
+
+### Fixing this one
+
+1. **Add an explicit `retryPolicy` that covers 400 Save Conflict.** Logic Apps' policy cannot
+   select status codes, so this needs a `Scope` around `Update_unit` plus a second attempt
+   with `runAfter: ["Failed"]`, or a bounded `Do until` on the status code. Two attempts
+   clears almost all conflicts.
+2. **Serialise the writers.** Setting `Apply_to_each_unit` concurrency to 1 does *not* fix
+   this — each iteration touches a different unit, so the collision is across flows, not
+   within one. Trigger concurrency 1 per flow narrows the window without closing it.
+3. **The structural fix is the same one the race calls for**: one writer per child. If the
+   child resolves all its parents in a single `Update item` at create/update time, there is no
+   second writer to conflict with, and no read to race.
+
 ## Three things the raw version dump surfaced on the way past
 
 Each one is independent of the above and independently checkable.
