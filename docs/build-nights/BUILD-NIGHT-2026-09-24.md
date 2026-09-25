@@ -132,6 +132,7 @@ check passes). Classified from the full `window.x25.report`:
 | E9 | **Console scripts print failures + a summary only.** User 21:5x: "just paste the fails in the terminal because it bloats the pastes". x22 APPLY printed a `wrote <id> Cli*` line per unit (1,053 lines) | `claude-5b` | yes | **DONE 22:13 `0852c5d`**. Quiet by default; 40-unit dry 125→16 lines, apply 169→9; harness 24/24 |
 | E10 | **Change tracking, error detection, rollback on the mirror**: snapshots, a change journal, health checks, and a compare-and-set rollback. Design: `docs/change-tracking-design-2026-09-24.md` | `claude-5b` (build) | yes | **DECIDED 22:5x. Build steps 1–4 approved** (step 0 done `47351e0`); step 5 scheduling DEFERRED (D1: user will set up infrastructure). Read design §0 first: D3 layout (live/ vs snapshots/) and D5 fan-out classifier |
 | E8c | **Columns catalog: add `fillRate` (% non-empty per column) and a `isKey` flag.** A session looked up orders by `Order.Title`, which is EMPTY on every row; the number is in `Order_x0020_Number1`. The catalog is the mapping tool, so it should say which column identifies a row, and flag columns that are blank everywhere | `claude-5b` | yes | UNCLAIMED (22:5x, not tonight) |
+| E11 | **Nightly Sync v002**: the user's hand-built nightly flow (`Order Items - Nightly Sync` v001, pulled 23:18) made ~100× cheaper and safe; plus the missing TODAY() recalc. Spec: `docs/nightly-sync-review-2026-09-25.md` §5 | `claude-5b` | yes | **UNCLAIMED, priority over x27** (user asked for it directly; v001 is live and costs ~6,800 actions a night) |
 | E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **DONE `ba41132` + `7f59469`** — diff stat and block text in the log |
 | E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 21:1x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. **UNBLOCKED 21:1x** — U4 back, go |
 | U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | **DONE 21:17** — 200, **17 of 97** clients hold `CliLeadTimeWeeks` (16×3, 18×5, 20×7, 24×1 CONED, 28×1 HYDRO QUEBEC = FRM13's value). 80 are null — their units correctly stay blank. Pasted Atom feed, counted by `claude-43` |
@@ -807,3 +808,18 @@ No `AppEditor` change in v801–v846, so **not the Power App**. **No commits or 
 - My check finds 4 more E21007 pairs than x25 did (its Rev* fields vs the revision it now points at, 0005). Same MEG question, seen more completely.
 This is the first use of the mirror as a verifier, and it replaced both x22's failed read-back and an x25 re-run. Released `claude-5b`: regenerate x22 (mode guard + heartbeat), then E10 steps 1–4.
 ⚠️ **Lesson for x22's read-back:** it must survive a 503. Retry with backoff, and on final failure say "writes done, verification incomplete, refresh the mirror" instead of throwing.
+
+**2026-09-25 00:5x | `claude-43` | overnight, user asleep; trigger flow ON (user enabled it before bed).**
+- Loop watch 00:54 (`-Tables Order_Items` vs snapshot 23:11): **0 units modified since 23:02** (RUN2's last write).
+  No loop, and no trigger-flow activity yet.
+- Full refresh 00:55 → **`snapshots/2026-09-25_0055`, the pre-nightly baseline.** The journal crashed on a BOM in the
+  PS-written `snapshot.json`; `claude-5b` fixed it (`f352e5e`, 00:57). Journal 2311 → 0055: 0 events, health clear.
+- Took the user's nightly flow into versioning as **`Order Items - Nightly Sync` v001**, reviewed in
+  `docs/nightly-sync-review-2026-09-25.md` (`40fb398`). It visits ALL 1,127 units sequentially, with ~6 actions each
+  (~6,800 actions a night), so it gets throttled, which is why it "runs forever". It deletes on the Excel archive
+  row alone, with no cap, no log and no dry run, and it has no TODAY() recalc. Proposed v002 = E11. Decisions N1–N5
+  for the user.
+- v001 is scheduled for 05:00Z = 01:00 EDT tonight. Its deletions will show as `deleted` events on the next full
+  refresh (health will go RED on "rows deleted", by design).
+- Commits: from now on both sessions use pathspec commits (`git commit -- <paths>`), because the index is shared
+  (my 059ccd4 swept up a staged `git mv`).
