@@ -111,15 +111,13 @@
               "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
               "id": "@triggerBody()?['ID']",
               "item/StepStatus/Value": "@if(variables('CompletOrder'), 'Terminé', triggerOutputs()?['body/StepStatus/Value'])",
-              "item/StatusDate": "@if(equals(variables('vStatusDateValue'), ''), null, variables('vStatusDateValue'))",
               "item/ItemStatus/Value": "@if(variables('CompletOrder'), 'Delivered', triggerOutputs()?['body/ItemStatus/Value'])",
               "item/Order_Number_TextField": "@triggerBody()?['OrderNumber/Value']",
               "item/Client_ID_TextField": "@coalesce(outputs('Get_Client')?['body/Client_ID'], triggerBody()?['Client_ID_TextField'])",
               "item/Model_ID_TextField": "@coalesce(outputs('Get_Model')?['body/ModelID'], triggerBody()?['Model_ID_TextField'])",
               "item/Model_Revision_ID_TextField": "@triggerBody()?['ModelRevision/Value']",
               "item/StepStatusStamped": "@if(variables('CompletOrder'), 'Terminé', triggerOutputs()?['body/StepStatus/Value'])",
-              "item/LocationStamped": "@triggerOutputs()?['body/Location/Value']",
-              "item/StatusDateStamped": "@variables('vStatusDateValue')"
+              "item/LocationStamped": "@triggerOutputs()?['body/Location/Value']"
             },
             "authentication": "@parameters('$authentication')"
           }
@@ -160,26 +158,6 @@
             "name": "vUpdateOrderItem",
             "type": "boolean",
             "value": false
-          }
-        ]
-      }
-    },
-    "Initialize_vStatusDateValue": {
-      "runAfter": {
-        "Initialize_variable": [
-          "Succeeded"
-        ]
-      },
-      "metadata": {
-        "operationMetadataId": "495c2dff-d935-4f00-8819-66e522c1b6d2"
-      },
-      "type": "InitializeVariable",
-      "inputs": {
-        "variables": [
-          {
-            "name": "vStatusDateValue",
-            "type": "string",
-            "value": "@if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd'))"
           }
         ]
       }
@@ -291,33 +269,7 @@
       "type": "If"
     },
     "Condition_2": {
-      "actions": {
-        "Condition_StatusDate_Drift": {
-          "type": "If",
-          "runAfter": {},
-          "expression": {
-            "not": {
-              "equals": [
-                "@if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd'))",
-                "@coalesce(triggerOutputs()?['body/StatusDateStamped'], '')"
-              ]
-            }
-          },
-          "actions": {
-            "Set_vUpdateOrderItem_StatusDate_Drift": {
-              "type": "SetVariable",
-              "runAfter": {},
-              "inputs": {
-                "name": "vUpdateOrderItem",
-                "value": true
-              }
-            }
-          },
-          "else": {
-            "actions": {}
-          }
-        }
-      },
+      "actions": {},
       "runAfter": {
         "Initialize_variable_2": [
           "Succeeded"
@@ -355,23 +307,8 @@
             },
             "type": "If"
           },
-          "Set_vStatusDateValue": {
-            "runAfter": {},
-            "metadata": {
-              "operationMetadataId": "64add890-98cb-4193-825b-8df82b122433"
-            },
-            "type": "SetVariable",
-            "inputs": {
-              "name": "vStatusDateValue",
-              "value": "@if(equals(if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd')), coalesce(triggerOutputs()?['body/StatusDateStamped'], '')), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd'), if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd')))"
-            }
-          },
           "Set_vUpdateOrderItem_StatusDate_3": {
-            "runAfter": {
-              "Set_vStatusDateValue": [
-                "Succeeded"
-              ]
-            },
+            "runAfter": {},
             "metadata": {
               "operationMetadataId": "7da6afcc-751c-4655-87ab-28aff48bd188"
             },
@@ -406,7 +343,7 @@
     },
     "Initialize_variable_2": {
       "runAfter": {
-        "Initialize_vStatusDateValue": [
+        "Initialize_variable": [
           "Succeeded"
         ]
       },

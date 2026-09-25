@@ -145,6 +145,25 @@
       },
       "appliedAt": null,
       "source": "trigger-v007.json"
+    },
+    {
+      "v": 8,
+      "captured": "2026-09-24T20:40:53-04:00",
+      "state": "local",
+      "parent": 6,
+      "note": "connection reference only; flow no longer writes Status Date (manual, user decision 2026-09-24); supersedes v007",
+      "sha256": "df17a71823b3135659668c6d183c118c55cc72f284cd186c73b4805c279e7503",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 7,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v008__2026-09-24T20-40__local__connection-reference-only-flow-no-longer-writes-.json"
+      },
+      "appliedAt": null,
+      "source": "trigger-v008.json"
     }
   ],
   "identity": {

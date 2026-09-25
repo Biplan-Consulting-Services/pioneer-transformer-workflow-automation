@@ -2,7 +2,7 @@
 
 ## → `PASTE-ME.json`
 
-**v007 — connection reference only + null-safe Status Date init + StatusDateStamped keeps a same-edit date**
+**v008 — connection reference only; flow no longer writes Status Date (manual, user decision 2026-09-24); supersedes v007**
 
 That is the file. It is the export's `properties` object — the shape the
 extension accepted for v004 — and `connectionReferences` inside it is carried
@@ -23,9 +23,9 @@ the editor rejects the file above; then try `definition-only.json` first.
 ## Then close the loop
 
 Save in Power Automate, copy the JSON back out into `_inbox/`, and tell me.
-`flow_version.py intake` will confirm by hash — if it matches, v007 flips to
+`flow_version.py intake` will confirm by hash — if it matches, v008 flips to
 `applied`. Until then it stays `local`: I do not mark my own work as landed.
 
-If it does **not** match, v007 is marked `forked` and I report exactly what
+If it does **not** match, v008 is marked `forked` and I report exactly what
 differs — which is the signal that something else changed underneath.
 
