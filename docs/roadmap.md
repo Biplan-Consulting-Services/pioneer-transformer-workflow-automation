@@ -845,6 +845,15 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
 ## 🔴 FIRST daylight job — the trigger flow fails on the model-less units, and is OFF because of it
 
 Found 2026-09-11 07:1x, minutes after enabling it. **The flow is currently disabled.**
+
+> 🔑 **2026-09-24: the `Status Date` auto-stamp is DROPPED by user decision. The date stays
+> manual.** Staff type it, as they always have. The flow no longer reads or writes `Status Date`
+> at all (**v008**, staged, not yet pasted). So fix part 2 below ("decouple the stamp") and the
+> `StepStatusStamped = StepStatus` gate under *Before turning it back on* no longer apply to the
+> date. Part 1 (guard the gets) still does. Don't reintroduce a Status Date write unless the user
+> asks. The keep-a-typed-date design is kept in `scripts/apply_v007_connref_statusdate.py` if they
+> do. Night's record: `docs/build-nights/BUILD-NIGHT-2026-09-24.md`.
+
 > ⚠️ **The "203" is wrong — measured 2026-09-14 it is ~20.** `x10_trigger_flow_gate.js`
 > read the lookups directly: **19** units with all three empty, **4** with some but not
 > all. (It read **16** at midday and **19** at 22:2x the same evening, with the list

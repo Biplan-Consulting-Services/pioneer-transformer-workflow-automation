@@ -187,9 +187,11 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
          aborts, rather than picking one.
        - A field x22 does not write, or a Cli* field (SKIP_GROUPS), aborts
          the run. x25's "(parent N missing)" rows are listed and skipped.
-       - A parent that is now BLANK is listed, not cleared. The flow cannot
-         clear either (the connector leaves the old value when handed null),
-         so clearing is a decision, not a repair.
+       - A parent that is now BLANK is listed, not cleared. Whether a healthy
+         flow run would clear it depends on the column: "the connector ignores
+         null" (R14) was measured FALSE for a DateTime column on 2026-09-15
+         (apply_v006_status_date_preserve.py). So clearing is a decision, not
+         a repair.
      Filter the list before pasting if only some parents should be repaired -
      e.g. keep x25's `recent` rows and leave the known older
      MdlLatestModelRevision drift out.
