@@ -106,6 +106,26 @@
       },
       "appliedAt": "2026-09-14T12:40:09-04:00",
       "source": "OrderItems-CreateorUpdateTrigger_20260914163821.zip"
+    },
+    {
+      "v": 6,
+      "captured": "2026-09-24T20:12:27-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "pasted from designer",
+      "sha256": "6da725e8576e145c53fc7bf509e42b59d9c8575564acd8d020eefddf27dd02bd",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 8,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v006__2026-09-24T20-12__pulled__pasted-from-designer.json",
+        "package": "v006__2026-09-24T20-12__pulled__pasted-from-designer.zip"
+      },
+      "appliedAt": "2026-09-24T20:12:27-04:00",
+      "source": "OrderItems-CreateorUpdateTrigger_20260925001140.zip"
     }
   ],
   "identity": {
