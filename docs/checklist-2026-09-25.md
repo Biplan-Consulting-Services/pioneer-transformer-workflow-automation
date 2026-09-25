@@ -70,9 +70,9 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 
 ## 3. Console runs still to do (same browser tab as `x25`; flow stays OFF)
 
-- [ ] **RUN1 apply** — `scripts/ready-to-paste/RUN1-clients-leadtime-APPLY.js`. Expect **1,053 written / 1,053 verified / 0 failed**. *(Skip if already done tonight — check the output.)*
-- [ ] **RUN2 dry** — `RUN2-parent-fix-DRY.js`. Prints `x25OV rows selected: ~740`, then the plan. Send the output for a check before an APPLY copy is made.
-- [ ] **RUN2 apply** — generated after the dry run is checked.
+- [ ] **RUN1 apply** — `x22` with `CLI_FILL = true`, `DRY = false`, `OVERWRITE = null`. Expect **1,053 written / 1,053 verified / 0 failed**. *(Skip if already done tonight — check the output.)*
+- [ ] **RUN2 dry** — build `window.x25OV` (snippet on the board), then `x22` with `CLI_FILL = false`, `OVERWRITE = window.x25OV`, `DRY = true`. Send the output for a check before an APPLY copy is made.
+- [ ] **RUN2 apply** — same, `DRY = false`, after the dry run is checked.
 - [ ] **Re-run `x25`.** Expected left over: only the D5 dates, the D6 LDs/EngReq, and E21007 — nothing else.
 - [ ] `x16` (mirror audit) and `x24` dry run (stamps) — paste output.
 - [ ] `x17` (Model Revisions `ModelID` audit) — expect 393/394 clean.
