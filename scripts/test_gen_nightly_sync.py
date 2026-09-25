@@ -31,7 +31,7 @@ V1, _, _ = N.load_v001()
 COLS = N.load_columns()
 used = N.checks(BASE, V1, COLS, "v001")
 print("fields the flow reads, all resolved from live/Columns.csv (%d): %s" % (len(used), ", ".join(sorted(used))))
-for must in ("DeliveryDate", "Location", "ItemStatus", "Planned_x0020_Delivery_x0020_Dat",
+for must in ("Location", "ItemStatus", "Planned_x0020_Delivery_x0020_Dat",
              "ManualEstimatedDeliveryDate", "FinishingDate", "Title"):
     if must not in used:
         fails.append("field scan missed " + must)
@@ -50,7 +50,11 @@ expect_abort("sequential delete loop", lambda d, w: C6(d)["runtimeConfiguration"
 expect_abort("Excel read paginated at 256", lambda d, w: A(d)["C2_Get_Excel_LI_rows"]["runtimeConfiguration"]["paginationPolicy"].update(minimumItemCount=256))
 expect_abort("Excel file id changed", lambda d, w: A(d)["C2_Get_Excel_LI_rows"]["inputs"]["parameters"].update(file="SOMETHING-ELSE"))
 expect_abort("typo'd field in C1 filter", lambda d, w: A(d)["C1_Get_Livraison_candidates"]["inputs"]["parameters"].update(
-    **{"$filter": "Location eq 'Livraison' and DeliveryEndDate lt '2026-01-01'"}))
+    **{"$filter": "Location eq 'Livraison' and ItemStatus eq 'Delivered' and DeliveryEndDate lt '2026-01-01'"}))
+expect_abort("C1 missing the ItemStatus clause", lambda d, w: A(d)["C1_Get_Livraison_candidates"]["inputs"]["parameters"].update(
+    **{"$filter": "Location eq 'Livraison'"}))
+expect_abort("disagreement report reads the wrong field", lambda d, w: A(d)["C4c_Excel_done_list_disagrees"]["inputs"].update(
+    where="@equals(item()?['ItemStat']?['Value'], 'Delivered')"))
 expect_abort("typo'd field in B2", lambda d, w: A(d)["B2_Where_TODAY_is_the_answer"]["inputs"].update(
     where="@equals(item()?['FinishingDat'], null)"))
 expect_abort("UTC startTime on the trigger", lambda d, w: list(d["triggers"].values())[0]["recurrence"].update(

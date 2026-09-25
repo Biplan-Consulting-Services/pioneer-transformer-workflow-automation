@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""Generate Order Items - Nightly Sync v002 (board E11; spec docs/nightly-sync-review-2026-09-25.md §5).
+"""Generate Order Items - Nightly Sync v003 (board E11; spec docs/nightly-sync-review-2026-09-25.md §5).
 
-    python scripts/gen_nightly_sync.py            # -> workflow-data/_generated/Order_Items_Nightly_Sync_v002.json
+v003 (2026-09-25) supersedes v002, which was withdrawn before paste: its C1 keyed on DeliveryDate,
+which is EMPTY on every unit. C1 is now Livraison AND Delivered; Excel is the grace clock; C4c/C4d
+report where Excel and the list disagree (what v001 would delete on Excel alone).
+
+    python scripts/gen_nightly_sync.py            # -> workflow-data/_generated/Order_Items_Nightly_Sync_v003.json
 
 The user's v001 (workflow-data/Order Items - Nightly Sync/v001, hand-built) deletes a unit once the
 Excel archive says LI + delivered >= 7 days ago, visiting all ~1,127 units sequentially (~6,800 actions,
-throttled -> "runs forever"), trusting Excel alone, with no cap and no dry run. v002 keeps the rule and:
+throttled -> "runs forever"), trusting Excel alone, with no cap and no dry run. v003 keeps the rule and:
 
   B  RECALC  - gen_nightly_cleanup.py's stage B, reused by import (not copied): B1 Active + no Planned/
      Manual date, B2 one Query for "TODAY() is the branch", B3/B4 touch CalcRefreshed. Concurrency 10.
-  C  ARCHIVE DELETE - two independent confirmations (Order Items itself: Livraison + old DeliveryDate;
-     Excel: LI + old Delivery Date), a cap of 50, and DeleteEnabled = false by default (dry run:
+  C  ARCHIVE DELETE - two independent confirmations (Order Items itself: Livraison AND Delivered;
+     Excel: LI + Delivery Date >= 7 days ago, the grace clock), a cap of 50, DeleteEnabled = false (dry run:
      "would delete <Title>"). One pass per source, no per-unit rescan, NO variables (so the delete
      loop can run at concurrency 10).
   Stage A (mark Delivered) is dropped: the trigger flow's CompletOrder already does it.
@@ -19,8 +23,8 @@ throttled -> "runs forever"), trusting Excel alone, with no cap and no dry run. 
 The Excel action keeps v001's exact source / drive / file / table ids, its metadata and its connection.
 The output is the editor wrapper {connectionReferences, definition}, with v001's connectionReferences.
 
-Hand the output path to the planning session: it snapshots it --local as v002 (parent v001) and stages
-it. This script never writes into workflow-data/<flow>/.
+Hand the output path to the planning session: it snapshots it --local and stages
+it (v003 supersedes v002, parent v001). This script never writes into workflow-data/<flow>/.
 """
 import copy
 import csv
@@ -37,7 +41,7 @@ sys.path.insert(0, HERE)
 import gen_nightly_cleanup as G   # noqa: E402  (stage B + helpers; its main() is not run)
 
 FLOW_DIR = os.path.join(ROOT, "workflow-data", "Order Items - Nightly Sync")
-OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v002.json")
+OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v003.json")
 COLUMNS = os.path.join(ROOT, "sharepoint-lists", "mirror", "live", "Columns.csv")
 
 CAP = 50            # N2: at most this many deletions in one night; more = delete nothing, report
@@ -77,7 +81,8 @@ def build():
     cols = load_columns()
 
     # ---- names this flow depends on, resolved from the platform's catalog, not typed from memory
-    need = ["Title", "ItemStatus", "Location", "DeliveryDate", "Planned_x0020_Delivery_x0020_Dat",
+    # DeliveryDate is NOT needed any more: fillRate 0 on every unit (mirror catalog, 2026-09-25) - see C1.
+    need = ["Title", "ItemStatus", "Location", "Planned_x0020_Delivery_x0020_Dat",
             "ManualEstimatedDeliveryDate", "CalcRefreshed", "FinishingDate", "TestingDate",
             "Planned_x0020_Tanking_x0020_Date", "TankDeliveryDate"] + G.COILING
     missing = [n for n in need if n not in cols]
@@ -86,8 +91,9 @@ def build():
     choices = lambda n: [c.strip() for c in (cols[n].get("choices") or "").split("|")]
     if "Livraison" not in choices("Location"):
         fail("'Livraison' is not a Location choice: %s" % choices("Location"))
-    if "Active" not in choices("ItemStatus"):
-        fail("'Active' is not an ItemStatus choice: %s" % choices("ItemStatus"))
+    for v in ("Active", "Delivered"):
+        if v not in choices("ItemStatus"):
+            fail("'%s' is not an ItemStatus choice: %s" % (v, choices("ItemStatus")))
 
     # ---- v001's Excel read, kept exactly (ids, metadata, host/connection)
     xl1 = v1["actions"].get("List_rows_present_in_a_table")
@@ -126,16 +132,24 @@ def build():
     A["B3_Touch_each_stalled_unit"]["runtimeConfiguration"] = {"concurrency": {"repetitions": 10}}
 
     # ---- stage C
-    # C1: Order Items' OWN state - confirmation #1. DeliveryDate is Date-Only, stored as Eastern
-    # midnight (…T04:00Z/T05:00Z); a bare OData date means UTC midnight. So "<= today-7" is written as
-    # "< today-6": a unit delivered on (today-7) Eastern is in, one delivered on (today-6) is not.
-    # `le 'today-7'` would silently skip the whole (today-7) day.
+    # C1: Order Items' OWN state - confirmation #1: at Livraison AND Delivered (the trigger flow's
+    # CompletOrder sets Delivered on arrival at Livraison). v002 filtered on DeliveryDate instead; the
+    # mirror catalog showed that column is EMPTY on every unit (fillRate 0, 2026-09-25) - v002 would
+    # never have matched a row. The grace clock is therefore Excel's Delivery Date alone (C3).
     A["C1_Get_Livraison_candidates"] = G.get_items(
-        "Location eq 'Livraison' and DeliveryDate lt '@{%s}'" % eastern_minus(GRACE_DAYS - 1))
+        "Location eq 'Livraison' and ItemStatus eq 'Delivered'")
     A["C1_Get_Livraison_candidates"]["runAfter"] = {"B3_Touch_each_stalled_unit": ["Succeeded", "Failed", "Skipped"]}
 
+    # C1b/C1c: every unit's Title + state, ONE paged read - only to REPORT where Excel and the list
+    # disagree (C4c/C4d). v001 deletes on Excel's word alone; the user needs to see those units.
+    A["C1b_Get_all_units"] = G.sp("GetItems", {"dataset": G.SITE, "table": G.ORDER_ITEMS, "$top": 5000})
+    A["C1b_Get_all_units"]["runtimeConfiguration"] = {"paginationPolicy": {"minimumItemCount": 5000}}
+    A["C1b_Get_all_units"]["runAfter"] = {"C1_Get_Livraison_candidates": ["Succeeded"]}
+    A["C1c_All_titles"] = {"runAfter": {"C1b_Get_all_units": ["Succeeded"]}, "type": "Select",
+                           "inputs": {"from": "@outputs('C1b_Get_all_units')?['body/value']", "select": "@item()?['Title']"}}
+
     A["C2_Get_Excel_LI_rows"] = excel
-    A["C2_Get_Excel_LI_rows"]["runAfter"] = {"C1_Get_Livraison_candidates": ["Succeeded"]}
+    A["C2_Get_Excel_LI_rows"]["runAfter"] = {"C1c_All_titles": ["Succeeded"]}
 
     # C3: Excel rows delivered >= 7 days ago - confirmation #2. Delivery Date comes back as an Excel
     # SERIAL (v001: addDays('1899-12-30', int(...))). Logic Apps evaluates and()/if() arguments eagerly,
@@ -159,10 +173,24 @@ def build():
         "runAfter": {"C4_Confirmed_by_both": ["Succeeded"]}, "type": "Query",
         "inputs": {"from": "@outputs('C1_Get_Livraison_candidates')?['body/value']",
                    "where": "@not(contains(body('C3b_Excel_orders'), item()?['Title']))"}}
+    # C4c (REPORT ONLY): Excel says LI + delivered >= 7 days, but the unit is NOT (Livraison AND
+    # Delivered). v001 would delete exactly these. Location / ItemStatus are CHOICE columns: the
+    # connector returns them as objects, so compare ?['Value'] - a bare string compare never matches.
+    A["C4c_Excel_done_list_disagrees"] = {
+        "runAfter": {"C4b_Held_back": ["Succeeded"]}, "type": "Query",
+        "inputs": {"from": "@outputs('C1b_Get_all_units')?['body/value']",
+                   "where": "@and(contains(body('C3b_Excel_orders'), item()?['Title']), "
+                            "not(and(equals(item()?['Location']?['Value'], 'Livraison'), "
+                            "equals(item()?['ItemStatus']?['Value'], 'Delivered'))))"}}
+    # C4d (REPORT ONLY): Excel LI + old rows with no Order Items row at all - already gone, normal.
+    A["C4d_Excel_done_no_unit_row"] = {
+        "runAfter": {"C4c_Excel_done_list_disagrees": ["Succeeded"]}, "type": "Query",
+        "inputs": {"from": "@body('C3_Excel_old_enough')",
+                   "where": "@not(contains(body('C1c_All_titles'), item()?['Order']))"}}
 
     # C5: the cap. Over it -> delete NOTHING tonight, say so.
     A["C5_Cap_guard"] = {
-        "runAfter": {"C4b_Held_back": ["Succeeded"]}, "type": "If",
+        "runAfter": {"C4d_Excel_done_no_unit_row": ["Succeeded"]}, "type": "If",
         "expression": {"greater": ["@length(body('C4_Confirmed_by_both'))", "@outputs('Settings')?['Cap']"]},
         "actions": {
             "C5a_Cap_exceeded_nothing_deleted": {"runAfter": {}, "type": "Compose",
@@ -209,11 +237,19 @@ def build():
         "@if(greater(length(body('C4_Confirmed_by_both')), outputs('Settings')?['Cap']), json('[]'), "
         "body('C7a_Confirmed_titles'))")
     A["C7_Summary"]["inputs"]["C_heldBackTitles"] = "@body('C7b_Held_back_titles')"
+    A["C7_Summary"]["inputs"]["C_excelDone_listDisagrees"] = "@length(body('C4c_Excel_done_list_disagrees'))"
+    A["C7_Summary"]["inputs"]["C_excelDone_listDisagrees_units"] = "@body('C7c_Disagreeing_units')"
+    A["C7_Summary"]["inputs"]["C_excelDone_noUnitRow_alreadyGone"] = "@length(body('C4d_Excel_done_no_unit_row'))"
+    A["C7c_Disagreeing_units"] = {"runAfter": {"C7b_Held_back_titles": ["Succeeded"]}, "type": "Select",
+                                  "inputs": {"from": "@body('C4c_Excel_done_list_disagrees')",
+                                             "select": {"Title": "@item()?['Title']",
+                                                        "Location": "@item()?['Location']?['Value']",
+                                                        "ItemStatus": "@item()?['ItemStatus']?['Value']"}}}
     A["C7a_Confirmed_titles"] = {"runAfter": {"C5_Cap_guard": ["Succeeded", "Failed", "Skipped"]}, "type": "Select",
                                  "inputs": {"from": "@body('C4_Confirmed_by_both')", "select": "@item()?['Title']"}}
     A["C7b_Held_back_titles"] = {"runAfter": {"C7a_Confirmed_titles": ["Succeeded"]}, "type": "Select",
                                  "inputs": {"from": "@body('C4b_Held_back')", "select": "@item()?['Title']"}}
-    A["C7_Summary"]["runAfter"] = {"C7b_Held_back_titles": ["Succeeded"]}
+    A["C7_Summary"]["runAfter"] = {"C7c_Disagreeing_units": ["Succeeded"]}
 
     wrapper = {"connectionReferences": copy.deepcopy(connrefs), "definition": d}
     checks(wrapper, v1, cols, v1name)
@@ -252,6 +288,12 @@ def checks(w, v1, cols, v1name):
         fail("cap guard missing")
     if "C6_For_each_confirmed" not in d["actions"]["C5_Cap_guard"]["else"]["actions"]:
         fail("delete loop is not behind the cap guard")
+    # 3b. confirmation #1 must keep BOTH clauses (v003: DeliveryDate is empty everywhere, so the
+    #     ItemStatus clause is what stops an undelivered unit at Livraison from being deleted)
+    c1 = d["actions"]["C1_Get_Livraison_candidates"]["inputs"]["parameters"]["$filter"]
+    for clause in ("Location eq 'Livraison'", "ItemStatus eq 'Delivered'"):
+        if clause not in c1:
+            fail("C1 filter lacks %r: %r" % (clause, c1))
     # 4. pagination >= 5000 on every read
     for p, k, v in walk(d):
         if isinstance(v, dict) and v.get("type") == "OpenApiConnection" and v["inputs"]["host"]["operationId"] == "GetItems":
@@ -259,6 +301,7 @@ def checks(w, v1, cols, v1name):
                 fail("%s paginates below 5000" % p)
     # 5. every Order Items field an SP expression reads exists (Excel keys excluded: they have their own names)
     sp_exprs = [json.dumps(d["actions"][k]) for k in ("B2_Where_TODAY_is_the_answer", "C4_Confirmed_by_both", "C4b_Held_back",
+                                                        "C4c_Excel_done_list_disagrees", "C7c_Disagreeing_units", "C1c_All_titles",
                                                         "C7a_Confirmed_titles", "C7b_Held_back_titles")]
     sp_exprs += [json.dumps(d["actions"]["C5_Cap_guard"]["else"])]
     used = set(re.findall(r"item(?:s\('[^']+'\))?\(\)\?\['([A-Za-z0-9_]+)'\]", " ".join(sp_exprs)))
