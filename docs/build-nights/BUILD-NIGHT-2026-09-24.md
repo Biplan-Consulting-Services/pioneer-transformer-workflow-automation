@@ -128,8 +128,9 @@ check passes). Classified from the full `window.x25.report`:
 | E5 | **Decision 7 evidence — `E21007-1/1`: M-MEEN-0001 vs M-MEEN-0005, same model or duplicate?** Spec below | `claude-5b` | yes | **DONE 21:36**, log entry. Two different models, Models rows 0001/0005 crossed |
 | E6 | **Decision 6 evidence — LDs / Engineering Required blank on the Order but set on its units.** Spec below | `claude-5b` | yes | **DONE 21:40 (files)**. Units right, Orders never set (reading); live confirmation = `x26` (user) |
 | E7 | **Decision 5 evidence — the one-day date table (UTC vs Eastern).** Spec below | `claude-5b` | yes | **DONE 21:42**, log entry. Raw (later) date meant (reading); only 6 of 457 orders have T00Z |
-| E8 | **SharePoint mirror workbook: a local, refreshable copy of the live lists, so sessions can validate without the user.** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:5x, user request) |
-| E9 | **Console scripts print failures + a summary only.** User 21:5x: "just paste the fails in the terminal because it bloats the pastes". x22 APPLY printed a `wrote <id> Cli*` line per unit (1,053 lines) | `claude-5b` | yes | UNCLAIMED, **do before E8** because the user runs x22 again tonight (RUN2) |
+| E8 | **SharePoint mirror workbook: a local, refreshable copy of the live lists, so sessions can validate without the user.** Spec below | `claude-5b` | yes | **DONE 22:24 `c6d58b0`**. All acceptance checks pass; no sign-in needed (credentials cached) |
+| E9 | **Console scripts print failures + a summary only.** User 21:5x: "just paste the fails in the terminal because it bloats the pastes". x22 APPLY printed a `wrote <id> Cli*` line per unit (1,053 lines) | `claude-5b` | yes | **DONE 22:13 `0852c5d`**. Quiet by default; 40-unit dry 125→16 lines, apply 169→9; harness 24/24 |
+| E10 | **Change tracking, error detection, rollback on the mirror**: snapshots, a change journal, health checks, and a compare-and-set rollback. Design: `docs/change-tracking-design-2026-09-24.md` | `claude-5b` (build) | yes | **DESIGN, awaiting user review of D1–D5.** Do not build yet. Step 0 (verify list versioning) may start |
 | E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **DONE `ba41132` + `7f59469`** — diff stat and block text in the log |
 | E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 21:1x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. **UNBLOCKED 21:1x** — U4 back, go |
 | U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | **DONE 21:17** — 200, **17 of 97** clients hold `CliLeadTimeWeeks` (16×3, 18×5, 20×7, 24×1 CONED, 28×1 HYDRO QUEBEC = FRM13's value). 80 are null — their units correctly stay blank. Pasted Atom feed, counted by `claude-43` |
@@ -662,3 +663,50 @@ because the user pastes x22 again tonight for RUN2.
 
 **2026-09-24 21:5x | `claude-43` |** Added **E8b** (column catalog table) to E8. User idea: a table of true
 column names and which list/flow they come from, as the reference sessions check first.
+
+**2026-09-24 22:14 (`date`) | `claude-5b` |** **E9 DONE `0852c5d`** (quiet x22; details in DM to `claude-43`;
+x22 regenerated → flags back to safe defaults). **Claiming E8 + E8b. Intent, with two deviations from
+the spec, flagged before building:**
+1. **Not FRM10-12's M.** `FlattenSharePointLookupLists` converts lookups to display text and DROPS the id,
+   and `SharepointListMetaColumns` strips `ID`/`Created`/`Modified`/`Created By`. `SharePoint.Tables`
+   also returns display names and typed datetimes, which is exactly where a timezone shift would hide
+   E7. Instead: M over the **same REST the console scripts use** (`Web.Contents` + `odata=nometadata`
+   → internal names, `<Lookup>Id` ints, dates as raw `…Z` **text**). Lookup display values are joined
+   in M from the target list using `_api/v2.0/…/columns` metadata. Same org sign-in. **Plus one
+   `SharePoint.Tables` query on Order, kept as a side-by-side**, so acceptance test 2 documents whether
+   PQ shifts the E7 dates instead of assuming.
+2. **CSVs go to `sharepoint-lists/mirror/`, not `sharepoint-lists/`.** Their headers are internal names.
+   The `verify_*`/loader scripts read "the newest export" by display-name headers, so a mirror file
+   landing there as the newest would break them. `load_exports.load()` reads either shape: no
+   `ListSchema` record falls through to `DictReader`.
+3. E8b `Columns`: v2.0 columns (never `_api/web/lists/…/fields`, which hangs). Synced-from comes from a
+   `.pq` table **generated by Python from the N3 flow definitions via `gen_x22`'s extractor**, never
+   hand-typed. Notes are rule-based per type.
+Files: `power-query/SharePoint mirror/*.pq`, `scripts/Build-SharePointMirror.ps1` (creates the workbook,
+adds queries, loads tables), and `scripts/Refresh-SharePointMirror.ps1`.
+
+**2026-09-24 22:24 (`date`) | `claude-5b` |** **E8 + E8b DONE, pushed `c6d58b0`. Not BLOCKED: the first refresh ran
+silently at 22:22.** Power Query already had credentials cached for the site, so no user sign-in was needed.
+- **Use it:** `pwsh scripts/Refresh-SharePointMirror.ps1` (≈30 s) → `sharepoint-lists/mirror/{Table} {date} {HHMM}.csv`,
+  then `python scripts/check_sharepoint_mirror.py`. The previous CSVs move to `mirror/Archive/`. Any failed or
+  zero-row table aborts with nothing written and the workbook NOT saved. A watchdog kills only its own Excel
+  (the user's FRM10-12 Excel, pid 5032, was left alone). If credentials expire, run once with `-Interactive`.
+- **Acceptance (all pass, from `check_sharepoint_mirror.py`):**
+  1. Rows: Order Items **1127**, Order **470**, Models **394**, Model Revisions **395**, Clients **99** = live. Index 24, Models SA 15.
+  2. **Dates raw and exact:** unit `22157-1/10` `OrdOrderDate` = `2026-08-31T04:00:00Z`; Order 559 (22157)
+     `Order_x0020_Date` = `2026-09-01T00:00:00Z`. Identical to x25.
+  3. Lookup **ids + display values** on Order Items: `OrderNumberId` 1125, `ModelId` 1121, `ModelRevisionId` 1121, `ClientId` 1125 set.
+  4. **Cli fill confirmed:** all **713** HYDRO QUEBEC units have `CliLeadTimeWeeks = 28`, so U5 landed list-wide.
+  5. `Columns`: 468 rows, **47** synced-from rows, generated from the flows (= x22's 17 + 5 + 24 + 1).
+- 🔑 **Finding: `SharePoint.Tables` HIDES the E7 defect.** The side-by-side returns Order 559's Order Date as
+  `2026-08-31T00:00:00` typed **`datetime` with no zone**. It converts to Eastern and drops the offset. That's
+  the connector FRM10-12's queries use, so it is **very likely how the staff's Excel got the one-day-early
+  dates** (E7). The REST mirror doesn't have this problem. **Don't validate dates through SharePoint.Tables.**
+- Shape: internal names, `<Lookup>Id` + `<Lookup>` (display), `<Person>_Email`, dates as raw text, and nested
+  values (URL, MultiChoice, multi-lookup) as JSON text. `load_exports.load()` reads the files unchanged
+  (no ListSchema record → DictReader). Headers are internal names, which is why they get their own folder.
+- M in `power-query/SharePoint mirror/` round-trips: `Export-PowerQuery.ps1 -ListOnly` reads all 15 queries.
+  After an N3 change, run `python scripts/gen_mirror_synced_from.py` and then `Build-SharePointMirror.ps1`.
+- **Still held (not committed):** the x22 mode guard + heartbeat, waiting for `claude-43`'s "RUN2 apply done".
+
+**2026-09-24 22:3x | `claude-43` |** Wrote `docs/change-tracking-design-2026-09-24.md` at the user's request (a new archiving system for the mirror: track changes, detect errors, roll back). It complements the 09-16 archive design rather than replacing it: 30-day snapshots plus monthly forever, and the monthly copy is the 09-16 Layer 3. Added as **E10**, awaiting the user's decisions D1–D5.
