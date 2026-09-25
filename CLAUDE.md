@@ -228,6 +228,12 @@ had — hence a dedicated place to plan it before touching production.
   live SharePoint directly (never stale). This repo documents the system FRM10-12 is part of,
   stages the next list to migrate into it, and now holds the canonical shared-list export
   snapshots FRM10-12 used to duplicate (see `sharepoint-lists/` above).
+  - 🔴 **FRM10-12's `SharePoint.Tables` queries shift Date-Only values (found 2026-09-24).** They return
+    a date as a zone-less `datetime` converted to Eastern, so a value stored `…T00:00:00Z` arrives one day
+    early (Order 559: raw `2026-09-01T00:00:00Z` → `2026-08-31T00:00:00`). Anything FRM10-12 reads from
+    these lists inherits that. **Validate live data with this repo's SharePoint mirror instead**
+    (`scripts/Refresh-SharePointMirror.ps1` → `sharepoint-lists/mirror/`, raw REST shape;
+    `check_sharepoint_mirror.py`). Evidence: `docs/build-nights/BUILD-NIGHT-2026-09-24.md`, E7/E8.
 - **FRM13** (`PRO1.FRM13 - Desplan - Auto.xlsx`) — the Engineering/drawing tracker, live at
   `Pioneer Planification/General/FAB/Suivi/Dessin`, with a working copy at
   `../FRM10-12/linked-workbooks/`. It has **no repo of its own**, but it is a real upstream
