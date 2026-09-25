@@ -75,6 +75,13 @@ def main():
         cols[0] = dict(cols[0]); cols[0]["displayName"] = "PLANTED-RENAME"
         write_snap(b, "2026-09-25T07:00Z", t2)
 
+        # PS 5.1 writes snapshot.json with a UTF-8 BOM (first real refresh, 2026-09-25 00:55)
+        bom = os.path.join(tmp, "bom")
+        write_snap(bom, "2026-09-25T04:55Z", {"Index": tables["Index"]})
+        with open(os.path.join(bom, "snapshot.json"), "w", encoding="utf-8-sig") as f:
+            json.dump({"asOf": "2026-09-25T04:55Z", "tables": {"Index": len(tables["Index"])}}, f)
+        check(M.Snapshot(bom).as_of == "2026-09-25T04:55Z", "snapshot.json with a BOM reads")
+
         print("journal diff on planted edits")
         ev = J.diff(M.Snapshot(a), M.Snapshot(b))
         ch = [e for e in ev if e["kind"] == "change"]
@@ -100,6 +107,32 @@ def main():
             check(any(r["check"] == "rows deleted" for r in reds), "health: deletion is red")
             check(any(r["check"] == "schema change" for r in reds), "health: schema change is red")
             check(not any(r["check"] == "bulk change" for r in reds), "health: 2 changes is not a bulk change")
+
+            # fan-out classifier (D5): the busiest Model Revision, its Cable -> every unit's RevCable
+            import collections as C
+            cnt = C.Counter(M.norm(u.get("ModelRevisionId")) for u in tables["Order Items"] if M.norm(u.get("ModelRevisionId")))
+            rev_id, n_units = cnt.most_common(1)[0]
+            check(n_units > H.BULK, "fan-out fixture: revision %s has %d units (> %d)" % (rev_id, n_units, H.BULK))
+            for with_parent in (True, False):
+                t3 = copy.deepcopy(tables)
+                if with_parent:
+                    rv = next(r for r in t3["Model Revisions"] if M.key(r) == rev_id)
+                    rv["Cable"] = "PLANTED-CABLE"
+                for u in t3["Order Items"]:
+                    if M.norm(u.get("ModelRevisionId")) == rev_id:
+                        u["RevCable"] = "PLANTED-CABLE"
+                c = os.path.join(tmp, "fan-%s" % with_parent)
+                write_snap(c, "2026-09-25T09:00Z", t3)
+                ev3 = J.diff(M.Snapshot(a), M.Snapshot(c))
+                rep3 = H.evaluate(ev3, M.Snapshot(c), acknowledged=[])
+                bulk = [r for r in rep3 if r["check"] == "bulk change" and r["field"] == "RevCable"]
+                if with_parent:
+                    check(len(bulk) == 1 and bulk[0]["level"] == "expected" and rev_id in bulk[0]["detail"],
+                          "fan-out: parent changed too -> 'expected, fan-out of Model Revisions %s' (got %s)"
+                          % (rev_id, [b["level"] for b in bulk]))
+                else:
+                    check(len(bulk) == 1 and bulk[0]["level"] == "red",
+                          "no parent change -> the same bulk stays RED (got %s)" % [b["level"] for b in bulk])
         except ImportError:
             print("  (mirror_health not built yet)")
         try:

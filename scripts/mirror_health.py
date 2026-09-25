@@ -41,7 +41,7 @@ def load_acks():
     p = os.path.join(M.HEALTH, "acknowledged.jsonl")
     out = []
     if os.path.exists(p):
-        with open(p, encoding="utf-8") as f:
+        with open(p, encoding="utf-8-sig") as f:
             for line in f:
                 if line.strip():
                     out.append(json.loads(line))

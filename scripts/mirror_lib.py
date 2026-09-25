@@ -98,7 +98,7 @@ class Snapshot:
             meta = os.path.join(folder, "snapshot.json")
             if not os.path.exists(meta):
                 raise SystemExit("ABORT: %s has no snapshot.json" % folder)
-            with open(meta, encoding="utf-8") as f:
+            with open(meta, encoding="utf-8-sig") as f:   # PS 5.1 writes a BOM
                 self.meta = json.load(f)
             self.as_of = self.meta["asOf"]
             for p in glob.glob(os.path.join(folder, "*.csv.gz")):
@@ -210,7 +210,7 @@ def read_journal(month=None):
         files = [f for f in files if os.path.basename(f).startswith(month)]
     out = []
     for f in files:
-        with open(f, encoding="utf-8") as fh:
+        with open(f, encoding="utf-8-sig") as fh:
             for line in fh:
                 line = line.strip()
                 if line:

@@ -156,8 +156,9 @@ foreach ($t in $SnapTables) {
     finally { $fs.Close() }
     $counts[$t] = $written[$t].rows
 }
-@{ asOf = $asOf; localStamp = $snapName; tables = $counts; source = "Refresh-SharePointMirror.ps1" } |
-    ConvertTo-Json | Set-Content -LiteralPath (Join-Path $snapDir "snapshot.json") -Encoding UTF8
+# No BOM: Windows PowerShell 5.1's Set-Content -Encoding UTF8 writes one, and Python's json.load rejects it.
+$metaJson = @{ asOf = $asOf; localStamp = $snapName; tables = $counts; source = "Refresh-SharePointMirror.ps1" } | ConvertTo-Json
+[System.IO.File]::WriteAllText((Join-Path $snapDir "snapshot.json"), $metaJson, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host "snapshot  snapshots/$snapName  (asOf $asOf)"
 
 # ---- retention (D2): all snapshots for 30 days, then the last of each month
