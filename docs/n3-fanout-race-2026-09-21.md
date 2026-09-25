@@ -210,6 +210,11 @@ Conflict needs only two flows and one row, which is every single order.
 
 ### 🔴 And a third, unrelated bug: the `Clients` sync flow reads a field that is not there
 
+> ✅ **Corrected 2026-09-24: this section is WRONG, kept for the record.** `Clients` has no `Lead
+> Time` column. That's `Order.Lead Time`. The source really is `Clients.CliLeadTimeWeeks`, the same
+> internal name as the destination, so the flow is correct. `Cli*` was blank because the lead times
+> were seeded before the flow existed. See parked item 4 below for the evidence and the fix.
+
 `Cli*` came back `0/1` on **all 14 units across all three orders**. The flow definition says
 why — its one mapping is:
 
@@ -392,6 +397,13 @@ actor, and the next bulk operation on that list planned accordingly.
 4. **The `Clients` sync flow** reads `body/CliLeadTimeWeeks` — its own destination column
    name. `Cli*` is blank on every unit checked. Confirm the real source field on the `Clients`
    list first.
+   > ✅ **Corrected 2026-09-24: the premise is wrong. The flow reads the right field.** The Clients
+   > list's column is itself named `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). n5 created the
+   > same internal name on both lists by design (`n5_clients_lead_time.js:257`, `:268`). This was
+   > confirmed from the `Clients 2026-09-10 1734.csv` ListSchema and live by `$select`: 200, with 17 of
+   > 97 clients holding a value. `Cli*` is blank because the 17 values were seeded before this flow
+   > existed (seed ~17:3x, flow built 17:44 on 09-10), so nothing fanned them out. **Fix: a one-time
+   > fill, not a flow change:** `x22` with `CLI_FILL = true`. Record: `docs/build-nights/BUILD-NIGHT-2026-09-24.md`, E3.
 5. **Retry scope on the N3 `Update_unit` actions.** None of the four sets a `retryPolicy`, and
    the Logic Apps default retries only 408/429/5xx — a Save Conflict is a 400 and is lost for
    good. Less urgent once (1) ships, but parent edits can still collide.

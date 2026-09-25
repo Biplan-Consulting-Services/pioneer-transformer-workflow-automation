@@ -75,7 +75,11 @@
               1246       lost Rev*            (Save Conflict, the other direction)
      Cli* is blank on all of them, and on every other unit checked - that is a
      separate question, not this repair. Leave CliLeadTimeWeeks out until the
-     whole-list number is known. */
+     whole-list number is known.
+     (2026-09-24: answered. The Clients flow reads the right field - the 09-21
+     "wrong source" finding was wrong. Cli* is blank because the 17 lead times
+     were seeded before the flow existed. CLI_FILL below is the one-time fill;
+     Cli stays in SKIP_GROUPS for every other run.) */
   const UNITS = [1223, 1224, 1225, 1226, 1235, 1245, 1246];
   const SKIP_GROUPS = ["Cli"];
 
@@ -83,6 +87,15 @@
      Paste `copy(window.x25)` output here, or [{id: 1223, field: "OrdPO"}, ...]
      or [{unit: "<Title>", field: "OrdPO"}, ...]. */
   const OVERWRITE = null;
+
+  /* CLI_FILL -- one-time Clients -> Order Items blank-fill, 2026-09-24. Off by
+     default. When true it ignores UNITS and OVERWRITE and fills ONLY the Cli*
+     group, across the WHOLE list: every unit with a Client lookup, a blank Cli*
+     field, and a client that has a value. Clients with no value (80 of 97 on
+     2026-09-24) leave their units blank - that is correct, not a miss.
+     Clients are matched by LOOKUP ID only. Several Titles hold a mangled `&`
+     (`LG§E`, `PSE§G`), so Title is printed but never matched on. */
+  const CLI_FILL = false;
 
   const MAP = {
   "Ord": {
@@ -548,6 +561,7 @@
   const digest = await J(base + "/_api/contextinfo", { method: "POST" })
     .then(j => j.FormDigestValue).catch(() => null);
   if (!DRY && !digest) { console.error("ABORT: no form digest, cannot write."); return; }
+  if (CLI_FILL && OVERWRITE) { console.error("ABORT: CLI_FILL and OVERWRITE are both set. One run, one mode."); return; }
 
   /* OVERWRITE: turn the pasted list into unit id -> Set(target field).
      Everything is checked BEFORE the first parent read, so a bad list aborts
@@ -609,6 +623,63 @@
 
   const plan = [];
   let bail = false;
+
+  /* CLI_FILL: build `plan` for the whole list from two paged reads - one of
+     Order Items, one of Clients - then fall through to the same write and
+     read-back as every other mode. The per-unit loop below gets RUN = []. */
+  let cliUnits = 0;
+  if (CLI_FILL) {
+    const m = MAP.Cli;
+    if (!m || !m.fields.length) { console.error("ABORT: MAP has no Cli group. Re-run gen_x22_repair.py."); return; }
+    const page = async (u) => {
+      let o = [], g = 0;
+      while (u && g++ < 40) { const j = await J(u); o = o.concat(j.value || []); u = j["odata.nextLink"] || null; }
+      return o;
+    };
+    const units = await page(items + "?$select=" + ["Id", "Title", m.fk].concat(m.fields.map(f => f.target)).join(",") + "&$top=500");
+    if (!units.length) { console.error("ABORT: read 0 units. A zero-row read is a failed read."); return; }
+    const clients = await page(base + "/_api/web/lists(guid'" + m.list + "')/items?$select="
+      + ["Id", "Title"].concat(m.fields.map(f => f.source)).join(",") + "&$top=500");
+    if (!clients.length) { console.error("ABORT: read 0 clients. A zero-row read is a failed read."); return; }
+    const byId = new Map(clients.map(c => [c.Id, c]));
+    const withValue = clients.filter(c => m.fields.some(f => !isBlank(c[f.source]))).length;
+    console.log("CLI_FILL: " + units.length + " units, " + clients.length + " clients (" + withValue + " with a value). UNITS ignored.\n");
+
+    const perClient = {}, nullSkip = {}, alreadySet = {}, missing = [];
+    let noLookup = 0;
+    for (const u of units) {
+      const cid = u[m.fk];
+      if (isBlank(cid)) { noLookup++; continue; }
+      const c = byId.get(cid);
+      if (!c) { missing.push(u.Id); continue; }
+      const row = (perClient[cid] = perClient[cid] || { clientId: cid, title: c.Title, units: 0, toWrite: 0, alreadySet: 0, parentNull: 0 });
+      row.units++;
+      const write = {};
+      for (const f of m.fields) {
+        if (!isBlank(u[f.target])) { alreadySet[f.target] = (alreadySet[f.target] || 0) + 1; row.alreadySet++; continue; }
+        const v = asDate(unwrap(c[f.source], f.sourceChoice));
+        if (isBlank(v)) { nullSkip[f.source] = (nullSkip[f.source] || 0) + 1; row.parentNull++; continue; }
+        if (typeof v === "object") {
+          console.log("      🔴 " + u.Id + " " + f.target + " would receive " + JSON.stringify(v) + " -- structured value, refusing.");
+          bail = true; continue;
+        }
+        write[f.target] = v;
+      }
+      if (Object.keys(write).length) { plan.push({ id: u.Id, group: "Cli", write: write }); row.toWrite++; }
+    }
+    cliUnits = units.length;
+
+    console.log("=== units per client (matched by lookup id; Title shown for reading only) ===");
+    console.table(Object.values(perClient).sort((a, b) => b.units - a.units));
+    for (const s of Object.keys(nullSkip)) console.log("skipped " + nullSkip[s] + " units: parent " + s + " null (correct - nothing to copy)");
+    for (const t of Object.keys(alreadySet)) console.log("skipped " + alreadySet[t] + " units: " + t + " already set (blank-fill never overwrites)");
+    console.log("skipped " + noLookup + " units: no Client lookup");
+    if (missing.length) console.log("⚠️ " + missing.length + " units point at a client id that is not on the list: " + missing.slice(0, 20).join(", "));
+    for (const p of plan.slice(0, 10)) console.log("      " + p.id + "  " + JSON.stringify(p.write));
+    if (plan.length > 10) console.log("      ... and " + (plan.length - 10) + " more");
+    RUN = [];
+  }
+
   for (const id of RUN) {
     const unit = await J(items + "(" + id + ")");
     console.log("--- Id " + id + "  " + unit.Title + " ---");
@@ -682,7 +753,7 @@
     }
   }
 
-  console.log("\n=== " + plan.length + " writes planned across " + RUN.length + " units ===");
+  console.log("\n=== " + plan.length + " writes planned across " + (CLI_FILL ? cliUnits : RUN.length) + " units ===");
   if (blankParent.length) {
     console.log("⚠️ " + blankParent.length + " listed fields have a BLANK parent now - NOT cleared (see header):");
     console.table(blankParent);
@@ -716,8 +787,8 @@
     for (const field of Object.keys(p.write)) {
       const got = after[field], want = p.write[field];
       const ok = same(want, got);
-      if (OVERWRITE) {
-        const t = (tally[field] = tally[field] || { written: 0, verified: 0, failed: 0 });
+      if (OVERWRITE || CLI_FILL) {
+        const t =(tally[field] = tally[field] || { written: 0, verified: 0, failed: 0 });
         t.written++; t[ok ? "verified" : "failed"]++;
       }
       if (!ok) {
@@ -726,6 +797,6 @@
       }
     }
   }
-  if (OVERWRITE) console.table(tally);
+  if (OVERWRITE || CLI_FILL) console.table(tally);
   console.log(bad ? "\n🔴 " + bad + " fields did not land." : "\n✅ every written field verified.");
 })();
