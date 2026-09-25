@@ -97,8 +97,8 @@ check passes). Classified from the full `window.x25.report`:
 |---|---|---|
 | `MdlLatestModelRevision`, unit `M-…` vs parent `MR-…-V1` (~670) | the 09-21 known stale value | **x22 OVERWRITE**, filtered list |
 | unit **blank**, parent has value — SA units (`22098/22107/22108/22110-1/1 SA`: all Mdl*/Rev*, `21613/21661/21664/21665/21749 SA`: Ord*), `21792-3/5`,`4/5`, `22169-7..10/10`, `22175-1/2`, `22112-1/3` | never filled | **x22 blank-fill** (plain run; combine with U5 `CLI_FILL`) |
-| `OrdInitialPromisedDate` 18 / `OrdOrderDate` 14 — parent `…T00:00:00Z`, unit `…T04:00/05:00Z` **one day earlier** | app-created orders (22140/41/56/57, P00005, P10003) stored UTC-midnight during the site-UTC period (decision 6). **Real one-day difference, not a compare artefact** | **DO NOT WRITE** — which date is right is decision 5 below |
-| `OrdLDs` / `OrdEngineeringRequired`, unit `true`/`false`, parent **blank** (~40) | parent side went blank; parents all modified 09-11 04:2x–05:1x = the N4 choice conversion window | **DO NOT WRITE** — decision 4 (x22 lists, never clears) + decision 6 |
+| `OrdInitialPromisedDate` 18 / `OrdOrderDate` 14 — parent `…T00:00:00Z`, unit `…T04:00/05:00Z` **one day earlier** | ~~app-created orders stored UTC-midnight during the site-UTC period~~ **corrected by E7 (21:42):** only these **6 of 457** orders carry the `T00Z` shape; the same authors' other orders in that window are stored T04/T05Z, so it is **not** the app pattern — cause unknown. Real one-day difference. **E7 reading: the Order's (later) date was meant** | **DO NOT WRITE** — which date is right is decision 5 below |
+| `OrdLDs` / `OrdEngineeringRequired`, unit `true`/`false`, parent **blank** (~40) | ~~parent side went blank in the N4 conversion window~~ **corrected by E6 (21:40):** LDs/EngReq are plain Yes/No and N4 never touched them; the 0339 export is local time (taken after those edits). **E6 reading: the Orders were never set; the units match FRM10-12 and are right** | **DO NOT WRITE** — decision 4 (x22 lists, never clears) + decision 6 |
 | `22001-2/8` `OrdEngineeringRequired` unit `false` parent `true` | genuine | x22 OVERWRITE (1 field) |
 | `E21007-1/1` unit says model `M-MEEN-0001`, lookup points at `M-MEEN-0005` | lookup and copy disagree on WHICH model | **DO NOT WRITE** — decision 7 |
 | Models 391/392 → parent value `MR-ENMA-0052` / `-0053` with **no `-V1`** | parent-side data smell (x17 rule) | overwrite is still closer; flag for x17 |
@@ -125,9 +125,9 @@ check passes). Classified from the full `window.x25.report`:
 | P2 | Interpret U3; decide repair route per parent (touch vs E1 overwrite) | `claude-43` | no | **DONE 21:3x (x25 part)** — see *x25 results* in KEY FACTS. x16 / x24 still to come |
 | E1 | **x22 overwrite mode** — repair stale non-blank parent values from an x25 report | `claude-5b` | yes | **DONE `d489f5a`** — regenerated + `node --check` OK; mock-harness 6/6 (see log) |
 | E4 | **x25 rows carry the unit `id`** — so x22's OVERWRITE matches exactly instead of by Title. ⚠️ **Do before E2:** U3 has not run yet, so this is free now and costs a user re-run later. Files: `scripts/gen_x25_drift_scan.py` → regenerate. Add `id: u.Id` to every `report.push` and to `perParent[k].units` (keep Title for humans). Verify: regenerate, `node --check`, diff stat, and confirm x22's OVERWRITE accepts the new rows as-is | `claude-5b` | yes | **DEPRIORITISED 21:3x** — user is running x25 now, so it would not land in time; x22 already aborts on ambiguous Titles. Do after E2/E3 if at all |
-| E5 | **Decision 7 evidence — `E21007-1/1`: M-MEEN-0001 vs M-MEEN-0005, same model or duplicate?** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:4x, user request) |
-| E6 | **Decision 6 evidence — LDs / Engineering Required blank on the Order but set on its units.** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:4x, user request) |
-| E7 | **Decision 5 evidence — the one-day date table (UTC vs Eastern).** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:4x, user request) |
+| E5 | **Decision 7 evidence — `E21007-1/1`: M-MEEN-0001 vs M-MEEN-0005, same model or duplicate?** Spec below | `claude-5b` | yes | **DONE 21:36**, log entry. Two different models, Models rows 0001/0005 crossed |
+| E6 | **Decision 6 evidence — LDs / Engineering Required blank on the Order but set on its units.** Spec below | `claude-5b` | yes | **DONE 21:40 (files)**. Units right, Orders never set (reading); live confirmation = `x26` (user) |
+| E7 | **Decision 5 evidence — the one-day date table (UTC vs Eastern).** Spec below | `claude-5b` | yes | **DONE 21:42**, log entry. Raw (later) date meant (reading); only 6 of 457 orders have T00Z |
 | E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **DONE `ba41132` + `7f59469`** — diff stat and block text in the log |
 | E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 21:1x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. **UNBLOCKED 21:1x** — U4 back, go |
 | U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | **DONE 21:17** — 200, **17 of 97** clients hold `CliLeadTimeWeeks` (16×3, 18×5, 20×7, 24×1 CONED, 28×1 HYDRO QUEBEC = FRM13's value). 80 are null — their units correctly stay blank. Pasted Atom feed, counted by `claude-43` |
@@ -427,3 +427,150 @@ decisions (5–7) for anything where the right value is unknown. Corrected my ow
 **2026-09-24 21:4x | `claude-43` |** Added **E5 / E6 / E7** at the user's request ("use the other claude
 session to help"): read-only evidence tables for decisions 5–7. Assigned to `claude-5b`. Nothing in
 x22's OVERWRITE list touches any of those rows — the filter excludes dates, blank-parent rows and E21007.
+
+**2026-09-24 21:36 (`date`) | `claude-5b` |** **E5 DONE: `E21007-1/1`, M-MEEN-0001 vs M-MEEN-0005.** Read-only.
+Sources: `Models`/`Model Revisions 2026-09-11 0340.csv`, `Order Items 0410.csv`, dedup worklist 09-05,
+FRM10-12 final staff 0522, `Archive active` (09-16) and `Archive active 2026-09-10 2231`. The CSV
+stamps carry `Z`, so they're UTC as printed. Scripts are in my scratchpad (`e5_explore.py`, `e5_meen.py`).
+
+**The two MODEL rows (Models 0340)**. Every other non-empty column is identical: MEG Energy, Substation,
+3 ph, SFRA Y, Up to Date, created 05-04 by soleil.anker, modified 2026-08-13T17:37:46Z (all five MEEN
+models share that stamp, a bulk edit).
+| | M-MEEN-0001 (id 459) | M-MEEN-0005 (id 463) |
+|---|---|---|
+| **Model_Code** | 1147005 | **1147005** ⚠️ same |
+| **kVA and kV** | **1,500** | **7,500** |
+| Latest rev | MR-MEEN-0001-V1 | MR-MEEN-0005-V1 |
+
+**The two REVISION rows (Model Revisions 0340)**. Otherwise identical (Substation, ["SUBSTATION"], 3 ph).
+| | MR-MEEN-0001-V1 (id 100) | MR-MEEN-0005-V1 (id 104) |
+|---|---|---|
+| **Client_Model_Code** | 1147005 | **1147012** |
+| **kVA** | **7,500** | **1,500** |
+
+➡️ **The lists contradict each other on this pair.** Revisions show two distinct transformers: 1147005 at 7,500
+and 1147012 at 1,500. Models give both the code 1147005, with the kVA **swapped** against their own revisions.
+The other three MEEN pairs (0002 = 1147006/2,500, 0003 = 1147007/2,500, 0004 = 1147011/7,500) agree
+across both lists. **The 09-05 dedup worklist already flags exactly this pair**: `REVIEW`, "kVA and kV →
+kVA", 0001 Models 1,500 vs Revisions 7,500, and 0005 Models 7,500 vs Revisions 1,500.
+
+**What the staff's Excel says** (FRM10-12 final 0522 and both Archive copies agree). Every MEG Energy row:
+| unit | PO Item # | kVA | PO |
+|---|---|---|---|
+| **E21007-1/1** | **1147005** | **7500** | MEG-10027 |
+| E21005-1/1 | 1147005 | 7500 | MEG-10027 |
+| **E21012-1/1** | **1147012** | **1500** | MEG-10012 |
+| E21005A-1/1 | **1147005** ⚠️ | **1500** ⚠️ | MEG-10012 |
+| E21006-1/1, 1/2, 2/2 | 1147006 | 2500 | MEG-10027 |
+| E21011-1/1 | 1147011 | 7500 | MEG-10012 |
+
+`E21005A` is the only row where 1147005 comes with 1,500 kVA. It sits on the 1147012 PO (MEG-10012) with the
+1147012 rating, so it looks like a mistyped item number. **It reproduces exactly the Models list's
+"1147005 at 1,500" entry.** Reading: that typo is probably where M-MEEN-0001's crossed values came from.
+
+**The unit itself (Order Items 0410)** is split three ways:
+| column | says |
+|---|---|
+| `Model` **lookup** (displays Model_Code) | 1147005 → `Model_ID_TextField` **M-MEEN-0005** (id 463, as live x25) |
+| `Model Revision` **lookup** | **MR-MEEN-0001-V1** (1147005, 7,500) |
+| copied `MdlModelID` / `MdlLatestModelRevision` | **M-MEEN-0001** / MR-MEEN-0001-V1 |
+The other 3 live MEEN units are all consistent (E21006 ×2 → 0002, E21011 → 0004). E21005, E21005A and
+E21012 are not in Order Items 0410.
+
+**Reading, not a verdict:** **two genuinely different transformers, not a duplicate.** 1147005 is 7,500
+kVA (E21005, E21007). 1147012 is 1,500 kVA (E21012). E21007 matches **MR-MEEN-0001-V1** on code and kVA.
+Its Model lookup → 0005 looks like a consequence of the Models list's crossed 0001/0005 rows: on the
+Models list, 0005 "looks like" 1147005 at 7,500, which is E21007's spec. If the user agrees, the fix is
+**data on the Models list** (0005 → 1147012 / 1,500, 0001 → 7,500; the worklist's REVIEW item), then
+repoint E21007's Model lookup to 0001. That's their decision, and nothing has been written. **Open question
+for someone who knows the job:** E21005A's PO Item # 1147005. Should it read 1147012?
+
+**2026-09-24 21:40 (`date`) | `claude-5b` |** **E6: file evidence DONE. One live number needs the user
+(`x26`, read-only, pushed `bd3d09d`).**
+
+⚠️ **Two premises in the E6 spec are wrong. The timeline, reconciled:**
+| when (UTC) | = EDT | event | evidence |
+|---|---|---|---|
+| 04:27–05:12Z | 00:27–01:12 | the E6 Orders' last `Modified` (soleil.anker) | same stamps in the 0339 export and in live x25 |
+| ≥05:16:32Z (07:39Z) | 03:39 | **`Order 0339` export taken** | its latest `Modified` is 05:16:32Z, so "0339" is local time |
+| 08:09Z → 08:20Z | 04:09 → 04:20 | N4 schema saved, Choice conversion | commits `136db9e`, `bca550c` (−0400) |
+- The export is **after** the parents' edits, not before them. The edits happened **~3 h before N4**, not "just after".
+- **N4 never touched LDs or Engineering Required.** Both are plain Yes/No (`column-reference.md`: Boolean).
+  They aren't in N4's targets, and `gen_n3_flows.py` maps them as `plain`. So the "N4 window" link doesn't hold.
+- The E6 Orders have **not been modified since the export** (same `Modified` stamps), yet x25 reads them blank today.
+
+**Why the 0339 export can't answer "blank then?"** A Yes/No that was never set is **NULL** over REST
+(x25 reports that as blank). The export shows LDs 416 False / 41 True / **0 blank** and EngReq 353 / 104 / **0**.
+So it renders NULL as False. "False at 03:39" and "blank now" are very likely **the same NULL**, with
+nothing changed in between.
+
+**Per order.** Excel columns show the distinct values across the order's unit rows. `None` is an empty cell;
+the `… SA` rows are always empty.
+| order | x25 group | 0339 Order LDs / EngReq | FRM10-12 final (0522) | Archive 09-10 | Archive 09-16 |
+|---|---|---|---|---|---|
+| 21982 21665 21661 21981 21664 21932 | LDs, units true | False / True | **LDs Y** on each main unit row | LDs Y | LDs **None** |
+| 22022 22023 22024 22025 22026 22027 22028 22029 22030 | LDs, units true | False / False | **LDs Y** | LDs Y | LDs **None** |
+| 21499 21523 | LDs, units false | False / True | **LDs N** | LDs N | None |
+| 22111 | EngReq, units 5/10, 6/10 false | False / False | **EngReq N on exactly 5/10 and 6/10**, None on the other 8 | same | None |
+| 22088 22046–22053 | EngReq, units false | False / False | **EngReq N** | N | None |
+| 21613 21749 (reverse) | unit blank, Order has a value | **True** / False, True | LDs Y | Y | Y |
+All 29 orders exist in FRM10-12 final and in both Archives.
+
+**Reading, not a verdict:** **the units are right, and the Orders were never set, not wiped.** The units
+match the staff's final Excel value for value and unit for unit. The strongest signal is 22111: only 5/10
+and 6/10 carry `N`, exactly as in Excel. So the units were filled from Excel per unit. The Order-level Yes/No
+disagreed with Excel **already at 03:39** (False where Excel says Y), which fits a NULL that was never
+populated at Order level. It is not a whole-column wipe: 41 True / 104 True survived in the export, and x25
+flags only ~27 orders. **The 09-16 Archive has lost most LDs values**, so don't use it as evidence (that's a
+separate post-cutover sync question).
+**Needs the user:** run `scripts/x26_order_flag_history.js` and `copy(window.x26)`. It gives the **live
+true / false / NULL counts** list-wide, which is the "20 orders or the whole column" number, and **each E6
+order's version history**. NULL in every version = never set, which confirms the reading. true → NULL by a
+person = cleared on purpose, which overturns it.
+
+**2026-09-24 21:42 (`date`) | `claude-5b` |** **E7 DONE: the one-day date table.** Read-only. Sources:
+`Order 0339` (taken 07:39Z; stamps printed in `Z`), `Order Items 0410`, FRM10-12 final 0522, Archive 09-10
+and 09-16. **All three Excel sources agree with each other, and with the units, on every row.**
+| order | created (UTC) · author | field | **Order raw (0339)** | units (0410) = FRM final = both Archives |
+|---|---|---|---|---|
+| 22140, 22141 | 08-25 14:05 / 14:13 · patrick.vaillancourt | IPD | **2027-03-26 Fri** `T00:00Z` | 2027-03-25 Thu |
+| | | OD | 2026-08-03 Mon `T04:00Z` (fine) | 2026-08-03 Mon |
+| 22156 | **09-01** 15:46 · patrick.vaillancourt | IPD | **2027-01-18 Mon** | 2027-01-17 **Sun** ⚠️ |
+| | | OD | **2026-09-01 Tue** = creation day | 2026-08-31 Mon (a day *before* creation) |
+| 22157 (10 u) | **09-02** 13:40 · patrick.vaillancourt | IPD | **2027-01-22 Fri** | 2027-01-21 Thu |
+| | | OD | **2026-09-01 Tue** | 2026-08-31 Mon |
+| P00005 | **09-03** 17:21 · dominic.lague | IPD | **2025-12-31 Wed** ⚠️ | 2025-12-30 Tue ⚠️ |
+| | | OD | **2026-09-03 Thu** = creation day | 2026-09-02 Wed (a day before creation) |
+| P10003 (2 u) | **09-03** 19:00 · patrick.vaillancourt | IPD | **2026-09-04 Fri** | 2026-09-03 Thu |
+| | | OD | **2026-09-03 Thu** = creation day | 2026-09-02 Wed (a day before creation) |
+
+**Is the `T00:00:00Z` shape the app-created pattern? No. It's exactly these six orders, 6 of 457.** The
+same two people created 22138–22155 and 22158–22166 in the same window (08-21 → 09-10), and every one of
+those is stored as proper Eastern midnight (`T04`/`T05Z`). Author doesn't separate them, and all are human
+accounts, since the app writes as the user. The creation time doesn't cleanly separate them either:
+22142 was created 26 min after 22141 and is `T05Z`. **Cause unknown**; the version history of one of the six
+would show which edit wrote `T00Z`.
+
+**What the difference really is:** `…T00:00Z` on a Date-Only column is UTC midnight. On the now-Eastern site
+it's the **previous evening**, so **SharePoint currently DISPLAYS the Order as the earlier date too**
+(22156 shows 08-31). The units and Excel hold that displayed date as proper Eastern midnight. So "one day"
+is real in raw storage, but on screen both lists show the earlier date today. Anything that slices the raw
+UTC string gets the later date: `x22`'s `asDate` would, and so would a flow `formatDateTime` without a timezone.
+
+**Reading, not a verdict: the LATER date (the Order's raw calendar date) is the one that was meant.** Units,
+Excel, and today's SharePoint display are all one day early.
+- **Order Date equals the creation day in 3 of 3 checkable cases:** 22156 created 09-01 → 09-01, P00005 and
+  P10003 created 09-03 → 09-03. The earlier copies put the order date a day *before* the order existed.
+  The 34 correctly stored orders in the window also carry OD = their creation day (e.g. 22144–22155
+  created 08-31 → 08-31).
+- **Weekday:** 22156's earlier IPD is a **Sunday**; the raw one is a Monday. The others are weekday either way.
+- If the user agrees, the fix is on the **Order**: rewrite the six rows' dates as bare `yyyy-mm-dd` of the
+  raw date, so they store as Eastern midnight and display correctly. Then the units follow. **Not** an x22
+  overwrite in either direction. Nothing has been written.
+⚠️ **P00005:** its Initial Promised Date (2025-12-31 raw, 12-30 displayed) is **~8 months before its own
+Order Date** (2026-09-03) under either reading. Possibly a year typo (2026-12-31?). It's a question for
+whoever entered it (dominic.lague).
+
+**2026-09-24 21:4x | `claude-43` |** Corrected my two KEY FACTS *x25 results* rows that E6/E7 contradicted
+(the "site-UTC period / app pattern" and "N4 conversion window" claims were both wrong — mine, not the
+data's). Relayed E5–E7 readings to the user; decisions 5–7 stay open for them.

@@ -58,12 +58,12 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 
 | # | Question | Evidence | Answer |
 |---|---|---|---|
-| D5 | **32 order dates one day apart** (Order Date / Initial Promised Date) on 22140, 22141, 22156, 22157, P00005, P10003 — the Order says the 26th, its units say the 25th. Which date was meant? | E7 table on the board (pending from `claude-5b`) | |
+| D5 | **32 order dates one day apart** (Order Date / Initial Promised Date) on 22140, 22141, 22156, 22157, P00005, P10003 — the Order says the 26th, its units say the 25th. Which date was meant? | E7 on the board (21:42). **Reading: the Order's later date was meant.** Order Date = the order's creation day in 3 of 3 checkable cases (22156 created 09-01, P00005 / P10003 created 09-03); the units' and Excel's copies put it a day *before* the order existed; 22156's earlier promised date is a Sunday. The SharePoint screen shows the earlier date too (UTC midnight displays as the day before on an Eastern site) — that is how Excel and the units inherited it. Only these 6 of 457 orders are stored this way; cause unknown. **If you agree:** rewrite the six Orders' dates as plain dates (then the units follow) | |
 | D6 | **~40 units have LDs / Engineering Required = true/false, their Order is now blank.** Units right, or Orders right? | E6 on the board (21:40). **Reading: the units are right — the Orders were never set, not wiped.** Units match FRM10-12 unit by unit (22111: EngReq N on exactly 5/10 and 6/10); the Order already disagreed with Excel at 03:39; LDs/EngReq are plain Yes/No and the 09-11 conversion never touched them (the "conversion window" link was wrong). **Confirm with `scripts/x26_order_flag_history.js`** (read-only) → `copy(window.x26)`: live true/false/blank counts + each order's history. If confirmed: fill the Orders from the units — nothing to fix on the units | |
 | D1 | **Livraison**: forcing `Terminé`/`Delivered` on *every* later step change of a delivered unit — intended, or only on the move *into* Livraison? | v008 keeps current behaviour | |
 | D2 | Level the stamps with `x24` before enabling the flow, or let Livraison-but-Active units complete on their next edit? | run `x24` dry run first | |
 | D4 | If a parent field is now blank but the unit still has a value, should the repair clear the unit? | x22 lists them, never clears | |
-| — | `P00005`: Initial Promised Date (2025-12-30/31) is **before** its Order Date (2026-09-02/03). Typo? | x25 | |
+| — | `P00005`: Initial Promised Date (2025-12-30/31) is ~8 months **before** its Order Date (2026-09-03) under either reading — likely a year typo (2026-12-31?). Ask its creator (Dominic Laguë) | x25, E7 | |
 | — | Models 391/392 give revision ids `MR-ENMA-0052` / `-0053` with **no `-V1`**. Wrong in Model Revisions? | x25, x17 rule | |
 
 ---
