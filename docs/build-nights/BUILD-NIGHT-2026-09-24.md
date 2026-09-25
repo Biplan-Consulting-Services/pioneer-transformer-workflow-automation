@@ -574,3 +574,5 @@ whoever entered it (dominic.lague).
 **2026-09-24 21:4x | `claude-43` |** Corrected my two KEY FACTS *x25 results* rows that E6/E7 contradicted
 (the "site-UTC period / app pattern" and "N4 conversion window" claims were both wrong — mine, not the
 data's). Relayed E5–E7 readings to the user; decisions 5–7 stay open for them.
+
+**2026-09-24 21:5x | `claude-43` | U5 / E3 DONE: Clients lead-time fill APPLIED by the user.** x22 `CLI_FILL = true`, `DRY = false`. Read-back: `CliLeadTimeWeeks` **1053 written / 1053 verified / 0 failed**, matching the dry run exactly (17 clients; 70 units parent-null, 2 already set, 2 no Client lookup). The Order Items trigger flow was OFF throughout. The four sync flows stayed on: they trigger on parent lists, and x22 writes only Order Items.
