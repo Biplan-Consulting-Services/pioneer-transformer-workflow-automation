@@ -44,6 +44,25 @@
       },
       "appliedAt": null,
       "source": "Order_Items_Nightly_Sync_v002.json"
+    },
+    {
+      "v": 3,
+      "captured": "2026-09-25T01:13:09-04:00",
+      "state": "local",
+      "parent": 1,
+      "note": "v003: C1 = Livraison AND Delivered (DeliveryDate empty on every unit); Excel clock >=7d; report Excel-vs-list disagreements; dry run, cap 50; supersedes v002 (never pasted)",
+      "sha256": "fb80ecf2cf430ddadc1942aefe970a709cae35ca9fbcca2dd89ef4cb4c4b13b8",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 19,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v003__2026-09-25T01-13__local__v003-C1-Livraison-AND-Delivered-DeliveryDate-emp.json"
+      },
+      "appliedAt": null,
+      "source": "Order_Items_Nightly_Sync_v003.json"
     }
   ],
   "identity": {
