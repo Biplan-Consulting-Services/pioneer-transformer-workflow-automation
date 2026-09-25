@@ -7,6 +7,19 @@ Carried over from the 2026-09-24 build night. The board
 `Status Date` — staff keep entering it by hand. The four sync flows (Order, Models, Model Revisions,
 Clients) are clean and on the connection reference. Today's outage left **no** parent→unit drift.
 
+## ✅ Your to-do tomorrow
+
+- [ ] **MEG Energy models** (section 1): meet the users; ask Q1–Q5. This includes confirming the E21007-1/1 repoint you
+      made earlier (both its lookups now → 0005). Then make the four fixes.
+- [ ] **The six one-day dates** (D5): confirm with Patrick (5 of the 6 are his) that the *stored* date is the one meant:
+      22140, 22141, 22156, 22157, P10003. Ask Dominic about **P00005**, whose promised date (2025-12-31) is before its order
+      date and is probably a year typo. Then rewrite the six Orders' dates as plain dates; the units follow.
+- [ ] **LDs / Engineering Required** (D6): ask the users whether these are **per order or per unit**. Excel kept them per
+      unit, while SharePoint has them on the Order, and setting the Order pushes the value to every unit. Run `x26` (read-only)
+      for the order histories. Then either fill the Orders from the units, or move the fields to the unit level.
+- [ ] **Change-tracking design** (`docs/change-tracking-design-2026-09-24.md`): answer D1–D6.
+- [ ] **Trigger flow**: run the section 4 tests, including the loop-confirmation check, then enable it.
+
 ---
 
 ## 1. With the users — MEG Energy (`E…` orders) models and revisions
@@ -39,7 +52,7 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 **✅ Checked live 2026-09-24 22:25 (SharePoint mirror):** Models / Revisions exactly as in the table above.
 Two new facts:
 - `E21007-1/1` now points **both** lookups at **0005** (Model *and* Model Revision `MR-MEEN-0005-V1` = 1147012 /
-  1,500 kVA); on 09-11 its revision still pointed at 0001. Someone repointed it since. Its copied data still reads
+  1,500 kVA); on 09-11 its revision still pointed at 0001. **The user repointed it** (before tonight's investigation), and it still needs confirming with the users. Its copied data still reads
   1147005 / 7,500, which is what Excel says, so **the copies look right and both lookups look wrong.**
 - Only **4** MEG units exist in Order Items: E21006-1/2, E21006-2/2, E21007-1/1, E21011-1/1. **E21005, E21005A,
   E21012 and E21006-1/1 exist only in Excel**, so Q1 is about Excel and the Models list, not a live unit.
