@@ -1,9 +1,44 @@
 # Change tracking, error detection and rollback, built on the SharePoint mirror
 
-**Status: DESIGN, awaiting the user's review. Nothing here is built.** Written 2026-09-24 by the planning
+**Status: DECIDED 2026-09-24 22:5x (§0). Build steps 0–4 approved; step 5 (scheduling) deferred.** Written 2026-09-24 by the planning
 session at the user's request: *"create an archiving system so we can track changes and be able to
 detect possible errors and roll back if needed"*, and *"design a new archiving system for the new data
 workbook"*.
+
+
+## 0. The user's decisions (2026-09-24, late evening). These override anything below that disagrees.
+
+| # | decision |
+|---|---|
+| D1 | **Nightly + every 2 h (08–18, workdays)**, but **DEFERRED**: the user will set up dedicated infrastructure for automations, so this does not depend on their laptop being on. Until then refreshes run **on demand** (a session or the user runs `Refresh-SharePointMirror.ps1`). Build step 5 waits for that infrastructure. |
+| D2 | **Every snapshot for 30 days, then the last of each month forever.** |
+| D3 | **Snapshots out of git; the LATEST version in git.** The user's addition: the **live** workbook and its latest CSVs live **separately** from the snapshots, so it's obvious which workbook to open and what goes to git. Layout below. |
+| D4 | **Completion records later, derived from the journal**, once it has run for a few weeks. No separate flow. |
+| D5 | **25 rows on one field between refreshes.** The user's addition: classify a bulk change that is **probably a parent-list fan-out** (see Layer C1). |
+| D6 | **Raise the version limit to 500 on Order Items and Order.** The loop that drove most of the churn is fixed (user, 09-24). This is a user action in list settings (checklist). |
+
+**Layout (D3):**
+
+```
+sharepoint-lists/mirror/
+  live/                          <- IN GIT. What you open, and what sessions read.
+    SharePoint mirror.xlsx       <- the one workbook that gets refreshed (moves here from workbooks/)
+    Order Items.csv, Order.csv…  <- the latest refresh, STABLE names (no timestamp), so git diffs show real changes
+    Columns.csv, Lists.csv, VersionCounts.csv
+  snapshots/                     <- NOT in git (.gitignore). OneDrive versions it.
+    2026-09-25_0130/*.csv.gz     <- one folder per refresh; 30 days, then monthly
+  journal/2026-09.jsonl          <- IN GIT, forever
+  health/latest.md, acknowledged.jsonl   <- IN GIT
+```
+- Stable names in `live/` replace today's timestamped files, so the scripts need a one-line path change
+  (`load_exports` / `check_sharepoint_mirror.py`).
+- The workbook is binary; the repo already stores Office files through Git LFS.
+
+**Fan-out classifier (D5):** a bulk change on Order Items is labelled *probable parent fan-out* when (a) every field that
+changed is a **synced-from** column in the `Columns` catalog, (b) the changed units share one parent, and (c) that
+parent's own row changed **in the same refresh window**, on the field the units copy. It reports as
+*expected, fan-out of <list> <id>* instead of red. It does **not** suppress anything when a parent did not change: units
+moving on their own on synced fields is exactly the drift we want to see.
 
 ---
 
@@ -155,7 +190,7 @@ plus nothing unexplained.
 
 | # | question | proposed default |
 |---|---|---|
-| D1 | When should it run? | nightly 01:30 + every 2 h 08–18 on workdays |
+| D1 | When should it run? | ~~nightly 01:30 + every 2 h 08–18~~ **decided, see §0** |
 | D2 | How long to keep snapshots? | every snapshot 30 days, then one per month forever |
 | D3 | Snapshots out of git (OneDrive versions them), journal and health reports in git? | yes |
 | D4 | Derive the 09-16 completion records from the journal, instead of a separate flow? | later, after step 3 has run for a few weeks |

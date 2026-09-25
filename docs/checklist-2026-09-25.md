@@ -17,7 +17,9 @@ Clients) are clean and on the connection reference. Today's outage left **no** p
 - [ ] **LDs / Engineering Required** (D6): ask the users whether these are **per order or per unit**. Excel kept them per
       unit, while SharePoint has them on the Order, and setting the Order pushes the value to every unit. Run `x26` (read-only)
       for the order histories. Then either fill the Orders from the units, or move the fields to the unit level.
-- [ ] **Change-tracking design** (`docs/change-tracking-design-2026-09-24.md`): answer D1–D6.
+- [x] **Change-tracking design**: answered 2026-09-24 (§0 of the design).
+- [ ] **Raise the version limit to 500** (D6) on **Order Items** and **Order**: List settings → Versioning settings → *Keep the following number of major versions* = 500 → OK. Two lists, a minute each.
+- [ ] *(when ready)* the automation infrastructure for scheduling (D1).
 - [ ] **Trigger flow**: run the section 4 tests, including the loop-confirmation check, then enable it.
 
 ---
