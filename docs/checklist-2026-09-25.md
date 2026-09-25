@@ -27,7 +27,9 @@ Clients) are clean and on the connection reference. Today's outage left **no** p
 - [ ] Delete `test calculated column` from Order Items (it also uses TODAY()).
 - [ ] **Start of session: run the mirror refresh** (`pwsh scripts/Refresh-SharePointMirror.ps1`) and read `sharepoint-lists/mirror/health/latest.md`. It now reports parent drift, mirror columns and revision IDs on every refresh. As of 01:20: 3 red (3 stale `Model_Revision_ID_TextField`; `MR-ENMA-0052`/`-0053` without `-V1`; **8 revisions with no Model link, 414–422, 7 of them new since 09-21**, likely the Power App), 1 amber, and the 74 decision-pending mismatches marked known.
 - [ ] Fix **Models row 503**: its ID is `M-FIEN-0004` followed by a stray line break. Edit it on the list.
-- [ ] Check whether the v001 Nightly Sync actually ran at 01:00 (run history). The mirror showed **0 changes between 00:55 and 01:20**, so nothing was deleted by then.
+- [x] v001 Nightly Sync: **off for 4–5 days** (the user stopped a single execution that had run ~4 days: the throttling in the review doc §2).
+- [ ] 🔴 **Status Date is being overwritten with today's date on save.** Session-start snapshot 10:13: **138 units** had Status Date set to **2026-09-25**, 133 of them overwriting **2026-09-24**. 97 were Angelique's saves between 07:00 and 08:00; the 40 shown as soleil.anker are rows where the trigger flow wrote its stamps after her save, and v008 does not write the date. So either **the Power App sets Status Date = Today() on every save**, or it's her daily routine. Either way Status Date now means 'last touched', not 'last step change'. Ask Angelique, then check the app's save formula.
+- [ ] Tune the bulk-change alert: normal morning staff work (28 Location moves) crosses 25. Group it by editor, or exclude staff edits, so it alerts on automation rather than people.
 - [ ] *(with a test unit)* the last check of the rollback tool: `x27_restore.js` against one real unit (design step 4). It needs you in the browser.
 - [ ] **Trigger flow**: run the section 4 tests, including the loop-confirmation check, then enable it.
 

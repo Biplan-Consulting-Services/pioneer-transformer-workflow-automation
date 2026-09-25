@@ -166,6 +166,13 @@ Two deviations from §5, both correct:
    Compare with the mirror. The planning session can do this in 30 s from a refresh.
 4. Only then set `DeleteEnabled = true` (a one-value edit in `Settings`), after answering N1–N5.
 
+## 6c. The user's answer on v001 (2026-09-25 10:1x)
+
+**v001 has been OFF for 4–5 days.** The user turned it off after finding **one execution that had been running for
+about 4 days**. That is exactly §2's diagnosis in practice: ~6,800 sequential actions against the daily
+allowance get throttled rather than failing, so one "nightly" run never finishes. It also explains why the
+mirror showed 0 changes around 01:00 on 09-25: nothing ran.
+
 ## 7. Tonight's run
 
 v001 was due at 05:00Z (01:00 EDT) on 2026-09-25. A full mirror snapshot was taken at **00:55**
