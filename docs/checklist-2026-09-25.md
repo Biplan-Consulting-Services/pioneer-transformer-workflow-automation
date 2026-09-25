@@ -71,7 +71,11 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 ## 3. Console runs still to do (same browser tab as `x25`; flow stays OFF)
 
 - [ ] **RUN1 apply** — `x22` with `CLI_FILL = true`, `DRY = false`, `OVERWRITE = null`. Expect **1,053 written / 1,053 verified / 0 failed**. *(Skip if already done tonight — check the output.)*
-- [ ] **RUN2 dry** — build `window.x25OV` (snippet on the board), then `x22` with `CLI_FILL = false`, `OVERWRITE = window.x25OV`, `DRY = true`. Send the output for a check before an APPLY copy is made.
+- [ ] **RUN2 dry** — first, in the x25 tab:
+      ```
+      window.x25OV = window.x25.report.filter(r => !/Date$/.test(r.field) && r.parentV !== "" && r.unit !== "E21007-1/1").map(r => ({unit:r.unit, field:r.field})); window.x25OV.length
+      ```
+      then `x22` with `CLI_FILL = false`, `OVERWRITE = window.x25OV`, `DRY = true`. Send the output for a check before an APPLY copy is made.
 - [ ] **RUN2 apply** — same, `DRY = false`, after the dry run is checked.
 - [ ] **Re-run `x25`.** Expected left over: only the D5 dates, the D6 LDs/EngReq, and E21007 — nothing else.
 - [ ] `x16` (mirror audit) and `x24` dry run (stamps) — paste output.
