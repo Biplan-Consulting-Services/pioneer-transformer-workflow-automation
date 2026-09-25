@@ -1,0 +1,3 @@
+{"check": "parent drift", "fields": ["OrdInitialPromisedDate", "OrdOrderDate"], "orders": ["22140", "22141", "22156", "22157", "P00005", "P10003"], "reason": "E7 one-day dates: 6 Orders stored at UTC midnight; which date is right is a user decision (checklist 2026-09-25). Added 2026-09-25."}
+{"check": "parent drift", "fields": ["OrdLDs", "OrdEngineeringRequired"], "parentBlank": true, "reason": "E6: LDs / Engineering Required never set on these Orders (units match Excel); a user decision. Added 2026-09-25."}
+{"check": "parent drift", "units": ["E21007-1/1"], "reason": "E5: E21007's model (M-MEEN-0001 vs 0005, Models rows crossed); the user repointed its lookups, confirmation pending. Added 2026-09-25."}

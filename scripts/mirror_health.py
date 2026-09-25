@@ -61,7 +61,176 @@ def acked(acks, check, lst, field, as_of):
     return None
 
 
-def evaluate(events, snap, acknowledged=None):
+def load_known():
+    p = os.path.join(M.HEALTH, "known.jsonl")
+    out = []
+    if os.path.exists(p):
+        with open(p, encoding="utf-8-sig") as f:
+            for line in f:
+                if line.strip():
+                    out.append(json.loads(line))
+    return out
+
+
+def _flat(v):
+    """x25's normalisation, on a mirror CSV value: JSON arrays joined '; ' (MultiChoice),
+    URL objects -> Url, everything trimmed; '' for missing."""
+    s = M.norm(v).strip()
+    if s[:1] == "[":
+        try:
+            arr = json.loads(s)
+            return "; ".join(str(x.get("Value", x)) if isinstance(x, dict) else str(x) for x in arr)
+        except ValueError:
+            return s
+    if s[:1] == "{":
+        try:
+            o = json.loads(s)
+            return str(o.get("Url", o.get("Value", s)))
+        except ValueError:
+            return s
+    return s
+
+
+def _is_known(known, check, row):
+    for k in known:
+        if k.get("check") != check:
+            continue
+        if "fields" in k and row.get("field") not in k["fields"]:
+            continue
+        if "units" in k and row.get("unit") not in k["units"]:
+            continue
+        if "orders" in k and row.get("order") not in k["orders"]:
+            continue
+        if k.get("parentBlank") and row.get("parentV", "") != "":
+            continue
+        return k
+    return None
+
+
+def state_checks(snap, prev_as_of, known):
+    """E12: x25 / x16 / x17 ported from the console to the snapshot on disk. State, not change:
+    they report what IS wrong in this snapshot, every refresh. Known cases (health/known.jsonl,
+    pending a user decision) report as 'known'; anything else is red."""
+    cat = M.Catalog(snap)
+    out = []
+    if not (snap.has("Order Items") and snap.has(M.CATALOG)):
+        return out
+    units = snap.table("Order Items")
+
+    # ---- parent drift (x25): every synced-from column vs its parent, through the unit's lookup
+    groups = collections.OrderedDict()
+    for r in cat.rows:
+        if r["list"] == "Order Items" and (r.get("syncedByFlow") or "").strip():
+            groups.setdefault((r["syncedFromList"], r["viaLookup"]), []).append((r["internalName"], r["syncedFromField"]))
+    drift = []
+    for (plist, fk), pairs in groups.items():
+        if not snap.has(plist):
+            continue
+        parents = snap.by_id(plist)
+        fkcol = next((c for (l, c), rest in cat.by_csv.items() if l == "Order Items" and rest == fk), fk)
+        for u in units:
+            pid = M.norm(u.get(fkcol))
+            if not pid:
+                continue
+            par = parents.get(pid)
+            if par is None:
+                drift.append({"unit": u.get("Title"), "field": "(parent %s %s missing)" % (plist, pid), "list": plist})
+                continue
+            for tgt, src in pairs:
+                a, b = _flat(u.get(tgt)), _flat(par.get(src))
+                if a != b:
+                    drift.append({"unit": u.get("Title"), "order": u.get("OrderNumber") or u.get("Order_Number_TextField"),
+                                  "list": plist, "parentId": pid, "field": tgt, "unitV": a[:40], "parentV": b[:40],
+                                  "recent": bool(prev_as_of) and (par.get("Modified") or "") >= prev_as_of})
+    kn = collections.Counter()
+    red = collections.defaultdict(list)
+    for d in drift:
+        k = _is_known(known, "parent drift", d)
+        if k:
+            kn[k.get("reason", "known")] += 1
+        else:
+            red[d["field"]].append(d)
+    for reason, n in kn.items():
+        out.append({"check": "parent drift", "level": "known", "list": "Order Items", "field": None, "rows": n,
+                    "detail": "%d unit-fields known: %s" % (n, reason)})
+    for field, ds in sorted(red.items(), key=lambda kv: -len(kv[1])):
+        rec = sum(1 for d in ds if d.get("recent"))
+        out.append({"check": "parent drift", "level": "red", "list": "Order Items", "field": field, "rows": len(ds),
+                    "detail": "%d units differ from their %s on %s (%d parent changed since %s, %d older); e.g. %s"
+                    % (len(ds), ds[0]["list"], field, rec, prev_as_of or "?", len(ds) - rec,
+                       "; ".join("%s %r vs %r" % (d["unit"], d.get("unitV", ""), d.get("parentV", "")) for d in ds[:4]))})
+
+    # ---- lookup mirrors (x16): *_TextField vs the id its lookup really points at
+    # Ids compare TRIMMED. A stray newline inside an id (Models 'M-FIEN-0004\n', found 2026-09-25)
+    # is its own defect - reported below as amber - not a stale mirror or a wrong revision id.
+    def ids(lst, field):
+        return {k: M.norm(r.get(field)).strip() for k, r in snap.by_id(lst).items()} if snap.has(lst) else None
+    MOD, REV, CLI = ids("Models", "ModelID"), ids("Model Revisions", "ModelID"), ids("Clients", "Client_ID")
+    for lst, field in (("Models", "ModelID"), ("Model Revisions", "ModelID"), ("Clients", "Client_ID")):
+        if snap.has(lst):
+            ws = ["%s %r" % (k, M.norm(r.get(field))) for k, r in snap.by_id(lst).items()
+                  if M.norm(r.get(field)) != M.norm(r.get(field)).strip()]
+            if ws:
+                out.append({"check": "id whitespace", "level": "amber", "list": lst, "field": field, "rows": len(ws),
+                            "detail": "%d %s ids carry leading/trailing whitespace (compared trimmed; fix at source): %s"
+                            % (len(ws), lst, "; ".join(ws[:6]))})
+    cases = [("Client", "ClientId", "Client_ID_TextField", CLI), ("Model", "ModelId", "Model_ID_TextField", MOD),
+             ("Model Revision", "ModelRevisionId", "Model_Revision_ID_TextField", REV)]
+    for name, lk, mir, truth_map in cases:
+        if truth_map is None or not units or mir not in units[0]:
+            continue
+        stale, empty = [], []
+        for u in units:
+            lid = M.norm(u.get(lk))
+            if not lid:
+                continue
+            truth, mv = truth_map.get(lid), M.norm(u.get(mir)).strip()
+            if mv == "":
+                empty.append(u.get("Title"))
+            elif truth is None or mv != truth:
+                corrupt = name == "Model Revision" and MOD and mv == MOD.get(M.norm(u.get("ModelId")))
+                stale.append("%s %r (lookup says %r)%s" % (u.get("Title"), mv, truth, " MODEL id - corruption signature" if corrupt else ""))
+        if stale:
+            out.append({"check": "lookup mirror", "level": "red", "list": "Order Items", "field": mir, "rows": len(stale),
+                        "detail": "%d units' %s disagrees with its lookup: %s" % (len(stale), mir, "; ".join(stale[:6]))})
+        if empty:
+            out.append({"check": "lookup mirror", "level": "amber", "list": "Order Items", "field": mir, "rows": len(empty),
+                        "detail": "%d units have an EMPTY %s (self-heals on the unit's next edit): %s"
+                        % (len(empty), mir, ", ".join(empty[:8]))})
+
+    # ---- revision ids (x17): ModelID = 'MR' + <linked model's code minus its M> + '-V<n>'
+    if snap.has("Model Revisions") and MOD is not None:
+        idcol = cat.id_column("Model Revisions", "Model")          # ModelId2 on disk (E8c)
+        revs = snap.table("Model Revisions")
+        if idcol not in revs[0]:
+            # A pre-E8c snapshot's catalog has no idColumn, and the guessed `ModelId` does not exist in
+            # the CSV (it is ModelId2) - every revision would read as unlinked. Say so; never guess.
+            out.append({"check": "revision id", "level": "amber", "list": "Model Revisions", "field": idcol, "rows": None,
+                        "detail": "cannot check: the Model lookup's id column %r is not in this snapshot (catalog predates "
+                                  "E8c idColumn) - refresh the mirror" % idcol})
+            return out
+        bad, unlinked = [], []
+        for k, r in snap.by_id("Model Revisions").items():
+            link = M.norm(r.get(idcol))
+            rid = M.norm(r.get("ModelID")).strip()
+            if not link:
+                unlinked.append("%s %r" % (k, rid))
+                continue
+            code = MOD.get(link, "")
+            want = ("MR" + code[1:]).upper() if code else ""
+            if not want or not rid.upper().startswith(want + "-V"):
+                why = "empty" if not rid else ("equals its MODEL code" if rid == code else "expected %s-V<n>" % want)
+                bad.append("%s %r (%s)" % (k, rid, why))
+        if bad:
+            out.append({"check": "revision id", "level": "red", "list": "Model Revisions", "field": "ModelID", "rows": len(bad),
+                        "detail": "%d revisions' ModelID does not match their model: %s" % (len(bad), "; ".join(bad[:8]))})
+        if unlinked:
+            out.append({"check": "revision id", "level": "red", "list": "Model Revisions", "field": idcol, "rows": len(unlinked),
+                        "detail": "%d revisions have NO Model link: %s" % (len(unlinked), "; ".join(unlinked[:10]))})
+    return out
+
+
+def evaluate(events, snap, acknowledged=None, prev_as_of=None, known=None, state=True):
     acks = acknowledged if acknowledged is not None else load_acks()
     cat = M.Catalog(snap)
     out = []
@@ -155,18 +324,20 @@ def evaluate(events, snap, acknowledged=None):
             if bad:
                 add("broken lookup", "red", "%d %s rows point %s at a %s row that does not exist: %s"
                     % (len(bad), r["list"], idcol, tgt, ", ".join("%s->%s" % b for b in bad[:8])), r["list"], idcol, len(bad))
+    if state:
+        out.extend(state_checks(snap, prev_as_of, known if known is not None else load_known()))
     return out
 
 
 def report_md(findings, as_of, prev_as_of, n_events):
     reds = [f for f in findings if f["level"] == "red"]
     amb = [f for f in findings if f["level"] == "amber"]
-    ok = [f for f in findings if f["level"] in ("expected", "acknowledged")]
+    ok = [f for f in findings if f["level"] in ("expected", "acknowledged", "known")]
     lines = ["# Mirror health - %s" % as_of, "",
              "Batch %s -> %s, %d journal events. Generated by `scripts/mirror_health.py`." % (prev_as_of, as_of, n_events), ""]
     if not findings:
         lines += ["**All clear.** Nothing matched a check.", ""]
-    for title, group in (("RED - needs a look", reds), ("Amber", amb), ("Expected / acknowledged", ok)):
+    for title, group in (("RED - needs a look", reds), ("Amber", amb), ("Expected / acknowledged / known", ok)):
         if group:
             lines += ["## %s (%d)" % (title, len(group)), ""]
             lines += ["- **%s** - %s%s" % (f["check"], (f["list"] + ": ") if f["list"] else "", f["detail"]) for f in group]
@@ -193,15 +364,15 @@ def main():
     if not folder:
         sys.exit("ABORT: no snapshot to check against")
     snap = M.Snapshot(folder)
-    findings = evaluate(events, snap)
+    findings = evaluate(events, snap, prev_as_of=run[-1]["prevAsOf"])
     md = report_md(findings, as_of, run[-1]["prevAsOf"], len(events))
     os.makedirs(M.HEALTH, exist_ok=True)
     with open(os.path.join(M.HEALTH, "latest.md"), "w", encoding="utf-8", newline="\n") as f:
         f.write(md + "\n")
     print(md)
     red = sum(1 for f in findings if f["level"] == "red")
-    print("health: %d red, %d amber, %d expected/acknowledged -> health/latest.md" % (
-        red, sum(1 for f in findings if f["level"] == "amber"), sum(1 for f in findings if f["level"] in ("expected", "acknowledged"))))
+    print("health: %d red, %d amber, %d expected/acknowledged/known -> health/latest.md" % (
+        red, sum(1 for f in findings if f["level"] == "amber"), sum(1 for f in findings if f["level"] in ("expected", "acknowledged", "known"))))
     sys.exit(1 if red else 0)
 
 
