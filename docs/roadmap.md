@@ -848,7 +848,7 @@ Found 2026-09-11 07:1x, minutes after enabling it. **The flow is currently disab
 
 > 🔑 **2026-09-24: the `Status Date` auto-stamp is DROPPED by user decision. The date stays
 > manual.** Staff type it, as they always have. The flow no longer reads or writes `Status Date`
-> at all (**v008**, staged, not yet pasted). So fix part 2 below ("decouple the stamp") and the
+> at all (**v008**, live and hash-confirmed at 21:10, flow still OFF). So fix part 2 below ("decouple the stamp") and the
 > `StepStatusStamped = StepStatus` gate under *Before turning it back on* no longer apply to the
 > date. Part 1 (guard the gets) still does. Don't reintroduce a Status Date write unless the user
 > asks. The keep-a-typed-date design is kept in `scripts/apply_v007_connref_statusdate.py` if they
