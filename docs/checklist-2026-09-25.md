@@ -140,13 +140,13 @@ fills these SA twins from the Order tonight.
 ## 3. Console runs still to do (same browser tab as `x25`; flow stays OFF)
 
 - [x] **RUN1 apply** ✅ done 2026-09-24 21:5x, 1053/1053 verified — `x22` with `CLI_FILL = true`, `DRY = false`, `OVERWRITE = null`. Expect **1,053 written / 1,053 verified / 0 failed**. *(Skip if already done tonight — check the output.)*
-- [ ] **RUN2 dry** — first, in the x25 tab:
+- [x] **RUN2 dry** ✅ 748 fields / 700 writes / 696 units — first, in the x25 tab:
       ```
       window.x25OV = window.x25.report.filter(r => !/Date$/.test(r.field) && r.parentV !== "" && r.unit !== "E21007-1/1").map(r => ({unit:r.unit, field:r.field})); window.x25OV.length
       ```
       then `x22` with `CLI_FILL = false`, `OVERWRITE = window.x25OV`, `DRY = true`. Send the output for a check before applying.
-- [ ] **RUN2 apply** — same, `DRY = false`, after the dry run is checked.
-- [ ] **Re-run `x25`.** Expected left over: only the D5 dates, the D6 LDs/EngReq, and E21007 — nothing else.
+- [x] **RUN2 apply** ✅ 2026-09-24 ~23:05. x22's own read-back died on a SharePoint **503** (throttling), but the **mirror verified it** (23:11 vs 22:25): exactly **748 cells changed on 696 units, 748/748 pairs fixed, 0 new drift, 0 changes outside the synced fields**. Parent drift 822 → 74 = only the held-back D5 dates (32), D6 LDs/EngReq (36) and E21007 (6).
+- [x] **Re-run `x25`** — done from the mirror instead (see RUN2): only D5 / D6 / E21007 remain.
 - [ ] `x16` (mirror audit) and `x24` dry run (stamps) — paste output.
 - [ ] `x17` (Model Revisions `ModelID` audit) — expect 393/394 clean.
 - [ ] `x26` (read-only, D6 evidence) — paste `scripts/x26_order_flag_history.js`, then `copy(window.x26)` and paste the result.
