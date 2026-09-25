@@ -375,6 +375,13 @@ Discovered 2026-09-14 while designing the engineering document control
     finer vocabulary in a new column, never by widening `Location`.
 
 ## Working notes
+- 🔴 **Snapshot the SharePoint mirror at the start of every session, and immediately before any change
+  to a list** (a script write, a column change, a flow paste that writes):
+  `pwsh scripts/Refresh-SharePointMirror.ps1` (~25 s). This is the user's interim rule (2026-09-24) until
+  scheduled snapshots run on dedicated infrastructure. It gives every session a baseline, and every change
+  a before-state to diff and roll back to. Design: `docs/change-tracking-design-2026-09-24.md` §0.
+  Read live list state from the mirror (and its `Columns` catalog for real column names) before asking the
+  user for an export or a console run.
 - Binary Office files here are tracked via **Git LFS** — see `.gitattributes`.
 - This repo has no live workbook of its own — nothing here should be treated as a source of
   truth until it's actually built in SharePoint/Power Apps and confirmed against FRM10-12.

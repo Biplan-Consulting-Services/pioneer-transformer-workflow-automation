@@ -10,7 +10,7 @@ workbook"*.
 
 | # | decision |
 |---|---|
-| D1 | **Nightly + every 2 h (08–18, workdays)**, but **DEFERRED**: the user will set up dedicated infrastructure for automations, so this does not depend on their laptop being on. Until then refreshes run **on demand** (a session or the user runs `Refresh-SharePointMirror.ps1`). Build step 5 waits for that infrastructure. |
+| D1 | **Nightly + every 2 h (08–18, workdays)**, but **DEFERRED**: the user will set up dedicated infrastructure for automations, so this does not depend on their laptop being on. Until then refreshes run **on demand** (a session or the user runs `Refresh-SharePointMirror.ps1`). Build step 5 waits for that infrastructure. **Interim rule (user, 2026-09-24):** snapshot **(1) at the start of every working session** and **(2) immediately before any modification to a list** as part of our work (a script write, a column change, a flow paste that writes). Every session therefore has a baseline, and every change we make has a before-state to diff and roll back to. |
 | D2 | **Every snapshot for 30 days, then the last of each month forever.** |
 | D3 | **Snapshots out of git; the LATEST version in git.** The user's addition: the **live** workbook and its latest CSVs live **separately** from the snapshots, so it's obvious which workbook to open and what goes to git. Layout below. |
 | D4 | **Completion records later, derived from the journal**, once it has run for a few weeks. No separate flow. |
