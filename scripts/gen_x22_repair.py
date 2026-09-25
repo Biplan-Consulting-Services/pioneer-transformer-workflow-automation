@@ -174,6 +174,26 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
      the unit. It never overwrites a value that is already there, so a unit
      that was only partly damaged is completed rather than rewritten.
 
+   OVERWRITE MODE -- off unless OVERWRITE below is filled in
+     Blank-fill cannot repair a unit that holds an OLD value, which is what a
+     day of N3 flows not running leaves behind (2026-09-24). x25 finds those.
+     Paste x25's output (`copy(window.x25)`) into OVERWRITE, or a list of
+     {id or unit, field}. The script then ignores UNITS and overwrites exactly
+     the listed unit-fields - nothing else on the unit, not even a blank.
+       - The value written is resolved LIVE, through the unit's lookup, the
+         same way blank-fill does. Never from x25's `parentV`: that is cut at
+         40 characters for display.
+       - x25 names units by Title. A Title that matches zero or several units
+         aborts, rather than picking one.
+       - A field x22 does not write, or a Cli* field (SKIP_GROUPS), aborts
+         the run. x25's "(parent N missing)" rows are listed and skipped.
+       - A parent that is now BLANK is listed, not cleared. The flow cannot
+         clear either (the connector leaves the old value when handed null),
+         so clearing is a decision, not a repair.
+     Filter the list before pasting if only some parents should be repaired -
+     e.g. keep x25's `recent` rows and leave the known older
+     MdlLatestModelRevision drift out.
+
    WHY IT RESOLVES THROUGH THE LOOKUP AND NOT A SIBLING OR A MIRROR
      Copying from a healthy sibling would be quicker and is how this goes
      wrong: x18's first version derived its fix from a `_TextField` mirror, in
@@ -213,6 +233,11 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
      whole-list number is known. */
   const UNITS = [1223, 1224, 1225, 1226, 1235, 1245, 1246];
   const SKIP_GROUPS = ["Cli"];
+
+  /* OVERWRITE MODE (see header). null = off = blank-fill over UNITS above.
+     Paste `copy(window.x25)` output here, or [{id: 1223, field: "OrdPO"}, ...]
+     or [{unit: "<Title>", field: "OrdPO"}, ...]. */
+  const OVERWRITE = null;
 
   const MAP = __MAPPING__;
 
@@ -255,6 +280,28 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   /* A Date-Only column takes a bare date. Anything with a time renders a day
      early on an Eastern site. */
   const asDate = (v) => (typeof v === "string" && /^\d{4}-\d{2}-\d{2}T/.test(v)) ? v.slice(0, 10) : v;
+
+  /* Does a value we would write equal what the unit holds? Used by the
+     read-back, and by overwrite mode to skip a field that already matches.
+     A URL column reads back as {Url, Description}; compare the Url. */
+  const flat = (v) => (v && typeof v === "object")
+    ? (v.Url !== undefined ? v.Url : (v.Value !== undefined ? v.Value : JSON.stringify(v)))
+    : v;
+
+  /* ⚠️ A Date-Only column NEVER reads back in the shape it was written.
+     We send a bare `2026-09-16`; SharePoint stores site-local midnight and
+     returns `2026-09-16T04:00:00Z` (05:00Z outside DST). That is the
+     CORRECT result - a full instant would store UTC midnight and render as
+     the previous day, which is the bug the 2026-09-08 backfill existed to
+     fix. The first version of this read-back compared the strings raw and
+     called all 12 date writes failures when every one of them was right.
+     So: when we sent a bare date, compare only the date part. */
+  const same = (w, g) => {
+    const a = flat(w), b = flat(g);
+    if (typeof a === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a) && typeof b === "string")
+      return b.slice(0, 10) === a;
+    return String(a) === String(b);
+  };
 
   /* 🔴 A LOOKUP source does not come back from a plain item read.
      `items(498)` returns `ModelRevisionId`, an integer - there is no
@@ -299,25 +346,86 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
     .then(j => j.FormDigestValue).catch(() => null);
   if (!DRY && !digest) { console.error("ABORT: no form digest, cannot write."); return; }
 
+  /* OVERWRITE: turn the pasted list into unit id -> Set(target field).
+     Everything is checked BEFORE the first parent read, so a bad list aborts
+     with nothing planned rather than half-way through. */
+  let RUN = UNITS, targets = null;
+  const blankParent = [];   // overwrite mode: listed, never cleared
+  if (OVERWRITE) {
+    const rows = Array.isArray(OVERWRITE) ? OVERWRITE : (OVERWRITE.report || []);
+    if (!rows.length) { console.error("ABORT: OVERWRITE is set but holds 0 rows. A zero-row list is a failed paste."); return; }
+    const groupOf = {};
+    for (const g of Object.keys(MAP)) for (const f of MAP[g].fields) groupOf[f.target] = g;
+
+    let byTitle = null;   // Title -> [Id], read once, only if some row lacks an id
+    const titles = async () => {
+      const m = new Map();
+      let u = items + "?$select=Id,Title&$top=500", pages = 0;
+      while (u && pages++ < 40) {
+        const j = await J(u);
+        for (const r of (j.value || [])) m.set(String(r.Title), (m.get(String(r.Title)) || []).concat(r.Id));
+        u = j["odata.nextLink"] || null;
+      }
+      return m;
+    };
+
+    targets = new Map();
+    let refused = 0, missing = 0;
+    for (const r of rows) {
+      const where = (r.id != null ? "Id " + r.id : "unit " + JSON.stringify(r.unit)) + " " + r.field;
+      if (typeof r.field === "string" && r.field.startsWith("(parent")) {
+        console.log("  skipped " + where + " - x25 could not read that parent; nothing to copy from");
+        missing++; continue;
+      }
+      const g = groupOf[r.field];
+      if (!g) { console.log("  🔴 " + where + ": not a field x22 writes"); refused++; continue; }
+      if (SKIP_GROUPS.indexOf(g) >= 0) { console.log("  🔴 " + where + ": " + g + "* is in SKIP_GROUPS"); refused++; continue; }
+      if (r.list && r.list !== MAP[g].parent) {
+        console.log("  🔴 " + where + ": listed under " + r.list + ", but x22 maps it from " + MAP[g].parent);
+        refused++; continue;
+      }
+      let id = r.id;
+      if (id == null) {
+        if (!byTitle) byTitle = await titles();
+        if (!byTitle.size) { console.error("ABORT: read 0 units while resolving Titles. A zero-row read is a failed read."); return; }
+        const ids = byTitle.get(String(r.unit)) || [];
+        if (ids.length !== 1) {
+          console.log("  🔴 " + where + ": Title matches " + ids.length + " units" + (ids.length ? " (" + ids.join(", ") + ")" : ""));
+          refused++; continue;
+        }
+        id = ids[0];
+      }
+      if (!targets.has(id)) targets.set(id, new Set());
+      targets.get(id).add(r.field);
+    }
+    if (refused) { console.error("🔴 ABORT: " + refused + " rows of OVERWRITE refused (above). Fix the list; nothing read or written."); return; }
+    RUN = [...targets.keys()];
+    const n = [...targets.values()].reduce((a, s) => a + s.size, 0);
+    console.log("OVERWRITE: " + n + " unit-fields on " + RUN.length + " units (" + missing + " missing-parent rows skipped). UNITS ignored.\n");
+  }
+
   const plan = [];
   let bail = false;
-  for (const id of UNITS) {
+  for (const id of RUN) {
     const unit = await J(items + "(" + id + ")");
     console.log("--- Id " + id + "  " + unit.Title + " ---");
+    const want = targets ? targets.get(id) : null;
 
     for (const g of Object.keys(MAP)) {
       if (SKIP_GROUPS.indexOf(g) >= 0) continue;
       const m = MAP[g];
+      if (want && !m.fields.some(f => want.has(f.target))) continue;
       const pid = unit[m.fk];
       if (isBlank(pid)) { console.log("  " + g + "*: no " + m.parent + " lookup - skipped"); continue; }
       let parent;
       try { parent = await J(base + "/_api/web/lists(guid'" + m.list + "')/items(" + pid + ")"); }
       catch (e) { console.log("  " + g + "*: parent " + pid + " unreadable - " + e.message); continue; }
 
-      const write = {};
+      const write = {}, before = {};
       let already = 0, empty = 0;
       for (const f of m.fields) {
-        if (!isBlank(unit[f.target])) { already++; continue; }
+        if (want) { if (!want.has(f.target)) continue; }
+        else if (!isBlank(unit[f.target])) { already++; continue; }
         let raw = parent[f.source];
         /* Present as `<name>Id` but absent as `<name>` = a lookup. Resolve it
            rather than treating it as blank. */
@@ -325,7 +433,11 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
           raw = await resolveLookup(m.list, f.source, parent);
         let v = unwrap(raw, f.sourceChoice);
         v = asDate(v);
-        if (isBlank(v)) { empty++; continue; }
+        if (isBlank(v)) {
+          empty++;
+          if (want) blankParent.push({ id: id, field: f.target, unitV: unit[f.target], parent: m.parent + " " + pid });
+          continue;
+        }
         /* Nothing structured may reach a write. If unwrap left an object or an
            array here, the mapping is one this generator does not understand -
            refuse rather than write JSON into a column. */
@@ -352,17 +464,26 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
            plain string on the field itself. Copying the flow's key shape into
            a REST body writes to a field that does not exist. `targetChoice`
            is still used - but to unwrap the SOURCE, not to name the target. */
+        /* Overwrite: x25 compares through FieldValuesAsText, x22 through the
+           live row, so a listed field can already match here. Don't rewrite it. */
+        if (want && same(v, unit[f.target])) { already++; continue; }
         write[f.target] = v;
+        before[f.target] = unit[f.target];
       }
       const n = Object.keys(write).length;
       console.log("  " + g + "* <- " + m.parent + " " + pid + ": " + n + " to write, "
-        + already + " already set, " + empty + " blank on the parent");
-      for (const k of Object.keys(write)) console.log("      " + k.padEnd(34) + " = " + JSON.stringify(write[k]));
+        + already + (want ? " already match" : " already set") + ", " + empty + " blank on the parent");
+      for (const k of Object.keys(write)) console.log("      " + k.padEnd(34) + " = "
+        + (want ? JSON.stringify(flat(before[k])) + "  ->  " : "") + JSON.stringify(write[k]));
       if (n) plan.push({ id: id, group: g, write: write });
     }
   }
 
-  console.log("\n=== " + plan.length + " writes planned across " + UNITS.length + " units ===");
+  console.log("\n=== " + plan.length + " writes planned across " + RUN.length + " units ===");
+  if (blankParent.length) {
+    console.log("⚠️ " + blankParent.length + " listed fields have a BLANK parent now - NOT cleared (see header):");
+    console.table(blankParent);
+  }
   if (bail) { console.error("🔴 ABORT: a structured value reached a write. Nothing written."); return; }
   if (DRY) { console.log("DRY RUN - nothing written. Set DRY = false and paste again."); return; }
 
@@ -386,35 +507,23 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   /* Read back. A 200 is not evidence. */
   console.log("\n=== read-back ===");
   let bad = 0;
+  const tally = {};   // overwrite mode: field -> {written, verified, failed}
   for (const p of plan) {
     const after = await J(items + "(" + p.id + ")");
     for (const field of Object.keys(p.write)) {
       const got = after[field], want = p.write[field];
-      /* A URL column reads back as {Url, Description}; compare the Url. */
-      const flat = (v) => (v && typeof v === "object")
-        ? (v.Url !== undefined ? v.Url : (v.Value !== undefined ? v.Value : JSON.stringify(v)))
-        : v;
-
-      /* ⚠️ A Date-Only column NEVER reads back in the shape it was written.
-         We send a bare `2026-09-16`; SharePoint stores site-local midnight and
-         returns `2026-09-16T04:00:00Z` (05:00Z outside DST). That is the
-         CORRECT result - a full instant would store UTC midnight and render as
-         the previous day, which is the bug the 2026-09-08 backfill existed to
-         fix. The first version of this read-back compared the strings raw and
-         called all 12 date writes failures when every one of them was right.
-         So: when we sent a bare date, compare only the date part. */
-      const same = (w, g) => {
-        const a = flat(w), b = flat(g);
-        if (typeof a === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a) && typeof b === "string")
-          return b.slice(0, 10) === a;
-        return String(a) === String(b);
-      };
-      if (!same(want, got)) {
+      const ok = same(want, got);
+      if (OVERWRITE) {
+        const t = (tally[field] = tally[field] || { written: 0, verified: 0, failed: 0 });
+        t.written++; t[ok ? "verified" : "failed"]++;
+      }
+      if (!ok) {
         bad++;
         console.log("  🔴 " + p.id + " " + field + ": wanted " + JSON.stringify(want) + " got " + JSON.stringify(got));
       }
     }
   }
+  if (OVERWRITE) console.table(tally);
   console.log(bad ? "\n🔴 " + bad + " fields did not land." : "\n✅ every written field verified.");
 })();
 """
