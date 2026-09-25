@@ -81,11 +81,27 @@ reference's connection was authenticated all day. Needs the user to read one flo
   whole-list, generated from x7's 46-field map, **never yet run live**). Expect
   `MdlLatestModelRevision` to show list-wide as *older* drift — that is known (09-21 parked item 2)
   and is the sanity check that x25 works: if it does not appear, x25 is wrong, not the data.
-- **Clients → unit:** not measurable. The Clients flow reads `body/CliLeadTimeWeeks` — its own
-  destination name — so `Cli*` is blank everywhere regardless of the outage (task E3).
+- **Clients → unit:** ~~not measurable, flow reads the wrong field~~ **corrected 21:1x** — the flow is
+  right (`CliLeadTimeWeeks` is the source name too); `Cli*` is blank because the 17 valued clients were
+  seeded before the flow existed. Fixed by U5 (x22 `CLI_FILL`), not by a flow change.
 - **`Order Items` mirrors (`*_TextField`)** — `x16`. Self-heal on each unit's next edit once v008 is on.
 - **Stamps** — `x24` dry run. Optional now that the date is manual; what it still affects is that
   Livraison units not yet `Terminé`/`Delivered` get completed on their next edit.
+
+### x25 results — run by the user 21:2x, read by `claude-43` (P2)
+**1,127 units. 0 drift on any parent modified since midnight → the outage left NO parent→unit drift.**
+818 older unit-field mismatches on 738 units. The known `MdlLatestModelRevision` drift shows up (sanity
+check passes). Classified from the full `window.x25.report`:
+
+| group | what the values show | route |
+|---|---|---|
+| `MdlLatestModelRevision`, unit `M-…` vs parent `MR-…-V1` (~670) | the 09-21 known stale value | **x22 OVERWRITE**, filtered list |
+| unit **blank**, parent has value — SA units (`22098/22107/22108/22110-1/1 SA`: all Mdl*/Rev*, `21613/21661/21664/21665/21749 SA`: Ord*), `21792-3/5`,`4/5`, `22169-7..10/10`, `22175-1/2`, `22112-1/3` | never filled | **x22 blank-fill** (plain run; combine with U5 `CLI_FILL`) |
+| `OrdInitialPromisedDate` 18 / `OrdOrderDate` 14 — parent `…T00:00:00Z`, unit `…T04:00/05:00Z` **one day earlier** | app-created orders (22140/41/56/57, P00005, P10003) stored UTC-midnight during the site-UTC period (decision 6). **Real one-day difference, not a compare artefact** | **DO NOT WRITE** — which date is right is decision 5 below |
+| `OrdLDs` / `OrdEngineeringRequired`, unit `true`/`false`, parent **blank** (~40) | parent side went blank; parents all modified 09-11 04:2x–05:1x = the N4 choice conversion window | **DO NOT WRITE** — decision 4 (x22 lists, never clears) + decision 6 |
+| `22001-2/8` `OrdEngineeringRequired` unit `false` parent `true` | genuine | x22 OVERWRITE (1 field) |
+| `E21007-1/1` unit says model `M-MEEN-0001`, lookup points at `M-MEEN-0005` | lookup and copy disagree on WHICH model | **DO NOT WRITE** — decision 7 |
+| Models 391/392 → parent value `MR-ENMA-0052` / `-0053` with **no `-V1`** | parent-side data smell (x17 rule) | overwrite is still closer; flag for x17 |
 
 ### Verified-hard lessons that apply tonight (from CLAUDE.md / past nights)
 - A zero-row read is a **failed** read, not "nothing to do". Every script aborts on it.
@@ -106,12 +122,12 @@ reference's connection was authenticated all day. Needs the user to read one flo
 | U2 | Read run history of one N3 flow: did it fail today, and from when to when? | **user** | no | UNCLAIMED — sets x25's `SINCE` |
 | U3 | Run `x25`, `x16`, `x24` (dry), `x17`; paste output (`copy(window.x25)` for x25) | **user** | no | UNCLAIMED — after U2 + 10–15 min of healthy polls |
 | P1 | Intake U1's pull; confirm v008 `applied` by hash | `claude-43` | no | **DONE 21:10** — `intake`: *v008 CONFIRMED APPLIED* (hash match), v007 → `forked`, package `.zip` attached. Export holds ONE connection reference (`shared_sharepointonline` → `…98111a58…`, same as the N3 flows); `_1` gone. Flow still OFF |
-| P2 | Interpret U3; decide repair route per parent (touch vs E1 overwrite) | `claude-43` | no | BLOCKED on U3 |
+| P2 | Interpret U3; decide repair route per parent (touch vs E1 overwrite) | `claude-43` | no | **DONE 21:3x (x25 part)** — see *x25 results* in KEY FACTS. x16 / x24 still to come |
 | E1 | **x22 overwrite mode** — repair stale non-blank parent values from an x25 report | `claude-5b` | yes | **DONE `d489f5a`** — regenerated + `node --check` OK; mock-harness 6/6 (see log) |
 | E4 | **x25 rows carry the unit `id`** — so x22's OVERWRITE matches exactly instead of by Title. ⚠️ **Do before E2:** U3 has not run yet, so this is free now and costs a user re-run later. Files: `scripts/gen_x25_drift_scan.py` → regenerate. Add `id: u.Id` to every `report.push` and to `perParent[k].units` (keep Title for humans). Verify: regenerate, `node --check`, diff stat, and confirm x22's OVERWRITE accepts the new rows as-is | `claude-5b` | yes | **DEPRIORITISED 21:3x** — user is running x25 now, so it would not land in time; x22 already aborts on ambiguous Titles. Do after E2/E3 if at all |
 | E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **DONE `ba41132` + `7f59469`** — diff stat and block text in the log |
-| E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 22:0x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. **UNBLOCKED 22:2x** — U4 back, go |
-| U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | **DONE 22:2x** — 200, **17 of 97** clients hold `CliLeadTimeWeeks` (16×3, 18×5, 20×7, 24×1 CONED, 28×1 HYDRO QUEBEC = FRM13's value). 80 are null — their units correctly stay blank. Pasted Atom feed, counted by `claude-43` |
+| E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 21:1x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. **UNBLOCKED 21:1x** — U4 back, go |
+| U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | **DONE 21:17** — 200, **17 of 97** clients hold `CliLeadTimeWeeks` (16×3, 18×5, 20×7, 24×1 CONED, 28×1 HYDRO QUEBEC = FRM13's value). 80 are null — their units correctly stay blank. Pasted Atom feed, counted by `claude-43` |
 
 ### E1 — x22 overwrite mode
 **Why:** x22 fills only BLANK fields. After a day with the N3 flows down, units hold OLD values —
@@ -165,6 +181,9 @@ diff, write the output file. Hand the output path to `claude-43` to `snapshot --
 | 3 | Delete the stray connection `…5348ae66…` once v008 is confirmed live (check its "used by" first) | after P1 |
 | 4 | x22 overwrite: if the parent field is now **blank** but the unit still holds a value, clear the unit? (Whether the flow itself would clear it depends on the column: R14 "connector ignores null" was measured false for DateTime on 09-15.) | open. E1 lists these and doesn't clear them |
 
+| 5 | 32 order dates differ by one day between Order (UTC midnight) and its units (Eastern midnight, day before) on 22140/22141/22156/22157/P00005/P10003. Which is the intended date? Check one order in the app or with sales | open — nothing written |
+| 6 | ~40 units hold `LDs`/`Engineering Required` = true/false where their Order is now blank (parents modified in the 09-11 N4 window). Was the Order blanked by the conversion (units right) or cleared on purpose (units stale)? | open — nothing written |
+| 7 | `E21007-1/1`: its Model lookup is `M-MEEN-0005` but its copied model data is `M-MEEN-0001`. Which model is the unit? | open — nothing written |
 ---
 
 ## EVENT LOG
@@ -275,3 +294,54 @@ field. Nothing authored; raising this before anyone acts on it.**
   now that the N3 flows are healthy). Also correct `n3-fanout-race-2026-09-21.md` §*third bug* and
   parked item 4, the board's KEY FACTS "Clients → unit" line, and x22's `SKIP_GROUPS` comment.
   **No apply script is needed**, so there's nothing to hand over for `stage`.
+
+**2026-09-24 21:18 (`date`) | `claude-5b` |** ⚠️ **Timestamp correction:** my entries above stamped
+21:2x / 21:4x / 21:5x were estimated, not read from the clock. The machine clock says 21:18 now, so
+they all fall between 21:06 and 21:18. Commit times in `git log` are the reliable record. From here
+on, stamps come from `date`.
+**E3 resumed (U4: 200, 17 of 97 clients hold a value).** Intent:
+1. **x22:** add `CLI_FILL = false` (opt-in, off by default). `SKIP_GROUPS` is untouched. When it's on,
+   the run ignores `UNITS`/`OVERWRITE` and blank-fills **only** the `Cli*` group across the whole list. It
+   reads units with `$select=Id,Title,ClientId,<Cli targets>`, resolves each client by **lookup id**
+   (never Title, because of the `§` titles), and writes only where the unit is blank AND the client has a value.
+   The dry run asserts "skipped N units: parent CliLeadTimeWeeks null", prints a units-per-client table,
+   aborts on zero-row reads, aborts if both CLI_FILL and OVERWRITE are set, and reads back after APPLY.
+2. **`n3-fanout-race-2026-09-21.md`:** targeted correction notes on §*third bug* and parked item 4,
+   with the original text kept.
+3. x22's `SKIP_GROUPS` comment, then regenerate, `node --check`, a mock-harness run, and commit + push.
+
+**2026-09-24 21:20 (`date`) | `claude-5b` |** **E3 authored and pushed, `f7a51eb`.** The live run is the
+user's (dry run first).
+- **Verification:** regenerated, `node --check` OK. The mock harness passed **15/15**: the 9 E1
+  assertions, plus a check that a normal run never writes Cli, plus 5 new ones. A CLI dry run
+  writes nothing. APPLY wrote exactly the 3 blank units whose client has a value (`18`, `18`, and
+  `20` for the `LG§E` client, matched by id). Units that were already set, had a null parent, or
+  pointed at a missing client were untouched. Only `CliLeadTimeWeeks` was written. CLI_FILL together
+  with OVERWRITE aborts with 0 reads. Diff stat: gen/x22 81 lines each (identical), 09-21 doc +12, HANDOVER 5; 167+/12− in total.
+- **Also corrected:** the 09-21 doc (a correction callout on §*third bug* and on parked item 4, with
+  the original text kept) and **my own** HANDOVER 09-24 block, which repeated the wrong claim.
+- **Still stale, not mine to edit:** the board's KEY FACTS "Clients → unit: not measurable" line
+  (`claude-43`), and the `x25` header's "Clients is not scanned: its flow reads the wrong field". The
+  x25 header is generated by `gen_x25_drift_scan.py`, so fix it at the next regenerate, not while
+  x25 is in the user's hands.
+- **User run instructions (U5):**
+  1. Open `…/PioneerPlanificatio/_api/web/currentuser`, signed in, then F12 → Console.
+  2. Open `scripts/x22_repair_parent_sync.js` and change **`const CLI_FILL = false;` → `true`**. Leave
+     `DRY = true` and `OVERWRITE = null`. Paste the whole file and press Enter. It writes nothing.
+  3. Read the output:
+     - The **units-per-client table** should have HYDRO QUEBEC largest.
+     - `skipped N units: parent CliLeadTimeWeeks null` should be most units (80 of 97 clients are null).
+     - `skipped N units: … already set` should be small (~2 on the 09-16 export).
+     - `=== K writes planned ===`.
+     - Any ⚠️ missing-client line.
+     Paste it back for `claude-43`.
+  4. If it looks right, set `DRY = false` and paste again. It writes and then reads back.
+     Expect `✅ every written field verified` and a per-field tally of `written = verified = K`.
+  5. **Set `CLI_FILL` back to `false`** afterwards (or just don't save the edit; the committed file stays `false`).
+- ⚠️ Writing K units fires the Order Items trigger flow K times if it's enabled. It's OFF tonight,
+  so that's fine now. Run U5 **before** enabling it, or accept K trigger runs.
+
+**2026-09-24 21:3x | `claude-43` | P2 (x25) DONE.** Read the user's full `window.x25` paste (818 rows,
+73 parents). Outage drift = 0. Classification and routes in KEY FACTS *x25 results*; three new
+decisions (5–7) for anything where the right value is unknown. Corrected my own earlier stamps
+(22:0x / 22:2x were guesses; the U4 feed is stamped 01:17Z = 21:17) and the stale KEY FACTS Clients line.
