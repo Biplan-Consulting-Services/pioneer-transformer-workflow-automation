@@ -25,6 +25,10 @@ Clients) are clean and on the connection reference. Today's outage left **no** p
       archive row alone with no cap or log, and has no TODAY() recalc. **v003 is STAGED** (v002 withdrawn: it filtered on Delivery End Date, empty on every unit; review doc §6a) (`workflow-data/Order Items - Nightly Sync/_outbox/PASTE-ME.json`; paste + test steps in the review doc §6b) for you to
       paste: double confirmation, a 50-unit cap, a dry-run first night, and the ~4-row TODAY() touch.
 - [ ] Delete `test calculated column` from Order Items (it also uses TODAY()).
+- [ ] **Start of session: run the mirror refresh** (`pwsh scripts/Refresh-SharePointMirror.ps1`) and read `sharepoint-lists/mirror/health/latest.md`. It now reports parent drift, mirror columns and revision IDs on every refresh. As of 01:20: 3 red (3 stale `Model_Revision_ID_TextField`; `MR-ENMA-0052`/`-0053` without `-V1`; **8 revisions with no Model link, 414–422, 7 of them new since 09-21**, likely the Power App), 1 amber, and the 74 decision-pending mismatches marked known.
+- [ ] Fix **Models row 503**: its ID is `M-FIEN-0004` followed by a stray line break. Edit it on the list.
+- [ ] Check whether the v001 Nightly Sync actually ran at 01:00 (run history). The mirror showed **0 changes between 00:55 and 01:20**, so nothing was deleted by then.
+- [ ] *(with a test unit)* the last check of the rollback tool: `x27_restore.js` against one real unit (design step 4). It needs you in the browser.
 - [ ] **Trigger flow**: run the section 4 tests, including the loop-confirmation check, then enable it.
 
 ---
