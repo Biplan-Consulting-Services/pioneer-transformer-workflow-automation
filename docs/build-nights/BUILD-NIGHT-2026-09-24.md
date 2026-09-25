@@ -40,7 +40,7 @@ then `docs/n3-fanout-race-2026-09-21.md` § *Status at close of 2026-09-21*.
 | Power Automate designer / enabling flows | **user** | No session can drive it (see CLAUDE.md, *hand-off*); two authors in one flow fork it |
 | `workflow-data/<flow>/` (history.json, versions, `_inbox`, `_outbox`) | `claude-43` | `intake`/`stage` rewrite history.json and clear folders; two writers corrupt the lineage |
 | Writes to live SharePoint lists | **user** (via scripts we write) | Every write fires the trigger flows; no session writes the tenant directly tonight |
-| Git in `Workflow-Automation` | shared | **Stage named paths only — never `git add -A` / `git add .`.** `git pull --rebase` before every push. The tree carries untracked files that are not ours (below) |
+| Git in `Workflow-Automation` | shared | **Stage named paths only — never `git add -A` / `git add .`.** `git pull --rebase --autostash` before every push — plain `--rebase` refuses because of the modified `x14` below (hit 21:0x). The tree carries untracked files that are not ours (below) |
 
 ⚠️ **Untracked files in the tree that nobody should commit blindly:** `sharepoint-lists/Order Items.csv`,
 `sharepoint-lists/Order Items (1).csv` (09-16 exports, unstamped names), `workbooks/Archive active.xlsx`,
