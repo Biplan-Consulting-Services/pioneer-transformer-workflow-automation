@@ -60,7 +60,7 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 |---|---|---|---|
 | D5 | **32 order dates one day apart** (Order Date / Initial Promised Date) on 22140, 22141, 22156, 22157, P00005, P10003 — the Order says the 26th, its units say the 25th. Which date was meant? | E7 on the board (21:42). **Reading: the Order's later date was meant.** Order Date = the order's creation day in 3 of 3 checkable cases (22156 created 09-01, P00005 / P10003 created 09-03); the units' and Excel's copies put it a day *before* the order existed; 22156's earlier promised date is a Sunday. The SharePoint screen shows the earlier date too (UTC midnight displays as the day before on an Eastern site) — that is how Excel and the units inherited it. Only these 6 of 457 orders are stored this way; cause unknown. **If you agree:** rewrite the six Orders' dates as plain dates (then the units follow) | |
 | D6 | **~40 units have LDs / Engineering Required = true/false, their Order is now blank.** Units right, or Orders right? | E6 on the board (21:40). **Reading: the units are right — the Orders were never set, not wiped.** Units match FRM10-12 unit by unit (22111: EngReq N on exactly 5/10 and 6/10); the Order already disagreed with Excel at 03:39; LDs/EngReq are plain Yes/No and the 09-11 conversion never touched them (the "conversion window" link was wrong). **Confirm with `scripts/x26_order_flag_history.js`** (read-only) → `copy(window.x26)`: live true/false/blank counts + each order's history. If confirmed: fill the Orders from the units — nothing to fix on the units | |
-| D1 | **Livraison**: forcing `Terminé`/`Delivered` on *every* later step change of a delivered unit — intended, or only on the move *into* Livraison? | v008 keeps current behaviour | |
+| D1 | **Livraison**: forcing `Terminé`/`Delivered` on *every* later step change of a delivered unit — intended, or only on the move *into* Livraison? | **Seen live on 09-23** (version history, board 22:38): someone set a delivered unit's step back and the flow forced `Terminé` again 34 s later. v008 keeps this behaviour | |
 | D2 | Level the stamps with `x24` before enabling the flow, or let Livraison-but-Active units complete on their next edit? | run `x24` dry run first | |
 | D4 | If a parent field is now blank but the unit still has a value, should the repair clear the unit? | x22 lists them, never clears | |
 | — | `P00005`: Initial Promised Date (2025-12-30/31) is ~8 months **before** its Order Date (2026-09-03) under either reading — likely a year typo (2026-12-31?). Ask its creator (Dominic Laguë) | x25, E7 | |
@@ -89,6 +89,11 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 ## 4. Turning the trigger flow back on
 
 Only after section 3 is done.
+- [ ] 🔴 **Self-trigger (loop) test FIRST.** Unit `21792-3/5` got 46 no-change writes in 30 min on 09-21
+      (every ~34 s) — the trigger flow re-firing on its own save. Enable, edit ONE unit, wait 5–10 min,
+      and count its versions (the mirror's `VersionCounts`, or the unit's version history). If the count
+      keeps climbing, turn it off: it is looping. Check the flow's run history for 09-22 01:05–01:40 UTC
+      too — that confirms the cause.
 - [ ] Test on a **model-less unit** (edit any field) → run succeeds, nothing breaks.
 - [ ] Move a test unit **into Livraison** → Step Status `Terminé`, Item Status `Delivered`.
 - [ ] Change a step on a normal unit → `Status Date` is **not** touched (manual now).
@@ -96,6 +101,14 @@ Only after section 3 is done.
 - [ ] After a day: delete the stray SharePoint connection `…5348ae66…` (check its *used by* list first).
 
 ---
+
+## 4b. Version history — decide after the loop is understood
+
+- 81 units, 30 orders, 25 revisions have already lost their oldest versions (limit is 50 on every list).
+  Most of it is no-op loop churn. Stop the loop first, then raise Order Items / Order to 500 (D6 in
+  `docs/change-tracking-design-2026-09-24.md`).
+- Revision 26: a Power App save (09-17) wrote `ModelID` back to the old `M-HYQU-0009`, undoing the 09-14
+  repair — the cause fixed in the app on 09-21. Re-run `x17` to confirm nothing has regressed since.
 
 ## 5. Small clean-ups (any time)
 
