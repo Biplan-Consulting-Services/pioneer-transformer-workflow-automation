@@ -53,9 +53,9 @@ and a modified `scripts/x14_step9_healthy_unit.js` (PHASE flipped to verify — 
 ### Order Items trigger flow — where it stands (verified by `flow_version.py status`)
 | v | what | state |
 |---|---|---|
-| v006 | **the user's own edit**, pulled 20:12 from their zip: Livraison auto-complete (`CompletOrder` → `Terminé`/`Delivered`), `LocationStamped`, Status Date initialised from the row | `pulled` = live |
+| v006 | **the user's own edit**, pulled 20:12 from their zip: Livraison auto-complete (`CompletOrder` → `Terminé`/`Delivered`), `LocationStamped`, Status Date initialised from the row | `pulled`, replaced by v008 21:10 |
 | v007 | Status Date keep-a-typed-date design (`StatusDateStamped`) | `local`, **superseded, never pasted** |
-| v008 | v006 + back on the connection reference + **flow no longer reads or writes Status Date** | `local`, **staged in `_outbox/PASTE-ME.json`** |
+| v008 | v006 + back on the connection reference + **flow no longer reads or writes Status Date** | **`applied` 21:10 = LIVE** (hash-confirmed by `intake`); flow still OFF |
 
 - 🔑 **User decision 2026-09-24: Status Date stays MANUAL.** The flow does not stamp it. Do not
   reintroduce a Status Date write without the user asking; the design is kept in
@@ -102,13 +102,14 @@ reference's connection was authenticated all day. Needs the user to read one flo
 | # | Task | Owner | Stealable | State |
 |---|---|---|---|---|
 | 0.1 | Create board + KEY FACTS, register in `session-tracks.json` | `claude-43` | no | **DONE 21:0x** — this file; registry entry re-read after write |
-| U1 | Paste v008 into the Order Items trigger (extension, `_outbox/PASTE-ME.json`), save, confirm the connection warning is gone, copy JSON back to `_inbox` | **user** | no | UNCLAIMED |
+| U1 | Paste v008 into the Order Items trigger (extension, `_outbox/PASTE-ME.json`), save, confirm the connection warning is gone, copy JSON back to `_inbox` | **user** | no | **DONE 21:10** (user-reported; verified by P1) |
 | U2 | Read run history of one N3 flow: did it fail today, and from when to when? | **user** | no | UNCLAIMED — sets x25's `SINCE` |
 | U3 | Run `x25`, `x16`, `x24` (dry), `x17`; paste output (`copy(window.x25)` for x25) | **user** | no | UNCLAIMED — after U2 + 10–15 min of healthy polls |
-| P1 | Intake U1's pull; confirm v008 `applied` by hash | `claude-43` | no | BLOCKED on U1 |
+| P1 | Intake U1's pull; confirm v008 `applied` by hash | `claude-43` | no | **DONE 21:10** — `intake`: *v008 CONFIRMED APPLIED* (hash match), v007 → `forked`, package `.zip` attached. Export holds ONE connection reference (`shared_sharepointonline` → `…98111a58…`, same as the N3 flows); `_1` gone. Flow still OFF |
 | P2 | Interpret U3; decide repair route per parent (touch vs E1 overwrite) | `claude-43` | no | BLOCKED on U3 |
-| E1 | **x22 overwrite mode** — repair stale non-blank parent values from an x25 report | `claude-5b` | yes | UNCLAIMED — spec below |
-| E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | UNCLAIMED — spec below |
+| E1 | **x22 overwrite mode** — repair stale non-blank parent values from an x25 report | `claude-5b` | yes | **DONE `d489f5a`** — regenerated + `node --check` OK; mock-harness 6/6 (see log) |
+| E4 | **x25 rows carry the unit `id`** — so x22's OVERWRITE matches exactly instead of by Title. ⚠️ **Do before E2:** U3 has not run yet, so this is free now and costs a user re-run later. Files: `scripts/gen_x25_drift_scan.py` → regenerate. Add `id: u.Id` to every `report.push` and to `perParent[k].units` (keep Title for humans). Verify: regenerate, `node --check`, diff stat, and confirm x22's OVERWRITE accepts the new rows as-is | `claude-5b` | yes | **DEPRIORITISED 21:3x** — user is running x25 now, so it would not land in time; x22 already aborts on ambiguous Titles. Do after E2/E3 if at all |
+| E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **CLAIMED (`claude-5b`, 21:2x)** |
 | E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | UNCLAIMED — spec below. ⚠️ authoring only; `intake`/`stage` go through `claude-43` |
 
 ### E1 — x22 overwrite mode
@@ -161,6 +162,7 @@ diff, write the output file. Hand the output path to `claude-43` to `snapshot --
 | 1 | Livraison auto-complete tests **current** Location, so any later step change on a Livraison unit is forced back to `Terminé`/`Delivered` (incl. setting it Cancelled). Intended as "delivered is final", or only on the move INTO Livraison? | open — v008 keeps current behaviour |
 | 2 | Run `x24` (level stamps) before enabling, or let the ~8 Livraison-but-Active units complete on their next edit? | open — decide from x24's dry run |
 | 3 | Delete the stray connection `…5348ae66…` once v008 is confirmed live (check its "used by" first) | after P1 |
+| 4 | x22 overwrite: if the parent field is now **blank** but the unit still holds a value, clear the unit? (Whether the flow itself would clear it depends on the column: R14 "connector ignores null" was measured false for DateTime on 09-15.) | open. E1 lists these and doesn't clear them |
 
 ---
 
@@ -177,3 +179,38 @@ assertions (13 leaves removed, all Status Date, plus two runAfter rewires) and b
 user's constructs in the staged PASTE-ME (`CompletOrder` ×5, `Livraison`, `Delivered`,
 `LocationStamped` present; the only `StatusDate` strings are an action name). x24/x25 by
 `node --check` only — **neither has run live yet.**
+
+**2026-09-24 21:06 | `claude-5b` (editing) |** Registered in `session-tracks.json` as `claude-5b` / EDIT
+(JSON re-parsed OK after the edit). **Claiming E1** (x22 overwrite mode). Plan: read
+`gen_x22_repair.py` and the x25 report shape, add an overwrite mode that is off by default, regenerate,
+`node --check` it, diff it against the committed JS, then commit and push those named paths only.
+Tree at start: HEAD `a251cc8`; the only dirty items are the pre-existing x14 and untracked files listed above.
+
+**2026-09-24 21:2x | `claude-5b` |** **E1 DONE, pushed `d489f5a`** (only `gen_x22_repair.py` and
+`x22_repair_parent_sync.js` staged). **How to use:** in x22, set `const OVERWRITE =` to the
+`copy(window.x25)` paste, or to `[{id|unit, field}]`. `null` = off = blank-fill over `UNITS`, as before.
+- **Semantics:** it overwrites exactly the listed unit-fields with the value resolved live through the
+  unit's lookup, using the same code path as blank-fill (never `parentV`). A listed field that already
+  matches is skipped. **A parent that is now blank is listed, not cleared.** Clearing is a decision
+  (below). *(Corrected 21:3x: I first wrote "the flow can't clear either". R14 says that, but it was
+  measured false for DateTime on 09-15. Header wording fixed in the E2 commit.)* Any of these abort before the first parent read:
+  a Title matching 0 or several units, a field x22 doesn't write, a `Cli*` field, a `list` that
+  disagrees with x22's map, or 0 rows. x25's `(parent N missing)` rows are listed and skipped.
+- **Dry run** prints `before -> after` per field. **APPLY** reads back every written unit, prints a
+  per-field `written/verified/failed` table, and prints 🔴 lines for anything that failed.
+- **Verification:** (1) baseline: regenerating from the untouched generator gave 0 diff against HEAD.
+  (2) after the change, `node --check` OK. Diff stat is `163 +++---` on each file (272+/54−); the
+  JS moved exactly as much as the generator. The only moved blank-fill code is `flat`/`same`, hoisted
+  out of the read-back loop unchanged, plus `UNITS.length` → `RUN.length` in the summary line.
+  (3) Ran the generated JS in Node against a mock SharePoint, 6/6 pass. Overwrite apply sent one PATCH
+  of exactly `{OrdOrderDate:"2026-09-20", OrdPO:"NEW-PO"}` and did not touch a blank unlisted field,
+  a stale unlisted field, a field that already matched, or a field with a blank parent. Duplicate
+  Title, Cli field and empty paste each aborted with 0 parent reads. Blank-fill still wrote only the
+  blank field. **Not verified:** a live run. The mock doesn't exercise lookup fields through v2.0 `/columns`.
+- **For P2 (`claude-43`):** filter the x25 paste before handing it over. `recent` only leaves out the
+  known list-wide `MdlLatestModelRevision` drift. **x25 names units by Title only.** Adding `id` to its
+  report rows (`gen_x25_drift_scan.py`) would remove the Title lookup and its ambiguity abort. I'll do it
+  if you want, but it only helps a re-run, so not before U3.
+- **Question for the user (DECISIONS):** when the parent field is now blank but the unit still holds a
+  value, should overwrite clear it? Current answer: no, list it.
+- Next: **claiming E2.**
