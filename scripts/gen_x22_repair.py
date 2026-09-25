@@ -241,7 +241,12 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
      "wrong source" finding was wrong. Cli* is blank because the 17 lead times
      were seeded before the flow existed. CLI_FILL below is the one-time fill;
      Cli stays in SKIP_GROUPS for every other run.) */
-  const UNITS = [1223, 1224, 1225, 1226, 1235, 1245, 1246];
+  /* EMPTY BY DEFAULT since 2026-09-24. It used to hold the 09-21 repair set
+     above (1223, 1224, 1225, 1226, 1235, 1245, 1246), which made "nothing
+     chosen" silently mean "blank-fill those 7" - it did, twice, on pastes meant
+     for OVERWRITE. Now a run needs ONE explicit mode: UNITS (a list here),
+     OVERWRITE or CLI_FILL; with none it stops and says so. */
+  const UNITS = [];
   const SKIP_GROUPS = ["Cli"];
 
   /* OVERWRITE MODE (see header). null = off = blank-fill over UNITS above.
@@ -264,11 +269,26 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
      generator - not hand-typed here. The first draft of the generator did type
      them, and carried a placeholder `3bcf7d97-0000-...` for Clients. */
 
+  /* Throttling: after ~700 writes SharePoint answers 503 (RUN2, 2026-09-24: the
+     read-back threw on items(520) and never printed its tally). 429/503/504 are
+     retried with exponential backoff, honouring Retry-After. A MERGE retried with
+     the same body is idempotent, so writes retry too. */
+  const BACKOFF_MS = 2000, TRIES = 6;
+  const SLEEP = (ms) => new Promise(res => setTimeout(res, ms));
   const J = async (u, opt) => {
-    const r = await fetch(u, Object.assign({ credentials: "include",
-      headers: { Accept: "application/json;odata=nometadata" } }, opt || {}));
-    if (!r.ok) throw new Error(r.status + " " + r.statusText + " " + (await r.text()).slice(0, 300));
-    return r.status === 204 ? {} : r.json();
+    for (let attempt = 1; ; attempt++) {
+      const r = await fetch(u, Object.assign({ credentials: "include",
+        headers: { Accept: "application/json;odata=nometadata" } }, opt || {}));
+      if (r.ok) return r.status === 204 ? {} : r.json();
+      if ((r.status === 429 || r.status === 503 || r.status === 504) && attempt < TRIES) {
+        const ra = Number(r.headers && r.headers.get ? r.headers.get("Retry-After") : NaN);
+        const wait = ra > 0 ? ra * 1000 : BACKOFF_MS * Math.pow(2, attempt - 1);
+        console.log("  (" + r.status + " throttled - retry " + attempt + "/" + (TRIES - 1) + " in " + Math.round(wait / 1000) + " s)");
+        await SLEEP(wait);
+        continue;
+      }
+      throw new Error(r.status + " " + r.statusText + " " + (await r.text()).slice(0, 300));
+    }
   };
   const items = base + "/_api/web/lists(guid'" + OI + "')/items";
   const isBlank = (v) => v === null || v === undefined || String(v).trim() === "";
@@ -365,6 +385,9 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
      Failures and summaries use console.log directly, so they always show. */
   const LOG = [];
   const say = (s) => { LOG.push(s); if (VERBOSE) console.log(s); };
+  /* Heartbeat: quiet mode is silent for minutes on a 700-unit run, which looks
+     like a hang. One line per 100 items - still quiet, but visibly alive. */
+  const beat = (phase, i, n) => { if (!VERBOSE && i > 0 && i % 100 === 0) console.log("  " + phase + " " + i + "/" + n + "..."); };
   const X22 = { mode: null, dry: DRY, plan: null, blankParent: null, tally: null, log: LOG };
   if (typeof window !== "undefined") window.x22 = X22;
 
@@ -376,6 +399,14 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
      fresh tab) is `undefined`, which would silently fall back to blank-fill
      over UNITS - a different run from the one asked for. Off is `null` only. */
   if (OVERWRITE === undefined) { console.error("ABORT: OVERWRITE is undefined - the window variable it points at was never set. Build it first, or use null for off."); return; }
+
+  /* The mode is the FIRST thing printed, so a paste that runs the wrong mode is
+     visible on line one instead of after the plan. */
+  const MODE = CLI_FILL ? "CLI_FILL" : (OVERWRITE ? "OVERWRITE" : (UNITS.length ? "UNITS blank-fill" : null));
+  if (!MODE) { console.error("ABORT: choose a mode - set OVERWRITE (x25 rows), CLI_FILL = true, or list ids in UNITS. Nothing chosen, nothing run."); return; }
+  const rowsHint = MODE === "OVERWRITE" ? (Array.isArray(OVERWRITE) ? OVERWRITE : (OVERWRITE.report || [])).length + " rows pasted"
+                 : MODE === "CLI_FILL" ? "whole list" : UNITS.length + " units";
+  console.log("MODE: " + MODE + (DRY ? " (DRY)" : " (APPLY - WRITES)") + ", " + rowsHint);
 
   /* OVERWRITE: turn the pasted list into unit id -> Set(target field).
      Everything is checked BEFORE the first parent read, so a bad list aborts
@@ -493,7 +524,9 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   }
 
   const noLookup = {};   // group -> units skipped for want of a lookup (summary)
-  for (const id of RUN) {
+  for (let ri = 0; ri < RUN.length; ri++) {
+    const id = RUN[ri];
+    beat("reading parents", ri, RUN.length);
     const unit = await J(items + "(" + id + ")");
     say("--- Id " + id + "  " + unit.Title + " ---");
     const want = targets ? targets.get(id) : null;
@@ -591,7 +624,9 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   }
 
   /* One PATCH per group per unit, mirroring what the flow would have done. */
-  for (const p of plan) {
+  for (let pi = 0; pi < plan.length; pi++) {
+    const p = plan[pi];
+    beat("writing", pi, plan.length);
     try {
       /* nometadata on the way in too, so no __metadata / entity-type name is
          needed - one less thing to hand-type wrong. IF-MATCH * because this is
@@ -611,8 +646,18 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
   console.log("\n=== read-back ===");
   let bad = 0;
   const tally = {};   // overwrite / CLI mode: field -> {attempted, verified, failed}
-  for (const p of plan) {
-    const after = await J(items + "(" + p.id + ")");
+  const unverified = [];   // units whose re-read failed even after retries - NOT failures
+  for (let pi = 0; pi < plan.length; pi++) {
+    const p = plan[pi];
+    beat("reading back", pi, plan.length);
+    let after;
+    try { after = await J(items + "(" + p.id + ")"); }
+    catch (e) {
+      /* A read that fails is not a write that failed: keep going, report it
+         apart, and never lose the tally for the rest. */
+      unverified.push({ id: p.id, error: e.message.slice(0, 120) });
+      continue;
+    }
     for (const field of Object.keys(p.write)) {
       const got = after[field], want = p.write[field];
       const ok = same(want, got);
@@ -626,9 +671,15 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
       }
     }
   }
-  X22.tally = tally;
+  X22.tally = tally; X22.unverified = unverified;
   if (OVERWRITE || CLI_FILL) console.table(tally);
-  console.log(bad ? "\n🔴 " + bad + " fields did not land." : "\n✅ every written field verified.");
+  if (unverified.length)
+    console.log("\n⚠️ writes done, verification INCOMPLETE: " + unverified.length + " of " + plan.length
+      + " units could not be re-read (" + unverified.slice(0, 10).map(u => u.id).join(", ")
+      + (unverified.length > 10 ? ", ..." : "") + "; all in window.x22.unverified)."
+      + "\n   Refresh the mirror to verify them (scripts/Refresh-SharePointMirror.ps1) - do NOT re-run the writes.");
+  console.log(bad ? "\n🔴 " + bad + " fields did not land." : (unverified.length
+    ? "\n✅ every field that could be re-read verified." : "\n✅ every written field verified."));
 })();
 """
 
