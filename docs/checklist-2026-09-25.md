@@ -75,6 +75,52 @@ Two new facts:
 
 ---
 
+## 1b. LDs / Engineering Required — the orders and the problem
+
+**The problem.** `LDs` and `Engineering Required` are **Order** fields: set once on the Order, then the Order sync
+flow copies them to every unit (`Order - LDs`, `Order - Engineering Required` on Order Items). On the orders below
+the Order and its units **disagree**. The value exists on some units but not on the Order (or not on all units).
+Checked live from the mirror, 2026-09-24 22:25 (before RUN2).
+
+**Group A: LDs set on the units, blank on the Order.** The regular units carry the value; the **SA twin** units
+are blank; the Order is blank.
+
+| order | Order LDs | regular units LDs | SA units LDs |
+|---|---|---|---|
+| 21661, 21665 | blank | **True** ×3 | blank ×3 |
+| 21664, 21932, 21981, 21982 | blank | **True** ×1 | blank ×1 |
+| 22022, 22023, 22024, 22025, 22026, 22027, 22028, 22029, 22030 | blank | **True** ×1 | blank ×1 |
+| 21499, 21523 | blank | **False** ×3 | blank ×3 |
+
+**Group B: Engineering Required on SOME units only, blank on the Order.**
+
+| order | Order EngReq | units |
+|---|---|---|
+| 22111 | blank | **False** on 5/10 and 6/10 only; the other 8 blank |
+| 22088 | blank | **False** on 1/4 only |
+| 22046, 22047, 22048, 22049, 22050, 22051, 22052, 22053 | blank | **False** on the regular unit; SA twin blank |
+
+**Group C: the reverse (Order set, SA twins blank).** 21613 (LDs True / EngReq False) and 21749 (LDs True). RUN2
+fills these SA twins from the Order tonight.
+
+**How it may have happened (to confirm):**
+- *A user set it on the unit instead of the Order*, as you suspect. Either directly in Order Items, or in the old
+  Excel, where these were per-unit columns and the transfer flow then carried them in. E6 found the units match the
+  FRM10-12 staff workbook unit by unit, which points at the Excel side.
+- The **last editor is `soleil.anker` on every one of these units**. The flows and scripts all run under your
+  account, so the editor field cannot tell a person from a flow. **The version history timestamp can:** open one
+  unit (e.g. `21665-1/3`) → Version history → find when `Order - LDs` became True. If it's in a transfer-run window
+  (09-01 06:43–07:31, or the 09-10/11 cutover night), it came from Excel. At any other time, someone edited Order
+  Items directly.
+- ⚠️ If staff can type into the `Order - …` columns on Order Items at all, that is the real gap. Those columns are
+  flow-maintained copies and should be **read-only** in the views and forms.
+
+**To decide with the users:** are LDs / Engineering Required **per order** or **per unit**?
+- **Per order:** set the Order, and the flow pushes it to all units, which fixes all three groups. Make the unit
+  copies read-only.
+- **Per unit** (22111 suggests Engineering Required can differ by unit): these should not be Order fields at all.
+  Move them to the unit, and stop the sync copying them.
+
 ## 2. Decisions that need an answer (nothing written until then)
 
 | # | Question | Evidence | Answer |
