@@ -109,8 +109,9 @@ reference's connection was authenticated all day. Needs the user to read one flo
 | P2 | Interpret U3; decide repair route per parent (touch vs E1 overwrite) | `claude-43` | no | BLOCKED on U3 |
 | E1 | **x22 overwrite mode** — repair stale non-blank parent values from an x25 report | `claude-5b` | yes | **DONE `d489f5a`** — regenerated + `node --check` OK; mock-harness 6/6 (see log) |
 | E4 | **x25 rows carry the unit `id`** — so x22's OVERWRITE matches exactly instead of by Title. ⚠️ **Do before E2:** U3 has not run yet, so this is free now and costs a user re-run later. Files: `scripts/gen_x25_drift_scan.py` → regenerate. Add `id: u.Id` to every `report.push` and to `perParent[k].units` (keep Title for humans). Verify: regenerate, `node --check`, diff stat, and confirm x22's OVERWRITE accepts the new rows as-is | `claude-5b` | yes | **DEPRIORITISED 21:3x** — user is running x25 now, so it would not land in time; x22 already aborts on ambiguous Titles. Do after E2/E3 if at all |
-| E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **CLAIMED (`claude-5b`, 21:2x)** |
-| E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | UNCLAIMED — spec below. ⚠️ authoring only; `intake`/`stage` go through `claude-43` |
+| E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **DONE `ba41132` + `7f59469`** — diff stat and block text in the log |
+| E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 22:0x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. BLOCKED on U4 |
+| U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | UNCLAIMED |
 
 ### E1 — x22 overwrite mode
 **Why:** x22 fills only BLANK fields. After a day with the N3 flows down, units hold OLD values —
@@ -214,3 +215,63 @@ Tree at start: HEAD `a251cc8`; the only dirty items are the pre-existing x14 and
 - **Question for the user (DECISIONS):** when the parent field is now blank but the unit still holds a
   value, should overwrite clear it? Current answer: no, list it.
 - Next: **claiming E2.**
+
+**2026-09-24 21:4x | `claude-5b` |** **E2 DONE**, pushed `ba41132`, then `7f59469` after `claude-43`
+reported v008 live at 21:10.
+- **Diff stat (`ba41132`):** HANDOVER +32, roadmap +9, `apply_v006_status_date_preserve.py` +182 (new to
+  git, header line added), `gen_x22`/`x22` ±8 (E1's corrected blank-parent rationale, comment only,
+  regenerated + `node --check` OK). **`7f59469`:** HANDOVER ±9, roadmap ±1, "staged" → "live 21:10".
+  Both docs changes are additions or in-place line swaps inside the new blocks. No existing prose was rewritten.
+- **roadmap:** a dated 🔑 callout at the top of *FIRST daylight job*. Auto-stamp dropped by user
+  decision; fix part 2 and the `StepStatusStamped` gate no longer apply to the date; part 1 (guard the
+  gets) still does; v007 design is kept in its script.
+- **HANDOVER block, as committed:**
+
+> ## Status, updated 2026-09-24
+> - **1. Trigger flow**: **v008 is LIVE** (hash-confirmed by `intake` at 21:10), but the flow is
+>   still **OFF**. v006 = user's own edit, pulled 20:12, replaced by v008 at 21:10. v007 = keep-a-typed-date
+>   design, **superseded, never pasted** (`forked` in history.json). v008 = v006 + connection reference +
+>   no Status Date read/write, `applied` 21:10, one connection reference in the export, `_1` gone.
+>   Order from here: tests, then enable.
+> - 🔑 **Status Date stays MANUAL**, user decision 2026-09-24. `apply_v006_status_date_preserve.py` is moot.
+> - **Connection-reference incident:** the password reset moved only the trigger flow's trigger onto
+>   `shared_sharepointonline_1`. Fixed: v008 is on `new_sharedsharepointonline_89e9a`, confirmed live
+>   21:10. The four N3 flows are clean. Unknown: whether they *ran* on 09-24.
+> - **Drift tools:** x25 (find), x22 overwrite mode (repair), x24 (optional), x16 (mirrors). Clients →
+>   unit can't be measured (E3).
+
+  *(Condensed here; the file has the full wording.)* **Not edited:** CLAUDE.md. Nothing for DECISIONS.
+- Next: **claiming E3.** Step 1 is read-only: find the source column, then post the full `Cli*`
+  source→target table here before authoring anything.
+
+**2026-09-24 21:5x | `claude-5b` |** **E3 step 1 done. The evidence says the flow reads the RIGHT
+field. Nothing authored; raising this before anyone acts on it.**
+- **Source→target table** (the whole Cli map, 1 field, from `gen_n3_flows.py:194` and the 20:54 pull):
+
+  | Clients (source, internal) | type | display | → Order Items (target) |
+  |---|---|---|---|
+  | `CliLeadTimeWeeks` | Number | Lead Time (weeks) | `CliLeadTimeWeeks` (display "Client - Lead Time (weeks)") |
+
+- **How verified:** I parsed the `ListSchema` record of `sharepoint-lists/Clients 2026-09-10 1734.csv`
+  (12 `<Field>` entries; parser in the scratchpad, since `load_exports.py` drops the schema rather than
+  parsing it). It contains `Name="CliLeadTimeWeeks" Type="Number" DisplayName="Lead Time (weeks)"` and
+  **no `Lead Time` column at all**. The same internal name on both lists is by design: `n5_clients_lead_time.js:257`
+  (Clients) and `:268` (Order Items) both create `CliLeadTimeWeeks`. The export (17:34) postdates n5's
+  internal-name fix `786c01f` (17:27) and the 17:36 "17 of 17 live" commit `d0712db`. 17 of 99 clients
+  hold a value.
+- **Why 09-21 parked item 4 is probably wrong:** `n3-fanout-race-2026-09-21.md:220` takes the source
+  as `Clients.Lead Time` "per the N3 spec". `Lead Time` is on **Order** (`Order.Lead Time`, roadmap
+  #45), not on Clients. That doc's own ⚠️ asked for exactly this check before fixing.
+- **What explains "Cli* blank everywhere" instead (hypothesis, not verified):** the 17 clients were
+  seeded 09-10 ~17:3x, and the Clients flow was built at 17:44 (v001/v002 timestamps). A
+  created-or-modified trigger never saw the seed, and no backfill copied it to the units. Supporting
+  evidence: the 09-16 `Order Items (1).csv` has **2 of 1,085** units with `Client - Lead Time (weeks) = 18`.
+  That looks like the flow writing on a later client edit.
+- **Proposed next steps, for `claude-43`/user to decide:** (a) a live read-only confirmation, run
+  signed in: `_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100`.
+  A 200 with ~17 values confirms it; a 400 means I'm wrong. Optionally, one client's run history
+  after an edit. (b) If confirmed, **E3 becomes a backfill, not a flow fix**: lift `Cli` out of x22's
+  `SKIP_GROUPS` for one blank-fill run over units of the 17 clients (or touch the 17 clients once
+  now that the N3 flows are healthy). Also correct `n3-fanout-race-2026-09-21.md` §*third bug* and
+  parked item 4, the board's KEY FACTS "Clients → unit" line, and x22's `SKIP_GROUPS` comment.
+  **No apply script is needed**, so there's nothing to hand over for `stage`.
