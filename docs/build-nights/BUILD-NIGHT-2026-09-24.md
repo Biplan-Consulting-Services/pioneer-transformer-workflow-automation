@@ -40,7 +40,7 @@ then `docs/n3-fanout-race-2026-09-21.md` § *Status at close of 2026-09-21*.
 | Power Automate designer / enabling flows | **user** | No session can drive it (see CLAUDE.md, *hand-off*); two authors in one flow fork it |
 | `workflow-data/<flow>/` (history.json, versions, `_inbox`, `_outbox`) | `claude-43` | `intake`/`stage` rewrite history.json and clear folders; two writers corrupt the lineage |
 | Writes to live SharePoint lists | **user** (via scripts we write) | Every write fires the trigger flows; no session writes the tenant directly tonight |
-| Git in `Workflow-Automation` | shared | **Stage named paths only — never `git add -A` / `git add .`.** `git pull --rebase --autostash` before every push — plain `--rebase` refuses because of the modified `x14` below (hit 21:0x). The tree carries untracked files that are not ours (below) |
+| Git in `Workflow-Automation` | shared | **Stage named paths only — never `git add -A` / `git add .`.** ~~`git pull --rebase --autostash` before every push~~ **WITHDRAWN 01:1x: that rule caused an incident.** Commit with a pathspec (`git commit -m … -- <paths>`); `git fetch` and only pull if origin is ahead; **never pull while Excel may hold a tracked workbook**; if a pull leaves `.git/rebase-merge/autostash`, `git stash store` it first. The tree carries untracked files that are not ours (below) |
 
 ⚠️ **Untracked files in the tree that nobody should commit blindly:** `sharepoint-lists/Order Items.csv`,
 `sharepoint-lists/Order Items (1).csv` (09-16 exports, unstamped names), `workbooks/Archive active.xlsx`,
@@ -823,3 +823,7 @@ This is the first use of the mirror as a verifier, and it replaced both x22's fa
   refresh (health will go RED on "rows deleted", by design).
 - Commits: from now on both sessions use pathspec commits (`git commit -- <paths>`), because the index is shared
   (my 059ccd4 swept up a staged `git mv`).
+
+**2026-09-25 01:1x | `claude-43` | 🔴 INCIDENT (mine), recovered.** My `git pull --rebase --autostash` at 01:07 autostashed `claude-5b`'s uncommitted E8c work. Then `reset --hard` failed partway (the mirror xlsx was locked by Excel), leaving some of its files reset to HEAD and the autostash unapplied. Nothing lost: saved as `stash@{0}` (`475c064`), and `claude-5b` has been asked to restore from it. Git rule above rewritten. Also: v002 of Nightly Sync **withdrawn before paste** (`6e19381`). `Delivery End Date` is empty on all 1,127 units, so its deletion filter could never match. v003 (option a: Livraison + Delivered, with the Excel date as the clock, plus a report of units Excel and the list disagree on) is being generated.
+
+**2026-09-25 01:2x | `claude-43` |** Incident closed. `claude-5b` restored all 9 paths from `475c064` and committed E8c (`5a3ee68`). I verified the backup against HEAD + the worktree: no differences (ignoring line endings). The user's x14 edit is still uncommitted as before. The stash is dropped as redundant, and `.git/rebase-merge` is cleared.
