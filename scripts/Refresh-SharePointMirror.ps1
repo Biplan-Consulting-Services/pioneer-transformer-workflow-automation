@@ -1,49 +1,62 @@
 <#
 .SYNOPSIS
-    Refreshes workbooks/SharePoint mirror.xlsx from live SharePoint and writes one CSV per
-    table to sharepoint-lists/mirror/{Table} {yyyy-MM-dd} {HHmm}.csv.
+    Refreshes the SharePoint mirror from live SharePoint, then snapshots, journals and checks it.
 
 .DESCRIPTION
+    Layout (docs/change-tracking-design-2026-09-24.md, D3):
+      sharepoint-lists/mirror/live/SharePoint mirror.xlsx   the one refreshed workbook   (git)
+      sharepoint-lists/mirror/live/<Table>.csv              latest refresh, STABLE names (git)
+      sharepoint-lists/mirror/snapshots/<yyyy-MM-dd_HHmm>/   <Table>.csv.gz + snapshot.json (NOT git)
+      sharepoint-lists/mirror/journal/YYYY-MM.jsonl         what changed                 (git)
+      sharepoint-lists/mirror/health/latest.md              is anything wrong            (git)
+
     Each table is refreshed synchronously, one at a time, so a failure names its table.
-    (RefreshAll is safe on THIS workbook; the RefreshAll ban is FRM10-12-specific. Per-table
-    refresh is used for the error attribution, not for safety.)
+    (RefreshAll is safe on THIS workbook; the ban is FRM10-12-specific.)
 
-    Nothing is written unless EVERY table refreshed and holds at least one row. A zero-row
-    table is a failed read. On failure the workbook is NOT saved, so the last good data stays.
+    Nothing is written unless EVERY requested table refreshed and holds at least one row. A
+    zero-row table is a failed read. On failure the workbook is NOT saved and live/ is left as
+    it was.
 
-    CSVs go to sharepoint-lists/mirror/, not sharepoint-lists/: their headers are INTERNAL
-    names, and the scripts that read "the newest export" there expect display names.
-    load_exports.load() reads these files too (no ListSchema record -> plain DictReader).
-    The previous CSV of each table is moved to sharepoint-lists/mirror/Archive/.
+    A full refresh (no -Tables) also writes a snapshot of the real lists + Columns, prunes old
+    snapshots (every one for 30 days, then the last of each month, D2), and runs
+    mirror_journal.py and mirror_health.py. A -Tables refresh updates live/ only - a partial
+    snapshot would make the next journal diff lie.
 
-    A WATCHDOG kills this script's own Excel after -TimeoutSec. Without it an invisible
-    Excel sitting on a sign-in dialog would hang forever.
+    A WATCHDOG kills this script's own Excel after -TimeoutSec, so an invisible Excel waiting on
+    a sign-in dialog cannot hang forever.
+
+    INTERIM RULE (user, 2026-09-24): run this at the start of every working session and
+    immediately before any modification to a list.
 
 .PARAMETER Interactive
-    Show Excel. Use for the FIRST refresh: Power Query asks for credentials once
-    (Organizational account), then caches them for every later silent run.
+    Show Excel. Use when Power Query needs a sign-in (Organizational account); it is cached after.
 
 .PARAMETER Tables
-    Refresh and export only these tables (query names, e.g. -Tables Lists, "Order Items").
-    Other tables and their CSVs are left exactly as they are. Default: all.
+    Refresh only these tables (query names). live/ only; no snapshot, journal or health run.
+
+.PARAMETER NoChecks
+    Snapshot but skip journal + health (e.g. when repairing the pipeline itself).
 
 .EXAMPLE
-    ./Refresh-SharePointMirror.ps1 -Interactive     # first time
-    ./Refresh-SharePointMirror.ps1                  # every time after
-    ./Refresh-SharePointMirror.ps1 -Tables Lists    # one table, no churn elsewhere
+    ./Refresh-SharePointMirror.ps1
+    ./Refresh-SharePointMirror.ps1 -Tables Lists
 #>
 param(
-    [string]$WorkbookPath = (Join-Path $PSScriptRoot "..\workbooks\SharePoint mirror.xlsx"),
-    [string]$OutDir       = (Join-Path $PSScriptRoot "..\sharepoint-lists\mirror"),
+    [string]$MirrorDir    = (Join-Path $PSScriptRoot "..\sharepoint-lists\mirror"),
     [int]$TimeoutSec      = 900,
     [switch]$Interactive,
-    [string[]]$Tables
+    [string[]]$Tables,
+    [switch]$NoChecks
 )
 $ErrorActionPreference = "Stop"
-$full = [System.IO.Path]::GetFullPath($WorkbookPath)
+$MirrorDir = [System.IO.Path]::GetFullPath($MirrorDir)
+$LiveDir   = Join-Path $MirrorDir "live"
+$SnapRoot  = Join-Path $MirrorDir "snapshots"
+$full      = Join-Path $LiveDir "SharePoint mirror.xlsx"
 if (-not (Test-Path -LiteralPath $full)) { throw "ABORT: $full not found - run Build-SharePointMirror.ps1 first" }
-$OutDir = [System.IO.Path]::GetFullPath($OutDir)
-New-Item -ItemType Directory -Force -Path (Join-Path $OutDir "Archive") | Out-Null
+
+# Snapshotted = the real lists + the schema catalog. Diagnostics are live/ only.
+$SnapTables = @("Order Items", "Order", "Models", "Model Revisions", "Clients", "Index", "Models SA", "Columns")
 
 Add-Type -Namespace Win32 -Name U -MemberDefinition '[DllImport("user32.dll")] public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int pid);'
 
@@ -57,8 +70,11 @@ $watchdog = Start-Job -ScriptBlock {
     if (Get-Process -Id $p -ErrorAction SilentlyContinue) { Stop-Process -Id $p -Force; "WATCHDOG: killed Excel $p after $t s" }
 } -ArgumentList $excelPid, $TimeoutSec
 
-$stamp = Get-Date -Format "yyyy-MM-dd HHmm"
+$nowLocal = Get-Date
+$asOf = $nowLocal.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+$snapName = $nowLocal.ToString("yyyy-MM-dd_HHmm")
 $results = @()
+$written = @{}
 try {
     $wb = $excel.Workbooks.Open($full)
     $los = @()
@@ -72,13 +88,12 @@ try {
     }
 
     foreach ($lo in $los) {
-        $name = $lo.Name -replace '^Mirror_', ''
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $err = $null
         try { $lo.QueryTable.BackgroundQuery = $false; $lo.QueryTable.Refresh($false) | Out-Null }
         catch { $err = $_.Exception.Message }
         $rows = if ($lo.DataBodyRange) { $lo.ListRows.Count } else { 0 }
-        $results += [pscustomobject]@{ table = $name; rows = $rows; cols = $lo.ListColumns.Count; sec = [math]::Round($sw.Elapsed.TotalSeconds, 1); error = $err }
+        $results += [pscustomobject]@{ table = ($lo.Name -replace '^Mirror_', ''); rows = $rows; cols = $lo.ListColumns.Count; sec = [math]::Round($sw.Elapsed.TotalSeconds, 1); error = $err }
     }
     $results | Format-Table -AutoSize | Out-String | Write-Host
 
@@ -94,31 +109,27 @@ try {
 
     $wb.Save()
     $inv = [System.Globalization.CultureInfo]::InvariantCulture
+    $utf8bom = New-Object System.Text.UTF8Encoding($true)
     foreach ($lo in $los) {
         $name = ($lo.Name -replace '^Mirror_', '')
-        # restore the query's real name for the file ("Order_Items" -> "Order Items")
-        foreach ($c in $wb.Queries) { if (("Mirror_" + ($c.Name -replace '[^A-Za-z0-9]', '_')) -eq $lo.Name) { $name = $c.Name } }
-        $safe = $name -replace '[\\/:*?"<>|]', '_'
-        $pattern = '^' + [regex]::Escape($safe) + ' \d{4}-\d{2}-\d{2} \d{4}\.csv$'
-        Get-ChildItem -LiteralPath $OutDir -Filter *.csv | Where-Object { $_.Name -match $pattern } |
-            ForEach-Object { Move-Item -LiteralPath $_.FullName -Destination (Join-Path $OutDir "Archive") -Force }
-
+        foreach ($q in $wb.Queries) { if (("Mirror_" + ($q.Name -replace '[^A-Za-z0-9]', '_')) -eq $lo.Name) { $name = $q.Name } }
         $v = $lo.Range.Value2
         $nr = $v.GetLength(0); $nc = $v.GetLength(1)
-        $path = Join-Path $OutDir "$safe $stamp.csv"
-        $w = New-Object System.IO.StreamWriter($path, $false, (New-Object System.Text.UTF8Encoding($true)))
-        try {
-            for ($r = 1; $r -le $nr; $r++) {
-                $cells = New-Object string[] $nc
-                for ($c = 1; $c -le $nc; $c++) {
-                    $x = $v[$r, $c]
-                    $s = if ($null -eq $x) { "" } elseif ($x -is [double]) { $x.ToString("R", $inv) } else { [string]$x }
-                    $cells[$c - 1] = '"' + $s.Replace('"', '""') + '"'
-                }
-                $w.WriteLine([string]::Join(",", $cells))
+        $sb = New-Object System.Text.StringBuilder
+        for ($r = 1; $r -le $nr; $r++) {
+            $cells = New-Object string[] $nc
+            for ($c = 1; $c -le $nc; $c++) {
+                $x = $v[$r, $c]
+                $s = if ($null -eq $x) { "" } elseif ($x -is [double]) { $x.ToString("R", $inv) } else { [string]$x }
+                $cells[$c - 1] = '"' + $s.Replace('"', '""') + '"'
             }
-        } finally { $w.Close() }
-        Write-Host ("wrote {0}  ({1} rows)" -f $path, ($nr - 1))
+            [void]$sb.Append([string]::Join(",", $cells)).Append("`r`n")
+        }
+        $text = $sb.ToString()
+        $safe = $name -replace '[\\/:*?"<>|]', '_'
+        [System.IO.File]::WriteAllText((Join-Path $LiveDir "$safe.csv"), $text, $utf8bom)
+        $written[$name] = @{ text = $text; rows = $nr - 1 }
+        Write-Host ("live/{0}.csv  ({1} rows)" -f $safe, ($nr - 1))
     }
 }
 finally {
@@ -129,3 +140,40 @@ finally {
     Stop-Job $watchdog -ErrorAction SilentlyContinue; Receive-Job $watchdog -ErrorAction SilentlyContinue | Write-Host
     Remove-Job $watchdog -Force -ErrorAction SilentlyContinue
 }
+
+if ($Tables) { Write-Host "partial refresh (-Tables): live/ updated; no snapshot, journal or health run."; exit 0 }
+
+# ---- snapshot (D3): gz per real table + snapshot.json
+$snapDir = Join-Path $SnapRoot $snapName
+if (Test-Path -LiteralPath $snapDir) { throw "ABORT: snapshot $snapDir already exists (two refreshes in one minute?)" }
+New-Item -ItemType Directory -Force -Path $snapDir | Out-Null
+$counts = [ordered]@{}
+foreach ($t in $SnapTables) {
+    if (-not $written.ContainsKey($t)) { throw "ABORT: $t was not refreshed - cannot snapshot a partial set" }
+    $bytes = $utf8bom.GetPreamble() + $utf8bom.GetBytes($written[$t].text)
+    $fs = [System.IO.File]::Create((Join-Path $snapDir "$t.csv.gz"))
+    try { $gz = New-Object System.IO.Compression.GZipStream($fs, [System.IO.Compression.CompressionMode]::Compress); $gz.Write($bytes, 0, $bytes.Length); $gz.Close() }
+    finally { $fs.Close() }
+    $counts[$t] = $written[$t].rows
+}
+@{ asOf = $asOf; localStamp = $snapName; tables = $counts; source = "Refresh-SharePointMirror.ps1" } |
+    ConvertTo-Json | Set-Content -LiteralPath (Join-Path $snapDir "snapshot.json") -Encoding UTF8
+Write-Host "snapshot  snapshots/$snapName  (asOf $asOf)"
+
+# ---- retention (D2): all snapshots for 30 days, then the last of each month
+$cut = $nowLocal.AddDays(-30)
+$all = Get-ChildItem -LiteralPath $SnapRoot -Directory | Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}_\d{4}$' } | Sort-Object Name
+$old = $all | Where-Object { [datetime]::ParseExact($_.Name, "yyyy-MM-dd_HHmm", $inv) -lt $cut }
+$keepMonthly = $old | Group-Object { $_.Name.Substring(0, 7) } | ForEach-Object { $_.Group | Select-Object -Last 1 }
+$prune = $old | Where-Object { $keepMonthly -notcontains $_ }
+foreach ($p in $prune) { Remove-Item -LiteralPath $p.FullName -Recurse -Force }
+if ($prune) { Write-Host "retention: pruned $($prune.Count) snapshot(s) older than 30 days (kept the last of each month)" }
+
+if ($NoChecks) { Write-Host "-NoChecks: journal + health skipped."; exit 0 }
+
+# ---- journal + health
+$py = Join-Path $PSScriptRoot "mirror_journal.py"
+& python $py
+if ($LASTEXITCODE -ne 0) { Write-Host "journal FAILED (exit $LASTEXITCODE)" -ForegroundColor Red; exit $LASTEXITCODE }
+& python (Join-Path $PSScriptRoot "mirror_health.py")
+exit $LASTEXITCODE

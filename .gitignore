@@ -30,3 +30,6 @@ dist/
 # 'BO Report.xlsx.printsetup.bak' and a 105KB binary went into a commit that had
 # just declared it ignored. Match the suffix, not a guessed middle.
 *.bak
+
+# SharePoint mirror snapshots: OneDrive versions them; only live/, journal/, health/ are tracked (design D3)
+sharepoint-lists/mirror/snapshots/

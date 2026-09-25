@@ -1,0 +1,8 @@
+﻿"list","items","versionLimit","median","p95","max","atOrOver40","overLimit_historyLost","topItemId","topItemLabel","keptOnTopItem","labelCheck"
+"Order Items","1127","50","14","55","852","139","84","126","852","51","ok: kept = min(label, limit + 1) (limit + the current version)"
+"Order","470","50","15","54","155","57","30","116","155","51","ok: kept = min(label, limit + 1) (limit + the current version)"
+"Models","394","50","17","42","123","30","3","38","123","51","ok: kept = min(label, limit + 1) (limit + the current version)"
+"Model Revisions","395","50","5","61","510","32","25","26","510","51","ok: kept = min(label, limit + 1) (limit + the current version)"
+"Clients","99","50","2","4","6","0","0","35","6","6","ok: kept = min(label, limit + 1) (limit + the current version)"
+"Index","24","50","2","4","7","0","0","8","7","7","ok: kept = min(label, limit + 1) (limit + the current version)"
+"Models SA","15","50","3","9","9","0","0","2","9","9","ok: kept = min(label, limit + 1) (limit + the current version)"

@@ -20,17 +20,17 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import load_exports as L  # noqa: E402
 
-MIRROR = os.path.join(os.path.dirname(HERE), "sharepoint-lists", "mirror")
+LIVE = os.path.join(os.path.dirname(HERE), "sharepoint-lists", "mirror", "live")
 EXPECT = {"Order Items": 1127, "Order": 470, "Models": 394, "Model Revisions": 395, "Clients": 99}
 fails = []
 
 
 def newest(table):
-    pat = re.compile(r"^" + re.escape(table) + r" \d{4}-\d{2}-\d{2} \d{4}\.csv$")
-    files = sorted(f for f in os.listdir(MIRROR) if pat.match(f))
-    if not files:
-        sys.exit("ABORT: no mirror CSV for %r in %s" % (table, MIRROR))
-    return L.load(os.path.join(MIRROR, files[-1])), files[-1]
+    """The latest refresh of a table: live/<Table>.csv (D3 layout, stable names)."""
+    p = os.path.join(LIVE, table + ".csv")
+    if not os.path.exists(p):
+        sys.exit("ABORT: no %s - run scripts/Refresh-SharePointMirror.ps1" % p)
+    return L.load(p), "live/" + table + ".csv"
 
 
 def check(ok, msg):

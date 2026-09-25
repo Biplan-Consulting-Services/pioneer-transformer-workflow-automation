@@ -27,6 +27,19 @@ def load(name):
         return [dict(zip(hdr, r)) for r in rows[1:] if any(c.strip() for c in r)]
     return list(csv.DictReader(io.StringIO(raw)))
 
+def load_mirror(table):
+    """The SharePoint mirror's latest refresh of a table (sharepoint-lists/mirror/live/<table>.csv).
+    Internal column names, raw REST values - NOT the display-name shape of an Export to CSV.
+    Refresh first: scripts/Refresh-SharePointMirror.ps1."""
+    p = os.path.join(BASE, "mirror", "live", table + ".csv")
+    if not os.path.exists(p):
+        raise SystemExit("no mirror table %r at %s - run scripts/Refresh-SharePointMirror.ps1" % (table, p))
+    rows = load(p)
+    if not rows:
+        raise SystemExit("ABORT: 0 rows in %s. A zero-row read is a failed read." % p)
+    return rows
+
+
 if __name__ == "__main__":
     for f in sys.argv[1:]:
         d = load(f)
