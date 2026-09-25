@@ -147,8 +147,8 @@ fills these SA twins from the Order tonight.
       then `x22` with `CLI_FILL = false`, `OVERWRITE = window.x25OV`, `DRY = true`. Send the output for a check before applying.
 - [x] **RUN2 apply** ✅ 2026-09-24 ~23:05. x22's own read-back died on a SharePoint **503** (throttling), but the **mirror verified it** (23:11 vs 22:25): exactly **748 cells changed on 696 units, 748/748 pairs fixed, 0 new drift, 0 changes outside the synced fields**. Parent drift 822 → 74 = only the held-back D5 dates (32), D6 LDs/EngReq (36) and E21007 (6).
 - [x] **Re-run `x25`** — done from the mirror instead (see RUN2): only D5 / D6 / E21007 remain.
-- [ ] `x16` (mirror audit) and `x24` dry run (stamps) — paste output.
-- [ ] `x17` (Model Revisions `ModelID` audit) — expect 393/394 clean.
+- [x] `x16` / `x24`: **done from the mirror 2026-09-24 23:2x.** x16: 3 stale `Model_Revision_ID_TextField` (22097-3/5, 21928-1/5, 21951-1/4 → `M-HYQU-0017`), which self-heal on next edit once the flow is on. x24: 46 step / 43 location stamps off level, **0 units at Livraison not Terminé/Delivered**. With Status Date manual (v008) that is harmless. **No x24 run needed.**
+- [x] `x17`: **done from the mirror.** 370/395 match `MR-<model>-Vn`. Exceptions: 15 SA revisions `MRSA-…` (valid); `MR-ENMA-0052` / `-0053` without `-V1` (known); **8 revisions with NO Model link: 414, 415, 416, 417, 419, 420, 421, 422**. 417 is old; **the other 7 are all new since 09-21**, so something (likely the Power App) is creating revisions without their Model. Goes with the deferred Power App check.
 - [ ] `x26` (read-only, D6 evidence) — paste `scripts/x26_order_flag_history.js`, then `copy(window.x26)` and paste the result.
 
 ⚠️ If the tab was reloaded, `window.x25` is gone: run `x25` again before RUN2.
