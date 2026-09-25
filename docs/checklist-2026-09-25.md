@@ -59,7 +59,7 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 | # | Question | Evidence | Answer |
 |---|---|---|---|
 | D5 | **32 order dates one day apart** (Order Date / Initial Promised Date) on 22140, 22141, 22156, 22157, P00005, P10003 — the Order says the 26th, its units say the 25th. Which date was meant? | E7 table on the board (pending from `claude-5b`) | |
-| D6 | **~40 units have LDs / Engineering Required = true/false, their Order is now blank.** Did the 09-11 conversion wipe the Orders (units right) or were they cleared on purpose (units stale)? | E6 table on the board (pending) | |
+| D6 | **~40 units have LDs / Engineering Required = true/false, their Order is now blank.** Units right, or Orders right? | E6 on the board (21:40). **Reading: the units are right — the Orders were never set, not wiped.** Units match FRM10-12 unit by unit (22111: EngReq N on exactly 5/10 and 6/10); the Order already disagreed with Excel at 03:39; LDs/EngReq are plain Yes/No and the 09-11 conversion never touched them (the "conversion window" link was wrong). **Confirm with `scripts/x26_order_flag_history.js`** (read-only) → `copy(window.x26)`: live true/false/blank counts + each order's history. If confirmed: fill the Orders from the units — nothing to fix on the units | |
 | D1 | **Livraison**: forcing `Terminé`/`Delivered` on *every* later step change of a delivered unit — intended, or only on the move *into* Livraison? | v008 keeps current behaviour | |
 | D2 | Level the stamps with `x24` before enabling the flow, or let Livraison-but-Active units complete on their next edit? | run `x24` dry run first | |
 | D4 | If a parent field is now blank but the unit still has a value, should the repair clear the unit? | x22 lists them, never clears | |
@@ -76,6 +76,7 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 - [ ] **Re-run `x25`.** Expected left over: only the D5 dates, the D6 LDs/EngReq, and E21007 — nothing else.
 - [ ] `x16` (mirror audit) and `x24` dry run (stamps) — paste output.
 - [ ] `x17` (Model Revisions `ModelID` audit) — expect 393/394 clean.
+- [ ] `x26` (read-only, D6 evidence) — paste `scripts/x26_order_flag_history.js`, then `copy(window.x26)` and paste the result.
 
 ⚠️ If the tab was reloaded, `window.x25` is gone: run `x25` again before RUN2.
 
