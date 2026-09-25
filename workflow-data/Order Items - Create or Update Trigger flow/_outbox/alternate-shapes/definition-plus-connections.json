@@ -1,0 +1,445 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      },
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      }
+    },
+    "triggers": {
+      "When_an_item_is_created_or_modified": {
+        "recurrence": {
+          "interval": 5,
+          "frequency": "Minute"
+        },
+        "splitOn": "@triggerOutputs()?['body/value']",
+        "metadata": {
+          "operationMetadataId": "a426cd90-63d1-443b-bd0d-605adc834a62"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "host": {
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetOnUpdatedItems",
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+          },
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
+          },
+          "authentication": "@parameters('$authentication')"
+        }
+      }
+    },
+    "actions": {
+      "Condition": {
+        "actions": {},
+        "runAfter": {
+          "Guard_Model": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {
+            "Set_variable_16": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "8d247cbb-b483-4bb3-996f-17c87efc077b"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "vUpdateOrderItem",
+                "value": true
+              }
+            }
+          }
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@triggerBody()?['OrderNumber/Value']",
+                "@triggerBody()?['Order_Number_TextField']"
+              ]
+            },
+            {
+              "equals": [
+                "@coalesce(outputs('Get_Client')?['body/Client_ID'], triggerBody()?['Client_ID_TextField'])",
+                "@triggerBody()?['Client_ID_TextField']"
+              ]
+            },
+            {
+              "equals": [
+                "@coalesce(outputs('Get_Model')?['body/ModelID'], triggerBody()?['Model_ID_TextField'])",
+                "@triggerBody()?['Model_ID_TextField']"
+              ]
+            },
+            {
+              "equals": [
+                "@triggerBody()?['ModelRevision/Value']",
+                "@triggerBody()?['Model_Revision_ID_TextField']"
+              ]
+            }
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "46d2c1fe-a550-414f-b996-00559a896d89"
+        },
+        "type": "If"
+      },
+      "Condition_3": {
+        "actions": {
+          "Update_item": {
+            "runAfter": {},
+            "metadata": {
+              "operationMetadataId": "b3f33b3d-977f-4a44-9959-4c6d7d5830df"
+            },
+            "type": "OpenApiConnection",
+            "inputs": {
+              "host": {
+                "connectionName": "shared_sharepointonline",
+                "operationId": "PatchItem",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+              },
+              "parameters": {
+                "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                "id": "@triggerBody()?['ID']",
+                "item/StepStatus/Value": "@if(variables('CompletOrder'), 'Terminé', triggerOutputs()?['body/StepStatus/Value'])",
+                "item/StatusDate": "@if(equals(variables('vStatusDateValue'), ''), null, variables('vStatusDateValue'))",
+                "item/ItemStatus/Value": "@if(variables('CompletOrder'), 'Delivered', triggerOutputs()?['body/ItemStatus/Value'])",
+                "item/Order_Number_TextField": "@triggerBody()?['OrderNumber/Value']",
+                "item/Client_ID_TextField": "@coalesce(outputs('Get_Client')?['body/Client_ID'], triggerBody()?['Client_ID_TextField'])",
+                "item/Model_ID_TextField": "@coalesce(outputs('Get_Model')?['body/ModelID'], triggerBody()?['Model_ID_TextField'])",
+                "item/Model_Revision_ID_TextField": "@triggerBody()?['ModelRevision/Value']",
+                "item/StepStatusStamped": "@if(variables('CompletOrder'), 'Terminé', triggerOutputs()?['body/StepStatus/Value'])",
+                "item/LocationStamped": "@triggerOutputs()?['body/Location/Value']",
+                "item/StatusDateStamped": "@variables('vStatusDateValue')"
+              },
+              "authentication": "@parameters('$authentication')"
+            }
+          }
+        },
+        "runAfter": {
+          "Condition": [
+            "Succeeded"
+          ],
+          "Condition_2": [
+            "Succeeded"
+          ]
+        },
+        "expression": {
+          "or": [
+            {
+              "equals": [
+                "@variables('vUpdateOrderItem')",
+                "@true"
+              ]
+            }
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "098539e0-8999-42ae-9be2-934df04ac520"
+        },
+        "type": "If"
+      },
+      "Initialize_variable": {
+        "runAfter": {},
+        "metadata": {
+          "operationMetadataId": "d0a3fb58-391f-433b-9639-54c3f7cfc125"
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vUpdateOrderItem",
+              "type": "boolean",
+              "value": false
+            }
+          ]
+        }
+      },
+      "Initialize_vStatusDateValue": {
+        "runAfter": {
+          "Initialize_variable": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "495c2dff-d935-4f00-8819-66e522c1b6d2"
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "vStatusDateValue",
+              "type": "string",
+              "value": "@if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd'))"
+            }
+          ]
+        }
+      },
+      "Guard_Client": {
+        "actions": {
+          "Get_Client": {
+            "runAfter": {},
+            "metadata": {
+              "operationMetadataId": "ba5a0dc7-1cca-45af-bc5a-e3ddbbca7e99"
+            },
+            "type": "OpenApiConnection",
+            "inputs": {
+              "host": {
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItem",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+              },
+              "parameters": {
+                "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                "table": "3bcf7d97-0862-404d-ab3f-eeaa358c05d8",
+                "id": "@triggerBody()?['Client/Id']"
+              },
+              "authentication": "@parameters('$authentication')"
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_variable_2": [
+            "Succeeded"
+          ]
+        },
+        "expression": {
+          "and": [
+            {
+              "not": {
+                "equals": [
+                  "@coalesce(triggerBody()?['Client/Id'], '')",
+                  ""
+                ]
+              }
+            },
+            {
+              "not": {
+                "equals": [
+                  "@coalesce(triggerBody()?['Client/Id'], 0)",
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "b1b8a39b-cdb8-451d-a3a3-bef8bd651c96"
+        },
+        "type": "If"
+      },
+      "Guard_Model": {
+        "actions": {
+          "Get_Model": {
+            "runAfter": {},
+            "metadata": {
+              "operationMetadataId": "e444e45a-0950-4717-aa2d-51ba6d69fe4f"
+            },
+            "type": "OpenApiConnection",
+            "inputs": {
+              "host": {
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItem",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+              },
+              "parameters": {
+                "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                "table": "b43a5140-0f9d-4ac1-9019-43b897074224",
+                "id": "@triggerBody()?['Model/Id']"
+              },
+              "authentication": "@parameters('$authentication')"
+            }
+          }
+        },
+        "runAfter": {
+          "Guard_Client": [
+            "Succeeded"
+          ]
+        },
+        "expression": {
+          "and": [
+            {
+              "not": {
+                "equals": [
+                  "@coalesce(triggerBody()?['Model/Id'], '')",
+                  ""
+                ]
+              }
+            },
+            {
+              "not": {
+                "equals": [
+                  "@coalesce(triggerBody()?['Model/Id'], 0)",
+                  0
+                ]
+              }
+            }
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "1062ac91-e53c-46a8-947c-98e3712e30d1"
+        },
+        "type": "If"
+      },
+      "Condition_2": {
+        "actions": {
+          "Condition_StatusDate_Drift": {
+            "type": "If",
+            "runAfter": {},
+            "expression": {
+              "not": {
+                "equals": [
+                  "@if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd'))",
+                  "@coalesce(triggerOutputs()?['body/StatusDateStamped'], '')"
+                ]
+              }
+            },
+            "actions": {
+              "Set_vUpdateOrderItem_StatusDate_Drift": {
+                "type": "SetVariable",
+                "runAfter": {},
+                "inputs": {
+                  "name": "vUpdateOrderItem",
+                  "value": true
+                }
+              }
+            },
+            "else": {
+              "actions": {}
+            }
+          }
+        },
+        "runAfter": {
+          "Initialize_variable_2": [
+            "Succeeded"
+          ]
+        },
+        "else": {
+          "actions": {
+            "Condition_4": {
+              "actions": {
+                "Set_variable": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "3d17ea3c-0b2e-4189-8eed-d21ce6ccd3e8"
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "CompletOrder",
+                    "value": true
+                  }
+                }
+              },
+              "runAfter": {
+                "Set_vUpdateOrderItem_StatusDate_3": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "equals": [
+                  "@triggerOutputs()?['body/Location/Value']",
+                  "Livraison"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "797d184a-0ba2-487f-ad2a-1c629fe6e176"
+              },
+              "type": "If"
+            },
+            "Set_vStatusDateValue": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "64add890-98cb-4193-825b-8df82b122433"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "vStatusDateValue",
+                "value": "@if(equals(if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd')), coalesce(triggerOutputs()?['body/StatusDateStamped'], '')), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd'), if(empty(triggerOutputs()?['body/StatusDate']), '', formatDateTime(coalesce(triggerOutputs()?['body/StatusDate'], '1900-01-01'), 'yyyy-MM-dd')))"
+              }
+            },
+            "Set_vUpdateOrderItem_StatusDate_3": {
+              "runAfter": {
+                "Set_vStatusDateValue": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "7da6afcc-751c-4655-87ab-28aff48bd188"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "vUpdateOrderItem",
+                "value": true
+              }
+            }
+          }
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@coalesce(triggerBody()?['StepStatus/Value'], '')",
+                "@coalesce(triggerBody()?['StepStatusStamped'], '')"
+              ]
+            },
+            {
+              "equals": [
+                "@coalesce(triggerOutputs()?['body/Location/Value'], '')",
+                "@coalesce(triggerOutputs()?['body/LocationStamped'], '')"
+              ]
+            }
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "9e4fcc78-c9c8-4871-bb38-184e38625f7d"
+        },
+        "type": "If"
+      },
+      "Initialize_variable_2": {
+        "runAfter": {
+          "Initialize_vStatusDateValue": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "0cb486fe-35c3-4132-ab19-e31e310d548f"
+        },
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "CompletOrder",
+              "type": "boolean",
+              "value": false
+            }
+          ]
+        }
+      }
+    },
+    "outputs": {}
+  },
+  "connectionReferences": {
+    "shared_sharepointonline": {
+      "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1813/1.0.1813.4769/sharepointonline/icon.png",
+      "brandColor": "",
+      "tier": "Standard",
+      "apiName": "sharepointonline",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    }
+  }
+}

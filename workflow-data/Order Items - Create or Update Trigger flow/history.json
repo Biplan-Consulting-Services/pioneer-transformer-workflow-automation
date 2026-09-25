@@ -126,6 +126,25 @@
       },
       "appliedAt": "2026-09-24T20:12:27-04:00",
       "source": "OrderItems-CreateorUpdateTrigger_20260925001140.zip"
+    },
+    {
+      "v": 7,
+      "captured": "2026-09-24T20:30:35-04:00",
+      "state": "local",
+      "parent": 6,
+      "note": "connection reference only + null-safe Status Date init + StatusDateStamped keeps a same-edit date",
+      "sha256": "a8f4e185541985322aaa9a264c73ad7a3f5697e284f73375e20add5c1304d731",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 8,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v007__2026-09-24T20-30__local__connection-reference-only-null-safe-Status-Date-.json"
+      },
+      "appliedAt": null,
+      "source": "trigger-v007.json"
     }
   ],
   "identity": {

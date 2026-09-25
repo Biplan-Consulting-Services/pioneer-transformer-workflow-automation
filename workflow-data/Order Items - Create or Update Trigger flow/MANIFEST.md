@@ -22,11 +22,12 @@ snapshotted here.**
 | **v004** | 2026-09-14 09:34 | `applied` | v003 | guard both lookup gets + decouple the Status Date stamp; coalesce comparison and write | — | — | 0 | 0 | `558b95e86850` |
 | **v005** | 2026-09-14 12:40 | `pulled` | — | pasted from designer | — | — | 0 | 0 | `26d75bd9e1cc` |
 | **v006** | 2026-09-24 20:12 | `pulled` | — | pasted from designer | — | — | 0 | 0 | `6da725e8576e` |
+| **v007** | 2026-09-24 20:30 | `local` | v006 | connection reference only + null-safe Status Date init + StatusDateStamped keeps a same-edit date | — | — | 0 | 0 | `a8f4e1855419` |
 
 ## Right now
 
 - **Live:** v006 — pasted from designer
-- **Pending (authored, not applied):** none
+- **Pending (authored, not applied):** v007
 
 ## Reading the columns
 
