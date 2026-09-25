@@ -32,7 +32,7 @@ snapshots are right, so this **complements** the 09-16 design rather than contra
 
 | mechanism | covers | gap |
 |---|---|---|
-| SharePoint **item version history** | every edit, with who/when/previous value | nobody watches it; restore is one row at a time; version limit per list unverified (§6, step 0) |
+| SharePoint **item version history** | every edit, with who/when/previous value | nobody watches it; restore is one row at a time; **only 50 versions per item** on every list (verified 22:31, step 0; see D6) |
 | SharePoint **recycle bin** | deleted items, 93 days | only if someone notices the deletion |
 | `flow_version.py` + `.zip` packages | Power Automate definitions | complete; out of scope here |
 | **OneDrive** sync of this folder | file-level version history of everything in the repo folder | backup for the files below |
@@ -160,3 +160,4 @@ plus nothing unexplained.
 | D3 | Snapshots out of git (OneDrive versions them), journal and health reports in git? | yes |
 | D4 | Derive the 09-16 completion records from the journal, instead of a separate flow? | later, after step 3 has run for a few weeks |
 | D5 | Bulk-change threshold | 25 rows on one field between refreshes, tunable per field |
+| D6 | **Raise the version limit on Order Items?** Step 0 (22:31, mirror `Lists` table): all 7 lists have versioning ON, but at the SharePoint default of **50 major versions**. Every fan-out, trigger run, x22 write and staff edit adds a version to a unit, so a busy unit can lose its oldest history, and with it the fine-grained undo this design falls back on. | raise **Order Items to 500** (and Order to 500), a one-setting change in list settings. Decide after the read-only check of how close units already are to 50. Until then, snapshots are the primary undo record |
