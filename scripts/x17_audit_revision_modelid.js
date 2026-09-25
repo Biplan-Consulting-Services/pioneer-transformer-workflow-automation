@@ -3,6 +3,15 @@
 
    Read-only: it writes nothing. Paste into the browser console on the SharePoint site.
 
+   NOT CONSOLE-ONLY ANY MORE (2026-09-25): Model Revisions is on disk in
+   sharepoint-lists/mirror/live/ (scripts/Refresh-SharePointMirror.ps1). ⚠️ There the Model
+   lookup's id column is `ModelId2`, not `ModelId` (Excel names are case-insensitive and the
+   text column `ModelID` exists) - live/Columns.csv's idColumn says so. mirror_health.py does
+   not port this check yet.
+   PROBABLE WRITER FOUND 2026-09-24: revision 26's version history (mirror VersionProbe) shows a
+   Power App save by a staff account writing the MODEL code back into ModelID on 09-17, undoing
+   the x18 repair. Look at the app's save formula before repairing again. Board 2026-09-24 22:38.
+
    HOW WE GOT HERE, INCLUDING TWO WRONG TURNS WORTH NOT REPEATING
      Step 9 saw the trigger flow rewrite a unit's `Model_Revision_ID_TextField`:
 

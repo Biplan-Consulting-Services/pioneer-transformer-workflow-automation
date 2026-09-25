@@ -3,6 +3,12 @@
 
    Read-only: it writes nothing. Paste into the browser console on the SharePoint site.
 
+   NOT CONSOLE-ONLY ANY MORE (2026-09-25): the lookup ids and mirror values this compares are
+   on disk in sharepoint-lists/mirror/live/ (scripts/Refresh-SharePointMirror.ps1; raw REST
+   shape - `<Lookup>Id` + the lookup's display value). A session can run the comparison from
+   there. scripts/mirror_health.py does not port this check yet ("mirror / stamp drift" in
+   docs/change-tracking-design-2026-09-24.md Layer C1); until it does, this is the tested one.
+
    WHY THIS EXISTS
      On 2026-09-14 the trigger flow stamped a healthy unit and overwrote
      `Model_Revision_ID_TextField` with the MODEL's id:

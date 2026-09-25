@@ -46,7 +46,16 @@ HEAD = r'''/* X25 -- READ-ONLY. Which units hold parent data that no longer matc
      Each drifted parent row is printed with its own `Modified`. Rows modified SINCE
      (below) are the ones the outage explains; older ones are pre-existing drift -- expect
      MdlLatestModelRevision list-wide (docs/n3-fanout-race-2026-09-21.md, parked item 2).
-     Clients is not scanned: its flow reads the wrong field (parked item 4).
+     Clients is not scanned. (The 09-21 reason, "its flow reads the wrong field", was wrong - the
+     flow is right, see n3-fanout-race-2026-09-21.md parked item 4 - and Cli* was filled on
+     2026-09-24 by x22 CLI_FILL. Adding Clients here is a generator change, not done yet.)
+
+   NOT CONSOLE-ONLY ANY MORE (2026-09-25)
+     The data this reads is on disk: sharepoint-lists/mirror/live/*.csv, refreshed by
+     scripts/Refresh-SharePointMirror.ps1, in the same raw REST shape (lookup ids, raw dates).
+     A session can run this comparison from those files instead of asking for a paste.
+     scripts/mirror_health.py does NOT yet port this check (design Layer C1 "parent drift");
+     until it does, this console script remains the tested implementation.
 */
 (async () => {
   const SINCE = "2026-09-24T00:00:00-04:00";   // <-- start of the outage, Eastern
