@@ -67,6 +67,10 @@
   const OI   = "d6468ec5-c7b5-44a3-8ce0-f81f059b671d";
 
   const DRY = true;   // <-- set false to actually write
+  /* VERBOSE = false: the console shows the summary, a 10-row sample on a dry
+     run, and every failure. The per-unit detail still goes to window.x22.log,
+     so `copy(window.x22)` loses nothing. true = the old line-per-unit output. */
+  const VERBOSE = false;
 
   /* The units to repair. From x19 on the three orders the client flagged:
        22169  1223-1226  lost Ord* and Mdl*   (the fan-out race: a clean tail)
@@ -558,6 +562,13 @@
     return row ? (row[meta.columnName] === undefined ? null : row[meta.columnName]) : null;
   };
 
+  /* say(): detail - kept in window.x22.log, printed only when VERBOSE.
+     Failures and summaries use console.log directly, so they always show. */
+  const LOG = [];
+  const say = (s) => { LOG.push(s); if (VERBOSE) console.log(s); };
+  const X22 = { mode: null, dry: DRY, plan: null, blankParent: null, tally: null, log: LOG };
+  if (typeof window !== "undefined") window.x22 = X22;
+
   const digest = await J(base + "/_api/contextinfo", { method: "POST" })
     .then(j => j.FormDigestValue).catch(() => null);
   if (!DRY && !digest) { console.error("ABORT: no form digest, cannot write."); return; }
@@ -595,7 +606,7 @@
     for (const r of rows) {
       const where = (r.id != null ? "Id " + r.id : "unit " + JSON.stringify(r.unit)) + " " + r.field;
       if (typeof r.field === "string" && r.field.startsWith("(parent")) {
-        console.log("  skipped " + where + " - x25 could not read that parent; nothing to copy from");
+        say("  skipped " + where + " - x25 could not read that parent; nothing to copy from");
         missing++; continue;
       }
       const g = groupOf[r.field];
@@ -679,14 +690,13 @@
     for (const t of Object.keys(alreadySet)) console.log("skipped " + alreadySet[t] + " units: " + t + " already set (blank-fill never overwrites)");
     console.log("skipped " + noLookup + " units: no Client lookup");
     if (missing.length) console.log("⚠️ " + missing.length + " units point at a client id that is not on the list: " + missing.slice(0, 20).join(", "));
-    for (const p of plan.slice(0, 10)) console.log("      " + p.id + "  " + JSON.stringify(p.write));
-    if (plan.length > 10) console.log("      ... and " + (plan.length - 10) + " more");
     RUN = [];
   }
 
+  const noLookup = {};   // group -> units skipped for want of a lookup (summary)
   for (const id of RUN) {
     const unit = await J(items + "(" + id + ")");
-    console.log("--- Id " + id + "  " + unit.Title + " ---");
+    say("--- Id " + id + "  " + unit.Title + " ---");
     const want = targets ? targets.get(id) : null;
 
     for (const g of Object.keys(MAP)) {
@@ -694,10 +704,13 @@
       const m = MAP[g];
       if (want && !m.fields.some(f => want.has(f.target))) continue;
       const pid = unit[m.fk];
-      if (isBlank(pid)) { console.log("  " + g + "*: no " + m.parent + " lookup - skipped"); continue; }
+      if (isBlank(pid)) {
+        say("  " + g + "*: no " + m.parent + " lookup - skipped");
+        noLookup[g] = (noLookup[g] || 0) + 1; continue;
+      }
       let parent;
       try { parent = await J(base + "/_api/web/lists(guid'" + m.list + "')/items(" + pid + ")"); }
-      catch (e) { console.log("  " + g + "*: parent " + pid + " unreadable - " + e.message); continue; }
+      catch (e) { console.log("  🔴 Id " + id + " " + g + "*: parent " + pid + " unreadable - " + e.message); continue; }
 
       const write = {}, before = {};
       let already = 0, empty = 0;
@@ -720,7 +733,7 @@
            array here, the mapping is one this generator does not understand -
            refuse rather than write JSON into a column. */
         if (typeof v === "object" && !(v && v.Url !== undefined)) {
-          console.log("      🔴 " + f.target + " would receive " + JSON.stringify(v)
+          console.log("  🔴 Id " + id + " " + f.target + " would receive " + JSON.stringify(v)
             + " -- structured value, refusing. Teach gen_x22_repair.py this mapping.");
           bail = true; continue;
         }
@@ -731,7 +744,7 @@
            never found, and revisions 106 and 387 hold model codes again today.
            Writing one here would spread damage under cover of a repair. */
         if (f.target === "RevModelRevionID" && !/^MRS?A?-.+-V\d+$/.test(String(v))) {
-          console.log("      🔴 " + f.target + " = " + JSON.stringify(v)
+          console.log("  🔴 Id " + id + " " + f.target + " = " + JSON.stringify(v)
             + " is a MODEL code, not a revision id. Revision " + pid + " is corrupt."
             + "\n         Run x17_audit_revision_modelid.js / x18_repair_revision_modelid.js"
             + " FIRST, then re-run this.");
@@ -749,21 +762,34 @@
         before[f.target] = unit[f.target];
       }
       const n = Object.keys(write).length;
-      console.log("  " + g + "* <- " + m.parent + " " + pid + ": " + n + " to write, "
+      say("  " + g + "* <- " + m.parent + " " + pid + ": " + n + " to write, "
         + already + (want ? " already match" : " already set") + ", " + empty + " blank on the parent");
-      for (const k of Object.keys(write)) console.log("      " + k.padEnd(34) + " = "
+      for (const k of Object.keys(write)) say("      " + k.padEnd(34) + " = "
         + (want ? JSON.stringify(flat(before[k])) + "  ->  " : "") + JSON.stringify(write[k]));
-      if (n) plan.push({ id: id, group: g, write: write });
+      if (n) plan.push({ id: id, group: g, write: write, before: want ? before : undefined });
     }
   }
 
-  console.log("\n=== " + plan.length + " writes planned across " + (CLI_FILL ? cliUnits : RUN.length) + " units ===");
+  X22.mode = CLI_FILL ? "CLI_FILL" : (OVERWRITE ? "OVERWRITE" : "blank-fill");
+  X22.plan = plan; X22.blankParent = blankParent;
+  const nFields = plan.reduce((a, p) => a + Object.keys(p.write).length, 0);
+  console.log("\n=== " + X22.mode + (DRY ? " (DRY)" : "") + ": " + plan.length + " writes (" + nFields
+    + " fields) planned across " + (CLI_FILL ? cliUnits : RUN.length) + " units ===");
+  for (const g of Object.keys(noLookup)) console.log("skipped " + noLookup[g] + " units for " + g + "*: no " + MAP[g].parent + " lookup");
   if (blankParent.length) {
-    console.log("⚠️ " + blankParent.length + " listed fields have a BLANK parent now - NOT cleared (see header):");
-    console.table(blankParent);
+    console.log("⚠️ " + blankParent.length + " listed fields have a BLANK parent now - NOT cleared (see header)."
+      + (blankParent.length > 10 ? " First 10; all in window.x22.blankParent:" : ""));
+    console.table(blankParent.slice(0, 10));
   }
   if (bail) { console.error("🔴 ABORT: a structured value reached a write. Nothing written."); return; }
-  if (DRY) { console.log("DRY RUN - nothing written. Set DRY = false and paste again."); return; }
+  if (DRY) {
+    /* The sample is what makes a dry run checkable - keep it even when quiet. */
+    if (plan.length) console.log("sample (first " + Math.min(10, plan.length) + " of " + plan.length + "; all in window.x22.plan):");
+    for (const p of plan.slice(0, 10)) console.log("  " + p.id + " " + p.group + "*  " + Object.keys(p.write).map(k =>
+      k + " " + (p.before ? JSON.stringify(flat(p.before[k])) + " -> " : "= ") + JSON.stringify(p.write[k])).join(", "));
+    console.log("DRY RUN - nothing written. Set DRY = false and paste again. copy(window.x22) for the full detail.");
+    return;
+  }
 
   /* One PATCH per group per unit, mirroring what the flow would have done. */
   for (const p of plan) {
@@ -778,22 +804,22 @@
                    "X-RequestDigest": digest, "X-HTTP-Method": "MERGE", "IF-MATCH": "*" },
         body: JSON.stringify(p.write),
       });
-      console.log("  wrote " + p.id + " " + p.group + "*");
+      say("  wrote " + p.id + " " + p.group + "*");
     } catch (e) { console.log("  🔴 FAILED " + p.id + " " + p.group + "*: " + e.message); }
   }
 
   /* Read back. A 200 is not evidence. */
   console.log("\n=== read-back ===");
   let bad = 0;
-  const tally = {};   // overwrite mode: field -> {written, verified, failed}
+  const tally = {};   // overwrite / CLI mode: field -> {attempted, verified, failed}
   for (const p of plan) {
     const after = await J(items + "(" + p.id + ")");
     for (const field of Object.keys(p.write)) {
       const got = after[field], want = p.write[field];
       const ok = same(want, got);
       if (OVERWRITE || CLI_FILL) {
-        const t =(tally[field] = tally[field] || { written: 0, verified: 0, failed: 0 });
-        t.written++; t[ok ? "verified" : "failed"]++;
+        const t =(tally[field] = tally[field] || { attempted: 0, verified: 0, failed: 0 });
+        t.attempted++; t[ok ? "verified" : "failed"]++;
       }
       if (!ok) {
         bad++;
@@ -801,6 +827,7 @@
       }
     }
   }
+  X22.tally = tally;
   if (OVERWRITE || CLI_FILL) console.table(tally);
   console.log(bad ? "\n🔴 " + bad + " fields did not land." : "\n✅ every written field verified.");
 })();
