@@ -23,15 +23,21 @@
     Show Excel. Use for the FIRST refresh: Power Query asks for credentials once
     (Organizational account), then caches them for every later silent run.
 
+.PARAMETER Tables
+    Refresh and export only these tables (query names, e.g. -Tables Lists, "Order Items").
+    Other tables and their CSVs are left exactly as they are. Default: all.
+
 .EXAMPLE
     ./Refresh-SharePointMirror.ps1 -Interactive     # first time
     ./Refresh-SharePointMirror.ps1                  # every time after
+    ./Refresh-SharePointMirror.ps1 -Tables Lists    # one table, no churn elsewhere
 #>
 param(
     [string]$WorkbookPath = (Join-Path $PSScriptRoot "..\workbooks\SharePoint mirror.xlsx"),
     [string]$OutDir       = (Join-Path $PSScriptRoot "..\sharepoint-lists\mirror"),
     [int]$TimeoutSec      = 900,
-    [switch]$Interactive
+    [switch]$Interactive,
+    [string[]]$Tables
 )
 $ErrorActionPreference = "Stop"
 $full = [System.IO.Path]::GetFullPath($WorkbookPath)
@@ -53,14 +59,19 @@ $watchdog = Start-Job -ScriptBlock {
 
 $stamp = Get-Date -Format "yyyy-MM-dd HHmm"
 $results = @()
-$saved = $false
 try {
     $wb = $excel.Workbooks.Open($full)
-    $tables = @()
-    foreach ($ws in $wb.Worksheets) { foreach ($lo in $ws.ListObjects) { if ($lo.Name -like "Mirror_*") { $tables += $lo } } }
-    if ($tables.Count -eq 0) { throw "ABORT: no query tables in the workbook - run Build-SharePointMirror.ps1" }
+    $los = @()
+    foreach ($ws in $wb.Worksheets) { foreach ($lo in $ws.ListObjects) { if ($lo.Name -like "Mirror_*") { $los += $lo } } }
+    if ($los.Count -eq 0) { throw "ABORT: no query tables in the workbook - run Build-SharePointMirror.ps1" }
+    if ($Tables) {
+        $want = $Tables | ForEach-Object { "Mirror_" + ($_ -replace '[^A-Za-z0-9]', '_') }
+        $unknown = $want | Where-Object { $los.Name -notcontains $_ }
+        if ($unknown) { throw "ABORT: no such table(s): $($unknown -join ', '). Run Build-SharePointMirror.ps1 after adding a query." }
+        $los = @($los | Where-Object { $want -contains $_.Name })
+    }
 
-    foreach ($lo in $tables) {
+    foreach ($lo in $los) {
         $name = $lo.Name -replace '^Mirror_', ''
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
         $err = $null
@@ -81,9 +92,9 @@ try {
         exit 1
     }
 
-    $wb.Save(); $saved = $true
+    $wb.Save()
     $inv = [System.Globalization.CultureInfo]::InvariantCulture
-    foreach ($lo in $tables) {
+    foreach ($lo in $los) {
         $name = ($lo.Name -replace '^Mirror_', '')
         # restore the query's real name for the file ("Order_Items" -> "Order Items")
         foreach ($c in $wb.Queries) { if (("Mirror_" + ($c.Name -replace '[^A-Za-z0-9]', '_')) -eq $lo.Name) { $name = $c.Name } }
