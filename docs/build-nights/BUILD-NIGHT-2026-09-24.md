@@ -710,3 +710,88 @@ silently at 22:22.** Power Query already had credentials cached for the site, so
 - **Still held (not committed):** the x22 mode guard + heartbeat, waiting for `claude-43`'s "RUN2 apply done".
 
 **2026-09-24 22:3x | `claude-43` |** Wrote `docs/change-tracking-design-2026-09-24.md` at the user's request (a new archiving system for the mirror: track changes, detect errors, roll back). It complements the 09-16 archive design rather than replacing it: 30-day snapshots plus monthly forever, and the monthly copy is the 09-16 Layer 3. Added as **E10**, awaiting the user's decisions D1–D5.
+
+**2026-09-24 22:32 (`date`) | `claude-5b` |** **E10 step 0 DONE, `47351e0`. Nothing else in E10 was started.**
+- New mirror table **`Lists`** (`power-query/SharePoint mirror/Lists.pq`): versioning on/off, major/minor
+  limits, checkout/approval, item count, and last item modified/deleted, with a `versioningOk` flag.
+- **Read live at 22:31:** all 7 lists (Order Items 1127, Order 470, Models 394, Model Revisions 395,
+  Clients 99, Index 24, Models SA 15) have **versioning ON, 50 major versions kept, minor versions off**,
+  no forced checkout, no approval.
+- ⚠️ **For the design (not a blocker): 50 is the SharePoint Online default, and it's thin for Order Items.**
+  Every N3 fan-out, trigger-flow run, x22 write and staff edit adds a version to a unit. A unit touched
+  often (a busy order's units, or a bulk repair plus the flow re-runs it triggers) can push its oldest
+  history out of the 50. The rollback fallback then can't reach back past that. Options for the user:
+  raise the limit on Order Items (list settings; the platform allows up to 50,000), or make the Layer A
+  snapshots the primary undo record. A cheap read-only check first: the highest version count on any
+  unit (`items(id)/versions` on a sample). I can add that to the mirror if wanted.
+- Also: `Refresh-SharePointMirror.ps1 -Tables <names>` refreshes and exports only those tables. It was
+  used here so the planner's 22:25 CSV set stayed untouched: only `Lists 2026-09-24 2231.csv` is new.
+  Mirror CSVs and the workbook are left **uncommitted** pending D3.
+
+**2026-09-24 22:35 (`date`) | `claude-5b` |** **D6 evidence DONE, `c23ef42`: mirror table `VersionCounts`.
+EVERY item counted, no sampling.**
+Method: `OData__UIVersionString`'s major number = every version the item ever had; it keeps counting after
+the limit trims history. **Validated** on each list's busiest item: counted `/versions` = min(label, limit + 1),
+i.e. the 50 kept + the current one. That held on all 7 lists.
+| list | items | median | p95 | **max** | ≥ 40 | **> 50 = history ALREADY lost** | busiest item |
+|---|---|---|---|---|---|---|---|
+| Order Items | 1127 | 13 | 55 | **851** | 136 | **81** | id 126 `21792-3/5` |
+| Order | 470 | 15 | 54 | 155 | 57 | **30** | id 116 `21912` |
+| Model Revisions | 395 | 5 | 61 | **510** | 32 | **25** | id 26 |
+| Models | 394 | 17 | 42 | 123 | 30 | 3 | id 38 |
+| Clients / Index / Models SA | 99 / 24 / 15 | 2 / 2 / 3 | 4 / 4 / 9 | 6 / 7 / 9 | 0 | 0 | |
+**Reading for D6, not a verdict:**
+- **It's already happening, not a future risk.** 81 units, 30 orders, 25 revisions and 3 models have lost their
+  oldest history. Raising the limit stops further loss; it **does not bring back** what's gone. That argues for
+  snapshots (Layer A) as the undo record *now*, whatever D6 decides.
+- **500 would not cover the tail.** `21792-3/5` is at 851 and revision 26 at 510. p95 is 54–61, so 500 covers
+  ~everything except the outliers.
+- 🔴 **`21792-3/5` at 851 versions looks like a write loop, not editing.** It's a real unit (archive delivery
+  date 2026-09-24, special-cased in the cleanup/archive scripts), created 08-17, last modified 01:45:56Z
+  tonight. That's ~25 versions a day. The same goes for revision 26 at 510. Worth a read-only look at its
+  `/versions` (editor and time per version) before D6, because a loop would also keep eating any new limit.
+  **Not investigated further, raised here first.**
+
+**2026-09-24 22:38 (`date`) | `claude-5b` |** **Version probe DONE, `0b9a262`** (mirror table `VersionProbe`, read-only:
+one row per kept version, with editor and a per-field diff against the previous version). Only the last 51
+versions exist to read (limit 50 + current), so this is the most recent window of each item.
+
+**Unit 126 `21792-3/5`, kept v801–v851**
+| versions | when (UTC) | = EDT | what changed | writer (reading) |
+|---|---|---|---|---|
+| v801–v846 (46) | 09-22 01:07:00 → 01:37:51 | 09-21 21:07–21:37 | **nothing.** Every diff is only `_UIVersion`/`_UIVersionString`, one every **~34 s** (min 32, median 34) | a **no-op self-trigger loop**: see below |
+| v847–v848 | 09-23 04:01:35, 04:02:08 | 09-23 00:01 | StatusDate + calc col, then **33 s later** `StepStatusStamped Livraison → Terminé` | **the trigger flow, user's v006** (Livraison auto-complete), so it was ON on 09-23 |
+| v849–v850 | 09-23 15:19:50, 15:20:24 | 09-23 11:19 | `StepStatusStamped Terminé → Livraison`, then **34 s later** back to `Terminé` | a person set it back and **v006 forced it to Terminé again**: DECISIONS #1 happening live |
+| v851 | 09-25 01:45:56 | **09-24 21:45** | `CliLeadTimeWeeks null → 28` (+ calc col) | **ours: RUN1's CLI_FILL.** Expected, not the loop |
+All 51 have editor `soleil.anker`, the account the flows' connection runs as and the console scripts use.
+No `AppEditor` change in v801–v846, so **not the Power App**. **No commits or session work on the evening of
+09-21** (git log 19:30–23:30 EDT is empty), so not a script of ours.
+
+**Revision 26, kept v460–v510**
+| versions | when (UTC) | = EDT | what changed | writer (reading) |
+|---|---|---|---|---|
+| v460–v507 (48) | 09-11 04:52:08 → 05:06:24 | 09-11 00:52–01:06 (cutover night) | **nothing**, 2–60 s apart | the cutover-night batch, the same window as E6's Order edits (04:27–05:12Z); a per-unit loop re-saving a shared parent |
+| v508 | 09-15 03:37 | | `ModelID M-HYQU-0009 → MR-HYQU-0009-V1` (soleil) | the x18 repair |
+| **v509** | **09-17 17:51** | 13:51 | **`ModelID MR-HYQU-0009-V1 → M-HYQU-0009`, editor `patrick.vaillancourt`, `AppEditor` set** | 🔴 **the Power App**, see below |
+| v510 | 09-21 06:07 | | back to `MR-HYQU-0009-V1` (soleil) | repaired again |
+
+**Readings, not verdicts:**
+1. **Writer match for the 126 loop: the Order Items trigger flow re-triggering on its own write.** It's a
+   no-data-change update every ~34 s (flow run + trigger latency), on a list whose only trigger is that flow, while
+   the flow was evidently being run: 09-23 shows it live with the user's v006 logic. Not an N3 flow (those write
+   units only when a PARENT changes, and no parent fields moved). Not the Power App (no `AppEditor`). The loop
+   stopped by itself after 30 min. That fits someone turning the flow off, or the "Condition" finally matching.
+   **Confirmable only from the trigger flow's run history for 09-22 01:05–01:40Z (user).**
+   ⚠️ **This matters for enabling v008:** if its change-guard can fail on a no-op, every write re-fires it. RUN2
+   writes ~740 units, so **keep the trigger flow OFF during RUN2** (it is now) and add a **self-trigger test**
+   (edit one unit, count versions after 5 min) to the v008 test plan.
+2. 🔴 **Probably the cause of the Model Revisions `ModelID` corruption ("cause never found", 09-14).**
+   v509 shows a Power App save by patrick.vaillancourt writing the MODEL code back into `ModelID`, undoing the
+   x18 repair. That's worth a look at the app's save formula for Model Revisions. (Revisions 106/387 "hold model
+   codes again" could be the same writer: `VersionProbe` can point at them.)
+3. **D6:** most of the lost history on these two items is **no-op churn**, not edits. Fixing the loop saves far
+   more history than raising the limit.
+4. **Tonight's 21:45 write on 126 was ours** (RUN1). RUN2 will add one more version (Mdl*). It won't loop,
+   because nothing triggers on Order Items writes while the trigger flow is off.
+
+**2026-09-24 22:4x | `claude-43` |** User confirms: the Order Items trigger flow is **OFF** now. The write loop (unit 126, revision 26) was the trigger flow, **Fri 09-18 → Mon/Tue 09-21/22**, and the user **fixed it**; it no longer loops. The fix is in the user's v006 edits, so it is in live v008. The loop test stays in the enable plan as confirmation only. Power App checks (revision 26's 09-17 `ModelID` overwrite) are deferred by the user. RUN2 apply is cleared to go.

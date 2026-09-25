@@ -89,7 +89,7 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 ## 4. Turning the trigger flow back on
 
 Only after section 3 is done.
-- [ ] 🔴 **Self-trigger (loop) test FIRST.** Unit `21792-3/5` got 46 no-change writes in 30 min on 09-21
+- [ ] **Loop confirmation test** — *the user confirmed 2026-09-24: the write loop ran Fri 09-18 → Mon/Tue 09-21/22, and they fixed it (the fix is in their v006 edits, so it is in live v008). This test just confirms it.* Unit `21792-3/5` got 46 no-change writes in 30 min on 09-21
       (every ~34 s) — the trigger flow re-firing on its own save. Enable, edit ONE unit, wait 5–10 min,
       and count its versions (the mirror's `VersionCounts`, or the unit's version history). If the count
       keeps climbing, turn it off: it is looping. Check the flow's run history for 09-22 01:05–01:40 UTC
@@ -107,7 +107,7 @@ Only after section 3 is done.
 - 81 units, 30 orders, 25 revisions have already lost their oldest versions (limit is 50 on every list).
   Most of it is no-op loop churn. Stop the loop first, then raise Order Items / Order to 500 (D6 in
   `docs/change-tracking-design-2026-09-24.md`).
-- Revision 26: a Power App save (09-17) wrote `ModelID` back to the old `M-HYQU-0009`, undoing the 09-14
+- **Power App: a later check, not tomorrow (user, 2026-09-24).** Revision 26: a Power App save (09-17) wrote `ModelID` back to the old `M-HYQU-0009`, undoing the 09-14
   repair — the cause fixed in the app on 09-21. Re-run `x17` to confirm nothing has regressed since.
 
 ## 5. Small clean-ups (any time)
