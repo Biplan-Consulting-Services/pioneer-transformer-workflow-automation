@@ -22,7 +22,7 @@ Clients) are clean and on the connection reference. Today's outage left **no** p
 - [ ] *(when ready)* the automation infrastructure for scheduling (D1).
 - [ ] **Nightly Sync** (`docs/nightly-sync-review-2026-09-25.md`): read §2–§5 and answer **N1–N5** (§6). Your v001 visits
       all 1,127 units one at a time (~6,800 actions a night → throttled, which is why it runs forever), deletes on the Excel
-      archive row alone with no cap or log, and has no TODAY() recalc. v002 (`claude-5b`, E11) will be staged for you to
+      archive row alone with no cap or log, and has no TODAY() recalc. **v002 is STAGED** (`workflow-data/Order Items - Nightly Sync/_outbox/PASTE-ME.json`; paste + test steps in the review doc §6b) for you to
       paste: double confirmation, a 50-unit cap, a dry-run first night, and the ~4-row TODAY() touch.
 - [ ] Delete `test calculated column` from Order Items (it also uses TODAY()).
 - [ ] **Trigger flow**: run the section 4 tests, including the loop-confirmation check, then enable it.
