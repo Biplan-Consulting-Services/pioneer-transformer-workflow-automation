@@ -128,6 +128,8 @@ check passes). Classified from the full `window.x25.report`:
 | E5 | **Decision 7 evidence — `E21007-1/1`: M-MEEN-0001 vs M-MEEN-0005, same model or duplicate?** Spec below | `claude-5b` | yes | **DONE 21:36**, log entry. Two different models, Models rows 0001/0005 crossed |
 | E6 | **Decision 6 evidence — LDs / Engineering Required blank on the Order but set on its units.** Spec below | `claude-5b` | yes | **DONE 21:40 (files)**. Units right, Orders never set (reading); live confirmation = `x26` (user) |
 | E7 | **Decision 5 evidence — the one-day date table (UTC vs Eastern).** Spec below | `claude-5b` | yes | **DONE 21:42**, log entry. Raw (later) date meant (reading); only 6 of 457 orders have T00Z |
+| E8 | **SharePoint mirror workbook: a local, refreshable copy of the live lists, so sessions can validate without the user.** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:5x, user request) |
+| E9 | **Console scripts print failures + a summary only.** User 21:5x: "just paste the fails in the terminal because it bloats the pastes". x22 APPLY printed a `wrote <id> Cli*` line per unit (1,053 lines) | `claude-5b` | yes | UNCLAIMED, **do before E8** because the user runs x22 again tonight (RUN2) |
 | E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **DONE `ba41132` + `7f59469`** — diff stat and block text in the log |
 | E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 21:1x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. **UNBLOCKED 21:1x** — U4 back, go |
 | U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | **DONE 21:17** — 200, **17 of 97** clients hold `CliLeadTimeWeeks` (16×3, 18×5, 20×7, 24×1 CONED, 28×1 HYDRO QUEBEC = FRM13's value). 80 are null — their units correctly stay blank. Pasted Atom feed, counted by `claude-43` |
@@ -190,6 +192,58 @@ and the weekday of each candidate date (a promised date on a Sunday is a tell). 
 other order has the same `T00:00:00Z` shape — if every app-created order does and no hand-entered one
 does, that is the pattern, and say so.
 ⚠️ `P00005` Initial Promised 2025-12-30/31 is **before** its Order Date — flag it, it is odd either way.
+
+### E9 — quiet console output
+**Rule for every console script the user pastes (x22 first, then x25, x24, x16, x26):**
+- **Print by default:** the summary and counts; every FAILURE or ABORT with enough detail to act on;
+  and anything that needs a human decision.
+- **Do not print by default:** per-row success lines (`wrote 1179 Cli*`) or per-unit plan blocks (x22's
+  `--- Id 1223 ---` sections). Put them behind `const VERBOSE = false;`.
+- **Full detail:** keep it available on `window.<script>` for `copy(...)`, as x25 already does, so
+  nothing is lost. Only the terminal gets shorter.
+- A dry run still shows **a sample** (first ~10 planned writes) plus the totals. That sample is what
+  makes a dry run checkable.
+**Priority: x22 now.** The user's next paste is RUN2 (~740 writes). If x22 changes, tell `claude-43`
+before the user pastes it.
+**Verify:** `node --check`, re-run the mock harness, and diff the default-mode output line count
+before and after on the harness.
+
+### E8 — SharePoint mirror workbook (user request, 2026-09-24)
+**Goal, in the user's words:** "that way you can always validate yourself". Sessions should read LIVE
+list state from disk instead of asking the user for exports and console pastes.
+
+**Approach agreed: Power Query, not the list's *Export to Excel* (.iqy).** The .iqy follows the current
+VIEW (the 09-05 3-row BO Tracking trap) and gives lookups as display text with no id. Power Query
+`SharePoint.Tables` reads the list itself, and returns lookup ids and values.
+
+**Build:**
+- `workbooks/SharePoint mirror.xlsx`: one query per list, loaded to a table. The lists are Order Items,
+  Order, Models, Model Revisions, Clients, Index, plus Models SA if cheap.
+  - Reuse FRM10-12's M (`FRM10-12/power-query/`: the `SharePoint.Tables` source,
+    `FlattenSharePointLookupLists`) rather than writing new M.
+  - Keep lookup **ids** as well as values (`<Field>Id`), because x22/x25 join on the id.
+  - Keep `Id`, `Created`, `Modified`, `Author`, `Editor`.
+  - Keep raw date values. Do **not** convert timezones in M; note what comes back.
+  - Track the M under `power-query/SharePoint mirror/` with `Export-PowerQuery.ps1`.
+- `scripts/Refresh-SharePointMirror.ps1`: opens the workbook via COM, runs `RefreshAll()`, waits for
+  completion with a timeout, saves, and writes each table to
+  `sharepoint-lists/{List} {YYYY-MM-DD} {HHMM}.csv` (existing convention; superseded files → `Archive/`).
+  `RefreshAll` is fine on THIS workbook; the ban is FRM10-12-specific (CLAUDE.md, memory).
+  - Abort on a zero-row table. A zero-row read is a failed read.
+  - Print row counts per list.
+  - ⚠️ Check `load_exports.py` still reads the output. These CSVs have no `ListSchema` first record,
+    so either make the loader tolerate both shapes or write a separate folder. Say which.
+**Acceptance (the dates are the test):**
+1. Row counts match live: Order Items 1127, Order 470, Models 394, Model Revisions 395, Clients 99
+   (x25 / U4 tonight).
+2. Unit `22157-1/10` Order Date and Order 559's Order Date come back exactly as x25 saw them
+   (`2026-08-31T04:00:00Z` vs `2026-09-01T00:00:00Z`), or the shift is explained and documented.
+   If PQ silently normalises the timezone, the mirror cannot see the E7 defect. Find that out
+   before anyone trusts it.
+3. Lookup id present for Order Items → Order / Model / Model Revision / Client.
+4. `Cli*` shows tonight's fill (e.g. any HYDRO QUEBEC unit = 28).
+**Needs the user once:** the first refresh prompts for SharePoint credentials (Organizational
+account). Post BLOCKED at that step with the exact prompt they will see.
 
 ### E1 — x22 overwrite mode
 **Why:** x22 fills only BLANK fields. After a day with the N3 flows down, units hold OLD values —
@@ -576,3 +630,10 @@ whoever entered it (dominic.lague).
 data's). Relayed E5–E7 readings to the user; decisions 5–7 stay open for them.
 
 **2026-09-24 21:5x | `claude-43` | U5 / E3 DONE: Clients lead-time fill APPLIED by the user.** x22 `CLI_FILL = true`, `DRY = false`. Read-back: `CliLeadTimeWeeks` **1053 written / 1053 verified / 0 failed**, matching the dry run exactly (17 clients; 70 units parent-null, 2 already set, 2 no Client lookup). The Order Items trigger flow was OFF throughout. The four sync flows stayed on: they trigger on parent lists, and x22 writes only Order Items.
+
+**2026-09-24 21:5x | `claude-43` |** Added **E8** (SharePoint mirror workbook) at the user's request, so
+sessions can validate live state themselves. I chose Power Query over the .iqy Export-to-Excel because
+the .iqy is bound to a view and loses lookup ids. The user can overrule that choice.
+
+**2026-09-24 21:5x | `claude-43` |** Added **E9** (quiet console output) at the user's request, ahead of E8,
+because the user pastes x22 again tonight for RUN2.
