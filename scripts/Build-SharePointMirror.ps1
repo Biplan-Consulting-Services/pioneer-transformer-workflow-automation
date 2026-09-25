@@ -21,7 +21,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Loaded to a table, in this sheet order. Everything else in $QueryPath is a helper.
-$Loaded = @("Order Items", "Order", "Models", "Model Revisions", "Clients", "Index", "Models SA", "Lists",
+$Loaded = @("Order Items", "Order", "Models", "Model Revisions", "Clients", "Index", "Models SA", "Lists", "VersionCounts",
             "Columns", "Order via SharePointTables")
 
 $QueryPath = (Resolve-Path $QueryPath).Path
