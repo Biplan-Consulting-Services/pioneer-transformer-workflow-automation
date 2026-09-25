@@ -242,6 +242,28 @@ VIEW (the 09-05 3-row BO Tracking trap) and gives lookups as display text with n
    before anyone trusts it.
 3. Lookup id present for Order Items → Order / Model / Model Revision / Client.
 4. `Cli*` shows tonight's fill (e.g. any HYDRO QUEBEC unit = 28).
+**E8b — the column catalog (user idea, 21:5x): the reference table sessions consult first.**
+A `Columns` table in the same workbook, one row per column per list:
+
+| list | display name | **internal name** | type | lookup → list.field (ShowField) | choices | synced from (parent list.field, by which flow) | notes |
+
+- **Internal name and type:** read from the platform, never retyped. `_api/web/lists/…/fields` HANGS on
+  this tenant, so probe the `_api/v2.0/…/columns` endpoint from Power Query first (x21 uses it from the
+  browser). If PQ can't auth to it, fall back to generating the table from the `ListSchema` record of
+  each fresh export (it has Name / DisplayName / Type / CHOICES). Say which you used.
+- **"Synced from":** generate it from the live N3 flow definitions via the same map `gen_x7_verifier.py`
+  / `gen_x22_repair.py` use. Do **not** hand-type it. Also include the Order Items trigger flow's
+  `_TextField` mirrors and stamps (v008), and the Cli* mapping.
+- **Notes:** carry the known traps as data, e.g. `<Stage>Date` = display "… End Date",
+  `Planned_x0020_Delivery_x0020_Dat` truncated, `Location` must stay 12 values (FRM11), Yes/No columns
+  can't show NULL in a CSV (E6), calculated columns blank in CSV (CLAUDE.md trap 4).
+- The refresh script also writes it to `sharepoint-lists/Columns {date} {time}.csv`, so a session
+  can `grep` one file for a name. Point CLAUDE.md at it as the place to look first. That CLAUDE.md edit
+  goes via the user.
+**Acceptance:** every field in x7's 46-field map and in x22's writes resolves to exactly one catalog row;
+`CoilingDate` shows display "Coiling End Date"; `CliLeadTimeWeeks` shows up on both Clients and Order Items
+with the sync link between them.
+
 **Needs the user once:** the first refresh prompts for SharePoint credentials (Organizational
 account). Post BLOCKED at that step with the exact prompt they will see.
 
@@ -637,3 +659,6 @@ the .iqy is bound to a view and loses lookup ids. The user can overrule that cho
 
 **2026-09-24 21:5x | `claude-43` |** Added **E9** (quiet console output) at the user's request, ahead of E8,
 because the user pastes x22 again tonight for RUN2.
+
+**2026-09-24 21:5x | `claude-43` |** Added **E8b** (column catalog table) to E8. User idea: a table of true
+column names and which list/flow they come from, as the reference sessions check first.
