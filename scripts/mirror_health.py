@@ -142,7 +142,7 @@ def evaluate(events, snap, acknowledged=None):
                 continue
             if tgt not in titles:
                 titles[tgt] = set(snap.by_id(tgt))
-            idcol = r["internalName"] + "Id"
+            idcol = cat.id_column(r["list"], r["internalName"])   # E8c: ModelId2, not a guessed ModelId
             bad = []
             for row in snap.table(r["list"]):
                 v = (row.get(idcol) or "").strip()

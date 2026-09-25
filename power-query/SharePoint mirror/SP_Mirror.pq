@@ -62,6 +62,21 @@ let
 
     Ordered  = Table.ReorderColumns(Flat,
                    List.Intersect({{"Id", "Title"}, Table.ColumnNames(Flat)})
-                   & List.Difference(Table.ColumnNames(Flat), {"Id", "Title"}))
+                   & List.Difference(Table.ColumnNames(Flat), {"Id", "Title"})),
+
+    // ---- Excel-safe names, decided HERE rather than by Excel. Excel column names are
+    // case-insensitive, so REST's `ModelID` (text) and `ModelId` (the Model lookup's id) on Model
+    // Revisions collide and Excel silently renames the later one to `ModelId2`. Doing the same rule
+    // ourselves (later duplicate gets 2, 3, ...) keeps today's names AND lets the Columns catalog
+    // know the real CSV column (meta ColumnMap: REST name -> CSV name) instead of guessing.
+    Names    = Table.ColumnNames(Ordered),
+    Safe     = List.Accumulate(Names, [seen = {}, out = {}], (s, n) =>
+                   let
+                       cand = (i) => if i = 1 then n else n & Text.From(i),
+                       pick = List.First(List.Select({1 .. 50}, (i) => not List.Contains(s[seen], Text.Lower(cand(i)))))
+                   in
+                       [seen = s[seen] & {Text.Lower(cand(pick))}, out = s[out] & {cand(pick)}])[out],
+    Pairs    = List.Select(List.Zip({Names, Safe}), (p) => p{0} <> p{1}),
+    Renamed  = if List.IsEmpty(Pairs) then Ordered else Table.RenameColumns(Ordered, Pairs)
 in
-    Ordered
+    Renamed meta [ColumnMap = Record.FromList(Safe, Names)]

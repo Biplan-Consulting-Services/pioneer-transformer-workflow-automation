@@ -166,12 +166,32 @@ class Catalog:
     def __init__(self, snap):
         self.rows = snap.table(CATALOG) if snap.has(CATALOG) else []
         self.by = {(r["list"], r["internalName"]): r for r in self.rows}
+        # E8c: the CSV column that holds each field. Usually the internal name; for a lookup its
+        # id column, which Excel may have renamed (Model Revisions: REST `ModelId` -> CSV `ModelId2`,
+        # because `ModelID` exists and Excel names are case-insensitive).
+        self.by_csv = {}
+        for r in self.rows:
+            csvc = (r.get("csvColumn") or "").strip()
+            if csvc:
+                self.by_csv[(r["list"], csvc)] = (r.get("restField") or r["internalName"]).strip()
 
     def col(self, lst, name):
         return self.by.get((lst, name))
 
+    def rest_field(self, lst, csv_col):
+        """The name REST / flows / x27 use for a mirror CSV column (ModelId2 -> ModelId)."""
+        return self.by_csv.get((lst, csv_col), csv_col)
+
+    def id_column(self, lst, lookup_name):
+        """The mirror CSV column holding a lookup's id (Model -> ModelId2 on Model Revisions)."""
+        c = self.col(lst, lookup_name)
+        v = ((c or {}).get("idColumn") or "").strip()
+        return v or lookup_name + "Id"
+
     def kind(self, lst, name):
         """'real' (journal + restorable), 'derived' (journal, tagged, never restored)."""
+        if (lst, name) in self.by_csv and self.by_csv[(lst, name)] != name:
+            return "real"             # a renamed id column (ModelId2): the writable lookup id
         c = self.col(lst, name)
         if name.endswith("_Email") and self.col(lst, name[: -len("_Email")]) is not None:
             return "derived"          # mirror-added: <Person>_Email
@@ -194,6 +214,9 @@ class Catalog:
         return None
 
     def type(self, lst, name):
+        rest = self.rest_field(lst, name)
+        if rest != name and rest.endswith("Id"):
+            return "lookupId"
         c = self.col(lst, name)
         if c is None and name.endswith("Id") and self.col(lst, name[:-2]) is not None:
             return "lookupId"

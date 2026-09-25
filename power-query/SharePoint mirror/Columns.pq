@@ -11,9 +11,22 @@ let
                  "personOrGroup", "hyperlinkOrPicture", "calculated", "geolocation", "term",
                  "thumbnail", "contentApprovalStatus"},
 
-    Row = (listTitle as text, c as record) as record =>
+    Row = (listTitle as text, c as record, prof as record) as record =>
         let
             Type   = List.First(List.Select(Facets, (f) => Record.HasFields(c, f)), "other"),
+            // E8c: the CSV column that holds this field (lookups/people: their id), its fill rate
+            // over the mirrored rows, and whether it can identify a row. `Order.Title` is empty on
+            // every row - the order number is Order_x0020_Number1 - and nothing said so.
+            ByIdCol = Type = "lookup" or Type = "personOrGroup",
+            RestCol = if ByIdCol then c[name] & "Id" else c[name],
+            CsvCol  = Record.FieldOrDefault(prof[map], RestCol, null),
+            Vals    = if CsvCol = null then null else Table.Column(prof[data], CsvCol),
+            Filled  = if Vals = null then null else List.Select(Vals, each _ <> null and _ <> ""),
+            Fill    = if Filled = null or prof[n] = 0 then null else Number.Round(List.Count(Filled) / prof[n], 3),
+            IsKey   = Fill = 1 and List.Count(List.Distinct(Filled)) = List.Count(Filled)
+                      and List.Contains({"text", "number"}, Type)
+                      and Record.FieldOrDefault(c, "hidden", false) <> true
+                      and not Text.EndsWith(c[name], "_TextField") and c[name] <> "ID",
             Facet  = if Type = "other" then [] else Record.Field(c, Type),
             Name   = c[name],
             Fmt    = if Type = "dateTime" then Record.FieldOrDefault(Facet, "format", null) else null,
@@ -30,7 +43,13 @@ let
                 if Type = "calculated" then "Calculated: reads BLANK in CSV exports." else null,
                 if Text.EndsWith(Name, "_TextField") then "Mirror of a lookup; only as current as its last sync (x16). Never derive a fix from it." else null,
                 if Text.Contains(Name, "Revion") then "Internal name is misspelled (Revion) - use it exactly as is." else null,
-                if Name = "RevModelDescription" then "Target of a MultiChoice source; the flow takes first().Value - never write the array (R22)." else null
+                if Name = "RevModelDescription" then "Target of a MultiChoice source; the flow takes first().Value - never write the array (R22)." else null,
+                if Fill = 0 then "EMPTY on every row (fillRate 0) - never look rows up by this column." else null,
+                if Fill <> null and Fill > 0 and Fill < 0.05 then "ALMOST EMPTY (" & Number.ToText(Fill * 100, "0.#") & "% filled) - do not look rows up by this column." else null,
+                if IsKey then "Identifies a row: 100% filled and unique (the list's own key is always Id)." else null,
+                if ByIdCol and CsvCol <> null and CsvCol <> RestCol then
+                    "The mirror CSV names this id column " & CsvCol & " (Excel names are case-insensitive and " & RestCol
+                    & " collides with another column) - but REST and flows still call it " & RestCol & "." else null
             }),
             Base = [
                 list = listTitle,
@@ -46,14 +65,22 @@ let
                 readOnly = Record.FieldOrDefault(c, "readOnly", null),
                 required = Record.FieldOrDefault(c, "required", null),
                 indexed = Record.FieldOrDefault(c, "indexed", null),
+                restField = RestCol,
+                csvColumn = CsvCol,
+                idColumn = if ByIdCol then CsvCol else null,
+                fillRate = Fill,
+                isKey = IsKey,
                 notesByRule = if List.IsEmpty(Notes) then null else Text.Combine(Notes, " ")
             ]
         in
             Base,
 
     PerList  = (t as text) as list =>
-        let Id = SP_Json("_api/web/lists/getbytitle('" & t & "')", [#"$select" = "Id"])[Id]
-        in  List.Transform(SP_ColumnsRaw(Id)[Column], (c) => Row(t, c)),
+        let
+            Id   = SP_Json("_api/web/lists/getbytitle('" & t & "')", [#"$select" = "Id"])[Id],
+            Data = SP_Mirror(t),
+            Prof = [data = Data, map = Value.Metadata(Data)[ColumnMap], n = Table.RowCount(Data)]
+        in  List.Transform(SP_ColumnsRaw(Id)[Column], (c) => Row(t, c, Prof)),
     AllRows  = List.Combine(List.Transform(Lists, PerList)),
     Table0   = Table.FromRecords(AllRows),
     Joined   = Table.NestedJoin(Table0, {"list", "internalName"}, SyncedFrom, {"list", "internalName"}, "sync", JoinKind.LeftOuter),

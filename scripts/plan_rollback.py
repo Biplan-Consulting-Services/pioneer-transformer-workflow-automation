@@ -81,8 +81,11 @@ def build_plan(events, catalog, lists=None, fields=None, ids=None, editors=None,
     entries, unsupported = [], []
     for (lst, i, f), c in sorted(chain.items(), key=lambda kv: (kv[0][0], kv[0][1], kv[0][2])):
         ctype = catalog.type(lst, f)
-        ent = {"list": lst, "id": i, "title": c["last"].get("title", ""), "field": f, "type": ctype or "text",
+        rest = catalog.rest_field(lst, f)       # the journal holds CSV names; x27 writes REST names
+        ent = {"list": lst, "id": i, "title": c["last"].get("title", ""), "field": rest, "type": ctype or "text",
                "fromAsOf": c["first"]["prevAsOf"], "toAsOf": c["last"]["asOf"]}
+        if rest != f:
+            ent["csvColumn"] = f
         try:
             ent["expect"] = typed(c["last"]["new"], ctype)
             ent["restore"] = typed(c["first"]["old"], ctype)

@@ -145,6 +145,34 @@ def main():
             check(not any(p["field"] == "Model" for p in ents), "rollback: derived display column never restored")
         except ImportError:
             print("  (plan_rollback not built yet)")
+        # E8c: renamed id column (Model Revisions: REST ModelId -> CSV ModelId2), with the LIVE catalog
+        live_cols = os.path.join(M.LIVE, M.CATALOG + ".csv")
+        if os.path.exists(live_cols) and "csvColumn" in M.read_table(live_cols)[0]:
+            print("\nE8c: ModelId2 with the live catalog")
+            t4 = copy.deepcopy(tables)
+            t4[M.CATALOG] = M.read_table(live_cols)
+            a4 = os.path.join(tmp, "e8c-a"); write_snap(a4, "2026-09-25T10:00Z", t4)
+            t5 = copy.deepcopy(t4)
+            rv = next(r for r in t5["Model Revisions"] if M.norm(r.get("ModelId2")))
+            rv_id, old_mid = M.key(rv), M.norm(rv["ModelId2"])
+            rv["ModelId2"] = "999999"                                   # dangling lookup id
+            b4 = os.path.join(tmp, "e8c-b"); write_snap(b4, "2026-09-25T11:00Z", t5)
+            ev4 = J.diff(M.Snapshot(a4), M.Snapshot(b4))
+            e = [x for x in ev4 if x.get("field") == "ModelId2"]
+            check(len(e) == 1 and not e[0].get("derived"), "ModelId2 change journaled as a REAL change")
+            cat4 = M.Catalog(M.Snapshot(b4))
+            check(cat4.rest_field("Model Revisions", "ModelId2") == "ModelId", "catalog maps CSV ModelId2 -> REST ModelId")
+            check(cat4.id_column("Model Revisions", "Model") == "ModelId2", "catalog: Model's id column is ModelId2")
+            import plan_rollback as R
+            p4 = R.build_plan(ev4, cat4, lists=["Model Revisions"])["entries"]
+            check(len(p4) == 1 and p4[0]["field"] == "ModelId" and p4[0]["csvColumn"] == "ModelId2"
+                  and p4[0]["restore"] == int(old_mid) and p4[0]["expect"] == 999999,
+                  "rollback targets REST ModelId, typed int (got %s)" % p4)
+            import mirror_health as H
+            bl = [r for r in H.evaluate(ev4, M.Snapshot(b4), acknowledged=[]) if r["check"] == "broken lookup"
+                  and r["list"] == "Model Revisions"]
+            check(bl and bl[0]["field"] == "ModelId2" and ("%s->999999" % rv_id) in bl[0]["detail"],
+                  "health: dangling ModelId2 caught as a broken lookup")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("\n%s" % ("ALL PASS" if not fails else "%d FAILED" % len(fails)))
