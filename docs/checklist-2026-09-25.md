@@ -3,7 +3,7 @@
 Carried over from the 2026-09-24 build night. The board
 (`docs/build-nights/BUILD-NIGHT-2026-09-24.md`) has the full evidence; this file is what to *do*.
 
-**State going in:** the Order Items trigger flow is **v008, live, and OFF**. It no longer touches
+**State going in:** the Order Items trigger flow is **v008, live, and ON** (you enabled it before bed; monitored overnight from the mirror, see the board). It no longer touches
 `Status Date` — staff keep entering it by hand. The four sync flows (Order, Models, Model Revisions,
 Clients) are clean and on the connection reference. Today's outage left **no** parent→unit drift.
 
@@ -20,6 +20,11 @@ Clients) are clean and on the connection reference. Today's outage left **no** p
 - [x] **Change-tracking design**: answered 2026-09-24 (§0 of the design).
 - [ ] **Raise the version limit to 500** (D6) on **Order Items** and **Order**: List settings → Versioning settings → *Keep the following number of major versions* = 500 → OK. Two lists, a minute each.
 - [ ] *(when ready)* the automation infrastructure for scheduling (D1).
+- [ ] **Nightly Sync** (`docs/nightly-sync-review-2026-09-25.md`): read §2–§5 and answer **N1–N5** (§6). Your v001 visits
+      all 1,127 units one at a time (~6,800 actions a night → throttled, which is why it runs forever), deletes on the Excel
+      archive row alone with no cap or log, and has no TODAY() recalc. v002 (`claude-5b`, E11) will be staged for you to
+      paste: double confirmation, a 50-unit cap, a dry-run first night, and the ~4-row TODAY() touch.
+- [ ] Delete `test calculated column` from Order Items (it also uses TODAY()).
 - [ ] **Trigger flow**: run the section 4 tests, including the loop-confirmation check, then enable it.
 
 ---
@@ -157,7 +162,7 @@ fills these SA twins from the Order tonight.
 
 ## 4. Turning the trigger flow back on
 
-Only after section 3 is done.
+**You turned it on before bed (2026-09-24).** These are now checks that it behaves, not gates. The overnight loop watch results are on the board.
 - [ ] **Loop confirmation test** — *the user confirmed 2026-09-24: the write loop ran Fri 09-18 → Mon/Tue 09-21/22, and they fixed it (the fix is in their v006 edits, so it is in live v008). This test just confirms it.* Unit `21792-3/5` got 46 no-change writes in 30 min on 09-21
       (every ~34 s) — the trigger flow re-firing on its own save. Enable, edit ONE unit, wait 5–10 min,
       and count its versions (the mirror's `VersionCounts`, or the unit's version history). If the count
