@@ -1,0 +1,260 @@
+{
+  "name": "3349e747-8c6c-4021-766f-24893fab6619",
+  "id": "/providers/Microsoft.Flow/flows/3349e747-8c6c-4021-766f-24893fab6619",
+  "type": "Microsoft.Flow/flows",
+  "properties": {
+    "apiId": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
+    "displayName": "Order Items - Nightly Sync",
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Day",
+            "interval": "1",
+            "startTime": "2026-09-15T05:00:00.000Z"
+          },
+          "type": "Recurrence"
+        }
+      },
+      "actions": {
+        "Get_items": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+              "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 5000
+            }
+          }
+        },
+        "List_rows_present_in_a_table": {
+          "runAfter": {
+            "Get_items": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR": "/General/FAB/Archive/Archive active.xlsx",
+            "tableId": "{17014A43-5D94-47C6-982F-45D962DA4036}"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "source": "groups/089706a6-52fa-4937-a9c7-33bfca5c431d",
+              "drive": "b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64",
+              "file": "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR",
+              "table": "{17014A43-5D94-47C6-982F-45D962DA4036}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+              "operationId": "GetItems",
+              "connectionName": "shared_excelonlinebusiness"
+            }
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 5000
+            }
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@outputs('Get_items')?['body/value']",
+          "actions": {
+            "Condition_1": {
+              "actions": {},
+              "runAfter": {
+                "Filter_array": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Set_variable": {
+                    "type": "SetVariable",
+                    "inputs": {
+                      "name": "vLivraison",
+                      "value": "@if(equals(first(body('Filter_array'))?['Location'], 'LI'),true,false)"
+                    }
+                  },
+                  "Set_variable_1": {
+                    "runAfter": {
+                      "Set_variable": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "SetVariable",
+                    "inputs": {
+                      "name": "vDateLivraison",
+                      "value": "@if( and( not(equals(coalesce(first(body('Filter_array'))?['Delivery Date'],''),'')), lessOrEquals( addDays('1899-12-30', int(first(body('Filter_array'))?['Delivery Date'])), formatDateTime(addDays(utcNow(), -7), 'yyyy-MM-dd') ) ), true, false )"
+                    }
+                  },
+                  "Condition": {
+                    "actions": {
+                      "Delete_item": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                            "id": "@items('Apply_to_each')?['ID']"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "DeleteItem",
+                            "connectionName": "shared_sharepointonline"
+                          }
+                        }
+                      }
+                    },
+                    "runAfter": {
+                      "Set_variable_1": [
+                        "Succeeded"
+                      ]
+                    },
+                    "else": {
+                      "actions": {
+                        "Compose_2": {
+                          "type": "Compose",
+                          "inputs": "@items('Apply_to_each')?['Title']"
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@variables('vLivraison')",
+                            "@true"
+                          ]
+                        },
+                        {
+                          "equals": [
+                            "@variables('vDateLivraison')",
+                            "@true"
+                          ]
+                        }
+                      ]
+                    },
+                    "type": "If"
+                  }
+                }
+              },
+              "expression": {
+                "or": [
+                  {
+                    "equals": [
+                      "@first(body('Filter_array'))?['Delivery Date']",
+                      ""
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@first(body('Filter_array'))?['Delivery Date']",
+                      "@null"
+                    ]
+                  },
+                  {
+                    "equals": [
+                      "@first(body('Filter_array'))?['Delivery Date']",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            },
+            "Filter_array": {
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('List_rows_present_in_a_table')?['body/value']",
+                "where": "@equals(item()?['Order'],items('Apply_to_each')?['Title'])"
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_vDateLivraison": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "Initialize_vLivraison": {
+          "runAfter": {
+            "List_rows_present_in_a_table": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "vLivraison",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          }
+        },
+        "Initialize_vDateLivraison": {
+          "runAfter": {
+            "Initialize_vLivraison": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "vDateLivraison",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          }
+        }
+      }
+    },
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+        "tier": "NotSpecified",
+        "apiName": "sharepointonline",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      },
+      "shared_excelonlinebusiness": {
+        "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+        "tier": "NotSpecified",
+        "apiName": "excelonlinebusiness",
+        "isProcessSimpleApiReferenceConversionAlreadyDone": false
+      }
+    },
+    "flowFailureAlertSubscribed": false,
+    "isManaged": false
+  }
+}

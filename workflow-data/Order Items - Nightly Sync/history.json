@@ -1,0 +1,34 @@
+{
+  "flow": {
+    "folder": "Order Items - Nightly Sync",
+    "displayName": "Order Items - Nightly Sync",
+    "id": "3349e747-8c6c-4021-766f-24893fab6619",
+    "site": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio"
+  },
+  "versions": [
+    {
+      "v": 1,
+      "captured": "2026-09-25T00:54:39-04:00",
+      "state": "pulled",
+      "parent": null,
+      "note": "user's hand-built nightly flow, pulled 2026-09-24 23:18",
+      "sha256": "c3eaedf0f748fdf478c7d03349d3cbb9cb0439b7a0e86f21e7f107ea62a2e3e1",
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 5,
+        "excelFile": "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR"
+      },
+      "files": {
+        "definition": "v001__2026-09-25T00-54__pulled__user-s-hand-built-nightly-flow-pulled-2026-09-24.json",
+        "package": "v001__2026-09-25T00-54__pulled__user-s-hand-built-nightly-flow-pulled-2026-09-24.zip"
+      },
+      "appliedAt": "2026-09-25T00:54:39-04:00",
+      "source": "OrderItems-NightlySync_20260925031828.zip"
+    }
+  ],
+  "identity": {
+    "name": "3349e747-8c6c-4021-766f-24893fab6619",
+    "id": "/providers/Microsoft.Flow/flows/3349e747-8c6c-4021-766f-24893fab6619"
+  }
+}
