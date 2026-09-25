@@ -125,9 +125,71 @@ check passes). Classified from the full `window.x25.report`:
 | P2 | Interpret U3; decide repair route per parent (touch vs E1 overwrite) | `claude-43` | no | **DONE 21:3x (x25 part)** — see *x25 results* in KEY FACTS. x16 / x24 still to come |
 | E1 | **x22 overwrite mode** — repair stale non-blank parent values from an x25 report | `claude-5b` | yes | **DONE `d489f5a`** — regenerated + `node --check` OK; mock-harness 6/6 (see log) |
 | E4 | **x25 rows carry the unit `id`** — so x22's OVERWRITE matches exactly instead of by Title. ⚠️ **Do before E2:** U3 has not run yet, so this is free now and costs a user re-run later. Files: `scripts/gen_x25_drift_scan.py` → regenerate. Add `id: u.Id` to every `report.push` and to `perParent[k].units` (keep Title for humans). Verify: regenerate, `node --check`, diff stat, and confirm x22's OVERWRITE accepts the new rows as-is | `claude-5b` | yes | **DEPRIORITISED 21:3x** — user is running x25 now, so it would not land in time; x22 already aborts on ambiguous Titles. Do after E2/E3 if at all |
+| E5 | **Decision 7 evidence — `E21007-1/1`: M-MEEN-0001 vs M-MEEN-0005, same model or duplicate?** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:4x, user request) |
+| E6 | **Decision 6 evidence — LDs / Engineering Required blank on the Order but set on its units.** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:4x, user request) |
+| E7 | **Decision 5 evidence — the one-day date table (UTC vs Eastern).** Spec below | `claude-5b` | yes | UNCLAIMED (added by `claude-43`, 21:4x, user request) |
 | E2 | **Docs: record today** — Status Date manual decision, v006/v008, connection incident | `claude-5b` | yes | **DONE `ba41132` + `7f59469`** — diff stat and block text in the log |
 | E3 | **Clients flow reads the wrong source field** — find the real field, author the fix | `claude-5b` | yes | **RE-SCOPED 21:1x by `claude-43`** — premise WRONG, flow is correct: confirmed independently, `Clients 2026-09-10 1734.csv` has exactly one lead-time field, `CliLeadTimeWeeks` (Number, "Lead Time (weeks)"). No flow change, nothing to stage. New scope: Cli* blank-fill via x22 (lift Cli from SKIP_GROUPS for one run) + correct the 09-21 doc's parked item 4. **UNBLOCKED 21:1x** — U4 back, go |
 | U4 | Browser, signed in: `https://ermcopower.sharepoint.com/sites/PioneerPlanificatio/_api/web/lists(guid'3bcf7d97-0862-404d-ab3f-eeaa358c05d8')/items?$select=Id,Title,CliLeadTimeWeeks&$top=100` — read-only. Expect 200 with ~17 clients holding a value | **user** | no | **DONE 21:17** — 200, **17 of 97** clients hold `CliLeadTimeWeeks` (16×3, 18×5, 20×7, 24×1 CONED, 28×1 HYDRO QUEBEC = FRM13's value). 80 are null — their units correctly stay blank. Pasted Atom feed, counted by `claude-43` |
+
+### E5 / E6 / E7 — shared ground rules
+All three are **read-only analysis for a user decision**. Nothing writes to the tenant. The output is a
+table posted on the board (event log) that the user can decide from, plus a one-line reading of it,
+**labelled as a reading, not a verdict** — the user decides. The source files, all on disk:
+- `sharepoint-lists/Order 2026-09-11 0339.csv` — ⚠️ **taken BEFORE the N4 choice conversion (04:20) and
+  probably before every parent in E6 was modified (04:27–05:12Z — reconcile the timezones first)**:
+  the likely pre-change state
+- `sharepoint-lists/Models 2026-09-11 0340.csv`, `Model Revisions 2026-09-11 0340.csv`, `Order Items 2026-09-11 0410.csv`
+- `sharepoint-lists/Models dedup worklist 2026-09-05.csv` — check it for MEEN first (E5)
+- `workbooks/FRM10-12 final staff version pre-archive 2026-09-11 0522.xlsx` — the last Excel the staff used
+- `workbooks/Archive active.xlsx` (09-16) and `workbooks/Archive active 2026-09-10 2231.xlsx` — `TableArchiveFRM10_12`
+- **current live values** come from the user's x25 run, quoted per task below. Anything else live →
+  write a read-only console snippet for the user rather than guessing.
+- Read CLAUDE.md's export traps first (ListSchema first record; lookups absent; exports follow the view).
+- ⚠️ Timezones: x25 `modified` stamps are **UTC** (Z). The CSV exports print in the **site** timezone at
+  export time — decision 6 of 09-04 says the site was set to UTC then; confirm from the file, don't assume.
+
+### E5 — `E21007-1/1`: which model is it?
+Live (x25): the unit's **Model lookup → Models id 463 = `M-MEEN-0005`** (latest rev `MR-MEEN-0005-V1`),
+but the unit's copied columns say `MdlModelID = M-MEEN-0001`, `MdlLatestModelRevision = MR-MEEN-0001-V1`.
+Parent 463 last modified 2026-08-13T17:37:46Z.
+**Produce:** a side-by-side of Models `M-MEEN-0001` vs `M-MEEN-0005` and Model Revisions `MR-MEEN-0001-V1`
+vs `MR-MEEN-0005-V1` — every non-empty column, differences marked. Plus: which one the unit's
+`ModelRevision` lookup points at (Order Items export), what FRM10-12 / Archive say the model is for
+`E21007`, and whether either appears in the dedup worklist. Question the user needs answered:
+**same transformer entered twice, or two genuinely different models?**
+
+### E6 — LDs / Engineering Required: was the Order blanked, or cleared on purpose?
+Live (x25): the Order is **blank**, the units hold a value. Every parent was last modified 2026-09-11
+04:27–05:12Z (the cutover night, just after N4 at 04:20 local — ⚠️ reconcile local vs Z before claiming
+order of events).
+- `OrdLDs`, units `true`: orders 21982, 21665, 21661, 21981, 22022, 22023, 22024, 22025, 22026, 22027,
+  22028, 22029, 22030, 21664, 21932
+- `OrdLDs`, units `false`: 21499, 21523
+- `OrdEngineeringRequired`, units `false`: 22111 (units 5/10, 6/10), 22088, 22046, 22047, 22048, 22049,
+  22050, 22051, 22052, 22053
+- (reverse, for completeness — unit blank, Order has a value: `21613` LDs true / EngReq false, `21749` LDs true)
+**Produce, per order:** value in the 03:39 Order export · value in FRM10-12 final staff version ·
+value in Archive active (both copies) · current live (blank) · did the order exist in Excel at all.
+Also: how many Orders list-wide are blank on LDs / EngReq now vs in the 03:39 export — is this ~20
+orders or the whole column? That number decides "the conversion wiped it" vs "someone cleared a few".
+
+### E7 — the one-day date table
+Live (x25), unit value vs Order value:
+| order | field | unit | Order |
+|---|---|---|---|
+| 22140, 22141 | Initial Promised | 2027-03-25T04:00Z | 2027-03-26T00:00Z |
+| 22156 | Initial Promised / Order Date | 2027-01-17T05:00Z / 2026-08-31T04:00Z | 2027-01-18T00:00Z / 2026-09-01T00:00Z |
+| 22157 (10 units) | Initial Promised / Order Date | 2027-01-21T05:00Z / 2026-08-31T04:00Z | 2027-01-22T00:00Z / 2026-09-01T00:00Z |
+| P00005 | Initial Promised / Order Date | 2025-12-30T05:00Z / 2026-09-02T04:00Z | 2025-12-31T00:00Z / 2026-09-03T00:00Z |
+| P10003 | Initial Promised / Order Date | 2026-09-03T04:00Z / 2026-09-02T04:00Z | 2026-09-04T00:00Z / 2026-09-03T00:00Z |
+**Produce one table**, per order, everything that helps the user tell which calendar date was *meant*:
+Order `Created` + `Author` (app vs human), the Order value as the 03:39 export printed it, the unit value
+as the 04:10 Order Items export printed it, the FRM10-12 final staff version value, the Archive value,
+and the weekday of each candidate date (a promised date on a Sunday is a tell). Also list whether ANY
+other order has the same `T00:00:00Z` shape — if every app-created order does and no hand-entered one
+does, that is the pattern, and say so.
+⚠️ `P00005` Initial Promised 2025-12-30/31 is **before** its Order Date — flag it, it is odd either way.
 
 ### E1 — x22 overwrite mode
 **Why:** x22 fills only BLANK fields. After a day with the N3 flows down, units hold OLD values —
@@ -345,3 +407,23 @@ user's (dry run first).
 73 parents). Outage drift = 0. Classification and routes in KEY FACTS *x25 results*; three new
 decisions (5–7) for anything where the right value is unknown. Corrected my own earlier stamps
 (22:0x / 22:2x were guesses; the U4 feed is stamped 01:17Z = 21:17) and the stale KEY FACTS Clients line.
+
+**2026-09-24 21:23 (`date`) | `claude-5b` |** **P2's x22 recipe checked. (b) FAILED, now fixed in `615b7f3`.**
+- **(a) blank unit field written in OVERWRITE:** ✅. A listed field skips the blank test, so a blank
+  unit value is written from the live parent.
+- **(b) `const OVERWRITE = window.x25OV;` with a bare `[{unit, field}]`:** the array form works ✅.
+  **But if `window.x25OV` was never assigned (a skipped step, or a fresh console tab), OVERWRITE was
+  `undefined`, and x22 silently fell back to blank-fill over the hard-coded `UNITS`.** I reproduced
+  that against HEAD in the harness: it started reading units 1223 onward. **Fix:** `undefined` now
+  aborts ("the window variable it points at was never set"). Off is `null` only.
+- **(c) Titles `21665-1/3 SA`, `P21911_A_bu-1/1`:** ✅. They match by exact raw string. A near-miss
+  decoy `21665-1/3` was NOT matched.
+- **Verification:** regenerated, `node --check` OK, mock harness **18/18**. New case J is the exact
+  P2 recipe via a window variable: 2 PATCHes, `OrdPO` only, on the two odd-Title units. New case K is
+  the unset variable: abort, 0 reads, 0 writes.
+- **For the user:** the recipe is fine as written. Make sure it runs in the same console tab as
+  `x25`, before x22 is pasted. If it isn't, x22 now stops with that message instead of doing the wrong run.
+
+**2026-09-24 21:4x | `claude-43` |** Added **E5 / E6 / E7** at the user's request ("use the other claude
+session to help"): read-only evidence tables for decisions 5–7. Assigned to `claude-5b`. Nothing in
+x22's OVERWRITE list touches any of those rows — the filter excludes dates, blank-parent rows and E21007.
