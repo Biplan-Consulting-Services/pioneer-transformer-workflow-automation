@@ -36,6 +36,14 @@ Clients) are clean and on the connection reference. Today's outage left **no** p
 1147012 at 1,500 kVA. The two *Models* rows have their code and kVA crossed; the Revisions and Excel
 are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 
+**✅ Checked live 2026-09-24 22:25 (SharePoint mirror):** Models / Revisions exactly as in the table above.
+Two new facts:
+- `E21007-1/1` now points **both** lookups at **0005** (Model *and* Model Revision `MR-MEEN-0005-V1` = 1147012 /
+  1,500 kVA); on 09-11 its revision still pointed at 0001. Someone repointed it since. Its copied data still reads
+  1147005 / 7,500, which is what Excel says, so **the copies look right and both lookups look wrong.**
+- Only **4** MEG units exist in Order Items: E21006-1/2, E21006-2/2, E21007-1/1, E21011-1/1. **E21005, E21005A,
+  E21012 and E21006-1/1 exist only in Excel**, so Q1 is about Excel and the Models list, not a live unit.
+
 ### Questions for the users
 - [ ] **Q1 — E21005A:** its item number says 1147005 but its kVA (1,500) and PO (MEG-10012) belong to
       1147012. Is the item number a typo — should it be **1147012**? (This one typo reproduces the
@@ -48,7 +56,7 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 ### Then fix (only after Q1–Q3 are answered)
 - [ ] `Models` → `M-MEEN-0005`: code **1147012**, kVA **1,500**
 - [ ] `Models` → `M-MEEN-0001`: kVA **7,500**
-- [ ] `Order Items` → `E21007-1/1`: Model lookup → **M-MEEN-0001** (Model Revision already MR-MEEN-0001-V1)
+- [ ] `Order Items` → `E21007-1/1`: Model lookup → **M-MEEN-0001** AND Model Revision lookup → **MR-MEEN-0001-V1** (both point at 0005 now)
 - [ ] If Q1 = typo: correct E21005A's item number where it is kept, and check which model/revision it points at
 - [ ] Editing the Models rows fires the Models sync flow → units follow on their own. Re-run `x25` after and check the MEEN units are clean.
 
@@ -58,8 +66,8 @@ are right. The 09-05 dedup worklist had already flagged this pair `REVIEW`.
 
 | # | Question | Evidence | Answer |
 |---|---|---|---|
-| D5 | **32 order dates one day apart** (Order Date / Initial Promised Date) on 22140, 22141, 22156, 22157, P00005, P10003 — the Order says the 26th, its units say the 25th. Which date was meant? | E7 on the board (21:42). **Reading: the Order's later date was meant.** Order Date = the order's creation day in 3 of 3 checkable cases (22156 created 09-01, P00005 / P10003 created 09-03); the units' and Excel's copies put it a day *before* the order existed; 22156's earlier promised date is a Sunday. The SharePoint screen shows the earlier date too (UTC midnight displays as the day before on an Eastern site) — that is how Excel and the units inherited it. Only these 6 of 457 orders are stored this way; cause unknown. **If you agree:** rewrite the six Orders' dates as plain dates (then the units follow) | |
-| D6 | **~40 units have LDs / Engineering Required = true/false, their Order is now blank.** Units right, or Orders right? | E6 on the board (21:40). **Reading: the units are right — the Orders were never set, not wiped.** Units match FRM10-12 unit by unit (22111: EngReq N on exactly 5/10 and 6/10); the Order already disagreed with Excel at 03:39; LDs/EngReq are plain Yes/No and the 09-11 conversion never touched them (the "conversion window" link was wrong). **Confirm with `scripts/x26_order_flag_history.js`** (read-only) → `copy(window.x26)`: live true/false/blank counts + each order's history. If confirmed: fill the Orders from the units — nothing to fix on the units | |
+| D5 | **32 order dates one day apart** (Order Date / Initial Promised Date) on 22140, 22141, 22156, 22157, P00005, P10003 — the Order says the 26th, its units say the 25th. Which date was meant? | E7 on the board (21:42). **Reading: the Order's later date was meant.** Order Date = the order's creation day in 3 of 3 checkable cases (22156 created 09-01, P00005 / P10003 created 09-03); the units' and Excel's copies put it a day *before* the order existed; 22156's earlier promised date is a Sunday. The SharePoint screen shows the earlier date too (UTC midnight displays as the day before on an Eastern site) — that is how Excel and the units inherited it. Only these 6 orders are stored this way; cause unknown. **Live check (mirror 22:25):** 4 orders on Order Date (22156, 22157, P00005, P10003) and 6 on Initial Promised Date (+22140, 22141); all created 08-25 → 09-03, 5 of 6 by Patrick; the stored date = the creation day on 22156 / P00005 / P10003. **Quick confirm with Patrick.** **If you agree:** rewrite the six Orders' dates as plain dates (then the units follow) | |
+| D6 | **~40 units have LDs / Engineering Required = true/false, their Order is now blank.** Units right, or Orders right? | E6 on the board (21:40). **Reading: the units are right — the Orders were never set, not wiped.** Units match FRM10-12 unit by unit (22111: EngReq N on exactly 5/10 and 6/10); the Order already disagreed with Excel at 03:39; LDs/EngReq are plain Yes/No and the 09-11 conversion never touched them (the "conversion window" link was wrong). **Confirm with `scripts/x26_order_flag_history.js`** (read-only) → `copy(window.x26)`: live true/false/blank counts + each order's history. If confirmed: fill the Orders from the units. **Live check (mirror 22:25), two patterns:** LDs: regular units hold the value, SA units and the Order are blank (21665: True×3 + SA blank×3). EngReq on 22111 / 22088 / 22046–53: Order blank, only SOME units False (22111: 2 of 10). 🔑 **Ask the users: are LDs / Engineering Required per ORDER or per UNIT?** Excel kept them per unit. Setting the Order pushes the value to ALL its units, so if they can differ per unit they should not be Order fields | |
 | D1 | **Livraison**: forcing `Terminé`/`Delivered` on *every* later step change of a delivered unit — intended, or only on the move *into* Livraison? | **Seen live on 09-23** (version history, board 22:38): someone set a delivered unit's step back and the flow forced `Terminé` again 34 s later. v008 keeps this behaviour | |
 | D2 | Level the stamps with `x24` before enabling the flow, or let Livraison-but-Active units complete on their next edit? | run `x24` dry run first | |
 | D4 | If a parent field is now blank but the unit still has a value, should the repair clear the unit? | x22 lists them, never clears | |
