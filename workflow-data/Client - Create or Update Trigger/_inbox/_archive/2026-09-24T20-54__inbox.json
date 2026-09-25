@@ -7,7 +7,7 @@
       "source": "Embedded",
       "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
       "displayName": "SharePoint",
-      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1813/1.0.1813.4769/sharepointonline/icon.png",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4913/sharepointonline/icon.png",
       "brandColor": "",
       "tier": "Standard",
       "apiName": "sharepointonline",
@@ -29,11 +29,12 @@
     },
     "triggers": {
       "When_an_item_is_created_or_modified": {
-        "type": "OpenApiConnection",
         "recurrence": {
           "interval": 1,
           "frequency": "Minute"
         },
+        "splitOn": "@triggerOutputs()?['body/value']",
+        "type": "OpenApiConnection",
         "inputs": {
           "parameters": {
             "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
@@ -44,8 +45,7 @@
             "operationId": "GetOnUpdatedItems",
             "connectionName": "shared_sharepointonline"
           }
-        },
-        "splitOn": "@triggerOutputs()?['body/value']"
+        }
       }
     },
     "actions": {
@@ -73,12 +73,6 @@
       },
       "Apply_to_each_unit": {
         "foreach": "@outputs('Get_units_of_this_parent')?['body/value']",
-        "runAfter": {
-          "Get_units_of_this_parent": [
-            "Succeeded"
-          ]
-        },
-        "type": "Foreach",
         "actions": {
           "needsUpdate": {
             "runAfter": {},
@@ -86,18 +80,6 @@
             "inputs": "@or(\n  not(equals(coalesce(items('Apply_to_each_unit')?['CliLeadTimeWeeks'], ''), coalesce(triggerOutputs()?['body/CliLeadTimeWeeks'], '')))\n)"
           },
           "Only_if_something_changed": {
-            "runAfter": {
-              "needsUpdate": [
-                "Succeeded"
-              ]
-            },
-            "type": "If",
-            "expression": {
-              "equals": [
-                "@outputs('needsUpdate')",
-                true
-              ]
-            },
             "actions": {
               "Update_unit": {
                 "runAfter": {},
@@ -116,9 +98,27 @@
                   }
                 }
               }
-            }
+            },
+            "runAfter": {
+              "needsUpdate": [
+                "Succeeded"
+              ]
+            },
+            "expression": {
+              "equals": [
+                "@outputs('needsUpdate')",
+                true
+              ]
+            },
+            "type": "If"
           }
-        }
+        },
+        "runAfter": {
+          "Get_units_of_this_parent": [
+            "Succeeded"
+          ]
+        },
+        "type": "Foreach"
       }
     },
     "outputs": {}

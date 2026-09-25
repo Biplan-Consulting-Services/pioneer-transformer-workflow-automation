@@ -17,12 +17,12 @@ snapshotted here.**
 | v | captured | state | parent | change | Create | Update | toLower | `'EC'` | sha |
 |---|---|---|---|---|---|---|---|---|---|
 | **v001** | 2026-09-10 17:44 | `pulled` | — | empty shell built in the designer 2026-09-10, trigger configured on Clients | — | — | 0 | 0 | `c1dbccd82923` |
-| **v002** | 2026-09-10 17:44 | `local` | v001 | N3 Order_Items__sync_from_Clients pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `d1720bdfe7c8` |
+| **v002** | 2026-09-10 17:44 | `applied` | v001 | N3 Order_Items__sync_from_Clients pasted into the shell, connectionReferences kept from v001 | — | — | 0 | 0 | `d1720bdfe7c8` |
 
 ## Right now
 
-- **Live:** v001 — empty shell built in the designer 2026-09-10, trigger configured on Clients
-- **Pending (authored, not applied):** v002
+- **Live:** v002 — N3 Order_Items__sync_from_Clients pasted into the shell, connectionReferences kept from v001
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 

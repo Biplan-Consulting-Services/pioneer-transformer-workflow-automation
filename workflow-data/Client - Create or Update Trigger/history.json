@@ -28,7 +28,7 @@
     {
       "v": 2,
       "captured": "2026-09-10T17:44:35-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 1,
       "note": "N3 Order_Items__sync_from_Clients pasted into the shell, connectionReferences kept from v001",
       "sha256": "d1720bdfe7c8a542d5afdf4bfee7f24549e2de4519d682a6eb89fa49ec540042",
@@ -41,7 +41,7 @@
       "files": {
         "definition": "v002__2026-09-10T17-44__local__N3-Order-Items-sync-from-Clients-pasted-into-the.json"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-24T20:56:18-04:00",
       "source": "n3-merged-Order_Items__sync_from_Clients.json"
     }
   ]
