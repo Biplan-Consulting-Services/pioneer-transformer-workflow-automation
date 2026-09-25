@@ -361,6 +361,10 @@ TEMPLATE = r"""/* X22 -- repair the parent data the N3 sync flows lost.
     .then(j => j.FormDigestValue).catch(() => null);
   if (!DRY && !digest) { console.error("ABORT: no form digest, cannot write."); return; }
   if (CLI_FILL && OVERWRITE) { console.error("ABORT: CLI_FILL and OVERWRITE are both set. One run, one mode."); return; }
+  /* `const OVERWRITE = window.x25OV;` with x25OV never assigned (step skipped,
+     fresh tab) is `undefined`, which would silently fall back to blank-fill
+     over UNITS - a different run from the one asked for. Off is `null` only. */
+  if (OVERWRITE === undefined) { console.error("ABORT: OVERWRITE is undefined - the window variable it points at was never set. Build it first, or use null for off."); return; }
 
   /* OVERWRITE: turn the pasted list into unit id -> Set(target field).
      Everything is checked BEFORE the first parent read, so a bad list aborts
