@@ -1,0 +1,298 @@
+<title>Pioneer Punch List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --paper:#F5F6F4; --panel:#FFFFFF;
+  --ink:#1B2229; --ink-2:#4A5560; --ink-3:#78838E;
+  --rule:#DDE0DE; --rule-2:#EAECEA;
+  --copper:#A9541F; --copper-soft:#F2E5DC;
+  --done:#1F6B4A; --done-bg:#E2F0E8;
+  --wait:#8A5A08; --wait-bg:#FBF0DC;
+  --open:#2F5D74; --open-bg:#E4EEF3;
+  --shadow:0 1px 2px rgba(27,34,41,.05), 0 4px 14px rgba(27,34,41,.05);
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#13181D; --panel:#1A2027;
+    --ink:#E6EAEC; --ink-2:#A9B4BD; --ink-3:#7C8892;
+    --rule:#2B333B; --rule-2:#232B32;
+    --copper:#D98A50; --copper-soft:#2C2119;
+    --done:#63C295; --done-bg:#172A22;
+    --wait:#DFAE55; --wait-bg:#2E2617;
+    --open:#7FB6D0; --open-bg:#1B2A33;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#13181D; --panel:#1A2027;
+  --ink:#E6EAEC; --ink-2:#A9B4BD; --ink-3:#7C8892;
+  --rule:#2B333B; --rule-2:#232B32;
+  --copper:#D98A50; --copper-soft:#2C2119;
+  --done:#63C295; --done-bg:#172A22;
+  --wait:#DFAE55; --wait-bg:#2E2617;
+  --open:#7FB6D0; --open-bg:#1B2A33;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:14px/1.5 var(--sans);padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font:600 12px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--copper)}
+h1{font:700 40px/1 var(--display);letter-spacing:.01em;margin:0;text-wrap:balance}
+.sub{color:var(--ink-2);margin:0;max-width:68ch}
+.num{font-variant-numeric:tabular-nums}
+
+.summary{background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.headline{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+.big{font:700 44px/1 var(--display)}
+.big small{font:500 20px/1 var(--display);color:var(--ink-3)}
+.bar{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--rule-2)}
+.bar span{display:block;height:100%}
+.bar .b-done{background:var(--done)} .bar .b-wait{background:var(--wait)} .bar .b-open{background:var(--open);opacity:.45}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--ink-2);font-size:13px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.who{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.who button{all:unset;cursor:pointer;border:1px solid var(--rule);border-radius:5px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;background:var(--paper)}
+.who button:hover{border-color:var(--ink-3)}
+.who button[aria-pressed="true"]{border-color:var(--copper);background:var(--copper-soft)}
+.who button:focus-visible,.chips button:focus-visible,.box:focus-visible,summary:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+.who b{font:600 22px/1.1 var(--display)}
+.who span{color:var(--ink-2);font-size:12.5px}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{all:unset;cursor:pointer;font:500 12.5px/1 var(--sans);padding:7px 11px;border:1px solid var(--rule);border-radius:999px;color:var(--ink-2);background:var(--panel)}
+.chips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.controls label{font:600 11px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+#q{font:inherit;padding:7px 10px;border:1px solid var(--rule);border-radius:5px;background:var(--panel);color:var(--ink);min-width:0;flex:1 1 180px;max-width:280px}
+
+.group{display:flex;flex-direction:column;gap:0}
+.ghead{display:flex;align-items:baseline;gap:12px;padding:8px 2px;border-bottom:2px solid var(--ink)}
+.ghead h2{font:600 21px/1.1 var(--display);letter-spacing:.02em;margin:0;flex:1;text-transform:uppercase}
+.ghead .gcount{font:500 13px/1 var(--mono);color:var(--ink-3)}
+.gbar{width:90px;height:5px;border-radius:3px;background:var(--rule-2);overflow:hidden;flex:none;align-self:center}
+.gbar span{display:block;height:100%;background:var(--done)}
+
+.item{display:grid;grid-template-columns:26px 1fr auto;gap:4px 12px;padding:11px 2px;border-bottom:1px solid var(--rule)}
+.box{all:unset;cursor:pointer;width:18px;height:18px;border:1.5px solid var(--ink-3);border-radius:3px;margin-top:2px;display:grid;place-items:center;background:var(--panel)}
+.box svg{width:12px;height:12px;opacity:0}
+.item.is-done .box{background:var(--done);border-color:var(--done)}
+.item.is-done .box svg{opacity:1}
+.box:disabled{cursor:default;opacity:.6}
+.main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.t{font-weight:500;overflow-wrap:anywhere}
+.item.is-done .t{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--rule)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{font:500 11.5px/1 var(--sans);padding:4px 7px;border-radius:3px;white-space:nowrap}
+.p-open{background:var(--open-bg);color:var(--open)}
+.p-wait{background:var(--wait-bg);color:var(--wait)}
+.p-done{background:var(--done-bg);color:var(--done)}
+.own{font:500 11.5px/1 var(--sans);color:var(--ink-2);border:1px solid var(--rule);padding:3px 6px;border-radius:3px;white-space:nowrap}
+.why{font-size:12.5px;color:var(--wait)}
+details{font-size:13px;color:var(--ink-2)}
+details summary{cursor:pointer;color:var(--ink-3);font-size:12.5px;width:max-content}
+details p{margin:6px 0 2px;max-width:70ch}
+details code{font:12px var(--mono);color:var(--ink-3)}
+.size{font:600 13px/1 var(--mono);color:var(--ink-3);width:22px;text-align:center;margin-top:3px}
+.hold{all:unset;cursor:pointer;font-size:12px;color:var(--ink-3);text-decoration:underline;text-underline-offset:2px}
+.hold:hover{color:var(--ink)}
+.empty,.notice{color:var(--ink-3);padding:18px 2px}
+.notice{border:1px dashed var(--rule);border-radius:6px;padding:16px}
+.foot{color:var(--ink-3);font-size:12.5px}
+@media (max-width:560px){ h1{font-size:32px} .big{font-size:36px} .gbar{display:none} }
+@media (prefers-reduced-motion:no-preference){ .bar span,.gbar span{transition:width .3s ease} }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Pioneer Transformer · Workflow Automation</div>
+    <h1>Pioneer Punch List</h1>
+    <p class="sub">Everything still open on Order Items, the flows and the lists after the cutover, in one place. Tick an item when it's done; Claude updates the same list from its sessions.</p>
+  </header>
+
+  <section class="summary" aria-label="Progress">
+    <div class="headline">
+      <div class="big num"><span id="nLeft">–</span> <small>left of <span id="nTotal">–</span></small></div>
+      <div class="legend">
+        <span><i style="background:var(--done)"></i><span class="num" id="nDone">–</span> done</span>
+        <span><i style="background:var(--wait)"></i><span class="num" id="nWait">–</span> waiting on someone or something</span>
+        <span><i style="background:var(--open);opacity:.45"></i><span class="num" id="nOpen">–</span> ready to do</span>
+      </div>
+    </div>
+    <div class="bar" id="bar" role="img" aria-label="progress"><span class="b-done"></span><span class="b-wait"></span><span class="b-open"></span></div>
+    <div class="who" id="who"></div>
+  </section>
+
+  <div class="controls">
+    <label>Show</label>
+    <div class="chips" id="statusChips">
+      <button type="button" data-s="left" aria-pressed="true">Still to do</button>
+      <button type="button" data-s="ready" aria-pressed="false">Ready now</button>
+      <button type="button" data-s="done" aria-pressed="false">Done</button>
+      <button type="button" data-s="all" aria-pressed="false">Everything</button>
+    </div>
+    <input id="q" type="search" placeholder="Search items…" autocomplete="off">
+  </div>
+
+  <main id="list"><p class="notice">Loading the list…</p></main>
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+(function(){
+  var OWNERS = [
+    {k:"me",     label:"You",               hint:"only you can do these", test:function(o){return o==="user"||o==="user+claude";}},
+    {k:"claude", label:"Claude",            hint:"a session can do these alone", test:function(o){return o==="claude";}},
+    {k:"staff",  label:"Staff questions",   hint:"Angelique, Patrick, Dominic, MEG…", test:function(o){return o.indexOf("staff:")===0;}}
+  ];
+  var items = {};          // id -> data
+  var ownerFilter = null;  // one of OWNERS[k] or null
+  var statusFilter = "left";
+  var query = "";
+  var db = null, canWrite = true;
+  var CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.5l2.5 2.5L10 3" fill="none" stroke="var(--panel)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function ownerLabel(o){
+    if(o==="user") return "You";
+    if(o==="claude") return "Claude";
+    if(o==="user+claude") return "You + Claude";
+    if(o.indexOf("staff:")===0) return "Ask " + o.slice(6);
+    return o;
+  }
+  // done | wait | open
+  function state(id){
+    var it = items[id];
+    if(it.status==="done") return "done";
+    if(it.status==="waiting") return "wait";
+    var bl = (it.blockers||[]).filter(function(b){return items[b] && items[b].status!=="done";});
+    return bl.length ? "wait" : "open";
+  }
+  function whyWaiting(id){
+    var it = items[id], parts = [];
+    (it.blockers||[]).forEach(function(b){ if(items[b] && items[b].status!=="done") parts.push(items[b].title); });
+    if(it.waitingOn) parts.push(it.waitingOn);
+    return parts;
+  }
+
+  function render(){
+    var ids = Object.keys(items);
+    var c = {done:0,wait:0,open:0};
+    ids.forEach(function(id){ c[state(id)]++; });
+    var total = ids.length, left = c.wait + c.open;
+    document.getElementById("nTotal").textContent = total;
+    document.getElementById("nLeft").textContent = left;
+    document.getElementById("nDone").textContent = c.done;
+    document.getElementById("nWait").textContent = c.wait;
+    document.getElementById("nOpen").textContent = c.open;
+    var bars = document.getElementById("bar").children;
+    [c.done,c.wait,c.open].forEach(function(n,i){ bars[i].style.width = total ? (100*n/total)+"%" : "0"; });
+    document.getElementById("bar").setAttribute("aria-label", c.done+" of "+total+" done");
+
+    var who = document.getElementById("who");
+    who.innerHTML = OWNERS.map(function(o){
+      var mine = ids.filter(function(id){return o.test(items[id].owner) && state(id)!=="done";});
+      var ready = mine.filter(function(id){return state(id)==="open";}).length;
+      return '<button type="button" data-o="'+o.k+'" aria-pressed="'+(ownerFilter===o.k)+'"><b class="num">'+mine.length+'</b><span>'+esc(o.label)+' · '+ready+' ready now</span></button>';
+    }).join("");
+
+    var groups = {};
+    ids.forEach(function(id){
+      var it = items[id];
+      (groups[it.group] = groups[it.group] || {title:it.groupTitle, order:it.groupOrder, ids:[]}).ids.push(id);
+    });
+    var html = "";
+    Object.keys(groups).sort(function(a,b){return groups[a].order-groups[b].order;}).forEach(function(g){
+      var G = groups[g];
+      var gDone = G.ids.filter(function(id){return state(id)==="done";}).length;
+      var shown = G.ids.filter(visible).sort(function(a,b){
+        var r = {open:0,wait:1,done:2};
+        return (r[state(a)]-r[state(b)]) || (items[a].order-items[b].order);
+      });
+      if(!shown.length) return;
+      html += '<section class="group" aria-label="'+esc(G.title)+'"><div class="ghead"><h2>'+esc(G.title)+'</h2><div class="gbar"><span style="width:'+(100*gDone/G.ids.length)+'%"></span></div><span class="gcount">'+gDone+' / '+G.ids.length+'</span></div>';
+      shown.forEach(function(id){ html += row(id); });
+      html += '</section>';
+    });
+    document.getElementById("list").innerHTML = html || '<p class="empty">Nothing matches this view.</p>';
+  }
+
+  function visible(id){
+    var it = items[id], s = state(id);
+    if(statusFilter==="left" && s==="done") return false;
+    if(statusFilter==="ready" && s!=="open") return false;
+    if(statusFilter==="done" && s!=="done") return false;
+    if(ownerFilter){ var o = OWNERS.filter(function(x){return x.k===ownerFilter;})[0]; if(!o.test(it.owner)) return false; }
+    if(query){ var hay = (it.title+" "+it.detail+" "+it.owner+" "+it.groupTitle).toLowerCase(); if(hay.indexOf(query)<0) return false; }
+    return true;
+  }
+
+  function row(id){
+    var it = items[id], s = state(id);
+    var pill = s==="done" ? '<span class="pill p-done">Done</span>' : s==="wait" ? '<span class="pill p-wait">Waiting</span>' : '<span class="pill p-open">Ready</span>';
+    var why = s==="wait" ? whyWaiting(id) : [];
+    var hold = (s!=="done" && canWrite) ? (it.status==="waiting"
+        ? ' <button type="button" class="hold" data-hold="'+esc(id)+'" data-v="todo">Mark ready</button>'
+        : ' <button type="button" class="hold" data-hold="'+esc(id)+'" data-v="waiting">Put on hold</button>') : "";
+    return '<div class="item is-'+s+'">'
+      + '<button type="button" class="box" data-toggle="'+esc(id)+'" aria-pressed="'+(s==="done")+'" aria-label="Mark '+esc(it.title)+(s==="done"?" not done":" done")+'"'+(canWrite?"":" disabled")+'>'+CHECK+'</button>'
+      + '<div class="main"><div class="t">'+esc(it.title)+'</div>'
+      + '<div class="meta">'+pill+'<span class="own">'+esc(ownerLabel(it.owner))+'</span>'+hold+'</div>'
+      + (why.length ? '<div class="why">Waiting on: '+esc(why.join(" · "))+'</div>' : "")
+      + (it.detail ? '<details><summary>Details</summary><p>'+esc(it.detail)+'</p>'+(it.source?'<code>'+esc(it.source)+'</code>':"")+'</details>' : "")
+      + '</div><div class="size" title="size: S small, M medium, L large">'+esc(it.size||"")+'</div></div>';
+  }
+
+  var writing = {};
+  function write(id, status){
+    if(!db || writing[id]) return;
+    writing[id] = true;
+    items[id] = Object.assign({}, items[id], {status:status});   // optimistic
+    render();
+    db.doc("items/"+id).update({status:status, updatedAt:new Date().toISOString().slice(0,16), updatedBy:"page"})
+      .catch(function(e){
+        if(e && e.code==="invalid_argument"){ canWrite = false; }
+        document.getElementById("foot").textContent = "That change wasn't saved: you may only have view access to this page.";
+      })
+      .then(function(){ writing[id] = false; });
+  }
+
+  document.addEventListener("click", function(e){
+    var t = e.target.closest("[data-toggle],[data-hold],[data-o],[data-s]");
+    if(!t) return;
+    if(t.dataset.toggle){ var id=t.dataset.toggle; write(id, items[id].status==="done" ? "todo" : "done"); }
+    else if(t.dataset.hold){ write(t.dataset.hold, t.dataset.v); }
+    else if(t.dataset.o){ ownerFilter = ownerFilter===t.dataset.o ? null : t.dataset.o; render(); }
+    else if(t.dataset.s){
+      statusFilter = t.dataset.s;
+      Array.prototype.forEach.call(document.querySelectorAll("#statusChips button"), function(b){ b.setAttribute("aria-pressed", String(b===t)); });
+      render();
+    }
+  });
+  document.getElementById("q").addEventListener("input", function(e){ query = e.target.value.trim().toLowerCase(); render(); });
+
+  function fail(msg){ document.getElementById("list").innerHTML = '<p class="notice">'+esc(msg)+'</p>'; }
+
+  if(!window.claude || !window.claude.use){ fail("This list needs to be opened on claude.ai to load."); return; }
+  window.claude.use("db").then(function(d){
+    if(!d){ fail("The list couldn't be loaded in this view. Open the page from claude.ai while signed in to your organization."); return; }
+    db = d;
+    db.collection("items").onSnapshot(function(snap){
+      var next = {};
+      snap.docs.forEach(function(doc){ if(doc.exists) next[doc.id] = doc.data(); });
+      items = next;
+      var latest = Object.keys(items).map(function(k){return items[k].updatedAt||"";}).sort().pop();
+      document.getElementById("foot").textContent = Object.keys(items).length ? "Last change " + (latest||"").replace("T"," ") + ". Source: docs/checklist-2026-09-25.md, roadmap, handover and build-night board, de-duplicated 2026-09-27." : "";
+      if(!Object.keys(items).length){ fail("The list is empty. Ask Claude to seed it."); return; }
+      render();
+    }, function(){ fail("The list stopped updating. Reload the page to reconnect."); });
+  });
+})();
+</script>

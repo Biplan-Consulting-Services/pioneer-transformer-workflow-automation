@@ -88,3 +88,18 @@ captured body carries.
 Figures on it are measured, not carried forward — `FRM10-12_2026-09-04_23h08m.xlsx` for the
 workbook side, the 2026-09-08 list exports for the SharePoint side, joined row-level on
 `Unit ID` over the 1,013 units present in both.
+
+## `punch-list.html` — everything still open
+
+The **Pioneer Punch List**, `https://claude.ai/artifact/R3Pvo8aimdFqCuFRJNQgdj`. Built 2026-09-27 from a
+de-duplicated inventory of the 09-25 checklist, roadmap, handover and build-night board (89 items).
+
+Unlike the two pages above, **the items live in the artifact's `db`** (collection `items`, one document per
+item: `title, detail, owner, size, status todo|waiting|done, group, groupTitle, groupOrder, order, blockers[]
+(item ids), waitingOn, source, updatedAt, updatedBy`), not in the HTML. So:
+
+- **Mark progress with `ArtifactData`** (`update` on `items/<id>` with `status`), never by republishing. The
+  user ticks the same documents from the page; both show up live.
+- New work = a new document in `items`. "Waiting" is computed on the page from `blockers` still open, or set
+  explicitly with `status: waiting` + `waitingOn`.
+- Republish the HTML only for a layout change; it carries no data, so there is no serialize trap here.

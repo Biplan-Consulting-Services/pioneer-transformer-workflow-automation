@@ -173,6 +173,19 @@ about 4 days**. That is exactly §2's diagnosis in practice: ~6,800 sequential a
 allowance get throttled rather than failing, so one "nightly" run never finishes. It also explains why the
 mirror showed 0 changes around 01:00 on 09-25: nothing ran.
 
+## 6d. Decisions (user, 2026-09-27)
+
+| # | answer |
+|---|---|
+| N1 | **Delete**, as v003 is designed: double confirmation, cap, dry-run night first |
+| N2 | cap **50** (today's candidates: 36 Livraison + Delivered units, mirror 2026-09-27 17:26) |
+| N3 | **01:30 Eastern** (v003's trigger already is) |
+| N4 | **keep** the Order row |
+| N5 | moot: v001 has been off since ~09-21 (§6c) |
+| SA twins | **"The archive should keep them, and they are deleted the same way."** The fix is upstream: the Excel archive (`TableArchiveFRM10_12`) has to capture SA twin rows. v003 matches on `Title`, so once an `…-1/3 SA` row is in the archive the same rule deletes it with **no flow change**. Until then they appear as *held back* in the summary. |
+
+So **v003 is pasted unchanged.**
+
 ## 7. Tonight's run
 
 v001 was due at 05:00Z (01:00 EDT) on 2026-09-25. A full mirror snapshot was taken at **00:55**
