@@ -377,7 +377,9 @@ Discovered 2026-09-14 while designing the engineering document control
 ## Working notes
 - 🔴 **Snapshot the SharePoint mirror at the start of every session, and immediately before any change
   to a list** (a script write, a column change, a flow paste that writes):
-  `pwsh scripts/Refresh-SharePointMirror.ps1` (~25 s). This is the user's interim rule (2026-09-24) until
+  `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Refresh-SharePointMirror.ps1` (~25 s; Windows PowerShell 5.1, `pwsh` is not
+  installed; it refreshes the workbook through Excel COM itself. Exit 1 *after* the health report just
+  means health has red items, not that the refresh failed). This is the user's interim rule (2026-09-24) until
   scheduled snapshots run on dedicated infrastructure. It gives every session a baseline, and every change
   a before-state to diff and roll back to. Design: `docs/change-tracking-design-2026-09-24.md` §0.
   Read live list state from the mirror (and its `Columns` catalog for real column names) before asking the
