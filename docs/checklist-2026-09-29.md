@@ -26,7 +26,10 @@ First eligible nights: **10-02** 20 units (21777-1/1 moved there by the 09-28 te
 ## User's request for the next session (2026-09-28)
 **Plan a workspace organisation and cleanup, with mechanisms to keep it clean.** Present the plan first and
 build nothing until the user approves it. Punch List item `ws-cleanup-plan` has the sizing: 73 top-level docs,
-129 scripts, 14 uncommitted or untracked paths. Put it next to the Nightly Sync summary review.
+129 scripts, 14 uncommitted or untracked paths. **Include merging the old FRM10-12 and FRM09 repos** into the
+new organisation: they duplicate a lot of this repo's information. The merge has to handle git history, LFS,
+hardcoded paths (`Sync-PowerQuery.ps1`, the frm10-12-pq-workflow skill), the CLAUDE.md and memory links, and
+the per-repo timesheet CSVs. Put it next to the Nightly Sync summary review.
 
 ## Next steps, in order
 1. **Review tonight's `C7_Summary`.** Expect 0 confirmed.
