@@ -1,30 +1,48 @@
 #!/usr/bin/env python3
-"""Generate Order Items - Nightly Sync v003 (board E11; spec docs/nightly-sync-review-2026-09-25.md §5).
+"""Generate Order Items - Nightly Sync v007 (board E11; spec docs/nightly-sync-review-2026-09-25.md §5-6f,
+gate: docs/archive-all-lists-design-2026-09-27.md §5).
 
-v003 (2026-09-25) supersedes v002, which was withdrawn before paste: its C1 keyed on DeliveryDate,
-which is EMPTY on every unit. C1 is now Livraison AND Delivered; Excel is the grace clock; C4c/C4d
-report where Excel and the list disagree (what v001 would delete on Excel alone).
+    python scripts/gen_nightly_sync.py            # -> workflow-data/_generated/Order_Items_Nightly_Sync_v007.json
 
-    python scripts/gen_nightly_sync.py            # -> workflow-data/_generated/Order_Items_Nightly_Sync_v003.json
+History: v001 (user, hand-built) deleted on the Excel archive alone, sequentially, uncapped. v003 added
+the double confirmation, cap 50 and the dry run. v005 put both connections on solution references.
+v006 read TableArchiveFRM10_12 by name. v007 (2026-09-28) moves the gate to the new per-list archive
+table and adds stage D:
 
-The user's v001 (workflow-data/Order Items - Nightly Sync/v001, hand-built) deletes a unit once the
-Excel archive says LI + delivered >= 7 days ago, visiting all ~1,127 units sequentially (~6,800 actions,
-throttled -> "runs forever"), trusting Excel alone, with no cap and no dry run. v003 keeps the rule and:
+  B  RECALC  - gen_nightly_cleanup.py's stage B, reused by import (not copied). Unchanged.
+  C  ARCHIVE DELETE - a unit from C1 (Order Items: Location = Livraison AND ItemStatus = Delivered) is
+     deleted only when ALL of these hold (archive design §5):
+       a. TableArchiveOrderItems has a row with the same Id, at Livraison, with ItemStatus = Delivered;
+       b. that row's Modified text equals the unit's Modified EXACTLY (the archive holds the unit's
+          latest state - an edit after the last archive refresh blocks the delete);
+       c. the unit's Modified is at least GraceDays (7) ago, as a timestamp (ticks), no date truncation.
+     C2 reads TableArchiveOrderItems BY NAME, filtered Location eq 'Livraison' (the archive table
+     holds display text and raw ISO text, so v006's Excel-serial parsing is gone). Cap 50,
+     DeleteEnabled = false (dry run), no variables, delete loop at concurrency 10.
+  D  EMPTY-ROW CLEANUP (user, 2026-09-28: grid-view accidents like Ids 1256/1257) - from C1b, no extra
+     read: Title, OrderNumber, Model, Client, ModelRevision and Location all empty, never edited
+     (Created == Modified), created at least 24 h ago. Cap EmptyRowCap = 10 (over it: recycle nothing,
+     report). Same DeleteEnabled switch: dry run composes "would recycle <Id>".
+  Trigger: daily 01:30 "Eastern Standard Time" - no UTC startTime (DST-proof). Unchanged.
 
-  B  RECALC  - gen_nightly_cleanup.py's stage B, reused by import (not copied): B1 Active + no Planned/
-     Manual date, B2 one Query for "TODAY() is the branch", B3/B4 touch CalcRefreshed. Concurrency 10.
-  C  ARCHIVE DELETE - two independent confirmations (Order Items itself: Livraison AND Delivered;
-     Excel: LI + Delivery Date >= 7 days ago, the grace clock), a cap of 50, DeleteEnabled = false (dry run:
-     "would delete <Title>"). One pass per source, no per-unit rescan, NO variables (so the delete
-     loop can run at concurrency 10).
-  Stage A (mark Delivered) is dropped: the trigger flow's CompletOrder already does it.
-  Trigger: daily 01:30 "Eastern Standard Time" - no UTC startTime (DST-proof).
+C7_Summary fields, v006 -> v007:
+  deleteEnabled, cap, B_touched, C_candidates_OrderItems, C_capExceeded, C_deletedOrWouldDelete   unchanged
+  C_confirmed_by_Excel                -> C_confirmed_by_archive   (now gate a+b+c, not Excel LI + date)
+  C_heldBack_notConfirmedByExcel      -> C_heldBack               (count)
+  C_heldBackTitles                    -> C_heldBack_units         ([{Id, Title, Modified, reason}])
+  C_excelDone_listDisagrees(_units)   -> C_archiveDone_listDisagrees(_units)
+                                         archive row at Livraison+Delivered, unit still on SharePoint
+                                         but NOT Livraison+Delivered there
+  C_excelDone_noUnitRow_alreadyGone   -> C_archiveDone_noUnitRow_alreadyGone
+                                         archive row at Livraison+Delivered whose unit is gone (normal)
+  new: graceDays, emptyRowCap, D_emptyRowCandidates, D_emptyRowIds, D_capExceeded, D_recycledOrWouldRecycle
+  Held-back reasons, first failing wins: "no archive row at Livraison" / "archive not Delivered" /
+  "archive older than the unit (Modified differs)" / "edited within 7 days".
 
-The Excel action keeps v001's exact source / drive / file / table ids, its metadata and its connection.
-The output is the editor wrapper {connectionReferences, definition}, with v001's connectionReferences.
-
-Hand the output path to the planning session: it snapshots it --local and stages
-it (v003 supersedes v002, parent v001). This script never writes into workflow-data/<flow>/.
+The Excel action keeps v001's source / drive / file ids, its metadata (minus tableId) and host.
+The output is the editor wrapper {connectionReferences, definition}; every connection is a solution
+connection reference. Hand the output path to the planning session: it snapshots it --local and stages
+it (parent v006). This script never writes into workflow-data/<flow>/.
 """
 import copy
 import csv
@@ -42,29 +60,55 @@ import gen_nightly_cleanup as G   # noqa: E402  (stage B + helpers; its main() i
 
 FLOW_DIR = os.path.join(ROOT, "workflow-data", "Order Items - Nightly Sync")
 COLUMNS = os.path.join(ROOT, "sharepoint-lists", "mirror", "live", "Columns.csv")
+OI_CSV = os.path.join(ROOT, "sharepoint-lists", "mirror", "live", "Order Items.csv")
 
-OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v006.json")
-EXCEL_TABLE_NAME = "TableArchiveFRM10_12"   # v006: read by name (its id changed with option 2)
+OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v007.json")
+EXCEL_TABLE_NAME = "TableArchiveOrderItems"   # v007: per-list archive, SharePoint internal column names
+EXCEL_FILTER = "Location eq 'Livraison'"      # the archive holds display text, not v006's 'LI' code
 
-# 🔴 This flow lives in a SOLUTION. A solution flow on plain connections blocks the new designer
-# ("Uses a connection instead of a connection reference"), and v001's export carried plain
-# connections, so v003 pasted them straight in (2026-09-27). Every connection must now name its
-# solution connection reference, or the generator aborts. SharePoint's is the one the trigger flow
-# and the four N3 flows use. Excel's must be created in the solution first; pass its logical name:
-#     python scripts/gen_nightly_sync.py --excel-ref new_sharedexcelonlinebusiness_xxxxx
+# 🔴 This flow lives in a SOLUTION: every connection must name its solution connection reference.
 CONNREF_NAMES = {"shared_sharepointonline": "new_sharedsharepointonline_89e9a",
-                 # created 2026-09-27 22:1x by adding an Excel action to a test instant flow in the
-                 # solution in the NEW designer (evidence: _inbox/_archive/*TEST-instant-flow*)
                  "shared_excelonlinebusiness": "new_sharedexcelonlinebusiness_452b5"}
 
 CAP = 50            # N2: at most this many deletions in one night; more = delete nothing, report
+EMPTY_ROW_CAP = 10  # stage D: at most this many empty rows recycled in one night
 DELETE_ENABLED = False
-GRACE_DAYS = 7      # delivered at least 7 days ago (09-16 rule, v001's rule)
+GRACE_DAYS = 7      # the unit untouched for at least 7 days (archive design §5.4)
 TZ = G.TZ           # "Eastern Standard Time" (Windows zone name; covers EST/EDT)
 
-# today - N, as an Eastern calendar date. Never utcNow()'s date: after 20:00 Eastern it is tomorrow.
-def eastern_minus(days):
-    return "formatDateTime(addDays(convertFromUtc(utcNow(), '%s'), -%d), 'yyyy-MM-dd')" % (TZ, days)
+LOOKUPS = ("OrderNumber", "Model", "Client", "ModelRevision")   # internal names (REST: <name>Id)
+
+# ---- expression pieces, pinned once so checks() can assert them verbatim
+# The Excel connector returns every cell as TEXT: an Id may come back "1130", "1130.0" or, with a
+# thousands format, "1,130". Normalise to the integer's digits. SharePoint's ID is a number: string() it.
+def xl_id(x="item()"):
+    return "first(split(replace(replace(string(coalesce(%s?['Id'],'')),',',''),' ',''),'.'))" % x
+
+SP_ID = "string(item()?['ID'])"
+XL_STATUS_KEY = "concat(%s, '|', string(coalesce(item()?['ItemStatus'],'')))" % xl_id()
+XL_STATE_KEY = ("concat(%s, '|', string(coalesce(item()?['ItemStatus'],'')), '|', string(coalesce(item()?['Modified'],'')))"
+                % xl_id())
+SP_STATUS_KEY = "concat(%s, '|', 'Delivered')" % SP_ID
+SP_STATE_KEY = "concat(%s, '|', 'Delivered', '|', string(item()?['Modified']))" % SP_ID
+GRACE = "lessOrEquals(ticks(item()?['Modified']), ticks(addDays(utcNow(), mul(-1, outputs('Settings')?['GraceDays']))))"
+
+HAS_ROW = "contains(body('C3_Archive_ids'), %s)" % SP_ID
+ARCH_DELIVERED = "contains(body('C3b_Archive_status_keys'), %s)" % SP_STATUS_KEY
+ARCH_CURRENT = "contains(body('C3c_Archive_state_keys'), %s)" % SP_STATE_KEY
+
+SP_AT_LI_DELIVERED = ("and(equals(item()?['Location']?['Value'], 'Livraison'), "
+                      "equals(item()?['ItemStatus']?['Value'], 'Delivered'))")
+
+# Stage D. A lookup comes off the connector as an object {Id, Value} and also as '<name>#Id'; take
+# whichever is there, so an empty test never passes just because one spelling is absent.
+def lookup_empty(n):
+    return "empty(string(coalesce(item()?['%s']?['Id'], item()?['%s#Id'], '')))" % (n, n)
+
+D_TITLE_EMPTY = "empty(string(coalesce(item()?['Title'], '')))"
+D_LOCATION_EMPTY = "empty(string(coalesce(item()?['Location']?['Value'], '')))"
+D_NEVER_EDITED = "equals(string(item()?['Created']), string(item()?['Modified']))"
+D_OLDER_24H = "lessOrEquals(ticks(item()?['Created']), ticks(addHours(utcNow(), -24)))"
+D_CLAUSES = [D_TITLE_EMPTY] + [lookup_empty(n) for n in LOOKUPS] + [D_LOCATION_EMPTY, D_NEVER_EDITED, D_OLDER_24H]
 
 
 def fail(msg):
@@ -89,18 +133,31 @@ def load_columns():
     return {r["internalName"]: r for r in rows if r["list"] == "Order Items"}
 
 
+def load_archive_header():
+    """TableArchiveOrderItems' columns ARE the mirror's Order Items.csv headers (same REST reader)."""
+    if not os.path.exists(OI_CSV):
+        fail("%s missing - refresh the mirror" % OI_CSV)
+    with open(OI_CSV, encoding="utf-8-sig", newline="") as f:
+        return set(next(csv.reader(f)))
+
+
+def where(expr):
+    return "@" + expr
+
+
 def build():
     v1, connrefs, v1name = load_v001()
     cols = load_columns()
 
-    # ---- names this flow depends on, resolved from the platform's catalog, not typed from memory
-    # DeliveryDate is NOT needed any more: fillRate 0 on every unit (mirror catalog, 2026-09-25) - see C1.
-    need = ["Title", "ItemStatus", "Location", "Planned_x0020_Delivery_x0020_Dat",
+    need = ["Title", "ItemStatus", "Location", "Planned_x0020_Delivery_x0020_Dat", "Created", "Modified",
             "ManualEstimatedDeliveryDate", "CalcRefreshed", "FinishingDate", "TestingDate",
-            "Planned_x0020_Tanking_x0020_Date", "TankDeliveryDate"] + G.COILING
+            "Planned_x0020_Tanking_x0020_Date", "TankDeliveryDate"] + G.COILING + list(LOOKUPS)
     missing = [n for n in need if n not in cols]
     if missing:
         fail("Order Items has no column(s) %s (live/Columns.csv)" % missing)
+    for n in LOOKUPS:
+        if cols[n]["type"] != "lookup":
+            fail("%s is not a lookup column (%s)" % (n, cols[n]["type"]))
     choices = lambda n: [c.strip() for c in (cols[n].get("choices") or "").split("|")]
     if "Livraison" not in choices("Location"):
         fail("'Livraison' is not a Location choice: %s" % choices("Location"))
@@ -108,13 +165,14 @@ def build():
         if v not in choices("ItemStatus"):
             fail("'%s' is not an ItemStatus choice: %s" % (v, choices("ItemStatus")))
 
-    # ---- v001's Excel read, kept exactly (ids, metadata, host/connection)
+    # ---- v001's Excel read: same file/source/drive/host/metadata, new table by name, new filter
     xl1 = v1["actions"].get("List_rows_present_in_a_table")
     if not xl1:
         fail("v001 has no List_rows_present_in_a_table action")
     excel = copy.deepcopy(xl1)
-    excel["runAfter"] = {}
-    excel["inputs"]["parameters"]["$filter"] = "Location eq 'LI'"      # C2: far below the 5,000 ceiling
+    excel["inputs"]["parameters"]["table"] = EXCEL_TABLE_NAME
+    excel["inputs"]["parameters"]["$filter"] = EXCEL_FILTER
+    (excel.get("metadata") or {}).pop("tableId", None)
     excel["runtimeConfiguration"] = {"paginationPolicy": {"minimumItemCount": 5000}}
 
     d = {
@@ -131,94 +189,77 @@ def build():
         "actions": {},
     }
     A = d["actions"]
+    after = lambda *names, st=("Succeeded",): {n: list(st) for n in names}
+    ANY = ("Succeeded", "Failed", "Skipped")
 
-    # ---- settings: the two knobs, visible at the top of the flow in the designer
     A["Settings"] = {"runAfter": {}, "type": "Compose",
                      "inputs": {"DeleteEnabled": DELETE_ENABLED, "Cap": CAP, "GraceDays": GRACE_DAYS,
-                                "note": "DeleteEnabled=false is a DRY RUN: C6 only composes 'would delete <Title>'. "
-                                        "Flip to true after one night's report has been checked against the mirror."}}
+                                "EmptyRowCap": EMPTY_ROW_CAP,
+                                "note": "DeleteEnabled=false is a DRY RUN: C6 composes 'would delete <Title>', D3 "
+                                        "'would recycle <Id>'. Flip to true after one night's report has been "
+                                        "checked against the mirror."}}
 
     # ---- stage B, reused from gen_nightly_cleanup.py
     for k in ("B1_Get_stall_candidates", "B2_Where_TODAY_is_the_answer", "B3_Touch_each_stalled_unit"):
         A[k] = copy.deepcopy(G.A[k])
-    A["B1_Get_stall_candidates"]["runAfter"] = {"Settings": ["Succeeded"]}
+    A["B1_Get_stall_candidates"]["runAfter"] = after("Settings")
     A["B3_Touch_each_stalled_unit"]["runtimeConfiguration"] = {"concurrency": {"repetitions": 10}}
 
     # ---- stage C
-    # C1: Order Items' OWN state - confirmation #1: at Livraison AND Delivered (the trigger flow's
-    # CompletOrder sets Delivered on arrival at Livraison). v002 filtered on DeliveryDate instead; the
-    # mirror catalog showed that column is EMPTY on every unit (fillRate 0, 2026-09-25) - v002 would
-    # never have matched a row. The grace clock is therefore Excel's Delivery Date alone (C3).
-    A["C1_Get_Livraison_candidates"] = G.get_items(
-        "Location eq 'Livraison' and ItemStatus eq 'Delivered'")
-    A["C1_Get_Livraison_candidates"]["runAfter"] = {"B3_Touch_each_stalled_unit": ["Succeeded", "Failed", "Skipped"]}
-
-    # C1b/C1c: every unit's Title + state, ONE paged read - only to REPORT where Excel and the list
-    # disagree (C4c/C4d). v001 deletes on Excel's word alone; the user needs to see those units.
+    A["C1_Get_Livraison_candidates"] = G.get_items("Location eq 'Livraison' and ItemStatus eq 'Delivered'")
+    A["C1_Get_Livraison_candidates"]["runAfter"] = after("B3_Touch_each_stalled_unit", st=ANY)
+    # C1b: every unit, ONE paged read - feeds the disagreement report (C4c) and stage D.
     A["C1b_Get_all_units"] = G.sp("GetItems", {"dataset": G.SITE, "table": G.ORDER_ITEMS, "$top": 5000})
     A["C1b_Get_all_units"]["runtimeConfiguration"] = {"paginationPolicy": {"minimumItemCount": 5000}}
-    A["C1b_Get_all_units"]["runAfter"] = {"C1_Get_Livraison_candidates": ["Succeeded"]}
-    A["C1c_All_titles"] = {"runAfter": {"C1b_Get_all_units": ["Succeeded"]}, "type": "Select",
-                           "inputs": {"from": "@outputs('C1b_Get_all_units')?['body/value']", "select": "@item()?['Title']"}}
+    A["C1b_Get_all_units"]["runAfter"] = after("C1_Get_Livraison_candidates")
+    A["C1c_All_ids"] = {"runAfter": after("C1b_Get_all_units"), "type": "Select",
+                        "inputs": {"from": "@outputs('C1b_Get_all_units')?['body/value']", "select": "@" + SP_ID}}
 
-    A["C2_Get_Excel_LI_rows"] = excel
-    A["C2_Get_Excel_LI_rows"]["runAfter"] = {"C1c_All_titles": ["Succeeded"]}
-    # v006 (2026-09-28): the archive table is read by NAME, not by its internal id. Option 2
-    # recreated TableArchiveFRM10_12 as a sheet-loaded table, so its id changed, and a recreated
-    # table would break an id again. The Excel connector accepts the table name as a custom value;
-    # the name is the same before and after the switch, so v006 works with both.
-    A["C2_Get_Excel_LI_rows"]["inputs"]["parameters"]["table"] = EXCEL_TABLE_NAME
-    (A["C2_Get_Excel_LI_rows"].get("metadata") or {}).pop("tableId", None)
-
-    # C3: Excel rows delivered >= 7 days ago - confirmation #2. Delivery Date comes back as an Excel
-    # SERIAL (v001: addDays('1899-12-30', int(...))). Logic Apps evaluates and()/if() arguments eagerly,
-    # so int() must never see '' or a fraction: blanks become '0' (and are excluded by not(empty)).
-    s = "string(coalesce(item()?['Delivery Date'],''))"
-    serial = "int(first(split(if(empty(%s),'0',%s),'.')))" % (s, s)
-    A["C3_Excel_old_enough"] = {
-        "runAfter": {"C2_Get_Excel_LI_rows": ["Succeeded"]}, "type": "Query",
-        "inputs": {"from": "@outputs('C2_Get_Excel_LI_rows')?['body/value']",
-                   "where": "@and(not(empty(%s)), lessOrEquals(formatDateTime(addDays('1899-12-30T00:00:00Z', %s), 'yyyy-MM-dd'), %s))"
-                            % (s, serial, eastern_minus(GRACE_DAYS))}}
-    A["C3b_Excel_orders"] = {
-        "runAfter": {"C3_Excel_old_enough": ["Succeeded"]}, "type": "Select",
-        "inputs": {"from": "@body('C3_Excel_old_enough')", "select": "@item()?['Order']"}}
-    # C4: both confirmations. One Query over ~100 candidates, not a per-unit rescan of the archive.
-    A["C4_Confirmed_by_both"] = {
-        "runAfter": {"C3b_Excel_orders": ["Succeeded"]}, "type": "Query",
+    A["C2_Get_archive_Livraison_rows"] = excel
+    A["C2_Get_archive_Livraison_rows"]["runAfter"] = after("C1c_All_ids")
+    arch = "@outputs('C2_Get_archive_Livraison_rows')?['body/value']"
+    # C3*: three key lists over the archive rows - Id / Id|ItemStatus / Id|ItemStatus|Modified.
+    # One Select each, then plain contains() per candidate: no per-unit rescan, no variables.
+    A["C3_Archive_ids"] = {"runAfter": after("C2_Get_archive_Livraison_rows"), "type": "Select",
+                           "inputs": {"from": arch, "select": "@" + xl_id()}}
+    A["C3b_Archive_status_keys"] = {"runAfter": after("C3_Archive_ids"), "type": "Select",
+                                    "inputs": {"from": arch, "select": "@" + XL_STATUS_KEY}}
+    A["C3c_Archive_state_keys"] = {"runAfter": after("C3b_Archive_status_keys"), "type": "Select",
+                                   "inputs": {"from": arch, "select": "@" + XL_STATE_KEY}}
+    # C4: the gate - a (archive Delivered) + b (Modified equal) are both inside ARCH_CURRENT's key,
+    # c is the grace. ARCH_DELIVERED is implied by ARCH_CURRENT and kept explicit for the reader.
+    A["C4_Confirmed_by_archive"] = {
+        "runAfter": after("C3c_Archive_state_keys"), "type": "Query",
         "inputs": {"from": "@outputs('C1_Get_Livraison_candidates')?['body/value']",
-                   "where": "@contains(body('C3b_Excel_orders'), item()?['Title'])"}}
+                   "where": where("and(%s, %s, %s)" % (ARCH_DELIVERED, ARCH_CURRENT, GRACE))}}
     A["C4b_Held_back"] = {
-        "runAfter": {"C4_Confirmed_by_both": ["Succeeded"]}, "type": "Query",
+        "runAfter": after("C4_Confirmed_by_archive"), "type": "Query",
         "inputs": {"from": "@outputs('C1_Get_Livraison_candidates')?['body/value']",
-                   "where": "@not(contains(body('C3b_Excel_orders'), item()?['Title']))"}}
-    # C4c (REPORT ONLY): Excel says LI + delivered >= 7 days, but the unit is NOT (Livraison AND
-    # Delivered). v001 would delete exactly these. Location / ItemStatus are CHOICE columns: the
-    # connector returns them as objects, so compare ?['Value'] - a bare string compare never matches.
-    A["C4c_Excel_done_list_disagrees"] = {
-        "runAfter": {"C4b_Held_back": ["Succeeded"]}, "type": "Query",
+                   "where": where("not(and(%s, %s, %s))" % (ARCH_DELIVERED, ARCH_CURRENT, GRACE))}}
+    # C4c (REPORT ONLY): the archive says Livraison + Delivered, the unit on SharePoint does not.
+    # Location / ItemStatus are CHOICE columns on the connector: compare ?['Value'].
+    A["C4c_Archive_done_list_disagrees"] = {
+        "runAfter": after("C4b_Held_back"), "type": "Query",
         "inputs": {"from": "@outputs('C1b_Get_all_units')?['body/value']",
-                   "where": "@and(contains(body('C3b_Excel_orders'), item()?['Title']), "
-                            "not(and(equals(item()?['Location']?['Value'], 'Livraison'), "
-                            "equals(item()?['ItemStatus']?['Value'], 'Delivered'))))"}}
-    # C4d (REPORT ONLY): Excel LI + old rows with no Order Items row at all - already gone, normal.
-    A["C4d_Excel_done_no_unit_row"] = {
-        "runAfter": {"C4c_Excel_done_list_disagrees": ["Succeeded"]}, "type": "Query",
-        "inputs": {"from": "@body('C3_Excel_old_enough')",
-                   "where": "@not(contains(body('C1c_All_titles'), item()?['Order']))"}}
+                   "where": where("and(%s, not(%s))" % (ARCH_DELIVERED, SP_AT_LI_DELIVERED))}}
+    # C4d (REPORT ONLY): archived at Livraison + Delivered, unit already gone from SharePoint - normal.
+    A["C4d_Archive_done_no_unit_row"] = {
+        "runAfter": after("C4c_Archive_done_list_disagrees"), "type": "Query",
+        "inputs": {"from": arch,
+                   "where": where("and(equals(string(coalesce(item()?['ItemStatus'],'')), 'Delivered'), "
+                                  "not(contains(body('C1c_All_ids'), %s)))" % xl_id())}}
 
     # C5: the cap. Over it -> delete NOTHING tonight, say so.
     A["C5_Cap_guard"] = {
-        "runAfter": {"C4d_Excel_done_no_unit_row": ["Succeeded"]}, "type": "If",
-        "expression": {"greater": ["@length(body('C4_Confirmed_by_both'))", "@outputs('Settings')?['Cap']"]},
+        "runAfter": after("C4d_Archive_done_no_unit_row"), "type": "If",
+        "expression": {"greater": ["@length(body('C4_Confirmed_by_archive'))", "@outputs('Settings')?['Cap']"]},
         "actions": {
             "C5a_Cap_exceeded_nothing_deleted": {"runAfter": {}, "type": "Compose",
-                "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_both'))), ' candidates > cap ', "
-                          "string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the Excel read and the mirror.')"}},
+                "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_archive'))), ' candidates > cap ', "
+                          "string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the archive read and the mirror.')"}},
         "else": {"actions": {
-            # C6: NO variables anywhere in here - that is what makes concurrency 10 safe.
             "C6_For_each_confirmed": {
-                "runAfter": {}, "type": "Foreach", "foreach": "@body('C4_Confirmed_by_both')",
+                "runAfter": {}, "type": "Foreach", "foreach": "@body('C4_Confirmed_by_archive')",
                 "runtimeConfiguration": {"concurrency": {"repetitions": 10}},
                 "actions": {
                     "C6a_Delete_enabled": {
@@ -235,40 +276,80 @@ def build():
         }},
     }
 
-    # C7: the night's summary - one place to read in the run history.
-    titles = lambda src: "@body('%s')" % src
+    # ---- stage D: empty-row cleanup, from C1b (already read)
+    A["D1_Empty_row_candidates"] = {
+        "runAfter": after("C5_Cap_guard", st=ANY), "type": "Query",
+        "inputs": {"from": "@outputs('C1b_Get_all_units')?['body/value']",
+                   "where": where("and(%s)" % ", ".join(D_CLAUSES))}}
+    A["D2_Empty_row_cap_guard"] = {
+        "runAfter": after("D1_Empty_row_candidates"), "type": "If",
+        "expression": {"greater": ["@length(body('D1_Empty_row_candidates'))", "@outputs('Settings')?['EmptyRowCap']"]},
+        "actions": {
+            "D2a_Cap_exceeded_nothing_recycled": {"runAfter": {}, "type": "Compose",
+                "inputs": "@concat('EMPTY-ROW CAP EXCEEDED: ', string(length(body('D1_Empty_row_candidates'))), ' rows > cap ', "
+                          "string(outputs('Settings')?['EmptyRowCap']), ' - nothing recycled tonight. Check the mirror.')"}},
+        "else": {"actions": {
+            "D3_For_each_empty_row": {
+                "runAfter": {}, "type": "Foreach", "foreach": "@body('D1_Empty_row_candidates')",
+                "runtimeConfiguration": {"concurrency": {"repetitions": 10}},
+                "actions": {
+                    "D3a_Delete_enabled": {
+                        "runAfter": {}, "type": "If",
+                        "expression": {"equals": ["@outputs('Settings')?['DeleteEnabled']", True]},
+                        # SharePoint's Delete item: the row goes to the site recycle bin (see report flag).
+                        "actions": {"D3b_Recycle_item": dict(G.sp("DeleteItem", {
+                            "dataset": G.SITE, "table": G.ORDER_ITEMS,
+                            "id": "@items('D3_For_each_empty_row')?['ID']"}), runAfter={})},
+                        "else": {"actions": {"D3c_Would_recycle": {"runAfter": {}, "type": "Compose",
+                            "inputs": "@concat('would recycle ', string(items('D3_For_each_empty_row')?['ID']))"}}},
+                    }
+                },
+            }
+        }},
+    }
+
+    # ---- C7: the night's summary - one place to read in the run history
+    A["C7a_Confirmed_titles"] = {"runAfter": after("D2_Empty_row_cap_guard", st=ANY), "type": "Select",
+                                 "inputs": {"from": "@body('C4_Confirmed_by_archive')", "select": "@item()?['Title']"}}
+    reason = ("if(not(%s), 'no archive row at Livraison', if(not(%s), 'archive not Delivered', "
+              "if(not(%s), 'archive older than the unit (Modified differs)', "
+              "concat('edited within ', string(outputs('Settings')?['GraceDays']), ' days'))))"
+              % (HAS_ROW, ARCH_DELIVERED, ARCH_CURRENT))
+    A["C7b_Held_back_units"] = {"runAfter": after("C7a_Confirmed_titles"), "type": "Select",
+                                "inputs": {"from": "@body('C4b_Held_back')",
+                                           "select": {"Id": "@item()?['ID']", "Title": "@item()?['Title']",
+                                                      "Modified": "@item()?['Modified']", "reason": "@" + reason}}}
+    A["C7c_Disagreeing_units"] = {"runAfter": after("C7b_Held_back_units"), "type": "Select",
+                                  "inputs": {"from": "@body('C4c_Archive_done_list_disagrees')",
+                                             "select": {"Id": "@item()?['ID']", "Title": "@item()?['Title']",
+                                                        "Location": "@item()?['Location']?['Value']",
+                                                        "ItemStatus": "@item()?['ItemStatus']?['Value']"}}}
+    A["D4_Empty_row_ids"] = {"runAfter": after("C7c_Disagreeing_units"), "type": "Select",
+                             "inputs": {"from": "@body('D1_Empty_row_candidates')", "select": "@item()?['ID']"}}
+    c_over = "greater(length(body('C4_Confirmed_by_archive')), outputs('Settings')?['Cap'])"
+    d_over = "greater(length(body('D1_Empty_row_candidates')), outputs('Settings')?['EmptyRowCap'])"
     A["C7_Summary"] = {
-        "runAfter": {"C5_Cap_guard": ["Succeeded", "Failed", "Skipped"]}, "type": "Compose",
+        "runAfter": after("D4_Empty_row_ids"), "type": "Compose",
         "inputs": {
             "deleteEnabled": "@outputs('Settings')?['DeleteEnabled']",
             "cap": "@outputs('Settings')?['Cap']",
+            "graceDays": "@outputs('Settings')?['GraceDays']",
+            "emptyRowCap": "@outputs('Settings')?['EmptyRowCap']",
             "B_touched": "@length(coalesce(body('B2_Where_TODAY_is_the_answer'), json('[]')))",
             "C_candidates_OrderItems": "@length(outputs('C1_Get_Livraison_candidates')?['body/value'])",
-            "C_confirmed_by_Excel": "@length(body('C4_Confirmed_by_both'))",
-            "C_capExceeded": "@greater(length(body('C4_Confirmed_by_both')), outputs('Settings')?['Cap'])",
-            "C_deletedOrWouldDelete": "@if(greater(length(body('C4_Confirmed_by_both')), outputs('Settings')?['Cap']), json('[]'), "
-                                      "body('C4_Confirmed_by_both'))",
-            "C_heldBack_notConfirmedByExcel": "@length(body('C4b_Held_back'))",
-            "C_heldBackTitles": titles("C4b_Held_back"),
+            "C_confirmed_by_archive": "@length(body('C4_Confirmed_by_archive'))",
+            "C_capExceeded": "@" + c_over,
+            "C_deletedOrWouldDelete": "@if(%s, json('[]'), body('C7a_Confirmed_titles'))" % c_over,
+            "C_heldBack": "@length(body('C4b_Held_back'))",
+            "C_heldBack_units": "@body('C7b_Held_back_units')",
+            "C_archiveDone_listDisagrees": "@length(body('C4c_Archive_done_list_disagrees'))",
+            "C_archiveDone_listDisagrees_units": "@body('C7c_Disagreeing_units')",
+            "C_archiveDone_noUnitRow_alreadyGone": "@length(body('C4d_Archive_done_no_unit_row'))",
+            "D_emptyRowCandidates": "@length(body('D1_Empty_row_candidates'))",
+            "D_emptyRowIds": "@body('D4_Empty_row_ids')",
+            "D_capExceeded": "@" + d_over,
+            "D_recycledOrWouldRecycle": "@if(%s, json('[]'), body('D4_Empty_row_ids'))" % d_over,
         }}
-    # Keep the summary readable: titles only, not whole rows.
-    A["C7_Summary"]["inputs"]["C_deletedOrWouldDelete"] = (
-        "@if(greater(length(body('C4_Confirmed_by_both')), outputs('Settings')?['Cap']), json('[]'), "
-        "body('C7a_Confirmed_titles'))")
-    A["C7_Summary"]["inputs"]["C_heldBackTitles"] = "@body('C7b_Held_back_titles')"
-    A["C7_Summary"]["inputs"]["C_excelDone_listDisagrees"] = "@length(body('C4c_Excel_done_list_disagrees'))"
-    A["C7_Summary"]["inputs"]["C_excelDone_listDisagrees_units"] = "@body('C7c_Disagreeing_units')"
-    A["C7_Summary"]["inputs"]["C_excelDone_noUnitRow_alreadyGone"] = "@length(body('C4d_Excel_done_no_unit_row'))"
-    A["C7c_Disagreeing_units"] = {"runAfter": {"C7b_Held_back_titles": ["Succeeded"]}, "type": "Select",
-                                  "inputs": {"from": "@body('C4c_Excel_done_list_disagrees')",
-                                             "select": {"Title": "@item()?['Title']",
-                                                        "Location": "@item()?['Location']?['Value']",
-                                                        "ItemStatus": "@item()?['ItemStatus']?['Value']"}}}
-    A["C7a_Confirmed_titles"] = {"runAfter": {"C5_Cap_guard": ["Succeeded", "Failed", "Skipped"]}, "type": "Select",
-                                 "inputs": {"from": "@body('C4_Confirmed_by_both')", "select": "@item()?['Title']"}}
-    A["C7b_Held_back_titles"] = {"runAfter": {"C7a_Confirmed_titles": ["Succeeded"]}, "type": "Select",
-                                 "inputs": {"from": "@body('C4b_Held_back')", "select": "@item()?['Title']"}}
-    A["C7_Summary"]["runAfter"] = {"C7c_Disagreeing_units": ["Succeeded"]}
 
     refs = {}
     for key in ("shared_sharepointonline", "shared_excelonlinebusiness"):
@@ -294,68 +375,144 @@ def walk(node, path=""):
             yield from walk(v, "%s[%d]" % (path, i))
 
 
+def _get(d, *path):
+    for p in path:
+        if not isinstance(d, dict) or p not in d:
+            return None
+        d = d[p]
+    return d
+
+
+# The only two places a DeleteItem may sit: inside a DeleteEnabled branch, inside a loop, behind a cap.
+DELETE_PATHS = {
+    "/actions/C5_Cap_guard/else/actions/C6_For_each_confirmed/actions/C6a_Delete_enabled/actions/C6b_Delete_item",
+    "/actions/D2_Empty_row_cap_guard/else/actions/D3_For_each_empty_row/actions/D3a_Delete_enabled/actions/D3b_Recycle_item",
+}
+
+
 def checks(w, v1, cols, v1name):
     d = w["definition"]
+    A = d["actions"]
     txt = json.dumps(d)
     # 1. no variables at all (v001's SetVariable forced a sequential loop)
     for p, k, v in walk(d):
         if isinstance(v, dict) and v.get("type") in ("SetVariable", "InitializeVariable", "AppendToArrayVariable", "IncrementVariable"):
-            fail("variable action at %s - the delete loop must stay variable-free" % p)
-    # 2. every Foreach inside is variable-free and concurrent
+            fail("variable action at %s - the delete loops must stay variable-free" % p)
+    # 2. every Foreach is concurrent
     for p, k, v in walk(d):
         if isinstance(v, dict) and v.get("type") == "Foreach":
             if v.get("runtimeConfiguration", {}).get("concurrency", {}).get("repetitions") != 10:
                 fail("%s is not concurrency 10" % p)
-    # 3. the cap and the dry-run default
-    s = d["actions"]["Settings"]["inputs"]
-    if s["DeleteEnabled"] is not False:
+    # 3. the caps and the dry-run default
+    s = A["Settings"]["inputs"]
+    if s.get("DeleteEnabled") is not False:
         fail("DeleteEnabled must default to false")
-    if s["Cap"] != 50:
+    if s.get("Cap") != 50:
         fail("cap must be 50 (N2)")
-    if "greater" not in d["actions"]["C5_Cap_guard"]["expression"]:
-        fail("cap guard missing")
-    if "C6_For_each_confirmed" not in d["actions"]["C5_Cap_guard"]["else"]["actions"]:
-        fail("delete loop is not behind the cap guard")
-    # 3b. confirmation #1 must keep BOTH clauses (v003: DeliveryDate is empty everywhere, so the
-    #     ItemStatus clause is what stops an undelivered unit at Livraison from being deleted)
-    c1 = d["actions"]["C1_Get_Livraison_candidates"]["inputs"]["parameters"]["$filter"]
+    if s.get("EmptyRowCap") != 10:
+        fail("EmptyRowCap must be 10")
+    if s.get("GraceDays") != 7:
+        fail("GraceDays must be 7")
+    if _get(A, "C5_Cap_guard", "expression") != {"greater": ["@length(body('C4_Confirmed_by_archive'))", "@outputs('Settings')?['Cap']"]}:
+        fail("C cap guard missing or changed")
+    if _get(A, "D2_Empty_row_cap_guard", "expression") != {"greater": ["@length(body('D1_Empty_row_candidates'))", "@outputs('Settings')?['EmptyRowCap']"]}:
+        fail("stage D cap guard missing or changed")
+    if _get(A, "C5_Cap_guard", "else", "actions", "C6_For_each_confirmed", "foreach") != "@body('C4_Confirmed_by_archive')":
+        fail("delete loop is not behind the cap guard, or does not loop over the gate's output")
+    if _get(A, "D2_Empty_row_cap_guard", "else", "actions", "D3_For_each_empty_row", "foreach") != "@body('D1_Empty_row_candidates')":
+        fail("stage D recycle loop is not behind its cap guard, or does not loop over D1")
+    # 3a. every DeleteItem sits exactly where it may, behind a DeleteEnabled == true branch
+    dels = {p for p, k, v in walk(d) if isinstance(v, dict) and v.get("type") == "OpenApiConnection"
+            and v["inputs"]["host"]["operationId"] == "DeleteItem"}
+    if dels != DELETE_PATHS:
+        fail("DeleteItem actions at unexpected places: %s" % sorted(dels ^ DELETE_PATHS))
+    for guard in (_get(A, "C5_Cap_guard", "else", "actions", "C6_For_each_confirmed", "actions", "C6a_Delete_enabled"),
+                  _get(A, "D2_Empty_row_cap_guard", "else", "actions", "D3_For_each_empty_row", "actions", "D3a_Delete_enabled")):
+        if guard["expression"] != {"equals": ["@outputs('Settings')?['DeleteEnabled']", True]}:
+            fail("a delete is not behind the DeleteEnabled switch")
+    # 3b. confirmation #1 keeps BOTH clauses
+    c1 = A["C1_Get_Livraison_candidates"]["inputs"]["parameters"]["$filter"]
     for clause in ("Location eq 'Livraison'", "ItemStatus eq 'Delivered'"):
         if clause not in c1:
             fail("C1 filter lacks %r: %r" % (clause, c1))
-    # 4. pagination >= 5000 on every read
+    # 3c. THE GATE (archive design §5): archive Delivered + Modified equal + grace, all ANDed, over C1
+    c4 = A["C4_Confirmed_by_archive"]["inputs"]
+    if c4.get("from") != "@outputs('C1_Get_Livraison_candidates')?['body/value']":
+        fail("C4 must filter C1's candidates")
+    wh = c4.get("where", "")
+    if not wh.startswith("@and(") or "or(" in wh:
+        fail("C4's where must be a plain and(): %r" % wh[:80])
+    for name, clause in (("archive row Delivered", ARCH_DELIVERED), ("Modified equality", ARCH_CURRENT), ("grace", GRACE)):
+        if clause not in wh:
+            fail("gate lacks the %s condition" % name)
+    if _get(A, "C3b_Archive_status_keys", "inputs", "select") != "@" + XL_STATUS_KEY:
+        fail("C3b's archive key must be Id|ItemStatus")
+    if _get(A, "C3c_Archive_state_keys", "inputs", "select") != "@" + XL_STATE_KEY:
+        fail("C3c's archive key must be Id|ItemStatus|Modified")
+    if _get(A, "C3_Archive_ids", "inputs", "select") != "@" + xl_id():
+        fail("C3's archive key must be the normalised Id")
+    for k in ("C3_Archive_ids", "C3b_Archive_status_keys", "C3c_Archive_state_keys"):
+        if _get(A, k, "inputs", "from") != "@outputs('C2_Get_archive_Livraison_rows')?['body/value']":
+            fail("%s must read C2's rows" % k)
+    if _get(A, "C4b_Held_back", "inputs", "where") != "@not(" + wh[1:] + ")":
+        fail("C4b (held back) must be exactly the negation of the gate")
+    # 3d. stage D: every emptiness condition, never edited, 24 h, ANDed, over all units
+    d1 = A["D1_Empty_row_candidates"]["inputs"]
+    if d1.get("from") != "@outputs('C1b_Get_all_units')?['body/value']":
+        fail("D1 must filter C1b's units (no extra read)")
+    dw = d1.get("where", "")
+    if not dw.startswith("@and(") or "or(" in dw:
+        fail("D1's where must be a plain and()")
+    for clause in D_CLAUSES:
+        if clause not in dw:
+            fail("stage D lacks %s" % clause)
+    # 4. pagination >= 5000 on every read (SharePoint and Excel both use operationId GetItems)
     for p, k, v in walk(d):
         if isinstance(v, dict) and v.get("type") == "OpenApiConnection" and v["inputs"]["host"]["operationId"] == "GetItems":
             if v.get("runtimeConfiguration", {}).get("paginationPolicy", {}).get("minimumItemCount", 0) < 5000:
                 fail("%s paginates below 5000" % p)
-    # 5. every Order Items field an SP expression reads exists (Excel keys excluded: they have their own names)
-    sp_exprs = [json.dumps(d["actions"][k]) for k in ("B2_Where_TODAY_is_the_answer", "C4_Confirmed_by_both", "C4b_Held_back",
-                                                        "C4c_Excel_done_list_disagrees", "C7c_Disagreeing_units", "C1c_All_titles",
-                                                        "C7a_Confirmed_titles", "C7b_Held_back_titles")]
-    sp_exprs += [json.dumps(d["actions"]["C5_Cap_guard"]["else"])]
-    used = set(re.findall(r"item(?:s\('[^']+'\))?\(\)\?\['([A-Za-z0-9_]+)'\]", " ".join(sp_exprs)))
-    used |= set(re.findall(r"items\('[A-Za-z0-9_]+'\)\?\['([A-Za-z0-9_]+)'\]", " ".join(sp_exprs)))
+    # 5. every Order Items field an SP-side expression reads exists; every archive key is a real column
+    sp_keys = ("B2_Where_TODAY_is_the_answer", "C1c_All_ids", "C4_Confirmed_by_archive", "C4b_Held_back",
+               "C4c_Archive_done_list_disagrees", "C7a_Confirmed_titles", "C7b_Held_back_units",
+               "C7c_Disagreeing_units", "D1_Empty_row_candidates", "D4_Empty_row_ids")
+    sp_exprs = " ".join([json.dumps(A[k]) for k in sp_keys] + [json.dumps(A["C5_Cap_guard"]["else"]),
+                                                                json.dumps(A["D2_Empty_row_cap_guard"]["else"])])
+    used = set(re.findall(r"item(?:s\('[^']+'\))?\(\)\?\['([A-Za-z0-9_]+)'\]", sp_exprs))
+    used |= set(re.findall(r"items\('[A-Za-z0-9_]+'\)\?\['([A-Za-z0-9_]+)'\]", sp_exprs))
+    used |= set(re.findall(r"\?\['([A-Za-z0-9_]+)#Id'\]", sp_exprs))
     used -= {"ID"}                      # the connector's own id key
     for f in ("B1_Get_stall_candidates", "C1_Get_Livraison_candidates"):
-        used |= {t for t in re.findall(r"([A-Za-z_][A-Za-z0-9_]*) (?:eq|ne|lt|le|gt|ge) ", d["actions"][f]["inputs"]["parameters"]["$filter"])}
+        used |= set(re.findall(r"([A-Za-z_][A-Za-z0-9_]*) (?:eq|ne|lt|le|gt|ge) ", A[f]["inputs"]["parameters"]["$filter"]))
     unknown = sorted(u for u in used if u not in cols)
     if unknown:
         fail("expressions read Order Items fields not in live/Columns.csv: %s" % unknown)
-    # 6. the Excel read is v001's file, id for id, and the archive table BY NAME (v006)
-    xl = d["actions"]["C2_Get_Excel_LI_rows"]
+    xl_exprs = " ".join(json.dumps(A[k]) for k in ("C3_Archive_ids", "C3b_Archive_status_keys", "C3c_Archive_state_keys",
+                                                   "C4d_Archive_done_no_unit_row"))
+    xl_used = set(re.findall(r"item\(\)\?\['([A-Za-z0-9_]+)'\]", xl_exprs))
+    xl_used |= set(re.findall(r"^([A-Za-z_][A-Za-z0-9_]*) eq ", A["C2_Get_archive_Livraison_rows"]["inputs"]["parameters"].get("$filter", "")))
+    hdr = load_archive_header()
+    if xl_used - hdr:
+        fail("archive expressions read columns TableArchiveOrderItems does not have: %s" % sorted(xl_used - hdr))
+    # 6. the Excel read is v001's file, id for id, TableArchiveOrderItems BY NAME, filtered to Livraison
+    xl = A["C2_Get_archive_Livraison_rows"]
     v1x = v1["actions"]["List_rows_present_in_a_table"]
     for key in ("source", "drive", "file"):
         if xl["inputs"]["parameters"][key] != v1x["inputs"]["parameters"][key]:
             fail("Excel %s differs from v001" % key)
     if xl["inputs"]["parameters"]["table"] != EXCEL_TABLE_NAME:
-        fail("Excel table must be read by name %r (v006), got %r" % (EXCEL_TABLE_NAME, xl["inputs"]["parameters"]["table"]))
+        fail("Excel table must be read by name %r (v007), got %r" % (EXCEL_TABLE_NAME, xl["inputs"]["parameters"]["table"]))
+    if xl["inputs"]["parameters"].get("$filter") != EXCEL_FILTER:
+        fail("C2 must filter %r, got %r" % (EXCEL_FILTER, xl["inputs"]["parameters"].get("$filter")))
     v1meta = {k: v for k, v in (v1x.get("metadata") or {}).items() if k != "tableId"}
     if xl["inputs"]["host"] != v1x["inputs"]["host"] or (xl.get("metadata") or {}) != v1meta:
         fail("Excel host/metadata differs from v001 (only tableId may be dropped)")
+    if "1899-12-30" in txt:
+        fail("Excel serial-date parsing is back - TableArchiveOrderItems holds ISO text")
     # 7. trigger: Eastern zone, 01:30, no UTC startTime
     tr = list(d["triggers"].values())[0]["recurrence"]
     if "startTime" in tr or tr.get("timeZone") != "Eastern Standard Time" or tr["schedule"] != {"hours": ["1"], "minutes": [30]}:
         fail("trigger must be 01:30 Eastern Standard Time with no startTime")
-    # 8. connection references: both present, EXACTLY these two, and every one a solution reference
+    # 8. connection references: EXACTLY SharePoint + Excel, every one a solution reference
     cr = w["connectionReferences"] or {}
     if set(cr) != {"shared_sharepointonline", "shared_excelonlinebusiness"}:
         fail("connectionReferences must be exactly SharePoint + Excel, got %s" % sorted(cr))
@@ -365,6 +522,13 @@ def checks(w, v1, cols, v1name):
     used_conns = set(re.findall(r'"connectionName": "([^"]+)"', txt))
     if used_conns - set(cr):
         fail("actions use connections with no reference: %s" % sorted(used_conns - set(cr)))
+    # 9. every runAfter names an action that exists at the same level
+    for p, k, v in walk(d):
+        if k == "actions" and isinstance(v, dict):
+            for name, act in v.items():
+                for dep in (act.get("runAfter") or {}):
+                    if dep not in v:
+                        fail("%s/%s runs after %s, which is not beside it" % (p, name, dep))
     return used
 
 
@@ -379,9 +543,10 @@ def main():
     d = w["definition"]
     print("wrote %s  (%d top-level actions)" % (os.path.relpath(OUT, ROOT), len(d["actions"])))
     print("  trigger   daily 01:30 %s, no startTime" % TZ)
-    print("  settings  DeleteEnabled=%s  Cap=%d  GraceDays=%d" % (DELETE_ENABLED, CAP, GRACE_DAYS))
-    print("  checks    no variables; every Foreach concurrency 10; cap guard wraps the delete loop;")
-    print("            pagination >= 5000 on every read; Excel ids == v001; fields resolved from live/Columns.csv")
+    print("  settings  DeleteEnabled=%s  Cap=%d  GraceDays=%d  EmptyRowCap=%d" % (DELETE_ENABLED, CAP, GRACE_DAYS, EMPTY_ROW_CAP))
+    print("  gate      %s by name, %s; Id + Delivered + Modified equal + %d-day grace" % (EXCEL_TABLE_NAME, EXCEL_FILTER, GRACE_DAYS))
+    print("  checks    no variables; every Foreach concurrency 10; both delete loops behind cap + DeleteEnabled;")
+    print("            pagination >= 5000 on every read; Excel ids == v001; fields resolved from the mirror")
     for k, v in w["connectionReferences"].items():
         kind = "solution reference" if v.get("connectionReferenceLogicalName") else "PLAIN connection (%s)" % v.get("source")
         print("  connref   %-28s %s  %s" % (k, kind, v.get("connectionName")))
