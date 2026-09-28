@@ -23,6 +23,11 @@ Update items there with ArtifactData; never rebuild it.
 Dry run 09-28: 54 candidates, 0 confirmed, all "edited within 7 days". This matches the replay, and the Modified text forms match.
 First eligible nights: **10-02** 20 units (21777-1/1 moved there by the 09-28 test), 10-03 12, 10-06 22.
 
+## User's request for the next session (2026-09-28)
+**Plan a workspace organisation and cleanup, with mechanisms to keep it clean.** Present the plan first and
+build nothing until the user approves it. Punch List item `ws-cleanup-plan` has the sizing: 73 top-level docs,
+129 scripts, 14 uncommitted or untracked paths. Put it next to the Nightly Sync summary review.
+
 ## Next steps, in order
 1. **Review tonight's `C7_Summary`.** Expect 0 confirmed.
 2. **09-30:** refresh the mirror, then the user refreshes Archive active, then sets `DeleteEnabled=true`
