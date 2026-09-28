@@ -403,6 +403,12 @@ Discovered 2026-09-14 while designing the engineering document control
   a before-state to diff and roll back to. Design: `docs/change-tracking-design-2026-09-24.md` §0.
   Read live list state from the mirror (and its `Columns` catalog for real column names) before asking the
   user for an export or a console run.
+- 🔴 **Archive active's `TableArchiveFRM10_12`, `TableArchiveFRM11` and `TableArchiveFRM13` must keep
+  their exact shape** (column names, order, types) and keep being fed (user, 2026-09-27). Other
+  workbooks read them: FRM11's purge reads FRM10-12's in two-letter `Location` codes, and the viewer
+  filters on it. Anything new in the archive is **added beside them**, never a change to them. A date
+  column turning to text counts as a shape break (the 09-27 incident). Plan:
+  `docs/archive-all-lists-design-2026-09-27.md` §6.
 - Binary Office files here are tracked via **Git LFS** — see `.gitattributes`.
 - This repo has no live workbook of its own — nothing here should be treated as a source of
   truth until it's actually built in SharePoint/Power Apps and confirmed against FRM10-12.
