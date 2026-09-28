@@ -70,6 +70,12 @@ function main(workbook: ExcelScript.Workbook) {
     // Enforcing the format here closes that loop instead of leaving it to be noticed later.
     enforceDateFormats(workbook);
 
+    // Turn date TEXT back into real dates ourselves, before the generic rewrite below. That
+    // rewrite only coerces ISO dates (see ISO_DATE_TEXT), so a refresh that hands back
+    // "2/20/2024 12:00:00 AM" or "9/24/2026" left them as text (2026-09-27: all 15 date
+    // columns of Archive FRM10-12). See convertDateTextToDates.
+    convertDateTextToDates(workbook, exclusionList);
+
     treateableWorksheets.forEach(treatableWorksheet => {
         treatableWorksheet.tables.forEach(treatableTable => {
             if (exclusionList.includes(treatableTable.tableName)) {
@@ -167,20 +173,40 @@ function getTableContents(
     return values.map(row => row[0]?.toString() ?? "");
 }
 
-// A type reevaluation can only ever change a cell holding TEXT that Excel would coerce to
-// some other type. Three shapes qualify, and all three occur in these workbooks:
+// A type reevaluation can only ever change a cell holding TEXT that a rewrite would coerce
+// to some other type. Which shapes those are is decided by the PARSER doing the coercion -
+// and setValues()/setFormulas() parse with the locale-invariant (en-US) rules, not the
+// workbook's. These workbooks run French (fr-CA), so those are not the same parser, and most
+// of what "looks coercible" to a French reader is inert to the one actually running.
 //
-//   numeric  "21930,34" (Price, 2,965 cells), "1 234.56", "74281.69 $"
-//   date     "2026-08-15" (Client Desired Date, 10 cells among 483 real dates)
-//   boolean  "VRAI" / "TRUE" (BO, mixed against 226 real booleans)
+// Narrowed 2026-09-03 (user decision) from a predicate that tested three broad shapes.
+// What survives - genuinely coerced by the invariant parser:
 //
-// Testing only for the numeric shape - as an earlier revision of this did - silently skips
-// the date-text and boolean-text columns, which are exactly the mixed-type cases this step
-// exists to fix. Everything failing all three tests is written back byte-identical, so
-// leaving those columns alone is safe by construction.
-const NUMERIC_TEXT = /^-?\d+(?:[.,]\d+)?$/;
-const DATE_TEXT = /^\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}$/;
-const BOOLEAN_TEXT = /^(true|false|vrai|faux)$/i;
+//   ISO date        "2026-08-15"    Excel accepts the ISO form in every locale.
+//   English boolean "TRUE"/"FALSE"  Excel's stored boolean literals are English.
+//
+// What was dropped, and why each is a no-op rather than a regression:
+//
+//   comma-decimal   "21930,34"      Invariant parsing wants "." as the decimal separator,
+//                                   so this stays text. It was the single biggest source of
+//                                   rewrites (Price, ~2,965 cells) and changed nothing.
+//   French boolean  "VRAI"/"FAUX"   Not boolean literals to the invariant parser.
+//   slash/dot date  "15/08/2026"    Invariant parsing reads m/d/y, so a fr-CA d/m/y value
+//                                   either fails (day > 12) or silently becomes the WRONG
+//                                   date. Excluding it is a correctness fix, not just a
+//                                   saving - the old DATE_TEXT matched these.
+//
+// Cost of the old breadth: ~51,200 archive cells rewritten per run that never change. Each
+// bulk write lands in a table that may be query-bound, which is the desync mechanism in
+// CONTEXT.md (2026-08-28) - so the breadth was buying risk, not safety.
+//
+// Deliberately still no numeric shape at all. A dot-decimal ("74281.69") WOULD coerce under
+// invariant parsing, but no column in these workbooks stores one: a scan of the viewer
+// workbook's 2,468 shared strings on 2026-09-03 found 25 comma-decimals and zero
+// dot-decimals, zero ISO-date text, and zero boolean text of either language. If a
+// dot-decimal column ever appears, add it here - do not widen the date or boolean tests.
+const ISO_DATE_TEXT = /^\d{4}-\d{1,2}-\d{1,2}$/;
+const ENGLISH_BOOLEAN_TEXT = /^(true|false)$/i;
 
 function isCoercibleText(value: string | number | boolean): boolean {
     if (typeof value !== "string") {
@@ -193,7 +219,7 @@ function isCoercibleText(value: string | number | boolean): boolean {
         return false;
     }
 
-    return NUMERIC_TEXT.test(stripped) || DATE_TEXT.test(stripped) || BOOLEAN_TEXT.test(stripped);
+    return ISO_DATE_TEXT.test(stripped) || ENGLISH_BOOLEAN_TEXT.test(stripped);
 }
 
 // Indexes of the columns worth rewriting. Restricting the write to these is
@@ -337,6 +363,180 @@ function enforceDateFormats(workbook: ExcelScript.Workbook) {
 
     if (fixed > 0) {
         console.log(`Re-asserted the date format on ${fixed} column(s).`);
+    }
+}
+
+// ---------------------------------------------------------------------------------------
+// Date text -> real dates, locale-proof.
+//
+// Found 2026-09-27. After a refresh, date columns can arrive as TEXT in two shapes:
+//   "2/20/2024 12:00:00 AM"   US month/day/year with a time: history rows re-read by the query
+//   "9/24/2026"               bare slash date: new rows from the FRM10-12 viewer
+// The generic rewrite coerces neither: ISO_DATE_TEXT is deliberately ISO-only, because
+// setValues() parses with the invariant (m/d/y) rules and a fr-CA d/m/y slash date would
+// silently become the WRONG date. That exclusion is right, and it must stay.
+//
+// So this parses the text itself, deciding month/day per column instead of assuming m/d/y,
+// and writes Excel serial numbers, which mean the same thing on every machine:
+//   ISO "2026-09-24" (optionally with a time)        -> year-month-day, never ambiguous
+//   "M/D/YYYY h:mm[:ss] AM|PM"                       -> month/day: AM/PM is the US signature
+//   bare "a/b/YYYY"                                  -> order decided PER COLUMN from its own
+//                                                       unambiguous values (a part above 12, or
+//                                                       an AM/PM value). A column that cannot
+//                                                       decide leaves those cells as text and
+//                                                       logs them. It never guesses.
+// Anything else (EC markers, free text, blanks, real dates) is left exactly as it was.
+//
+// Columns: DATE_COLUMNS plus any header containing "date" (the archive's French FRM11 columns,
+// "Last Synchronisation Date"), minus TEXT_COLUMNS_WITH_DATE_IN_NAME. Only date-SHAPED text is
+// ever rewritten, so the wider net cannot touch free text.
+const ISO_DATE_PARSE = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?Z?)?$/;
+const US_DATETIME_TEXT = /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2})(?::(\d{2}))? ?([AP]M)$/i;
+const BARE_SLASH_DATE_TEXT = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+
+function toSerial(y: number, m: number, d: number, hh: number, mm: number, ss: number): number | null {
+    if (m < 1 || m > 12 || d < 1 || d > 31 || hh > 23 || mm > 59 || ss > 59) {
+        return null;
+    }
+    const ms = Date.UTC(y, m - 1, d, hh, mm, ss);
+    const check = new Date(ms);
+    // Rejects 2/30 and the like, which Date.UTC would silently roll into March.
+    if (check.getUTCFullYear() !== y || check.getUTCMonth() !== m - 1 || check.getUTCDate() !== d) {
+        return null;
+    }
+    return ms / 86400000 + 25569;   // 25569 = serial of 1970-01-01 in Excel's 1900 system
+}
+
+function isDateColumnName(name: string): boolean {
+    if (TEXT_COLUMNS_WITH_DATE_IN_NAME.indexOf(name) !== -1) {
+        return false;
+    }
+    return DATE_COLUMNS.indexOf(name) !== -1 || name.toLowerCase().indexOf("date") !== -1;
+}
+
+// "MD" = month first, "DM" = day first, null = this column cannot tell.
+function slashOrderForColumn(values: (string | number | boolean)[]): string | null {
+    let md = 0;
+    let dm = 0;
+    for (const v of values) {
+        if (typeof v !== "string") {
+            continue;
+        }
+        const t = v.trim();
+        if (US_DATETIME_TEXT.test(t)) {
+            md++;
+            continue;
+        }
+        const b = BARE_SLASH_DATE_TEXT.exec(t);
+        if (b) {
+            const first = Number(b[1]);
+            const second = Number(b[2]);
+            if (first > 12 && second <= 12) {
+                dm++;
+            } else if (second > 12 && first <= 12) {
+                md++;
+            }
+        }
+    }
+    if (md > 0 && dm === 0) {
+        return "MD";
+    }
+    if (dm > 0 && md === 0) {
+        return "DM";
+    }
+    return null;
+}
+
+function parseDateText(v: string, order: string | null): number | null {
+    const t = v.trim();
+    let m = ISO_DATE_PARSE.exec(t);
+    if (m) {
+        return toSerial(Number(m[1]), Number(m[2]), Number(m[3]),
+            Number(m[4] || 0), Number(m[5] || 0), Number(m[6] || 0));
+    }
+    m = US_DATETIME_TEXT.exec(t);
+    if (m) {
+        let hh = Number(m[4]) % 12;
+        if (m[7].toUpperCase() === "PM") {
+            hh += 12;
+        }
+        return toSerial(Number(m[3]), Number(m[1]), Number(m[2]), hh, Number(m[5]), Number(m[6] || 0));
+    }
+    m = BARE_SLASH_DATE_TEXT.exec(t);
+    if (m && order) {
+        const a = Number(m[1]);
+        const b = Number(m[2]);
+        return order === "MD" ? toSerial(Number(m[3]), a, b, 0, 0, 0) : toSerial(Number(m[3]), b, a, 0, 0, 0);
+    }
+    return null;
+}
+
+function convertDateTextToDates(workbook: ExcelScript.Workbook, exclusionList: string[]) {
+    let convertedTotal = 0;
+
+    for (const table of workbook.getTables()) {
+        if (exclusionList.includes(table.getName())) {
+            continue;
+        }
+        const body = table.getRangeBetweenHeaderAndTotal();
+        if (body.getRowCount() === 0) {
+            continue;
+        }
+        const headers = table.getHeaderRowRange().getValues()[0];
+
+        headers.forEach((header, columnIndex) => {
+            const name = header === null ? "" : header.toString().trim();
+            if (name.length === 0 || !isDateColumnName(name)) {
+                return;
+            }
+
+            const columnRange = body.getColumn(columnIndex);
+            const grid = columnRange.getValues();
+            const flat = grid.map(r => r[0]);
+
+            // Cheap exit: nothing in this column is text at all.
+            if (!flat.some(v => typeof v === "string" && v.trim().length > 0)) {
+                return;
+            }
+
+            const order = slashOrderForColumn(flat);
+            let converted = 0;
+            let undecided = 0;
+            const out = grid.map(r => {
+                const v = r[0];
+                if (typeof v !== "string" || v.trim().length === 0) {
+                    return [v];
+                }
+                const serial = parseDateText(v, order);
+                if (serial === null) {
+                    if (BARE_SLASH_DATE_TEXT.test(v.trim())) {
+                        undecided++;
+                    }
+                    return [v];
+                }
+                converted++;
+                return [serial];
+            });
+
+            if (undecided > 0) {
+                console.log(`${table.getName()}.${name}: ${undecided} slash date(s) left as text - the column has no unambiguous value to tell month/day from day/month.`);
+            }
+            if (converted === 0) {
+                return;
+            }
+
+            withFiltersPreserved(table, () => {
+                columnRange.setValues(out);
+            });
+            // A converted column must display as a date, including ones outside DATE_COLUMNS.
+            columnRange.setNumberFormat(DATE_FORMAT);
+            convertedTotal += converted;
+            console.log(`${table.getName()}.${name}: ${converted} date text value(s) converted to dates.`);
+        });
+    }
+
+    if (convertedTotal > 0) {
+        console.log(`Converted ${convertedTotal} date text value(s) to real dates.`);
     }
 }
 

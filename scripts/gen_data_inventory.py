@@ -35,7 +35,7 @@ ROLE = {
 # Newest copy of each workbook that still matters. Older dated copies are skipped.
 WORKBOOKS = [
     ('FRM10-12 (staff version frozen at cutover)', 'Workflow-Automation/workbooks/FRM10-12 final staff version pre-archive *.xlsx'),
-    ('Archive active', 'Workflow-Automation/workbooks/Archive active.xlsx'),
+    ('Archive active', 'Workflow-Automation/workbooks/Archive active 2*.xlsx'),
     ('FRM11 - tank approval planning', 'Workflow-Automation/workbooks/PRO1.FRM11*.xlsx'),
     ('FRM13 - engineering / drawings', 'FRM10-12/linked-workbooks/PRO1.FRM13*.xlsx'),
     ('BO Manager', 'Workflow-Automation/workbooks/BO Manager*.xlsx'),
