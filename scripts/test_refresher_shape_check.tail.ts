@@ -41,5 +41,14 @@ const results = [
     run("extra unexpected column is reported", base(withBo.concat(["Surprise"])), true),
     run("text date is reported", base(PINNED_FRM10_12, true), true),
     run("missing FRM11 table is reported", { ...base(PINNED_FRM10_12), TableArchiveFRM11: undefined }, true),
+    run("legacy placeholders are NOT reported (EC, TBD, 2025-99-99, HOLD, pickup ...)", {
+        ...base(PINNED_FRM10_12),
+        TableArchiveFRM10_12: mockTable(PINNED_FRM10_12, ["EC", "TBD", "2025-99-99", "HOLD", "pickup 2025-01-06", "ANed"].map(p =>
+            PINNED_FRM10_12.map(h => isDateColumnName(h) ? p : "x"))),
+    }, false),
+    run("ISO date left as text is reported", base(PINNED_FRM10_12.slice()), false) && run("ISO text date reported", {
+        ...base(PINNED_FRM10_12),
+        TableArchiveFRM10_12: mockTable(PINNED_FRM10_12, [PINNED_FRM10_12.map(h => isDateColumnName(h) ? "2026-09-24" : "x")]),
+    }, true),
 ];
 realLog(results.every(x => x) ? "ALL PASS" : "SOME FAILED");

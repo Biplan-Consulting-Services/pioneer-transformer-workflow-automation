@@ -822,7 +822,10 @@ function checkLegacyShapes(workbook: ExcelScript.Workbook) {
             problems.push(`${e.name} header drift: ${describeDrift(headers, closest)}`);
         }
 
-        // Text left in a date column after the converter ran = a type break.
+        // A convertible DATE left as text after the converter ran = a type break (the 09-27
+        // incident). Legacy placeholders are real data and are NOT reported: "EC", "TBD", "HOLD",
+        // "2025-99-99", "pickup 2025-01-06"... Only text that parses as a valid date counts, plus
+        // slash dates the converter could not order (month/day undecided).
         const body = table.getRangeBetweenHeaderAndTotal();
         if (body.getRowCount() === 0) {
             continue;
@@ -836,7 +839,7 @@ function checkLegacyShapes(workbook: ExcelScript.Workbook) {
             let example = "";
             for (const row of values) {
                 const v = row[0];
-                if (typeof v === "string" && v.trim().length > 0 && v.trim().toUpperCase() !== "EC") {
+                if (typeof v === "string" && (parseDateText(v, "MD") !== null || BARE_SLASH_DATE_TEXT.test(v.trim()))) {
                     textCount++;
                     if (example === "") {
                         example = v;
