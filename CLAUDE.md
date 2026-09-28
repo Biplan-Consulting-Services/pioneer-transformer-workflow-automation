@@ -55,6 +55,17 @@ had — hence a dedicated place to plan it before touching production.
   python scripts/flow_version.py snapshot <export.zip> --note "what changed"
   ```
 
+  ### 🔴 Every connection in a paste file must be a solution connection reference
+
+  These flows live in a solution. A solution flow on a **plain** connection (`"source": "Embedded"`
+  with no `connectionReferenceLogicalName`) locks out the new designer: *"Uses a connection instead
+  of a connection reference (solution flows only)"*. It happened twice: the trigger flow after the
+  09 password reset, and Nightly Sync v003 on 2026-09-27, which carried v001's plain connections
+  straight through. **An export can hold plain connections even when the flow should not**, so never
+  copy `connectionReferences` from a pull as-is. Set each one's `connectionReferenceLogicalName`.
+  SharePoint's is `new_sharedsharepointonline_89e9a`. An Excel Online reference has to be created in
+  the solution first. Adding an action in the classic designer creates a plain connection, not a reference.
+
   ### Why it is a version system and not timestamped files
 
   **Two authors edit these flows**: the user in the Power Automate designer, and this repo by
