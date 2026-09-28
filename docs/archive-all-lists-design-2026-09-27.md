@@ -13,6 +13,7 @@ warnings.
 | A2 | **The archive reads SharePoint directly**, not through the FRM10-12 viewer. |
 | A3 | **The Excel archive stays the gate** for the Nightly Sync. It is the only place historical data lives, so a unit leaves Order Items only once the archive holds its final state. |
 | A4 | Office Scripts in production print failures and warnings only (done 09-27: `VERBOSE` switch in the refresher). |
+| **A5** | **`TableArchiveFRM10_12`, `TableArchiveFRM11` and `TableArchiveFRM13` keep exactly their current shape**, because everything that depends on them breaks otherwise. Everything in this design is **additive**: new tables beside them, never a change to them (§6). |
 | — | **Open: where BO lives** (§7). |
 
 ## 1. Why the current archive cannot do this
@@ -125,14 +126,44 @@ Cap 50, the dry-run switch and the summary stay as in v005. SA twins need no spe
 they are ordinary items with their own `Id`. A generator change (`gen_nightly_sync.py` → v006) plus
 mutation tests, the same way as v005.
 
-## 6. What happens to the existing archive tables
+## 6. The existing archive tables: same shape, still fed (A5)
 
-| table | source | after the switch |
+**Shape = the column names, their order, and each column's type** (a date stays a date: the 09-27
+text-date incident *was* a shape break). The new layer-1 and layer-2 tables are added beside these
+three. None of the three is renamed, reshaped, repointed or frozen.
+
+| table | fed from | rule |
 |---|---|---|
-| `TableArchiveFRM10_12` | viewer `TableOrders` | **Keep refreshing until its readers move**, then freeze as pre-cutover history. Readers: FRM11's `Rows to purge` (two-letter `Location` codes) and the viewer's own "already archived" filter. |
-| `TableArchiveBO` | BO Manager `TableBO` | depends on §7 |
-| `TableArchiveFRM11`, `TableArchiveFRM13` | their workbooks | unchanged. Those workbooks are still where the data lives. |
+| `TableArchiveFRM10_12` | viewer `TableOrders`, today | **Keeps its 93 columns exactly, and keeps receiving every unit.** Readers include FRM11's `Rows to purge` (two-letter `Location` codes), the viewer's "already archived" filter, and whatever else reads it through `Index`. **It is never frozen while anything reads it**: a frozen table stops FRM11 learning which tanks are done. |
+| `TableArchiveFRM11` | FRM11 `TableFournTank` | unchanged |
+| `TableArchiveFRM13` | FRM13 | unchanged |
+| `TableArchiveBO` | BO Manager `TableBO` | shape kept whatever §7 decides |
 | `Table3`, `Table4` | none (old imports) | untouched |
+
+**Two things this rules out, and one it requires:**
+
+- ❌ **No schema drift on the three legacy tables.** `AccumulateIntoLocal` is schema-adaptive: a column
+  the source gains is **added** to the archive. That is exactly right for the new tables and wrong
+  for these three. For them the column list is **pinned**: the accumulate step selects the pinned
+  columns in the pinned order, and **a source that has lost a pinned column fails the refresh loudly**
+  instead of padding it with nulls. The pinned lists are read from today's workbook, not typed by hand.
+- ❌ **No "freeze once readers move".** An earlier draft of this section proposed it. Withdrawn: A5 means
+  the readers do not move.
+- ✅ **The viewer-route fragility still has to go**, so `TableArchiveFRM10_12` gets a **legacy-shape
+  adapter** later: the same 93 columns, codes and types, built from `TableArchiveOrderItems` (same
+  mapping as the viewer: `LocationCodes`, `ColumnMap`, `Planned Delivery Date` → `Delivery Date`)
+  instead of from the viewer workbook. Its output must be **identical** to what the viewer route
+  produces for the same data, checked column by column on a copy before it replaces anything. Until
+  that check passes, the viewer route stays.
+
+**Measured across every saved copy (09-08 → 09-27 23:28):** names and counts never changed (FRM10-12
+93, FRM11 39, FRM13 55, BO 24). **FRM10-12's column order changed once, between 09-10 and 09-16**
+(cutover week), and has been identical since. The 09-27 incident broke **types** only. Pin tonight's
+23:28 copy as the reference shape.
+
+**A shape check runs on every refresh** (in the refresher script, failures only): the three legacy
+tables' headers must equal their pinned lists, and their date columns must hold no text. Otherwise
+the script reports which table and column, so it gets noticed the same day and not three weeks later.
 
 ## 7. BO: open decision
 
@@ -181,8 +212,11 @@ Each step is safe to stop after. The Nightly Sync stays **off** (or dry run) unt
 6. **Apply to the live Archive active**, same order, and refresh.
 7. **Nightly Sync v006** (§5): generate, test, dry run, compare its summary with the mirror, then enable
    deletes.
-8. **Repoint the readers of `TableArchiveFRM10_12`** (FRM11's purge, the viewer's filter), then freeze it.
-9. **Automate the refresh** (§8).
+8. **Pin the three legacy tables' shapes** and add the shape check (§6). This can happen any time,
+   and doing it early protects them during steps 5–6.
+9. **Legacy-shape adapter** for `TableArchiveFRM10_12` (§6): build it on a copy, prove its output
+   identical to the viewer route's, then swap the source. The table's shape never changes.
+10. **Automate the refresh** (§8).
 
 ## 10. Checks that must hold (and fail loudly if not)
 
@@ -201,5 +235,7 @@ Each step is safe to stop after. The Nightly Sync stays **off** (or dry run) unt
    checked by hand.
 3. **Document libraries:** leave them to SharePoint's own version history (proposed), or archive their
    metadata too?
-4. **FRM11's purge** reads `TableArchiveFRM10_12` in two-letter codes. Repoint it to
-   `TableArchiveOrderItems` (a small M change in FRM11), or keep `TableArchiveFRM10_12` running for it?
+4. ~~Repoint FRM11's purge?~~ Settled by A5: no. `TableArchiveFRM10_12` keeps its shape and keeps
+   being fed; only its source changes later, through the adapter (§6).
+5. **Who else reads the three legacy tables?** FRM11's purge and the viewer are known. Anything
+   else (Power BI, FRM09, FRM13, BO Manager) is worth listing, so the shape check guards all of them.
