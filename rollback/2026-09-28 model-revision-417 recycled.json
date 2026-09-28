@@ -1,0 +1,29 @@
+{
+  "what": "Model Revisions item 417 moved to the site recycle bin (recycle(), recoverable for 93 days) on 2026-09-28 at the user's request. It had no revision id, and no Order Items / Order / Models row referenced it (checked live over REST immediately before).",
+  "recycleBinId": "38ca92e8-597e-4ab8-b69e-5275ff79515e",
+  "recycledAt": "2026-09-28T05:01:27Z (01:01 Eastern), LeafName 417_.000",
+  "restore": "Site contents > Recycle bin > find the Model Revisions item (GUID below) > Restore. Or REST: _api/web/RecycleBin, find the item by LeafName/Id, then POST .../restore().",
+  "item": {
+    "Id": 417,
+    "GUID": "a90d48b0-822b-4204-b48f-7136c983a61a",
+    "Title": null,
+    "ModelID": null,
+    "ModelId": null,
+    "ClientId": 18,
+    "Client": "ENMAX",
+    "SpecID": "506-3T85-003",
+    "ModelName": "100311916",
+    "kVA_x0020_and_x0020_kV": 0,
+    "Model_x0020_Type": "NETWORK",
+    "Oil_x0020_Type": "None",
+    "Core_x0020_Type": "None",
+    "Phases": 3,
+    "AuthorId": 31,
+    "EditorId": 31,
+    "Author": "nharsan",
+    "Created": "2026-08-27T14:34:07Z",
+    "Modified": "2026-08-27T14:50:13Z",
+    "OData__UIVersionString": "2.0",
+    "all_other_fields": "null"
+  }
+}
