@@ -138,6 +138,12 @@ finally {
     [System.Runtime.InteropServices.Marshal]::ReleaseComObject($excel) | Out-Null
     [GC]::Collect(); [GC]::WaitForPendingFinalizers()
     Stop-Job $watchdog -ErrorAction SilentlyContinue; Receive-Job $watchdog -ErrorAction SilentlyContinue | Write-Host
+    # Quit() does not always end the process (COM references still held). Never leave a hidden Excel
+    # behind: five orphans (~2.2 GB) starved memory on 2026-09-28. Only OUR instance is stopped.
+    if ($excelPid -and (Get-Process -Id $excelPid -ErrorAction SilentlyContinue)) {
+        Start-Sleep -Milliseconds 500
+        if (Get-Process -Id $excelPid -ErrorAction SilentlyContinue) { Stop-Process -Id $excelPid -Force -ErrorAction SilentlyContinue }
+    }
     Remove-Job $watchdog -Force -ErrorAction SilentlyContinue
 }
 
