@@ -110,8 +110,11 @@ the pinned 111, viewer agreement and the vocabulary copies.
 
 - **Types: "cleaner" is not always possible.** Values the archive already holds would turn into
   errors under a real type, so these columns stay **text** (the map's `datetext`/`numtext`):
-  - date columns 60, 65–71, 73, 74, 76, BO1–BO3 Date. History holds `EC`, `ANed` (22 on Tanking
-    Date), `.`/`HOLD`, `FALSE` (613 on Original Tanking Date), `pickup 2025-01-06`, `TBD`. Dates in
+  - date columns 60, 65–71, 73, 74, 76, 89, BO1–BO3 Date. History holds `EC`, `ANed` (22 on Tanking
+    Date), `.`/`HOLD`, `FALSE` (613 on Original Tanking Date), `pickup 2025-01-06`, `TBD`, and the
+    placeholder `2025-99-99` (10 on 89 Client Desired Date). The first real Excel evaluation
+    (2026-09-28) found that one. The checker had missed it until its date test started rejecting
+    impossible dates. Dates in
     them are written ISO `yyyy-MM-dd`, and the refresher's step 8 turns those into real dates, the same
     end state as today.
   - number columns 3, 47, 50, 56, 58 (`24.9 kV`, `hq`, `WC`, `100-104`, `Inconnu`). Numbers are
@@ -119,7 +122,7 @@ the pinned 111, viewer agreement and the vocabulary copies.
   - 43 CSA (above).
 
   Real types stay where every archived value converts: dates 11, 13, 25, 72 (the Nightly Sync gate
-  column), 89, 93. Numbers 4–6, 12, 14, 20, 78–80. Logical BO1–BO3 OK. `check_frm1012_map.py --base`
+  column), 93. Numbers 4–6, 12, 14, 20, 78–80. Logical BO1–BO3 OK. `check_frm1012_map.py --base`
   re-proves this against the 09-27 archive.
 - **BO rule (D2), three sources, not two.** The first non-blank of: the Order Items field,
   then `TableArchiveBO`'s value, then **the archive's own previous value**. Blank means null, "",

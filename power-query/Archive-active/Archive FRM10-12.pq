@@ -8,6 +8,10 @@
 //   ArchiveTyped (A) -> ArchiveFrm1012Joined -> ArchiveFrm1012Source (built by
 //   ArchiveFrm1012Map) -> AccumulateIntoLocal -> PIN to the map's 111 columns -> TYPE
 //
+// LOUD, never silent (review C): the local archive unreadable, a row dropped by
+// AccumulateIntoLocal's Table.Distinct, or any cell error each FAIL the refresh, which leaves
+// the table as it was. See the guards after `Source` and at the end.
+//
 // PINNED SHAPE. AccumulateIntoLocal is schema-adaptive (it appends any column it has not
 // seen); this table must not be. After accumulating, exactly the map's TargetColumns are
 // selected in map order, and a missing one is an ERROR, never a null column. The 111 are
@@ -60,7 +64,32 @@ let
     Pinned = Map[TargetColumn],
 
     Source = ArchiveFrm1012Source,
-    Accumulated = AccumulateIntoLocal(Source, "TableArchiveFRM10_12", "Order"),
+    LocalName = "TableArchiveFRM10_12",
+
+    // --- guards around AccumulateIntoLocal (review C, 2026-09-28) ---
+    // 1. The archive must be READABLE. AccumulateIntoLocal reads it inside `try ... otherwise
+    //    null`, so a failed read (privacy/firewall error, renamed table) would silently rebuild
+    //    the archive from SharePoint alone and drop every unit already deleted there, which is
+    //    exactly what the Nightly Sync's gate looks for. This table is never recreated, so it
+    //    is read here first, without `try`: a failure fails the refresh.
+    Local = if List.Contains(Excel.CurrentWorkbook()[Name], LocalName)
+            then Excel.CurrentWorkbook(){[Name = LocalName]}[Content]
+            else error Error.Record("ArchiveFRM10_12.NoLocalTable",
+                     LocalName & " not found in this workbook: refusing to rebuild the archive from SharePoint alone."),
+    LocalKeys = List.Buffer(List.Transform(Table.Column(Local, "Order"), each if _ = null then null else Text.From(_, "en-US"))),
+    SentKeyList = List.Buffer(Table.Column(Source, "Order")),
+    // 2. No row may be DROPPED. AccumulateIntoLocal ends in Table.Distinct on Order, which drops
+    //    rows silently (two blank-Order rows collapse into one; a hand-made duplicate vanishes).
+    //    Expected = every unit SharePoint sends + every local row whose Order it no longer sends.
+    Expected = List.Count(SentKeyList) + List.Count(List.RemoveItems(LocalKeys, SentKeyList)),
+    Accumulated0 = Table.Buffer(AccumulateIntoLocal(Source, LocalName, "Order")),
+    Accumulated =
+        if Table.RowCount(Accumulated0) = Expected then Accumulated0
+        else error Error.Record("ArchiveFRM10_12.RowsDropped",
+            LocalName & ": expected " & Text.From(Expected) & " rows (SharePoint " & Text.From(List.Count(SentKeyList))
+                & " + kept " & Text.From(Expected - List.Count(SentKeyList)) & "), got " & Text.From(Table.RowCount(Accumulated0))
+                & ". A duplicate or blank Order in the archive collapsed in AccumulateIntoLocal's Table.Distinct.",
+            [Expected = Expected, Got = Table.RowCount(Accumulated0)]),
 
     // --- D2 backfill for rows SharePoint no longer sends ---
     // ArchiveFrm1012Source already applied the BO rule to every unit still on SharePoint. The
@@ -71,30 +100,31 @@ let
     // non-blank, else the archive's existing value.
     BOColumns = Table.SelectRows(Map, each [Rule] = "bo")[TargetColumn],
     IsBlank = (v as any) as logical => v = null or v = false or (v is text and Text.Trim(v) = ""),
-    SentKeys = Table.Buffer(Table.RenameColumns(Table.SelectColumns(Source, {"Order"}), {{"Order", "__SentOrder"}})),
-    WithLocalBO = Table.NestedJoin(Accumulated, {"Order"}, Table.PrefixColumns(ArchiveLocalBO, "__BO"), {"__BO.Order"}, "__BO", JoinKind.LeftOuter),
-    WithSent = Table.NestedJoin(WithLocalBO, {"Order"}, SentKeys, {"__SentOrder"}, "__Sent", JoinKind.LeftOuter),
-    Flagged = Table.AddColumn(
-        Table.AddColumn(WithSent, "__IsSent", each not Table.IsEmpty([__Sent]), type logical),
-        "__BORow", each if Table.IsEmpty([__BO]) then null else [__BO]{0}),
-    Backfilled = List.Accumulate(
-        BOColumns,
-        Flagged,
-        (t, c) => Table.ReplaceValue(
-            t,
-            each Record.Field(_, c),
-            each
-                let
-                    cur = Record.Field(_, c),
-                    arc = if [__BORow] = null then null else Record.Field([__BORow], "__BO." & c)
-                in
-                    if [__IsSent] then cur                 // already ruled in ArchiveFrm1012Source
-                    else if not IsBlank(arc) then arc
-                    else if cur <> null then cur
-                    else arc,                              // keeps a TableArchiveBO false over null
-            Replacer.ReplaceValue,
-            {c})),
-    BackfillDone = Table.RemoveColumns(Backfilled, {"__BO", "__Sent", "__IsSent", "__BORow"}),
+    // Performance (2026-09-28, first real evaluation ~126 s): this used to be two
+    // Table.NestedJoin + 19 chained Table.ReplaceValue passes that read the nested tables per row.
+    // A nested-join table read row by row is a lazy filter of the right-hand table, so every pass
+    // re-scanned it. Now it's ONE pass with record "dictionaries" (O(1) field lookup): the sent keys
+    // and TableArchiveBO keyed by Order. Both key sets are unique (ArchiveFrm1012Joined and
+    // ArchiveLocalTable error on duplicates), which Record.FromList requires.
+    // Same rule per BO column for a row SharePoint no longer sends:
+    //   TableArchiveBO's value if non-blank, else the row's own value if not null, else
+    //   TableArchiveBO's (a TableArchiveBO false beats null).
+    // Rows SharePoint still sends were already ruled in ArchiveFrm1012Source, so they pass through
+    // untouched. So do rows TableArchiveBO does not know.
+    SentSet = Record.FromList(List.Repeat({true}, List.Count(SentKeyList)), SentKeyList),
+    BOByOrder = Record.FromList(Table.ToRecords(ArchiveLocalBO), Table.Column(ArchiveLocalBO, "Order")),
+    FillRow = (r as record) as record =>
+        let
+            k = r[Order],
+            bo = if k = null or Record.HasFields(SentSet, k) then null else Record.FieldOrDefault(BOByOrder, k, null)
+        in
+            if bo = null then r
+            else r & Record.FromList(
+                List.Transform(BOColumns, (c) =>
+                    let cur = Record.Field(r, c), arc = Record.Field(bo, c)
+                    in  if not IsBlank(arc) then arc else if cur <> null then cur else arc),
+                BOColumns),
+    BackfillDone = Table.FromRecords(Table.TransformRows(Accumulated, FillRow), Table.ColumnNames(Accumulated)),
 
     // --- pin ---
     Missing = List.Difference(Pinned, Table.ColumnNames(BackfillDone)),
@@ -107,9 +137,7 @@ let
             [Missing = Missing]),
 
     // --- normalise values to the map Type ---
-    Iso = (d as date) as text =>
-        Text.From(Date.Year(d)) & "-" & Text.PadStart(Text.From(Date.Month(d)), 2, "0")
-            & "-" & Text.PadStart(Text.From(Date.Day(d)), 2, "0"),
+    Iso = (d as date) as text => Date.ToText(d, [Format = "yyyy-MM-dd", Culture = "en-US"]),
 
     Bad = (col as text, want as text, v as any) =>
         error Error.Record("ArchiveFRM10_12.BadValue",
@@ -158,7 +186,7 @@ let
             (let t = Text.Trim(v)
              in  if t = "" then null
                  else if Text.Middle(t, 4, 1) = "-" then
-                     (try (let p = Text.Split(Text.BeforeDelimiter(Text.BeforeDelimiter(t, "T"), " "), "-") in #date(Number.From(p{0}), Number.From(p{1}), Number.From(p{2})))
+                     (try (let p = Text.Split(Text.BeforeDelimiter(Text.BeforeDelimiter(t, "T"), " "), "-") in #date(Number.FromText(p{0}, "en-US"), Number.FromText(p{1}, "en-US"), Number.FromText(p{2}, "en-US")))
                       otherwise Bad(col, "date", v))
                  else (try DateTime.Date(DateTime.FromText(t, "en-US")) otherwise Bad(col, "date", v)))   // "9/24/2026 12:00:00 AM"
         else Bad(col, "date", v),
@@ -192,6 +220,66 @@ let
     Normalised = Table.TransformColumns(PinChecked, List.Transform(MapRows, each {[TargetColumn], Converter(_), MType([Type])})),
 
     // --- declare the types (the Data Model takes these, not `any`) ---
-    Typed = Table.TransformColumnTypes(Normalised, List.Transform(MapRows, each {[TargetColumn], MType([Type])}))
+    // Values are already converted above, so the culture only makes the step culture-free
+    // on paper (the workbook runs fr-CA).
+    // Buffered once. The guards below read it, and so does the load. The Data Model load may
+    // evaluate the query more than once, so this keeps the checks from re-running everything
+    // upstream. If Table.Buffer ever raises on a cell error instead of keeping it, that is the
+    // same BadValue message, still loud.
+    Typed = Table.Buffer(Table.TransformColumnTypes(Normalised, List.Transform(MapRows, each {[TargetColumn], MType([Type])}), "en-US")),
+
+    // --- a cell error fails the refresh (review C) ---
+    // Excel loads a cell-level error as an EMPTY cell and still reports success, so the
+    // BadValue errors above would reach the Nightly Sync as silent blanks. Same rule as
+    // ArchiveList: any cell error fails the whole refresh, naming the first bad unit, column
+    // and message; the table keeps its previous contents.
+    ErrRows = Table.SelectRowsWithErrors(Typed),
+
+    // --- only primitive values reach the Data Model (2026-09-28) ---
+    // The Data Model load failed once with "Column '134217730' is too large for this instance
+    // of Analysis Services". Each column may hold only null / text / number / date / logical,
+    // with text short enough for an Excel cell (32,767 chars; the table is shown on a sheet).
+    // Anything else (a list, record, table, binary, function, datetime, datetimezone, time)
+    // fails the refresh, naming the column, the first Order and the value's kind. Runs only
+    // once the table has no cell errors, because reading an error cell would raise it.
+    KindOf = (v as any) as text =>
+        if v is list then "list" else if v is record then "record" else if v is table then "table"
+        else if v is binary then "binary" else if v is function then "function"
+        else if v is datetimezone then "datetimezone" else if v is datetime then "datetime"
+        else if v is time then "time" else if v is duration then "duration" else "other",
+    MaxText = 32767,
+    IsPrimitive = (v as any) as logical =>
+        v = null or v is number or v is logical or (v is date and not (v is datetime))
+        or (v is text and Text.Length(v) <= MaxText),
+    PrimCheck = (t as table) as table =>
+        let
+            BadCol = List.First(List.Select(Table.ColumnNames(t), (c) => not List.AllTrue(List.Transform(Table.Column(t, c), IsPrimitive))), null),
+            Detail = if BadCol = null then null else
+                let
+                    rows = Table.SelectRows(t, (r) => not IsPrimitive(Record.Field(r, BadCol))),
+                    v = Record.Field(rows{0}, BadCol),
+                    kind = if v is text then "text of " & Text.From(Text.Length(v), "en-US") & " chars" else KindOf(v)
+                in
+                    [Order = rows{0}[Order], Kind = kind, Count = Table.RowCount(rows)]
+        in
+            if BadCol = null then t
+            else error Error.Record("ArchiveFRM10_12.NonPrimitive",
+                LocalName & ": column " & BadCol & " holds " & Text.From(Detail[Count], "en-US") & " non-primitive value(s); first Order "
+                    & (try Text.From(Detail[Order], "en-US") otherwise "?") & " (" & Detail[Kind] & "). Only null/text/number/date/logical may reach the Data Model.",
+                [Column = BadCol, Order = Detail[Order], Kind = Detail[Kind]]),
+
+    Out =
+        if Table.IsEmpty(ErrRows) then PrimCheck(Typed)
+        else
+            let
+                First = Table.First(ErrRows),
+                BadCols = List.Select(Table.ColumnNames(ErrRows), (c) => (try Record.Field(First, c))[HasError]),
+                Probe = if List.IsEmpty(BadCols) then null else try Record.Field(First, BadCols{0}),
+                MsgText = if Probe <> null and Probe[HasError] then Probe[Error][Message] else "?",
+                OrderTxt = try Text.From(Record.Field(First, "Order"), "en-US") otherwise "?"
+            in
+                error Error.Record("ArchiveFRM10_12.CellErrors",
+                    LocalName & ": " & Text.From(Table.RowCount(ErrRows)) & " row(s) with cell errors; first Order "
+                        & OrderTxt & ", column(s) " & Text.Combine(List.FirstN(BadCols, 10), ", ") & ": " & MsgText)
 in
-    Typed
+    Out

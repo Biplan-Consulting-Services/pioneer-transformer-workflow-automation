@@ -299,21 +299,70 @@ def checks(data):
 
 
 # ---------------------------------------------------------------- --base: archived values fit the Types
-ISO = re.compile(r"^\d{4}-\d{1,2}-\d{1,2}([T ].*)?$")
-US = re.compile(r"^\d{1,2}/\d{1,2}/\d{4}( .*)?$")
-NUM = re.compile(r"^-?\d+([.,]\d+)?$")
+INT_PART = re.compile(r"^[+-]?\d+$")
+US_DT = re.compile(r"^(\d{1,2})/(\d{1,2})/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([AaPp][Mm]))?)?$")
+NUM = re.compile(r"^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$")
+
+
+def _valid_date(y, m, d):
+    try:
+        datetime.date(y, m, d)
+        return True
+    except ValueError:
+        return False
+
+
+def _m_date_text(t):
+    """`AsDate`'s text branch, exactly: an ISO-looking text (5th char "-") is split on "-" after
+    cutting at "T" then " ", and its first three parts must make a REAL #date (month 99 or
+    Feb 30 is an error in M, so it is rejected here). Anything else goes to
+    DateTime.FromText(t, "en-US"); only its m/d/yyyy [h:mm[:ss] [AM|PM]] form is accepted here,
+    which is stricter than M (a false alarm, never a false pass)."""
+    if len(t) > 4 and t[4] == "-":
+        p = t.split("T", 1)[0].split(" ", 1)[0].split("-")
+        if len(p) < 3 or not all(INT_PART.match(x) for x in p[:3]):
+            return False
+        return _valid_date(int(p[0]), int(p[1]), int(p[2]))
+    m = US_DT.match(t)
+    if not m:
+        return False
+    mo, d, y, hh, mi, ss, ap = m.groups()
+    if not _valid_date(int(y), int(mo), int(d)):
+        return False
+    if hh is not None:
+        h = int(hh)
+        if (ap and not 1 <= h <= 12) or (not ap and h > 23) or int(mi) > 59 or (ss and int(ss) > 59):
+            return False
+    return True
 
 
 def converts(v, typ):
-    """Mirror of the M normalisers in `Archive FRM10-12` for the real types."""
-    if v is None or (isinstance(v, str) and v.strip() == "") or typ not in STRICT_TYPES:
+    """Mirror of the M normalisers AsDate / AsNumber / AsLogical in `Archive FRM10-12`.
+    True = the value becomes a value of that type (or null); False = M raises BadValue, which
+    fails the whole refresh (ArchiveFRM10_12.CellErrors). Mirror M's `is` tests: a Python bool is
+    an M logical, never a number or a date."""
+    if v is None or typ not in STRICT_TYPES:
+        return True
+    if isinstance(v, str) and v.strip() == "":
         return True
     if typ == "date":
-        return isinstance(v, (datetime.date, datetime.datetime)) or (
-            isinstance(v, (int, float)) and not isinstance(v, bool)) or (
-            isinstance(v, str) and bool(ISO.match(v.strip()) or US.match(v.strip())))
+        if isinstance(v, bool):
+            return False
+        if isinstance(v, (datetime.date, datetime.datetime)):
+            return True
+        if isinstance(v, (int, float)):
+            return -657434 <= v <= 2958465          # Date.From(serial): OADate range
+        if isinstance(v, str):
+            return _m_date_text(v.strip())
+        return False
     if typ == "number":
-        return (isinstance(v, (int, float)) and not isinstance(v, bool)) or (isinstance(v, str) and bool(NUM.match(v.strip())))
+        if isinstance(v, bool):
+            return False
+        if isinstance(v, (int, float)):
+            return True
+        if isinstance(v, str):
+            return bool(NUM.match(v.strip().replace(",", ".")))
+        return False
     if typ == "logical":
         return isinstance(v, bool) or (isinstance(v, str) and v.strip().upper() in ("TRUE", "FALSE"))
     return True

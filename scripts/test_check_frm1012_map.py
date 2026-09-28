@@ -89,6 +89,28 @@ if BASEVALS:
     expect_abort("Tanking Date typed date ('ANed' history)", lambda d: row(d, "Tanking Date").update(Type="date"), base=True)
     expect_abort("KVA typed number ('24.9 kV' history)", lambda d: row(d, "KVA and KV").update(Type="number"), base=True)
     expect_abort("CSA typed logical ('x' history)", lambda d: row(d, "CSA").update(Type="logical"), base=True)
+    # 2026-09-28: the first real Excel run failed on this; the old ISO regex accepted month 99
+    expect_abort("Client Desired Date typed date ('2025-99-99')", lambda d: row(d, "Client Desired Date").update(Type="date"), base=True)
+
+# converts() must mirror M's AsDate / AsNumber / AsLogical exactly (True = M converts it)
+import datetime  # noqa: E402
+CASES = [
+    ("date", "2025-99-99", False), ("date", "2025-02-30", False), ("date", "2025-13-01", False),
+    ("date", "2026-09-24", True), ("date", "2026-09-24T04:00:00Z", True), ("date", "2026-09-24 00:00:00", True),
+    ("date", "9/24/2026 12:00:00 AM", True), ("date", "9/24/2026", True), ("date", "13/24/2026", False),
+    ("date", "9/31/2026", False), ("date", "EC", False), ("date", "pickup 2025-01-06", False),
+    ("date", True, False), ("date", 46000, True), ("date", datetime.datetime(2026, 9, 24), True),
+    ("date", "  ", True), ("date", None, True),
+    ("number", "24,9", True), ("number", "24.9 kV", False), ("number", True, False), ("number", 3, True),
+    ("number", "1.234.5", False),
+    ("logical", "TRUE", True), ("logical", " false ", True), ("logical", "x", False), ("logical", 1, False),
+]
+for typ, v, want in CASES:
+    got = C.converts(v, typ)
+    if got != want:
+        fails.append("converts(%r, %s)" % (v, typ))
+        print("  FAIL converts(%r, %s) = %s, M gives %s" % (v, typ, got, want))
+print("  ok   %-52s" % ("converts() mirrors M on %d cases" % len(CASES)) if not any(f.startswith("converts") for f in fails) else "")
 
 # the parser must refuse a record it cannot read, not skip it
 try:

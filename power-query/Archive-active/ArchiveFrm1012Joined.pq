@@ -70,12 +70,14 @@ let
             Table.PrefixColumns(Picked, list),
 
     // --- the row source: Order Items, keyed on Title ---
-    UnitsRaw = Fetch("Order Items"),
+    // Buffered: enumerated by the duplicate check, the joins and the row-count check; unbuffered,
+    // each pass re-runs ArchiveTyped's typing of Order Items (no HTTP, CPU only).
+    UnitsRaw = Table.Buffer(Fetch("Order Items")),
     Key = "Order Items." & KeyField,
     Units = Table.SelectRows(UnitsRaw, each Record.Field(_, Key) <> null and Text.Trim(Text.From(Record.Field(_, Key))) <> ""),
     DupUnits = Table.SelectRows(Table.Group(Units, {Key}, {{"n", Table.RowCount, Int64.Type}}), each [n] > 1),
     UnitsChecked =
-        if Table.IsEmpty(DupUnits) then Table.TransformColumns(Units, {{Key, Text.From, type text}})
+        if Table.IsEmpty(DupUnits) then Table.TransformColumns(Units, {{Key, each Text.From(_, "en-US"), type text}})
         else error Error.Record(
             "ArchiveFrm1012Joined.DuplicateOrder",
             "Order Items has " & Text.From(Table.RowCount(DupUnits)) & " duplicate Unit ID (Title) value(s): "
@@ -97,12 +99,15 @@ let
     WithPrevious = Table.Join(WithBO, Key, Table.PrefixColumns(ArchiveFrm1012Previous, "Previous"), "Previous.Order", JoinKind.LeftOuter),
 
     // A parent Id or local key matching twice would multiply units; never let that pass.
+    // Buffer first, then count the buffer: counting the unbuffered join and buffering it
+    // afterwards would run every join twice.
+    Result = Table.Buffer(WithPrevious),
     Checked =
-        if Table.RowCount(WithPrevious) = Table.RowCount(UnitsChecked) then WithPrevious
+        if Table.RowCount(Result) = Table.RowCount(UnitsChecked) then Result
         else error Error.Record(
             "ArchiveFrm1012Joined.RowCountChanged",
             "Joining Order Items to its parents changed the row count from " & Text.From(Table.RowCount(UnitsChecked))
-                & " to " & Text.From(Table.RowCount(WithPrevious)) & ": a parent Id or local key is duplicated.",
+                & " to " & Text.From(Table.RowCount(Result)) & ": a parent Id or local key is duplicated.",
             null)
 in
-    Table.Buffer(Checked)
+    Checked

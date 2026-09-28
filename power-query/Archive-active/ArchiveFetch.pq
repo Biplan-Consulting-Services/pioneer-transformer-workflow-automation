@@ -12,9 +12,11 @@
 //
 // Each field is a record FIELD, so it is evaluated lazily and at most ONCE per evaluation: a
 // refresh of `Archive Order` reads Order plus the lists its lookups point at, and each of those
-// exactly once, however many lookups reuse it. (Excel evaluates each loaded table separately,
-// so refreshing five tables = up to five evaluations; Power Query's own web cache may serve the
-// repeats.)
+// exactly once, however many lookups reuse it. Excel evaluates each LOADED table separately, and
+// nothing here is shared between those evaluations: refreshing the six tables (five lists +
+// Archive FRM10-12) reads SharePoint six times over, 43 GETs in all (docs/archive-pq-review-
+// 2026-09-28.md has the count per table). Any reuse by Power Query's own cache is a bonus, not
+// something to rely on (Apply-ArchivePowerQuery.ps1 refreshes one table at a time).
 //
 // Never SharePoint.Tables: it shifts date-only values a day early (CLAUDE.md, 2026-09-24).
 let

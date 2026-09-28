@@ -43,7 +43,7 @@
 //   text, number, date, logical  the real type. Chosen only where EVERY value already in
 //                 the archive converts (checked by check_frm1012_map.py --base).
 //   datetext      a date column whose history also holds non-dates ("EC", "ANed", ".", FALSE,
-//                 "pickup 2025-01-06"...). Loaded as text, dates written ISO yyyy-MM-dd, which
+//                 "pickup 2025-01-06", the placeholder "2025-99-99"...). Loaded as text, dates written ISO yyyy-MM-dd, which
 //                 the refresher's step 8 (convertDateTextToDates) turns into real dates, the
 //                 same end state as today. Typing these as date would error those cells.
 //   numtext       a number column whose history also holds text ("24.9 kV", "100-104",
@@ -145,7 +145,7 @@ let
         [Position = 86, TargetColumn = "Planning Notes", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "text", Basis = "legacy"],
         [Position = 87, TargetColumn = "Production Complexity", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "text", Basis = "legacy"],
         [Position = 88, TargetColumn = "__PowerAppsId__", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "text", Basis = "legacy"],
-        [Position = 89, TargetColumn = "Client Desired Date", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "date", Basis = "legacy"],
+        [Position = 89, TargetColumn = "Client Desired Date", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "datetext", Basis = "legacy"],
         [Position = 90, TargetColumn = "FI", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "text", Basis = "legacy"],
         [Position = 91, TargetColumn = "Stack", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "text", Basis = "legacy"],
         [Position = 92, TargetColumn = "Production Status", SourceList = "legacy", SourceField = "legacy", Rule = "legacy", Arg = null, Type = "text", Basis = "legacy"],

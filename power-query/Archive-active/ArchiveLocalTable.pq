@@ -7,6 +7,11 @@
 //
 // - The table not existing is NORMAL (TableArchiveBO is removed after one verified cycle;
 //   a first build has no archive yet): it returns an empty table with the same columns.
+// - A table that EXISTS but cannot be read is an ERROR, never an empty table (review C,
+//   2026-09-28). Existence is tested by name first and the read has no `try`: a `try ...
+//   otherwise` here would turn a failed read (a privacy/firewall error, a broken table) into
+//   "no previous values", which silently nulls every legacy column and drops the BO history
+//   of every unit still on SharePoint. Same rule as ArchiveList.
 // - A column the table lacks comes back null (MissingField.UseNull). The BO detail columns
 //   do not exist in TableArchiveFRM10_12 until its first refresh with them.
 // - Rows with a null/"" key are dropped here: they cannot be matched to anything.
@@ -17,10 +22,10 @@ let
     ArchiveLocalTable = (TableName as text, Key as text, Columns as list) as table =>
     let
         Wanted = List.Combine({{Key}, List.RemoveItems(Columns, {Key})}),
-        Found = try Excel.CurrentWorkbook(){[Name = TableName]}[Content] otherwise null,
-        Raw = if Found = null then #table(Wanted, {}) else Found,
+        Exists = List.Contains(Excel.CurrentWorkbook()[Name], TableName),
+        Raw = if Exists then Excel.CurrentWorkbook(){[Name = TableName]}[Content] else #table(Wanted, {}),
         Selected = Table.SelectColumns(Raw, Wanted, MissingField.UseNull),
-        Keyed = Table.TransformColumns(Selected, {{Key, each if _ = null then null else Text.From(_), type nullable text}}),
+        Keyed = Table.TransformColumns(Selected, {{Key, each if _ = null then null else Text.From(_, "en-US"), type nullable text}}),
         NonBlank = Table.SelectRows(Keyed, each Record.Field(_, Key) <> null and Record.Field(_, Key) <> ""),
         DupKeys = Table.Column(
             Table.SelectRows(Table.Group(NonBlank, {Key}, {{"n", Table.RowCount, Int64.Type}}), each [n] > 1),

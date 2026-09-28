@@ -90,7 +90,10 @@ let
     // ---- 3. nested values -> JSON text (multi-choice arrays, multi-lookup id arrays, URL records)
     AsJson   = (v) => if Value.Is(v, type list) or Value.Is(v, type record)
                       then Text.FromBinary(Json.FromValue(v)) else v,
-    Flat     = Table.TransformColumns(WithPeople, List.Transform(Table.ColumnNames(WithPeople), each {_, AsJson})),
+    // Buffered (review C, perf only): Infer below reads one column of Flat per inferred column,
+    // and the typing step reads it again. Unbuffered, each read re-ran steps 1-3 (lookups,
+    // people, JSON) over the whole list.
+    Flat     = Table.Buffer(Table.TransformColumns(WithPeople, List.Transform(Table.ColumnNames(WithPeople), each {_, AsJson}))),
 
     // ---- 4. the kind of each column, from the live catalog
     KindOfCol = (c as record) as text =>

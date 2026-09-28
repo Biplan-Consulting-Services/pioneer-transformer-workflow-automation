@@ -43,7 +43,7 @@ let
         else if v is datetimezone then DateTime.Date(DateTimeZone.RemoveZone(v))
         else if v is text then
             (let p = Text.Split(Text.BeforeDelimiter(Text.BeforeDelimiter(Text.Trim(v), "T"), " "), "-")
-             in  #date(Number.From(p{0}), Number.From(p{1}), Number.From(p{2})))
+             in  #date(Number.FromText(p{0}, "en-US"), Number.FromText(p{1}, "en-US"), Number.FromText(p{2}, "en-US")))
         else error Error.Record("ArchiveFrm1012Source.NotADate", "Not a date", v),
 
     MultiChoice = (v as any) as any =>
@@ -100,11 +100,11 @@ let
                 (let
                     step = if args{0} = null then null else Record.FieldOrDefault(StepMap, Text.From(args{0}), null),
                     when = ToDate(args{1}),
-                    mon = if when = null then null else Record.FieldOrDefault(MonthMap, Text.From(Date.Month(when)), null)
+                    mon = if when = null then null else Record.FieldOrDefault(MonthMap, Text.From(Date.Month(when), "en-US"), null)
                 in
                     // A stale stamp beats a silently blanked one (viewer TableOrders.pq).
                     if step = null or mon = null then args{2}
-                    else step & "-" & mon & "-" & Text.From(Date.Day(when)))
+                    else step & "-" & mon & "-" & Text.From(Date.Day(when), "en-US"))
             else if rule = "ingdue" then
                 (try Date.AddDays(ToDate(if args{0} <> null then args{0} else args{1}), -1 * ((args{2} + 4) * 7)) otherwise null)
             else if rule = "navorder" then
@@ -122,6 +122,9 @@ let
         in
             Record.FieldValues(Record.SelectFields(full, OutputNames)),
 
-    Rows = Table.FromRows(List.Transform(Table.ToRecords(Units), BuildRow), OutputNames)
+    // Buffered: `Archive FRM10-12` enumerates this table several times (AccumulateIntoLocal's
+    // anti-join and its stamp step, the sent-keys list, the row-count guard). Unbuffered, each
+    // pass would re-run BuildRow's 111 rules over every unit (no HTTP, but ~3x the CPU).
+    Rows = Table.Buffer(Table.FromRows(List.Transform(Table.ToRecords(Units), BuildRow), OutputNames))
 in
     Rows
