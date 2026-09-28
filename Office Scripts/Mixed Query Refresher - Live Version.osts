@@ -86,6 +86,9 @@ function main(workbook: ExcelScript.Workbook) {
     // columns of Archive FRM10-12). See convertDateTextToDates.
     convertDateTextToDates(workbook, exclusionList);
 
+    // Report (never fix) any drift in the three tables other workbooks read. Failures only.
+    checkLegacyShapes(workbook);
+
     treateableWorksheets.forEach(treatableWorksheet => {
         treatableWorksheet.tables.forEach(treatableTable => {
             if (exclusionList.includes(treatableTable.tableName)) {
@@ -547,6 +550,307 @@ function convertDateTextToDates(workbook: ExcelScript.Workbook, exclusionList: s
 
     if (convertedTotal > 0) {
         debug(`Converted ${convertedTotal} date text value(s) to real dates.`);
+    }
+}
+
+// ---------------------------------------------------------------------------------------
+// Legacy archive shapes (decision A5, docs/archive-all-lists-design-2026-09-27.md section 6).
+//
+// FRM11's purge, FRM13, the FRM10-12 viewer, Power BI and the Nightly Sync flow read these three
+// tables by column NAME, and FRM11 matches whole rows against TableArchiveFRM11. So their headers
+// are pinned: same names, same order. A date column holding text also counts as a shape break
+// (the 2026-09-27 incident). This check only REPORTS; it cannot block a save (the script saves
+// nothing and Excel Online autosaves). Blocking a bad shape is done in the M queries.
+//
+// Pinned from the 2026-09-27 23:56 copy. TableArchiveFRM10_12 may also carry the 18 BO detail
+// columns appended after its 93 (decision D2): both shapes pass, anything else is reported.
+const PINNED_FRM10_12 = [
+    "Order",
+    "Client",
+    "KVA and KV",
+    "Primary Voltage",
+    "Secondary Voltage",
+    "Phases",
+    "JS #",
+    "Description",
+    "Type",
+    "PO",
+    "Order Date",
+    "Lead Time",
+    "Ing. Due Date",
+    "Qty",
+    "PO Item #",
+    "Family",
+    "Duplicate",
+    "Engineering Required",
+    "Duplicate Order",
+    "Price",
+    "Province/State",
+    "WET-WETP",
+    "Indexing",
+    "LDs",
+    "Initial Promised Date",
+    "Trimestrial Customer",
+    "Client Date Status",
+    "Info+",
+    "Protector Status",
+    "Protector & Switchgear PO",
+    "Protector & Switchgear Item #",
+    "Sales Notes",
+    "Technical Notes",
+    "Location",
+    "Status",
+    "Witness/Other",
+    "Temperature Rise",
+    "Impulse",
+    "DB",
+    "Partial D",
+    "Oil Analysis",
+    "SFRA",
+    "CSA",
+    "Core",
+    "Core Status",
+    "Oil Type",
+    "Oil Amount",
+    "Production Line",
+    "Configuration",
+    "Section Qty",
+    "Cable",
+    "Coil Winder",
+    "Form",
+    "Copper (LV)",
+    "Wire (HV)",
+    "Overcoil",
+    "Winder",
+    "Time (days)",
+    "Tank",
+    "Tank Delivery Date",
+    "Frame",
+    "ISO Stack",
+    "ISO Coil",
+    "Lead Assembly",
+    "Coiling Date",
+    "Stacking Date",
+    "Assembly Date",
+    "Drying Date",
+    "Tanking Date",
+    "Testing Date",
+    "Finishing Date",
+    "Delivery Date",
+    "Original Tanking Date",
+    "Estimated Delivery Date",
+    "Tanking date change justification",
+    "Manual Estimated Delivery Date",
+    "BO",
+    "Price Value",
+    "Price CAD",
+    "Price USD",
+    "Navigation Order",
+    "Navigation Model",
+    "Archived",
+    "Lot",
+    "Tanking Date Status",
+    "Planning Notes",
+    "Production Complexity",
+    "__PowerAppsId__",
+    "Client Desired Date",
+    "FI",
+    "Stack",
+    "Production Status",
+    "Last Synchronisation Date",
+];
+const PINNED_FRM10_12_BO = [
+    "BO1 Part Numbre",
+    "BO1 Description",
+    "BO1 PO Intern",
+    "BO1 Date",
+    "BO1 Fournisseur Interne",
+    "BO1 OK",
+    "BO2 Part Numbre",
+    "BO2 Description",
+    "BO2 PO Intern",
+    "BO2 Date",
+    "BO2 Fournisseur Interne",
+    "BO2 OK",
+    "BO3 Part Numbre",
+    "BO3 Description",
+    "BO3 PO Intern",
+    "BO3 Date",
+    "BO3 Fournisseur Interne",
+    "BO3 OK",
+];
+const PINNED_FRM11 = [
+    "NUMÉRO DE CUVE",
+    "Type",
+    "CLIENT",
+    "Fournisseur CUVE",
+    "Fournisseur Peinture",
+    "Original Tanking Date",
+    "Date encuvage",
+    "Date Livraison client",
+    "Status",
+    "Date requise Peinture",
+    "Date Requise Pioneer",
+    "RAD Shipping Date to Paint",
+    "RAD Return Date",
+    "B-WALL Shipping Date to Paint",
+    "B-WALL Return Date",
+    "Date d'expédition Peinture",
+    "Tank Supplier Status",
+    "Paint Supplier Status",
+    "Commentaires",
+    "Tanking date change justification",
+    "Original Required Tank Delivery Date",
+    "Original Required Paint Date",
+    "CLIENT, TYPE TRANSFO, SIZE",
+    "DUP ou # Client",
+    "In Archive",
+    "Date Added",
+    "Date requise CUVE",
+    "CCuve ?",
+    "CUVE P.O.",
+    "P.O. Peinture",
+    "DATE RAD & B.WALL",
+    "DATE EXP CUVE",
+    "Code cuve",
+    "Code peinture",
+    "Sort Key 1",
+    "Sort Key 2",
+    "location",
+    "In FRM10_12",
+    "Last Synchronisation Date",
+];
+const PINNED_FRM13 = [
+    "Order",
+    "Qty",
+    "PO Item #",
+    "Model Status",
+    "KVA and KV",
+    "Type",
+    "Manual Priority",
+    "Priority",
+    "Ing Due Date (Tank -LT appro - 4 wks)",
+    "Client",
+    "Order Date",
+    "Duplicate",
+    "Engineering Required",
+    "Stack Core",
+    "Designer O",
+    "Designer F",
+    "Promised Date of DWG Issue",
+    "Special Promised date (date or code)",
+    "Prelim. DWG Progr.",
+    "DWG Intern. Verif.",
+    "Prelim. DWG Issued (date)",
+    "Client Comments Due Date (date)",
+    "Need to Resub. DWG?",
+    "General Arrang. DWG Approved (date)",
+    "Fab. DWG Progr.",
+    "DWG Intern. Verif. 2",
+    "Fab. DWG Issued (date)",
+    "TQC Progress",
+    "Initial Promised Date",
+    "Lead time",
+    "Estimated Effort Left",
+    "Client Desired Date",
+    "Tanking Date",
+    "Fournisseur CUVE",
+    "Comments",
+    "Root Cause",
+    "Action Plan",
+    "Location",
+    "Job State",
+    "Lead time (Weeks)",
+    "Tank Manufacturer",
+    "TCQ Progress",
+    "Last Synchronisation Date",
+    "Parts Status Change Date",
+    "Engineering Required Change Date",
+    "Designer O Chande Date",
+    "Designer F Chande Date",
+    "Prelim. DWG Progr. Chande Date",
+    "DWG Intern. Verif. Chande Date",
+    "Fab. DWG Progr. Chande Date",
+    "DWG Intern. Verif. 2 Chande Date",
+    "TCQ Progress Chande Date",
+    "Need to Resub. DWG? Change Date",
+    "Fab. DWG Issued (date) Change Date",
+    "Job State Change Date",
+];
+
+function sameList(a: string[], b: string[]): boolean {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+function describeDrift(actual: string[], pinned: string[]): string {
+    const missing = pinned.filter(c => actual.indexOf(c) === -1);
+    const extra = actual.filter(c => pinned.indexOf(c) === -1);
+    const parts: string[] = [];
+    if (missing.length > 0) {
+        parts.push(`missing: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "..." : ""}`);
+    }
+    if (extra.length > 0) {
+        parts.push(`unexpected: ${extra.slice(0, 5).join(", ")}${extra.length > 5 ? "..." : ""}`);
+    }
+    if (parts.length === 0) {
+        const at = actual.findIndex((v, i) => v !== pinned[i]);
+        parts.push(`column order changed at position ${at + 1} ("${actual[at]}" where "${pinned[at]}" is expected)`);
+    }
+    return parts.join("; ");
+}
+
+function checkLegacyShapes(workbook: ExcelScript.Workbook) {
+    const problems: string[] = [];
+    const expected: { name: string, shapes: string[][] }[] = [
+        { name: "TableArchiveFRM10_12", shapes: [PINNED_FRM10_12, PINNED_FRM10_12.concat(PINNED_FRM10_12_BO)] },
+        { name: "TableArchiveFRM11", shapes: [PINNED_FRM11] },
+        { name: "TableArchiveFRM13", shapes: [PINNED_FRM13] },
+    ];
+
+    for (const e of expected) {
+        const table = workbook.getTable(e.name);
+        if (!table) {
+            problems.push(`${e.name} is missing`);
+            continue;
+        }
+        const headers = (table.getHeaderRowRange().getValues()[0] as (string | number | boolean)[])
+            .map(h => h === null ? "" : h.toString());
+        if (!e.shapes.some(shape => sameList(headers, shape))) {
+            // Describe against the closest pinned shape, so a 93-column drift doesn't also list the 18 BO columns.
+            const closest = e.shapes.reduce((a, b) =>
+                Math.abs(b.length - headers.length) < Math.abs(a.length - headers.length) ? b : a);
+            problems.push(`${e.name} header drift: ${describeDrift(headers, closest)}`);
+        }
+
+        // Text left in a date column after the converter ran = a type break.
+        const body = table.getRangeBetweenHeaderAndTotal();
+        if (body.getRowCount() === 0) {
+            continue;
+        }
+        headers.forEach((name, columnIndex) => {
+            if (!isDateColumnName(name)) {
+                return;
+            }
+            const values = body.getColumn(columnIndex).getValues();
+            let textCount = 0;
+            let example = "";
+            for (const row of values) {
+                const v = row[0];
+                if (typeof v === "string" && v.trim().length > 0 && v.trim().toUpperCase() !== "EC") {
+                    textCount++;
+                    if (example === "") {
+                        example = v;
+                    }
+                }
+            }
+            if (textCount > 0) {
+                problems.push(`${e.name}.${name}: ${textCount} text value(s) in a date column, e.g. "${example}"`);
+            }
+        });
+    }
+
+    if (problems.length > 0) {
+        console.log(`LEGACY ARCHIVE SHAPE CHECK FAILED (${problems.length}):\n  ` + problems.join("\n  "));
     }
 }
 
