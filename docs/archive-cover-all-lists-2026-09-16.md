@@ -1,5 +1,11 @@
 # Covering every list in the Excel archive
 
+> 🔴 **Superseded for applying, 2026-09-27: read
+> [`archive-all-lists-design-2026-09-27.md`](archive-all-lists-design-2026-09-27.md) first.** The
+> accumulate logic and the first-refresh warnings below still hold. But `TrackRemoteList` as authored
+> reads through `SharePoint.Tables`, which shifts date-only values a day early (2026-09-24). It also
+> keys Order Items on `Title`, and it covers only 8 named lists. **Do not apply it as written.**
+
 **Decided 2026-09-16: archiving stays in Excel for now.** The SharePoint-side redesign in
 [`archiving-architecture-2026-09-16.md`](archiving-architecture-2026-09-16.md) is parked, not
 withdrawn. This document is the narrow job that remains: **make `Archive active.xlsx` cover

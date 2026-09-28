@@ -6,6 +6,16 @@ const TOTAL_STEPS = 11;
 const REFRESH_TIMEOUT_SECONDS = 600;
 const REFRESH_POLL_SECONDS = 5;
 
+// Live runs print failures and warnings only. Set VERBOSE to true while debugging to also
+// see the per-column progress lines (date formats restored, date text converted, ...).
+const VERBOSE = false;
+
+function debug(message: string) {
+    if (VERBOSE) {
+        console.log(message);
+    }
+}
+
 interface Features {
     conserveFormulas: boolean;
     conserveUniqueFormats: boolean;
@@ -140,7 +150,7 @@ function reevaluateDesignatedFormulas(workbook: ExcelScript.Workbook) {
         const column = table.getColumnByName(columnName);
         const range = column.getRangeBetweenHeaderAndTotal();
 
-        console.log(`Reevaling ${columnName} from ${tableName}`);
+        debug(`Reevaling ${columnName} from ${tableName}`);
 
         range.replaceAll("=", "==", {
             completeMatch: false,
@@ -357,12 +367,12 @@ function enforceDateFormats(workbook: ExcelScript.Workbook) {
             // Local variant would expect "aaaa-mm-jj" and silently mangle it.
             columnRange.setNumberFormat(DATE_FORMAT);
             fixed++;
-            console.log(`Date format restored on ${table.getName()}.${name} (was "${current}")`);
+            debug(`Date format restored on ${table.getName()}.${name} (was "${current}")`);
         });
     }
 
     if (fixed > 0) {
-        console.log(`Re-asserted the date format on ${fixed} column(s).`);
+        debug(`Re-asserted the date format on ${fixed} column(s).`);
     }
 }
 
@@ -531,12 +541,12 @@ function convertDateTextToDates(workbook: ExcelScript.Workbook, exclusionList: s
             // A converted column must display as a date, including ones outside DATE_COLUMNS.
             columnRange.setNumberFormat(DATE_FORMAT);
             convertedTotal += converted;
-            console.log(`${table.getName()}.${name}: ${converted} date text value(s) converted to dates.`);
+            debug(`${table.getName()}.${name}: ${converted} date text value(s) converted to dates.`);
         });
     }
 
     if (convertedTotal > 0) {
-        console.log(`Converted ${convertedTotal} date text value(s) to real dates.`);
+        debug(`Converted ${convertedTotal} date text value(s) to real dates.`);
     }
 }
 
@@ -846,5 +856,5 @@ function refreshQueriesAndWaitForCompletion(workbook: ExcelScript.Workbook, stat
             sleep(REFRESH_POLL_SECONDS);
         }
     }
-    console.log("Finished Refreshing All Queries")
+    debug("Finished Refreshing All Queries");
 }

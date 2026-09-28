@@ -1,5 +1,10 @@
 // Query: TrackRemoteList
 //
+// 🔴 DO NOT APPLY AS WRITTEN (2026-09-27). SharePoint.Tables below shifts date-only values one
+// day early (found 2026-09-24), so this would archive every date-only column a day early,
+// silently and permanently. To be rewritten on the SharePoint mirror's REST reader (SP_Mirror)
+// and keyed on Id: docs/archive-all-lists-design-2026-09-27.md.
+//
 // The SharePoint-list sibling of TrackRemoteTable. Same accumulate semantics, same
 // archive table shape; the ONLY difference is where the source rows come from.
 //
