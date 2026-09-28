@@ -166,6 +166,28 @@
       },
       "appliedAt": "2026-09-24T21:11:07-04:00",
       "source": "trigger-v008.json"
+    },
+    {
+      "v": 9,
+      "captured": "2026-09-28T14:08:11-04:00",
+      "state": "local",
+      "parent": 8,
+      "note": "moving a unit out of Livraison sets Delivered back to Active (option C, user 2026-09-28); step status untouched",
+      "sha256": "8c1e47e18f26c4c8e4fd7fb8417cae949901b6dfd369660ce35005d5e0b54c07",
+      "connBinding": {
+        "shared_sharepointonline": "new_sharedsharepointonline_89e9a"
+      },
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 7,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v009__2026-09-28T14-08__local__moving-a-unit-out-of-Livraison-sets-Delivered-ba.json"
+      },
+      "appliedAt": null,
+      "source": "trigger-v009.json"
     }
   ],
   "identity": {
