@@ -1,0 +1,14 @@
+{
+  "what": "Strip the trailing line break from Models 503's ModelID (M-FIEN-0004) and from the two unmaintained _TextField copies on Order 468 and Order Items 579",
+  "when": "2026-09-28, mirror refreshed 17:34Z right before",
+  "site": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+  "undo": [
+    {"list": "Models", "id": 503, "field": "ModelID", "before": "M-FIEN-0004\n", "after": "M-FIEN-0004"},
+    {"list": "Order", "id": 468, "field": "Model_ID_TextField", "before": "M-FIEN-0004\n", "after": "M-FIEN-0004"},
+    {"list": "Order Items", "id": 579, "field": "Model_ID_TextField", "before": "M-FIEN-0004\n", "after": "M-FIEN-0004"}
+  ],
+  "left_to_the_sync_flows": [
+    {"list": "Order Items", "id": 579, "field": "MdlModelID", "before": "M-FIEN-0004\n"},
+    {"list": "Order Items", "id": 579, "field": "RevPioneerModelCode", "before": "M-FIEN-0004\n"}
+  ]
+}
