@@ -1,0 +1,87 @@
+{
+  "$schema": "https://power-automate-tools.local/flow-editor.json#",
+  "connectionReferences": {
+    "shared_sharepointonline": {
+      "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4913/sharepointonline/icon.png",
+      "brandColor": "",
+      "tier": "Standard",
+      "apiName": "sharepointonline",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    },
+    "shared_excelonlinebusiness": {
+      "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
+      "connectionReferenceLogicalName": "new_sharedexcelonlinebusiness_452b5",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+      "displayName": "Excel Online (Business)",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1826/1.0.1826.4868/excelonlinebusiness/icon.png",
+      "brandColor": "#107C41",
+      "tier": "Standard",
+      "apiName": "excelonlinebusiness",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    }
+  },
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      },
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_an_item_is_created_or_modified": {
+        "recurrence": {
+          "interval": 1,
+          "frequency": "Minute"
+        },
+        "splitOn": "@triggerOutputs()?['body/value']",
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "b43a5140-0f9d-4ac1-9019-43b897074224"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "operationId": "GetOnUpdatedItems",
+            "connectionName": "shared_sharepointonline"
+          }
+        }
+      }
+    },
+    "actions": {
+      "List_rows_present_in_a_table": {
+        "runAfter": {},
+        "metadata": {
+          "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR": "/General/FAB/Archive/Archive active.xlsx"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "source": "sites/ermcopower.sharepoint.com,88b9ed6c-d686-4bbe-b445-4e753ad511f6,7f8472f6-8a89-4591-a116-98a1783e6bcc",
+            "drive": "b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64",
+            "file": "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR",
+            "table": "{17014A43-5D94-47C6-982F-45D962DA4036}"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+            "operationId": "GetItems",
+            "connectionName": "shared_excelonlinebusiness"
+          }
+        }
+      }
+    },
+    "outputs": {}
+  }
+}

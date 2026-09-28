@@ -52,7 +52,9 @@ OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Syn
 # and the four N3 flows use. Excel's must be created in the solution first; pass its logical name:
 #     python scripts/gen_nightly_sync.py --excel-ref new_sharedexcelonlinebusiness_xxxxx
 CONNREF_NAMES = {"shared_sharepointonline": "new_sharedsharepointonline_89e9a",
-                 "shared_excelonlinebusiness": None}
+                 # created 2026-09-27 22:1x by adding an Excel action to a test instant flow in the
+                 # solution in the NEW designer (evidence: _inbox/_archive/*TEST-instant-flow*)
+                 "shared_excelonlinebusiness": "new_sharedexcelonlinebusiness_452b5"}
 
 CAP = 50            # N2: at most this many deletions in one night; more = delete nothing, report
 DELETE_ENABLED = False

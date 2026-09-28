@@ -215,6 +215,41 @@ def content_sha(doc):
     ).hexdigest()
 
 
+def conn_binding(doc):
+    """{connection key: solution reference logical name, or "PLAIN"}, or None when the document
+    carries no connectionReferences (a bare definition paste).
+
+    Added 2026-09-27. The sha covers the definition alone, so a version that changes ONLY how its
+    connections are bound hashed identical to its parent: Nightly Sync v005 (v003's logic moved
+    onto solution references) was refused as "identical to v003 -- nothing to author". Yet the
+    binding is behaviour: a solution flow on a PLAIN connection locks out the new designer. So
+    two versions are the same only when the sha AND the binding agree (where both are known), and
+    a pull confirms a paste only if the references landed too.
+    """
+    props = doc.get("properties", doc) if isinstance(doc, dict) else {}
+    cr = props.get("connectionReferences")
+    if not isinstance(cr, dict):
+        return None
+    return {k: (v or {}).get("connectionReferenceLogicalName") or "PLAIN" for k, v in sorted(cr.items())}
+
+
+def version_binding(flow, v):
+    if "connBinding" in v:
+        return v["connBinding"]
+    fp = os.path.join(flow_dir(flow), (v.get("files") or {}).get("definition", ""))
+    if not os.path.isfile(fp):
+        return None
+    with io.open(fp, encoding="utf-8-sig") as f:
+        return conn_binding(json.load(f))
+
+
+def same_version(flow, v, sha, binding):
+    if v["sha256"] != sha:
+        return False
+    other = version_binding(flow, v)
+    return binding is None or other is None or other == binding
+
+
 def write_actions(doc):
     d = definition(doc)
     try:
@@ -421,7 +456,8 @@ def cmd_snapshot(a):
     if not a.local:
         check_identity(h, doc, a.flow)
 
-    same = [v for v in h["versions"] if v["sha256"] == sha]
+    binding = conn_binding(doc)
+    same = [v for v in h["versions"] if same_version(a.flow, v, sha, binding)]
     if same and not a.local:
         # A pull that matches something we already have. If it matches a local
         # version, that is PROOF the paste landed.
@@ -519,7 +555,7 @@ def cmd_snapshot(a):
         files["package"] = stem + ".zip"      # the zip is what re-imports; the json does not
 
     rec = {"v": n, "captured": captured, "state": "local" if a.local else "pulled",
-           "parent": parent, "note": a.note or "", "sha256": sha,
+           "parent": parent, "note": a.note or "", "sha256": sha, "connBinding": binding,
            "fingerprint": fp, "files": files,
            "appliedAt": None if a.local else captured,
            "source": os.path.basename(a.src)}
@@ -616,7 +652,11 @@ def cmd_stage(a):
     os.makedirs(alt, exist_ok=True)
     for old_alt in glob.glob(os.path.join(alt, "*.json")):
         os.remove(old_alt)
-    others = {"definition-only.json": definition(doc)}
+    # A definition-only paste leaves whatever connections the flow has now. When the version
+    # carries its own bindings that silently undoes them (2026-09-27: v005's whole point was
+    # moving onto solution references), so the shape is only offered for binding-less versions.
+    binding = conn_binding(doc)
+    others = {} if binding else {"definition-only.json": definition(doc)}
     if editor_wrapper:
         others["definition-plus-connections.json"] = {
             k: doc[k] for k in ("definition", "connectionReferences") if k in doc}
@@ -633,11 +673,18 @@ def cmd_stage(a):
     L = ["# Paste this back", "",
          "## \u2192 `PASTE-ME.json`", "",
          "**v%03d \u2014 %s**" % (v["v"], v.get("note", "")), "",
-         "That is the file. It is the export's `properties` object \u2014 the shape the",
-         "extension accepted for v004 \u2014 and `connectionReferences` inside it is carried",
-         "through unchanged from what is live, so pasting it never rebinds a connection.", "",
-         "`alternate-shapes/` holds the same version in three other shapes. Ignore it unless",
-         "the editor rejects the file above; then try `definition-only.json` first.", ""]
+         "That is the file, in the shape the extension takes. It includes the connection",
+         "bindings below, and pasting it applies them.", ""]
+    if binding:
+        L += ["| connection | bound to |", "|---|---|"]
+        L += ["| `%s` | %s |" % (k, "**PLAIN connection** \u26a0\ufe0f blocks the new designer on a solution flow"
+                                 if r == "PLAIN" else "`%s`" % r) for k, r in binding.items()]
+        L += ["", "`alternate-shapes/` holds the same version in other shapes, **all with these bindings**.",
+              "There is deliberately no definition-only shape: it would keep the flow's current",
+              "connections instead of these.", ""]
+    else:
+        L += ["`alternate-shapes/` holds the same version in other shapes. Ignore it unless",
+              "the editor rejects the file above; then try `definition-only.json` first.", ""]
     L += ["## After pasting, check these in the editor", "",
           "| | before | after |", "|---|---|---|"]
     for k, label in (("CreateOrderItem", "`CreateOrderItem` item/* fields"),

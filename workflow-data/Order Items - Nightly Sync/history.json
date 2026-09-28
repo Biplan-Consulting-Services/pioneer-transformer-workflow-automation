@@ -84,6 +84,29 @@
       },
       "appliedAt": "2026-09-27T21:55:13-04:00",
       "source": "extract.json"
+    },
+    {
+      "v": 5,
+      "captured": "2026-09-27T22:20:42-04:00",
+      "state": "local",
+      "parent": 4,
+      "note": "v005: v003 logic unchanged, both connections on solution references (SharePoint new_sharedsharepointonline_89e9a, Excel new_sharedexcelonlinebusiness_452b5); drops the user's test Excel action",
+      "sha256": "fb80ecf2cf430ddadc1942aefe970a709cae35ca9fbcca2dd89ef4cb4c4b13b8",
+      "connBinding": {
+        "shared_excelonlinebusiness": "new_sharedexcelonlinebusiness_452b5",
+        "shared_sharepointonline": "new_sharedsharepointonline_89e9a"
+      },
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 19,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v005__2026-09-27T22-20__local__v005-v003-logic-unchanged-both-connections-on-so.json"
+      },
+      "appliedAt": null,
+      "source": "Order_Items_Nightly_Sync_v005.json"
     }
   ],
   "identity": {
