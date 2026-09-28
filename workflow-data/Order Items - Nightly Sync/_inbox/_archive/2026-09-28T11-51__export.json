@@ -1,4 +1,31 @@
 {
+  "$schema": "https://power-automate-tools.local/flow-editor.json#",
+  "connectionReferences": {
+    "shared_sharepointonline": {
+      "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4913/sharepointonline/icon.png",
+      "brandColor": "",
+      "tier": "Standard",
+      "apiName": "sharepointonline",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    },
+    "shared_excelonlinebusiness": {
+      "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
+      "connectionReferenceLogicalName": "new_sharedexcelonlinebusiness_452b5",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+      "displayName": "Excel Online (Business)",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1826/1.0.1826.4868/excelonlinebusiness/icon.png",
+      "brandColor": "#107C41",
+      "tier": "Standard",
+      "apiName": "excelonlinebusiness",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    }
+  },
   "definition": {
     "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
     "contentVersion": "undefined",
@@ -14,7 +41,6 @@
     },
     "triggers": {
       "Every_night_at_01_30_Eastern": {
-        "type": "Recurrence",
         "recurrence": {
           "frequency": "Day",
           "interval": 1,
@@ -27,7 +53,8 @@
               30
             ]
           }
-        }
+        },
+        "type": "Recurrence"
       }
     },
     "actions": {
@@ -42,6 +69,11 @@
         }
       },
       "B1_Get_stall_candidates": {
+        "runAfter": {
+          "Settings": [
+            "Succeeded"
+          ]
+        },
         "type": "OpenApiConnection",
         "inputs": {
           "parameters": {
@@ -52,19 +84,14 @@
           },
           "host": {
             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-            "connectionName": "shared_sharepointonline",
-            "operationId": "GetItems"
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
           }
         },
         "runtimeConfiguration": {
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
-        "runAfter": {
-          "Settings": [
-            "Succeeded"
-          ]
         }
       },
       "B2_Where_TODAY_is_the_answer": {
@@ -80,18 +107,7 @@
         }
       },
       "B3_Touch_each_stalled_unit": {
-        "runAfter": {
-          "B2_Where_TODAY_is_the_answer": [
-            "Succeeded"
-          ]
-        },
-        "type": "Foreach",
         "foreach": "@body('B2_Where_TODAY_is_the_answer')",
-        "runtimeConfiguration": {
-          "concurrency": {
-            "repetitions": 10
-          }
-        },
         "actions": {
           "B4_Write_Calc_Refreshed": {
             "type": "OpenApiConnection",
@@ -104,15 +120,32 @@
               },
               "host": {
                 "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                "connectionName": "shared_sharepointonline",
-                "operationId": "PatchItem"
+                "operationId": "PatchItem",
+                "connectionName": "shared_sharepointonline"
               }
-            },
-            "runAfter": {}
+            }
+          }
+        },
+        "runAfter": {
+          "B2_Where_TODAY_is_the_answer": [
+            "Succeeded"
+          ]
+        },
+        "type": "Foreach",
+        "runtimeConfiguration": {
+          "concurrency": {
+            "repetitions": 10
           }
         }
       },
       "C1_Get_Livraison_candidates": {
+        "runAfter": {
+          "B3_Touch_each_stalled_unit": [
+            "Succeeded",
+            "Failed",
+            "Skipped"
+          ]
+        },
         "type": "OpenApiConnection",
         "inputs": {
           "parameters": {
@@ -123,24 +156,22 @@
           },
           "host": {
             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-            "connectionName": "shared_sharepointonline",
-            "operationId": "GetItems"
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
           }
         },
         "runtimeConfiguration": {
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
-        "runAfter": {
-          "B3_Touch_each_stalled_unit": [
-            "Succeeded",
-            "Failed",
-            "Skipped"
-          ]
         }
       },
       "C1b_Get_all_units": {
+        "runAfter": {
+          "C1_Get_Livraison_candidates": [
+            "Succeeded"
+          ]
+        },
         "type": "OpenApiConnection",
         "inputs": {
           "parameters": {
@@ -150,19 +181,14 @@
           },
           "host": {
             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-            "connectionName": "shared_sharepointonline",
-            "operationId": "GetItems"
+            "operationId": "GetItems",
+            "connectionName": "shared_sharepointonline"
           }
         },
         "runtimeConfiguration": {
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
-        "runAfter": {
-          "C1_Get_Livraison_candidates": [
-            "Succeeded"
-          ]
         }
       },
       "C1c_All_titles": {
@@ -184,7 +210,8 @@
           ]
         },
         "metadata": {
-          "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR": "/General/FAB/Archive/Archive active.xlsx"
+          "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR": "/General/FAB/Archive/Archive active.xlsx",
+          "tableId": "TableArchiveFRM10_12"
         },
         "type": "OpenApiConnection",
         "inputs": {
@@ -280,46 +307,23 @@
         }
       },
       "C5_Cap_guard": {
+        "actions": {
+          "C5a_Cap_exceeded_nothing_deleted": {
+            "type": "Compose",
+            "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_both'))), ' candidates > cap ', string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the Excel read and the mirror.')"
+          }
+        },
         "runAfter": {
           "C4d_Excel_done_no_unit_row": [
             "Succeeded"
           ]
         },
-        "type": "If",
-        "expression": {
-          "greater": [
-            "@length(body('C4_Confirmed_by_both'))",
-            "@outputs('Settings')?['Cap']"
-          ]
-        },
-        "actions": {
-          "C5a_Cap_exceeded_nothing_deleted": {
-            "runAfter": {},
-            "type": "Compose",
-            "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_both'))), ' candidates > cap ', string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the Excel read and the mirror.')"
-          }
-        },
         "else": {
           "actions": {
             "C6_For_each_confirmed": {
-              "runAfter": {},
-              "type": "Foreach",
               "foreach": "@body('C4_Confirmed_by_both')",
-              "runtimeConfiguration": {
-                "concurrency": {
-                  "repetitions": 10
-                }
-              },
               "actions": {
                 "C6a_Delete_enabled": {
-                  "runAfter": {},
-                  "type": "If",
-                  "expression": {
-                    "equals": [
-                      "@outputs('Settings')?['DeleteEnabled']",
-                      true
-                    ]
-                  },
                   "actions": {
                     "C6b_Delete_item": {
                       "type": "OpenApiConnection",
@@ -331,27 +335,45 @@
                         },
                         "host": {
                           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                          "connectionName": "shared_sharepointonline",
-                          "operationId": "DeleteItem"
+                          "operationId": "DeleteItem",
+                          "connectionName": "shared_sharepointonline"
                         }
-                      },
-                      "runAfter": {}
+                      }
                     }
                   },
                   "else": {
                     "actions": {
                       "C6c_Would_delete": {
-                        "runAfter": {},
                         "type": "Compose",
                         "inputs": "@concat('would delete ', items('C6_For_each_confirmed')?['Title'])"
                       }
                     }
-                  }
+                  },
+                  "expression": {
+                    "equals": [
+                      "@outputs('Settings')?['DeleteEnabled']",
+                      true
+                    ]
+                  },
+                  "type": "If"
+                }
+              },
+              "type": "Foreach",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 10
                 }
               }
             }
           }
-        }
+        },
+        "expression": {
+          "greater": [
+            "@length(body('C4_Confirmed_by_both'))",
+            "@outputs('Settings')?['Cap']"
+          ]
+        },
+        "type": "If"
       },
       "C7_Summary": {
         "runAfter": {
@@ -417,26 +439,6 @@
           "select": "@item()?['Title']"
         }
       }
-    }
-  },
-  "connectionReferences": {
-    "shared_sharepointonline": {
-      "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
-      "source": "Embedded",
-      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-      "tier": "NotSpecified",
-      "apiName": "sharepointonline",
-      "isProcessSimpleApiReferenceConversionAlreadyDone": false,
-      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a"
-    },
-    "shared_excelonlinebusiness": {
-      "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
-      "source": "Embedded",
-      "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
-      "tier": "NotSpecified",
-      "apiName": "excelonlinebusiness",
-      "isProcessSimpleApiReferenceConversionAlreadyDone": false,
-      "connectionReferenceLogicalName": "new_sharedexcelonlinebusiness_452b5"
     }
   }
 }

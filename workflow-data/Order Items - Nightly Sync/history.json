@@ -113,7 +113,7 @@
     {
       "v": 6,
       "captured": "2026-09-28T11:21:23-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 5,
       "note": "v006: C2 reads the archive table by NAME (TableArchiveFRM10_12), not its internal id - option 2 recreates the table; works before and after the switch",
       "sha256": "da9f95c7b568290769565de796e4cf98eac900771c0b8b3e54dbf0246e9c5962",
@@ -130,7 +130,7 @@
       "files": {
         "definition": "v006__2026-09-28T11-21__local__v006-C2-reads-the-archive-table-by-NAME-TableArc.json"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-28T11:51:54-04:00",
       "source": "Order_Items_Nightly_Sync_v006.json"
     }
   ],

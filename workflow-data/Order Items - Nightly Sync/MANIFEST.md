@@ -21,12 +21,12 @@ snapshotted here.**
 | **v003** | 2026-09-25 01:13 | `forked` | v001 | v003: C1 = Livraison AND Delivered (DeliveryDate empty on every unit); Excel clock >=7d; report Excel-vs-list disagreements; dry run, cap 50; supersedes v002 (never pasted) | NOTE: it DID land on 09-27 (v004 = v003 + a user test action) but on plain connections, which blocked the new designer; replaced by v005. | — | — | 0 | 0 | `fb80ecf2cf43` |
 | **v004** | 2026-09-27 21:55 | `pulled` | — | live after v003 paste + user added an Excel List rows action at the end (new plain connection _1); no connection references - new designer blocked | — | — | 0 | 0 | `549dbea0f3d2` |
 | **v005** | 2026-09-27 22:20 | `applied` | v004 | v005: v003 logic unchanged, both connections on solution references (SharePoint new_sharedsharepointonline_89e9a, Excel new_sharedexcelonlinebusiness_452b5); drops the user's test Excel action | — | — | 0 | 0 | `fb80ecf2cf43` |
-| **v006** | 2026-09-28 11:21 | `local` | v005 | v006: C2 reads the archive table by NAME (TableArchiveFRM10_12), not its internal id - option 2 recreates the table; works before and after the switch | — | — | 0 | 0 | `da9f95c7b568` |
+| **v006** | 2026-09-28 11:21 | `applied` | v005 | v006: C2 reads the archive table by NAME (TableArchiveFRM10_12), not its internal id - option 2 recreates the table; works before and after the switch | — | — | 0 | 0 | `da9f95c7b568` |
 
 ## Right now
 
-- **Live:** v005 — v005: v003 logic unchanged, both connections on solution references (SharePoint new_sharedsharepointonline_89e9a, Excel new_sharedexcelonlinebusiness_452b5); drops the user's test Excel action
-- **Pending (authored, not applied):** v006
+- **Live:** v006 — v006: C2 reads the archive table by NAME (TableArchiveFRM10_12), not its internal id - option 2 recreates the table; works before and after the switch
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 
