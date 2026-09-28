@@ -217,6 +217,20 @@ Order Items ──(viewer refresh)──► Revue/FRM10-12.xlsx TableOrders ─�
 active.** Making that unattended is the refresh bot already planned (`CUTOVER-RUNBOOK.md` 3.5, roadmap
 "Deferred out of cutover"). It is now a prerequisite for the Nightly Sync doing anything by itself.
 
+## 6f. Archive refreshed and repaired, 2026-09-27 23:56
+
+- The viewer, then Archive active, were refreshed (23:28). The FRM10-12 archive took +58 rows and all
+  36 delivered units reached `LI`, but the refresh left all 15 date columns as text, and the dry run
+  failed at C3 (`int()` on text), safely, before any delete.
+- The refresher's new step 8 converter was run (23:56 copy, `workbooks/Archive active 2026-09-27 2356.xlsx`):
+  **0 text dates left** in any archive table. **All 872 dates that changed since the 09-27 23:01 copy
+  equal SharePoint exactly** (real edits since 09-14, none one day off, none month/day swapped). FRM11's
+  36,770 old text dates all converted to the right date. Legacy table shapes unchanged (93/39/55 columns).
+- **Replaying v005 on that copy predicts: 36 candidates, 16 confirmed, 20 held back** (their archived
+  delivery date is within 7 days: 09-21…09-25), 3,642 historical.
+  Confirmed: 21777-1/1, 21793-3/5, 21803-6/8, 21803-7/8, 21803-8/8, 21943-8/8, 21967-1/5, 21969-2/2,
+  21970-1/2, 21970-2/2, 21971-7/8, 21972-1/1, 21991-1/3, 21991-2/3, 21991-3/3, 22017-1/3.
+
 ## 7. Tonight's run
 
 v001 was due at 05:00Z (01:00 EDT) on 2026-09-25. A full mirror snapshot was taken at **00:55**

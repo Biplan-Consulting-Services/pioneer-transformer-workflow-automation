@@ -1,4 +1,4 @@
-# Archive every SharePoint list: design
+# Archive the main SharePoint lists: design
 
 Written 2026-09-27, late session, after the Nightly Sync's first dry runs showed that the Excel archive
 has stopped learning anything from SharePoint. **Nothing here has been applied.** This supersedes the
@@ -9,7 +9,7 @@ warnings.
 
 | # | decision |
 |---|---|
-| A1 | **The archive tracks every list on the site**, so all the data is backed up, not only the lists that used to have a workbook. |
+| A1 | **The archive tracks the five main lists**: Order Items, Order, Models, Model Revisions, Clients. *(Revised 2026-09-28 00:0x: the first version said "every list on the site", with a universal table and a list catalog. The user judged that too much, so it is dropped. The other lists (ModelChanges, EngineeringChangeOrders, Models SA, Index) are not archived. Models SA and Index are still snapshotted by the mirror. Adding a list later is one three-line query.)* |
 | A2 | **The archive reads SharePoint directly**, not through the FRM10-12 viewer. |
 | A3 | **The Excel archive stays the gate** for the Nightly Sync. It is the only place historical data lives, so a unit leaves Order Items only once the archive holds its final state. |
 | A4 | Office Scripts in production print failures and warnings only (done 09-27: `VERBOSE` switch in the refresher). |
@@ -31,44 +31,21 @@ FRM10-12, BO Manager, FRM11, FRM13. After the cutover:
   `TableArchiveFRM10_12` as `"2/20/2024 12:00:00 AM"` text, and the Nightly Sync stopped at C3.
   (Fixed on the Excel side by the refresher's new step 8 converter. The route itself is still fragile.)
 
-## 2. Target design: two layers
+## 2. Target design: one typed table per main list
 
 ```
-                         ┌─ Layer 1: one typed table per core list ─────────────┐
-SharePoint (REST, raw) ──┤   TableArchiveOrderItems, …Order, …Models,           ├─► Archive active.xlsx
-  every list on the site │   …ModelRevisions, …Clients                           │   (on SharePoint:
-                         │                                                       │    versioned, backed up)
-                         └─ Layer 2: one universal table, EVERY list ───────────┘
-                             TableArchiveAllLists: List | Id | Title | Modified | RowJson
+SharePoint (REST, raw) ──► TableArchiveOrderItems   TableArchiveOrder   TableArchiveModels
+  5 main lists             TableArchiveModelRevisions   TableArchiveClients   ──► Archive active.xlsx
+                                                                                   (on SharePoint:
+                                                                                    versioned, backed up)
 ```
 
-**Layer 2 is the backup promised by A1.** One table holds one row per item of **every** list: the list
-name, the item `Id`, `Title`, `Modified` (raw ISO), and the whole item as JSON text. It is built from a
-**catalog of the site's lists**, so **a list created tomorrow is archived on the next refresh with no
-query written for it.** Excel cannot create a new sheet per list from Power Query, and that is why
-this layer is one table in a long format rather than one table per list.
+Each of the five lists gets its own archive table with real columns, one query each (three lines, like
+the 09-16 `Archive <List>.pq` files), so people, Power BI and the Nightly Sync can filter and chart them.
+They sit beside the existing archive tables (A5). Document libraries are out of scope: they hold files,
+which SharePoint's version history and recycle bin already protect.
 
-**Layer 1 is for reading.** The five lists that people, Power BI and the Nightly Sync actually query
-get their own table with real columns: Order Items, Order, Models, Model Revisions and Clients. A list
-graduates from layer 2 to layer 1 when someone needs to filter or chart it. Until then it is still
-fully backed up.
-
-Why both, rather than layer 1 for everything: a layer-1 table needs a query and a sheet written by hand
-for every list, so the list nobody remembered is the one that is lost. Layer 2 cannot forget.
-
-### 2.1 The catalog of lists
-
-```
-_api/web/lists?$filter=Hidden eq false and BaseTemplate eq 100&$select=Id,Title,ItemCount,LastItemModifiedDate
-```
-
-- `BaseTemplate 100` = custom lists. Document libraries are **out of scope**: they hold files, which
-  SharePoint's version history and recycle bin already protect. If a library's **metadata** ever
-  matters (e.g. the planned Engineering Drawings library), add it to the catalog explicitly.
-- The catalog keys each list on its **Id (GUID), not its title**, so a renamed list stays the same
-  archive stream. Title is stored beside it.
-- The mirror's health report gets one more check: **any list in the catalog that the mirror does not
-  snapshot** is flagged, so a new list reaches the mirror too.
+**Adding a list later** means one more three-line query and table. No design change.
 
 ## 3. How the archive reads SharePoint
 
@@ -100,7 +77,7 @@ display names.
 
 - **Key = the item `Id`** on every list. SharePoint never reuses an item id within a list, it is always
   populated, and it survives a Title edit. (The 09-16 draft keyed Order Items on `Title`. A Title typo
-  fixed on SharePoint would then leave two archive rows for one unit.) In layer 2 the key is `List Id + Id`.
+  fixed on SharePoint would then leave two archive rows for one unit.)
 - **`AccumulateIntoLocal` is reused unchanged**: local rows whose key has left SharePoint are kept
   forever; every current row overwrites its archive row; new columns are added; dropped columns are
   kept as nulls.
@@ -129,7 +106,7 @@ mutation tests, the same way as v005.
 ## 6. The existing archive tables: same shape, still fed (A5)
 
 **Shape = the column names, their order, and each column's type** (a date stays a date: the 09-27
-text-date incident *was* a shape break). The new layer-1 and layer-2 tables are added beside these
+text-date incident *was* a shape break). The five new archive tables are added beside these
 three. None of the three is renamed, reshaped, repointed or frozen.
 
 | table | fed from | rule |
@@ -178,7 +155,7 @@ Order Items are a stale copy, and archiving Order Items would archive stale BO.
 | option | archive | when it fits |
 |---|---|---|
 | **B1 (recommended if BO is edited on Order Items)** BO lives on Order Items | archived with the unit in `TableArchiveOrderItems`. `TableArchiveBO` frozen as BO Manager's history. | three parts per unit is enough (it is today) |
-| **B2** a `Back Order Parts` list, one row per part, looking up the unit | its own layer-1 table (or layer 2 until needed) | a unit can need more than three parts, or each part has its own status and dates to track |
+| **B2** a `Back Order Parts` list, one row per part, looking up the unit | its own archive table (a sixth three-line query) | a unit can need more than three parts, or each part has its own status and dates to track |
 | **B3** stay on BO Manager | `TableArchiveBO` keeps tracking it | only as a transition. It keeps a workbook in the loop the migration is removing. |
 
 ## 8. Refresh and scheduling
@@ -203,8 +180,8 @@ Each step is safe to stop after. The Nightly Sync stays **off** (or dry run) unt
 2. **Snapshot** Archive active (a dated copy in `workbooks/`, older copies to `workbooks/Archive/`) and
    the mirror.
 3. **Settle BO** (§7).
-4. **Author** (repo only): the catalog query; `ArchiveAllLists` (layer 2); the date conversion step;
-   `TrackRemoteList` rewritten on `SP_Mirror`; five layer-1 queries keyed on `Id`. Validate each against
+4. **Author** (repo only): the date conversion step;
+   `TrackRemoteList` rewritten on `SP_Mirror`; the five archive queries keyed on `Id`. Validate each against
    the mirror's CSVs: same row counts, same ids, and dates equal to the raw value's first 10 characters.
 5. **Apply to a COPY of Archive active first**, one query at a time. Order first (smallest, 473 rows),
    Order Items last. The first refresh of a new archive table is the dangerous one
@@ -220,10 +197,7 @@ Each step is safe to stop after. The Nightly Sync stays **off** (or dry run) unt
 
 ## 10. Checks that must hold (and fail loudly if not)
 
-- Every list in the catalog has rows in layer 2 after a refresh. A list with items but no archive rows
-  is an error, not an empty list.
-- Layer-2 `RowJson` must fit Excel's **32,767-character cell limit**. Measure the longest Order Items
-  row before step 5. A row over the limit is refused with its list and id, never silently truncated.
+- Each of the five archive tables has rows after a refresh. Zero rows is a failed read, never an empty list.
 - Archive row count ≥ the previous refresh's, per list. The archive only grows. A drop means rows were
   lost and the save must not happen.
 - Date-only columns: 0 text values after the refresher runs.
@@ -231,10 +205,8 @@ Each step is safe to stop after. The Nightly Sync stays **off** (or dry run) unt
 ## 11. Questions for the user
 
 1. **BO (§7):** is BO edited in BO Manager or on Order Items now?
-2. **Which lists are new since 09-16?** The catalog will find them anyway. Knowing them lets step 4 be
-   checked by hand.
-3. **Document libraries:** leave them to SharePoint's own version history (proposed), or archive their
-   metadata too?
+2. ~~Which lists are new?~~ Moot since A1 was revised to the five main lists.
+3. ~~Document libraries?~~ Out of scope (§2).
 4. ~~Repoint FRM11's purge?~~ Settled by A5: no. `TableArchiveFRM10_12` keeps its shape and keeps
    being fed; only its source changes later, through the adapter (§6).
 5. **Who else reads the three legacy tables?** FRM11's purge and the viewer are known. Anything
