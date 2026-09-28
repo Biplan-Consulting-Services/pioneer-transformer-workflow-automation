@@ -51,7 +51,7 @@
       "captured": "2026-09-25T01:13:09-04:00",
       "state": "forked",
       "parent": 1,
-      "note": "v003: C1 = Livraison AND Delivered (DeliveryDate empty on every unit); Excel clock >=7d; report Excel-vs-list disagreements; dry run, cap 50; supersedes v002 (never pasted)",
+      "note": "v003: C1 = Livraison AND Delivered (DeliveryDate empty on every unit); Excel clock >=7d; report Excel-vs-list disagreements; dry run, cap 50; supersedes v002 (never pasted) | NOTE: it DID land on 09-27 (v004 = v003 + a user test action) but on plain connections, which blocked the new designer; replaced by v005.",
       "sha256": "fb80ecf2cf430ddadc1942aefe970a709cae35ca9fbcca2dd89ef4cb4c4b13b8",
       "fingerprint": {
         "toLower": 0,
@@ -88,7 +88,7 @@
     {
       "v": 5,
       "captured": "2026-09-27T22:20:42-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 4,
       "note": "v005: v003 logic unchanged, both connections on solution references (SharePoint new_sharedsharepointonline_89e9a, Excel new_sharedexcelonlinebusiness_452b5); drops the user's test Excel action",
       "sha256": "fb80ecf2cf430ddadc1942aefe970a709cae35ca9fbcca2dd89ef4cb4c4b13b8",
@@ -103,10 +103,12 @@
         "excelFile": null
       },
       "files": {
-        "definition": "v005__2026-09-27T22-20__local__v005-v003-logic-unchanged-both-connections-on-so.json"
+        "definition": "v005__2026-09-27T22-20__local__v005-v003-logic-unchanged-both-connections-on-so.json",
+        "package": "v005__2026-09-27T22-20__local__v005-v003-logic-unchanged-both-connections-on-so.zip"
       },
-      "appliedAt": null,
-      "source": "Order_Items_Nightly_Sync_v005.json"
+      "appliedAt": "2026-09-27T22:38:16-04:00",
+      "source": "Order_Items_Nightly_Sync_v005.json",
+      "appliedEvidence": "definition sha matched by the 22:36 zip pull; connection references confirmed by the user: new designer opens again (2026-09-27 ~22:35). The zip itself shows every connection as plain - zip exports drop reference names."
     }
   ],
   "identity": {

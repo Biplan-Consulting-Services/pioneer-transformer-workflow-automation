@@ -65,6 +65,14 @@ had — hence a dedicated place to plan it before touching production.
   copy `connectionReferences` from a pull as-is. Set each one's `connectionReferenceLogicalName`.
   SharePoint's is `new_sharedsharepointonline_89e9a`. An Excel Online reference has to be created in
   the solution first. Adding an action in the classic designer creates a plain connection, not a reference.
+  (Excel's is `new_sharedexcelonlinebusiness_452b5`, created 09-27 by adding an Excel action to a
+  test flow in the solution in the **new** designer.)
+
+  🔑 **A `.zip` export package lies about this.** It writes every connection as plain `Embedded`
+  with no logical name, even on a flow that is on references (verified 09-27 right after v005 landed
+  with the new designer working). That is how v001's zip seeded v003's plain connections. **Only the
+  extension's editor JSON carries the reference names.** `flow_version.py` now treats a zip as
+  "binding unknown".
 
   ### Why it is a version system and not timestamped files
 

@@ -456,8 +456,23 @@ def cmd_snapshot(a):
     if not a.local:
         check_identity(h, doc, a.flow)
 
-    binding = conn_binding(doc)
+    # 🔴 A .zip export package writes every connection as a PLAIN "Embedded" connection with no
+    # connectionReferenceLogicalName, even on a flow that IS on solution references (measured
+    # 2026-09-27: Nightly Sync right after v005 landed, new designer working). So a zip is no
+    # evidence about bindings either way. Only the extension's editor JSON carries them.
+    binding = None if zb else conn_binding(doc)
     same = [v for v in h["versions"] if same_version(a.flow, v, sha, binding)]
+    if binding is None and not a.local and len(same) > 1:
+        # Several versions share this logic and the binding cannot tell them apart
+        # (v003 vs v005: same definition, plain vs referenced). The newest is the one just
+        # pasted; say plainly that its references were NOT verified by this pull.
+        newest = max(same, key=lambda x: x["v"])
+        print("NOTE  v%s share this definition and this pull carries no connection bindings"
+              " (zip export or bare definition). Confirming the newest, v%03d. Its connection"
+              " references are NOT verified by this pull: check the new designer opens, or"
+              " drop the extension's JSON, which does carry them."
+              % (", v".join("%03d" % x["v"] for x in same), newest["v"]))
+        same = [newest]
     if same and not a.local:
         # A pull that matches something we already have. If it matches a local
         # version, that is PROOF the paste landed.
