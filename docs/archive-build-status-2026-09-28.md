@@ -51,6 +51,50 @@ Data Model itself. A bisection to find the column was running and **was stopped 
 Recommendation: **(1) first**, since it keeps everything else as it is. If the cause turns out to be something the
 Data Model simply can't take, go to (2), which is cleaner long term anyway.
 
+## ✅ Update 2026-09-28 midday: blocker solved with option 2 (user decision)
+
+- **The bisection found no single bad column:** each half of the columns loads alone, and all together
+  fail. Not memory (it fails with 7 GB free), not 32-bit (Excel is x64), not types (all-text fails), not
+  the 18 new columns (93 alone fails). A limit inside Excel's data-model engine for this combination.
+- **The data model was doing nothing:** 0 relationships, 0 measures, and the one (empty, leftover) pivot
+  reads the sheet table. So the user chose **option 2**: `TableArchiveFRM10_12` is loaded straight to the
+  sheet, like every other archive table.
+- `scripts/Convert-ArchiveFrm1012ToSheetLoad.ps1` does the one-time switch on a copy:
+  1. unlink the old table into a seed, and remove its model plumbing;
+  2. create the new sheet table with the same name, on the same sheet name and position;
+  3. first refresh takes the history from the seed;
+  4. set date formats (kept across refreshes), and repoint the pivot;
+  5. delete the seed; a second refresh takes history from the table itself.
+  5,322 rows × 111 columns, ~87 s per refresh.
+- With the detour gone, the mixed columns keep **each cell's native value**: real dates and numbers,
+  placeholders as text. History is no longer rewritten into text.
+- **Strict check against a mirror refreshed right before it:** of 494,853 cells, 438,237 identical,
+  53,859 cleaner, 1,890 newer from SharePoint, 866 intended, **1 regression**. That one is a junk
+  `1899-12-31` "zero date" in the Tanking Date of unit 20597-1/1, long off SharePoint; it now shows 00:00.
+  0 BO values lost; readers' columns intact; Nightly Sync replay passes.
+- **Nightly Sync v006** (staged): its Excel step reads the table **by name** (`TableArchiveFRM10_12`)
+  instead of its internal id, which changes with option 2. The connector accepts the name as a custom
+  value. Because the name is the same before and after the switch, **v006 can be pasted now**.
+
+## Go-live runbook (user + Claude, ~30 min)
+
+1. **Paste Nightly Sync v006** (`workflow-data/Order Items - Nightly Sync/_outbox/PASTE-ME.json`, the
+   usual loop), save, copy the JSON back into `_inbox/`, then **Run** a dry run. Expect the same result as
+   before (reading by name works on today's table too).
+2. **Download the live Archive active** (SharePoint `General/FAB/Archive/` → ⋯ → Download), into
+   `workbooks/`. Claude renames it and archives the previous copies.
+3. **Claude builds the go-live copy from it**, all scripted:
+   - apply every query and load the five list tables (`Apply-ArchivePowerQuery.ps1`);
+   - run `Convert-ArchiveFrm1012ToSheetLoad.ps1`;
+   - refresh the mirror, then run `check_archive_rebuild.py --strict` against the downloaded file.
+4. **Upload** (at a quiet moment, nobody in the file, not 01:00–02:00): rename the verified copy to
+   exactly `Archive active.xlsx`, then in `General/FAB/Archive/` choose **Upload → Files → Replace**. It
+   becomes a new version of the same file (same file id). Rollback = ⋯ → Version history → Restore.
+5. **Open it in desktop Excel from SharePoint**, replace the Office Script with
+   `Office Scripts/Mixed Query Refresher - Live Version.osts`, run it once, save.
+6. **Dry run the Nightly Sync** and compare it with the replay. Then: remove `TableArchiveBO` after one
+   verified refresh cycle, and switch deletes on (mirror refresh first).
+
 ## Not done yet (after the blocker)
 - The full checker run with `--strict` on a copy where FRM10-12 has loaded.
 - The "rename the table, refresh must fail with NoLocalTable" test.

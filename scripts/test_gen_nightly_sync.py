@@ -50,6 +50,9 @@ expect_abort("delete loop moved outside the cap guard", lambda d, w: A(d).update
 expect_abort("sequential delete loop", lambda d, w: C6(d)["runtimeConfiguration"]["concurrency"].update(repetitions=1))
 expect_abort("Excel read paginated at 256", lambda d, w: A(d)["C2_Get_Excel_LI_rows"]["runtimeConfiguration"]["paginationPolicy"].update(minimumItemCount=256))
 expect_abort("Excel file id changed", lambda d, w: A(d)["C2_Get_Excel_LI_rows"]["inputs"]["parameters"].update(file="SOMETHING-ELSE"))
+# v006: the archive table must be read by NAME - an internal id breaks when the table is recreated (option 2).
+expect_abort("Excel table back to an internal id", lambda d, w: A(d)["C2_Get_Excel_LI_rows"]["inputs"]["parameters"].update(table="{17014A43-5D94-47C6-982F-45D962DA4036}"))
+expect_abort("Excel table renamed", lambda d, w: A(d)["C2_Get_Excel_LI_rows"]["inputs"]["parameters"].update(table="TableArchiveBO"))
 expect_abort("typo'd field in C1 filter", lambda d, w: A(d)["C1_Get_Livraison_candidates"]["inputs"]["parameters"].update(
     **{"$filter": "Location eq 'Livraison' and ItemStatus eq 'Delivered' and DeliveryEndDate lt '2026-01-01'"}))
 expect_abort("C1 missing the ItemStatus clause", lambda d, w: A(d)["C1_Get_Livraison_candidates"]["inputs"]["parameters"].update(

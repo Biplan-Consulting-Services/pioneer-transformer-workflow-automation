@@ -109,6 +109,29 @@
       "appliedAt": "2026-09-27T22:38:16-04:00",
       "source": "Order_Items_Nightly_Sync_v005.json",
       "appliedEvidence": "definition sha matched by the 22:36 zip pull; connection references confirmed by the user: new designer opens again (2026-09-27 ~22:35). The zip itself shows every connection as plain - zip exports drop reference names."
+    },
+    {
+      "v": 6,
+      "captured": "2026-09-28T11:21:23-04:00",
+      "state": "local",
+      "parent": 5,
+      "note": "v006: C2 reads the archive table by NAME (TableArchiveFRM10_12), not its internal id - option 2 recreates the table; works before and after the switch",
+      "sha256": "da9f95c7b568290769565de796e4cf98eac900771c0b8b3e54dbf0246e9c5962",
+      "connBinding": {
+        "shared_excelonlinebusiness": "new_sharedexcelonlinebusiness_452b5",
+        "shared_sharepointonline": "new_sharedsharepointonline_89e9a"
+      },
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 19,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v006__2026-09-28T11-21__local__v006-C2-reads-the-archive-table-by-NAME-TableArc.json"
+      },
+      "appliedAt": null,
+      "source": "Order_Items_Nightly_Sync_v006.json"
     }
   ],
   "identity": {

@@ -43,7 +43,8 @@ import gen_nightly_cleanup as G   # noqa: E402  (stage B + helpers; its main() i
 FLOW_DIR = os.path.join(ROOT, "workflow-data", "Order Items - Nightly Sync")
 COLUMNS = os.path.join(ROOT, "sharepoint-lists", "mirror", "live", "Columns.csv")
 
-OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v005.json")
+OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v006.json")
+EXCEL_TABLE_NAME = "TableArchiveFRM10_12"   # v006: read by name (its id changed with option 2)
 
 # 🔴 This flow lives in a SOLUTION. A solution flow on plain connections blocks the new designer
 # ("Uses a connection instead of a connection reference"), and v001's export carried plain
@@ -162,6 +163,12 @@ def build():
 
     A["C2_Get_Excel_LI_rows"] = excel
     A["C2_Get_Excel_LI_rows"]["runAfter"] = {"C1c_All_titles": ["Succeeded"]}
+    # v006 (2026-09-28): the archive table is read by NAME, not by its internal id. Option 2
+    # recreated TableArchiveFRM10_12 as a sheet-loaded table, so its id changed, and a recreated
+    # table would break an id again. The Excel connector accepts the table name as a custom value;
+    # the name is the same before and after the switch, so v006 works with both.
+    A["C2_Get_Excel_LI_rows"]["inputs"]["parameters"]["table"] = EXCEL_TABLE_NAME
+    (A["C2_Get_Excel_LI_rows"].get("metadata") or {}).pop("tableId", None)
 
     # C3: Excel rows delivered >= 7 days ago - confirmation #2. Delivery Date comes back as an Excel
     # SERIAL (v001: addDays('1899-12-30', int(...))). Logic Apps evaluates and()/if() arguments eagerly,
@@ -333,14 +340,17 @@ def checks(w, v1, cols, v1name):
     unknown = sorted(u for u in used if u not in cols)
     if unknown:
         fail("expressions read Order Items fields not in live/Columns.csv: %s" % unknown)
-    # 6. the Excel read is v001's, id for id
+    # 6. the Excel read is v001's file, id for id, and the archive table BY NAME (v006)
     xl = d["actions"]["C2_Get_Excel_LI_rows"]
     v1x = v1["actions"]["List_rows_present_in_a_table"]
-    for key in ("source", "drive", "file", "table"):
+    for key in ("source", "drive", "file"):
         if xl["inputs"]["parameters"][key] != v1x["inputs"]["parameters"][key]:
             fail("Excel %s differs from v001" % key)
-    if xl["inputs"]["host"] != v1x["inputs"]["host"] or xl.get("metadata") != v1x.get("metadata"):
-        fail("Excel host/metadata differs from v001")
+    if xl["inputs"]["parameters"]["table"] != EXCEL_TABLE_NAME:
+        fail("Excel table must be read by name %r (v006), got %r" % (EXCEL_TABLE_NAME, xl["inputs"]["parameters"]["table"]))
+    v1meta = {k: v for k, v in (v1x.get("metadata") or {}).items() if k != "tableId"}
+    if xl["inputs"]["host"] != v1x["inputs"]["host"] or (xl.get("metadata") or {}) != v1meta:
+        fail("Excel host/metadata differs from v001 (only tableId may be dropped)")
     # 7. trigger: Eastern zone, 01:30, no UTC startTime
     tr = list(d["triggers"].values())[0]["recurrence"]
     if "startTime" in tr or tr.get("timeZone") != "Eastern Standard Time" or tr["schedule"] != {"hours": ["1"], "minutes": [30]}:
