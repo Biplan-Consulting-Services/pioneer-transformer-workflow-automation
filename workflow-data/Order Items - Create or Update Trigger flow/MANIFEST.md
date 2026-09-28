@@ -24,12 +24,12 @@ snapshotted here.**
 | **v006** | 2026-09-24 20:12 | `pulled` | — | pasted from designer | — | — | 0 | 0 | `6da725e8576e` |
 | **v007** | 2026-09-24 20:30 | `forked` | v006 | connection reference only + null-safe Status Date init + StatusDateStamped keeps a same-edit date | — | — | 0 | 0 | `a8f4e1855419` |
 | **v008** | 2026-09-24 20:40 | `applied` | v006 | connection reference only; flow no longer writes Status Date (manual, user decision 2026-09-24); supersedes v007 | — | — | 0 | 0 | `df17a71823b3` |
-| **v009** | 2026-09-28 14:08 | `local` | v008 | moving a unit out of Livraison sets Delivered back to Active (option C, user 2026-09-28); step status untouched | — | — | 0 | 0 | `8c1e47e18f26` |
+| **v009** | 2026-09-28 14:08 | `applied` | v008 | moving a unit out of Livraison sets Delivered back to Active (option C, user 2026-09-28); step status untouched | — | — | 0 | 0 | `8c1e47e18f26` |
 
 ## Right now
 
-- **Live:** v008 — connection reference only; flow no longer writes Status Date (manual, user decision 2026-09-24); supersedes v007
-- **Pending (authored, not applied):** v009
+- **Live:** v009 — moving a unit out of Livraison sets Delivered back to Active (option C, user 2026-09-28); step status untouched
+- **Pending (authored, not applied):** none
 
 ## Reading the columns
 
