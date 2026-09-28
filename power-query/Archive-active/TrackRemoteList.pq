@@ -1,42 +1,21 @@
 // Query: TrackRemoteList
 //
-// 🔴 DO NOT APPLY AS WRITTEN (2026-09-27). SharePoint.Tables below shifts date-only values one
-// day early (found 2026-09-24), so this would archive every date-only column a day early,
-// silently and permanently. To be rewritten on the SharePoint mirror's REST reader (SP_Mirror)
-// and keyed on Id: docs/archive-all-lists-design-2026-09-27.md.
+// 🟠 OBSOLETE (2026-09-28): use ArchiveList(title, localTable) directly. Kept only as a thin
+// compatibility wrapper so an old call cannot silently fall back to the 09-16 draft.
 //
-// The SharePoint-list sibling of TrackRemoteTable. Same accumulate semantics, same
-// archive table shape; the ONLY difference is where the source rows come from.
+// The 09-16 draft read SharePoint.Tables, which shifts date-only values a day early (found
+// 2026-09-24), flattened lookups to display text, and keyed lists on Title / natural keys. All of
+// that is gone: this now goes through the REST reader (ArchiveFetch -> ArchiveTyped ->
+// ArchiveList) and accepts ONLY the item Id as key. Any other key raises an error instead of
+// archiving under the wrong key.
 //
-//     TrackRemoteTable  reads an Excel table in another workbook, via the Index list
-//     TrackRemoteList   reads a SharePoint list directly
-//
-// This is what lets the Excel archive cover the lists that live only in SharePoint and
-// have no workbook to be tracked through -- `Order`, `Models`, `Model Revisions`,
-// `Clients`, `ModelChanges` -- and to track `Order Items` as itself rather than as
-// FRM10-12's `TableOrders`, which is how 22 populated columns ended up unarchived.
-//
-// ⚠️ META COLUMNS: do NOT reuse FRM10-12's `SharepointListMetaColumns` here. That list
-// strips `ID`, `Created`, `Modified` and `Title` -- sensible for a working table, wrong
-// for an archive, where those four are the provenance you most want to keep, and where
-// `Title` IS the unit id on `Order Items`. `ArchiveListMetaColumns` is the archive's own,
-// deliberately much shorter, list.
-//
-// ⚠️ UNTESTED AS WRITTEN -- authored in the repo, not yet run against the workbook.
-// Apply with Stage-PowerQuery.ps1 / Sync-PowerQuery.ps1 -WorkbookPath "...\Archive active.xlsx",
-// and see docs/archive-cover-all-lists-2026-09-16.md for the order of operations. The
-// first refresh of a NEW archive table is the dangerous one; that doc explains why.
+// Only the five main lists are archived (decision A1); a list outside them errors in ArchiveTyped.
+// The 09-16 drafts `Archive EngineeringChangeOrders`, `Archive ModelChanges`, `Archive Models SA`
+// call this with natural keys and are therefore NOT applicable (they were never in the workbook).
 let
     TrackRemoteList = (ListTitle as text, LocalTable as text, PrimaryKey as text) as table =>
-    let
-        Site = "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
-        // Implementation 2.0 pages at ~1000+ rows instead of the legacy endpoint's 100.
-        Source = SharePoint.Tables(Site, [Implementation = "2.0"]),
-        List = Source{[Title = ListTitle]}[Items],
-        // Lookups arrive as nested lists/records; flatten to their display text.
-        Flattened = FlattenSharePointLookupLists(List, ArchiveListMetaColumns),
-        Accumulated = AccumulateIntoLocal(Flattened, LocalTable, PrimaryKey)
-    in
-        Accumulated
+        if PrimaryKey <> "Id"
+        then error Error.Record("TrackRemoteList", "Obsolete: archive lists are keyed on 'Id' only (got '" & PrimaryKey & "'). Use ArchiveList(title, localTable).")
+        else ArchiveList(ListTitle, LocalTable)
 in
     TrackRemoteList

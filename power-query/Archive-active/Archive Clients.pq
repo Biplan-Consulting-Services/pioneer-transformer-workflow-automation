@@ -1,7 +1,7 @@
 // Query: Archive Clients
 //
-// 99/99 unique.
+// SharePoint list `Clients`, archived by item Id into TableArchiveClients (ArchiveList).
 let
-    Source = TrackRemoteList("Clients", "TableArchiveClients", "Client_ID")
+    Source = ArchiveList("Clients", "TableArchiveClients")
 in
     Source

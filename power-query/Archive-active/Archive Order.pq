@@ -1,7 +1,8 @@
 // Query: Archive Order
 //
-// 457/457 unique. `Order` has no archive of any kind today.
+// SharePoint list `Order`, archived by item Id into TableArchiveOrder (ArchiveList).
+// The order number is Order_x0020_Number1 (`Title` is empty on every row); the key is Id.
 let
-    Source = TrackRemoteList("Order", "TableArchiveOrder", "Order Number")
+    Source = ArchiveList("Order", "TableArchiveOrder")
 in
     Source

@@ -1,8 +1,9 @@
 // Query: Archive Order Items
 //
-// `Title` is the unit id (displayed `Unit ID`); 1085/1085 unique. This is the one
-//   that closes the 22-column gap -- tracking the LIST, not FRM10-12's TableOrders.
+// SharePoint list `Order Items`, archived by item Id into TableArchiveOrderItems (ArchiveList).
+// Internal column names, typed from the live catalog; rows that leave SharePoint are kept.
+// Carries the unit's own BO / BO1..BO3 part fields (plan D2).
 let
-    Source = TrackRemoteList("Order Items", "TableArchiveOrderItems", "Title")
+    Source = ArchiveList("Order Items", "TableArchiveOrderItems")
 in
     Source

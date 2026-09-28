@@ -8,7 +8,7 @@ Lists come from the SharePoint mirror (refresh it first: Refresh-SharePointMirro
 export omits). Excel tables are read straight from the table XML inside the newest copy of each
 workbook, so their counts are only as fresh as that copy.
 """
-import csv, glob, os, re, zipfile, datetime
+import csv, glob, html, os, re, zipfile, datetime
 from collections import Counter, defaultdict
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,7 +104,17 @@ def table_columns(z, name):
     x = z.read(name).decode('utf-8', 'ignore')
     tname = re.search(r'<table[^>]*\bname="([^"]+)"', x)
     ref = re.search(r'<table[^>]*\bref="([^"]+)"', x)
-    colnames = [re.sub(r'\s+', ' ',re.sub(r'_x000[ad]_', ' ', c.replace('&amp;', '&'))).strip() for c in re.findall(r'<tableColumn[^>]*\bname="([^"]*)"', x)]
+    # OOXML escapes a character as _xHHHH_, and a LITERAL "_xHHHH_" in a name as "_x005F_xHHHH_".
+    # SharePoint internal names are full of literal escapes (Planned_x0020_Tanking_x0020_Date), so
+    # decode in ONE left-to-right pass: "_x005F_" becomes "_" and the text after it stays as written.
+    # (2026-09-28: a replace of only _x000a_/_x000d_ left "_x005F_" in, and the archive checker saw
+    # every such column as missing.)
+    # Excel only escapes control characters (_x0000_.._x001F_) and the underscore of a literal
+    # "_x" (_x005F_). Decode exactly those, so a file written by another tool (openpyxl writes
+    # "_x0020_" unescaped) keeps its literal SharePoint names too.
+    decode = lambda s: re.sub(r'_x(005[Ff]|00[01][0-9A-Fa-f])_', lambda m: chr(int(m.group(1), 16)), s)
+    colnames = [re.sub(r'\s+', ' ', decode(html.unescape(c))).strip()
+                for c in re.findall(r'<tableColumn[^>]*\bname="([^"]*)"', x)]
     m = re.match(r'[A-Z]+(\d+):[A-Z]+(\d+)', ref.group(1)) if ref else None
     rows = int(m.group(2)) - int(m.group(1)) if m else '?'
     return tname.group(1) if tname else name, rows, colnames

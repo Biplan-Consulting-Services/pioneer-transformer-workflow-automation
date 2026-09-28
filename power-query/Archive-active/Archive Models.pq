@@ -1,7 +1,7 @@
 // Query: Archive Models
 //
-// 390/390 unique.
+// SharePoint list `Models`, archived by item Id into TableArchiveModels (ArchiveList).
 let
-    Source = TrackRemoteList("Models", "TableArchiveModels", "Model_ID")
+    Source = ArchiveList("Models", "TableArchiveModels")
 in
     Source
