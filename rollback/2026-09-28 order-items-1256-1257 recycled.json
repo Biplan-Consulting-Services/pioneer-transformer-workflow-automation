@@ -1,0 +1,8 @@
+{
+  "what": "Order Items 1256 and 1257 moved to the site recycle bin (recycle(), restorable for 93 days) on 2026-09-28 ~10:50 at the user's request. Both were empty rows created by accident in grid-editing view: no Title, order, model, client, location or qty, never edited since creation (version 1.0). Only column defaults (ItemStatus Active, Frame Plaspak) and calculated columns (FxYear/FxRate/PriceCAD = error;#256) were set. The empty-check ran immediately before recycling, in the user's browser console (fallback: the automated browser tab was frozen under memory pressure).",
+  "restore": "Site contents > Recycle bin > the Order Items items (GUIDs below) > Restore. Or REST: POST _api/web/RecycleBin('<recycleBinId>')/restore().",
+  "items": [
+    {"Id": 1256, "GUID": "cbd399df-26d3-49d2-a610-a111a6323e1d", "Created": "2026-09-22T17:02:40Z", "Modified": "2026-09-22T17:02:40Z", "AuthorId": 105, "author": "angelique.tiago", "OData__UIVersionString": "1.0", "recycleBinId": "f47a0edf-25c3-42f4-821b-0c3998be6d69"},
+    {"Id": 1257, "GUID": "c1bf2e4d-80d9-4cf3-ab40-bab74fc5f299", "Created": "2026-09-23T09:19:57Z", "Modified": "2026-09-23T09:19:57Z", "AuthorId": 25, "author": "plamarre", "OData__UIVersionString": "1.0", "recycleBinId": "944b5d78-2354-4a88-ae1c-bec9ce52ea68"}
+  ]
+}
