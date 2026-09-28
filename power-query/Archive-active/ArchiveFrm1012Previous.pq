@@ -11,6 +11,6 @@
 // Staging query: workbook only.
 let
     Columns = Table.SelectRows(ArchiveFrm1012Map, each [Rule] = "legacy" or [Rule] = "bo")[TargetColumn],
-    Source = ArchiveLocalTable("TableArchiveFRM10_12", "Order", Columns)
+    Source = ArchiveLocalTable(ArchiveFrm1012LocalName, "Order", Columns)   // the archive or its one-time seed
 in
     Source

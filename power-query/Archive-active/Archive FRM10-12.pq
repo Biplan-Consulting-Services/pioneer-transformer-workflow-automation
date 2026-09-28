@@ -52,9 +52,11 @@
 // TYPES. The table loads through the Data Model, and Table.Combine with the local table
 // makes every column `any`, which the Data Model loads as TEXT (the 09-27 text-dates
 // incident). So the last steps normalise every value to its map Type and then declare it
-// with an explicit Table.TransformColumnTypes. `datetext`/`numtext` columns load as text on
-// purpose (their history holds non-dates / non-numbers that a real type would turn into
-// errors); dates in them are written ISO yyyy-MM-dd, which the refresher's step 8 converts.
+// with an explicit Table.TransformColumnTypes. Since 2026-09-28 the table is loaded straight
+// to the SHEET (option 2; the Data Model rejected this query and gave nothing back), so
+// `text`/`datetext`/`numtext` columns are type `any` and keep each cell's native value: a real
+// date or number where the value is one, the placeholder text ("EC", ".", "TBD") where not.
+// The refresher's step 8 no longer has anything to convert here; it stays as a safety net.
 // A value that cannot take its declared real type becomes a cell ERROR naming the column,
 // never a silent null. The map's real types were chosen where every archived value converts
 // (check_frm1012_map.py --base), so only a SharePoint type change could raise one.
@@ -64,7 +66,7 @@ let
     Pinned = Map[TargetColumn],
 
     Source = ArchiveFrm1012Source,
-    LocalName = "TableArchiveFRM10_12",
+    LocalName = ArchiveFrm1012LocalName,   // "TableArchiveFRM10_12", or its seed during the one-time switch to a sheet load
 
     // --- guards around AccumulateIntoLocal (review C, 2026-09-28) ---
     // 1. The archive must be READABLE. AccumulateIntoLocal reads it inside `try ... otherwise
@@ -144,29 +146,53 @@ let
             col & ": cannot store this value as " & want & " (map Type). Fix the source value or the map.",
             [Column = col, Value = v]),
 
+    // Sheet load (2026-09-28, option 2): a sheet-loaded column may hold a different type per
+    // cell, so "text"/"datetext"/"numtext" columns keep each cell's NATIVE value instead of
+    // forcing everything to text (the Data Model needed one type per column; that detour is
+    // gone). History rows are therefore left exactly as they were: a number stays a number,
+    // TRUE/FALSE stays logical, a placeholder ("EC", ".", "TBD", "2025-99-99") stays text.
     AsText = (col as text, v as any) as any =>
         if v = null then null
         else if v is text then (if Text.Trim(v) = "" then null else v)
-        else if v is number then Number.ToText(v, null, "en-US")
-        else if v is logical then (if v then "TRUE" else "FALSE")
-        else if v is date then Iso(v)
+        else if v is number or v is logical or v is date then v
         else if v is datetime then
-            (if DateTime.Time(v) = #time(0, 0, 0) then Iso(DateTime.Date(v))
-             else Iso(DateTime.Date(v)) & " " & Time.ToText(DateTime.Time(v), "HH:mm:ss", "en-US"))
-        else if v is time then Time.ToText(v, "HH:mm:ss", "en-US")
+            (if DateTime.Time(v) = #time(0, 0, 0) then DateTime.Date(v) else v)
+        else if v is time then v
         else Bad(col, "text", v),
 
-    // A SharePoint datetime ("2026-10-30T04:00:00Z", the calculated EstimatedDeliveryDate)
-    // keeps its first 10 characters: the stored local-midnight date, like every date-only.
+    // A real date wherever the value IS a date (date, datetime, a SharePoint ISO datetime such as
+    // "2026-10-30T04:00:00Z" -> its first 10 characters, ISO or US date text); anything else
+    // (placeholders, "pickup 2025-01-06", impossible dates like 2025-99-99) is kept as it is.
     AsDateText = (col as text, v as any) as any =>
-        if v is datetime then Iso(DateTime.Date(v))
-        else if v is datetimezone then Iso(DateTime.Date(DateTimeZone.RemoveZone(v)))
-        else if v is text and Text.Length(v) > 10 and Text.Middle(v, 4, 1) = "-" and Text.Middle(v, 10, 1) = "T"
-            then Text.Start(v, 10)
+        if v is date then v
+        else if v is datetime then DateTime.Date(v)
+        else if v is datetimezone then DateTime.Date(DateTimeZone.RemoveZone(v))
+        else if v is text then
+            (let t = Text.Trim(v),
+                 rest = if Text.Length(t) > 10 then Text.Trim(Text.Range(t, 10)) else "",
+                 // after the date only a TIME may follow ("T04:00:00Z", " 12:00:00 AM"); any other
+                 // text ("2025-07-22 (estimé)") means the cell is a note, and it is kept as written
+                 restIsTime = rest = "" or Text.StartsWith(rest, "T")
+                              or (try (Time.FromText(rest, "en-US") is time) otherwise false),
+                 iso = if Text.Length(t) >= 10 and Text.Middle(t, 4, 1) = "-" and Text.Middle(t, 7, 1) = "-" and restIsTime
+                       then (try #date(Number.FromText(Text.Start(t, 4), "en-US"), Number.FromText(Text.Middle(t, 5, 2), "en-US"),
+                                       Number.FromText(Text.Middle(t, 8, 2), "en-US")) otherwise null)
+                       else null,
+                 us = if iso = null and Text.Contains(t, "/")
+                      then (try DateTime.Date(DateTime.FromText(t, "en-US")) otherwise null)
+                      else null
+             in  if t = "" then null else if iso <> null then iso else if us <> null then us else v)
         else AsText(col, v),
 
+    // A number wherever the value IS a number (native, or text like "33,625" / "24.9");
+    // anything else ("24.9 kV", "100-104", "Inconnu") is kept as it is.
     AsNumText = (col as text, v as any) as any =>
-        if v is number then Number.ToText(v, null, "fr-CA") else AsText(col, v),
+        if v is number then v
+        else if v is text then
+            (let t = Text.Trim(v),
+                 n = if t = "" then null else (try Number.FromText(Text.Replace(t, ",", "."), "en-US") otherwise null)
+             in  if t = "" then null else if n <> null then n else v)
+        else AsText(col, v),
 
     AsNumber = (col as text, v as any) as any =>
         if v = null then null
@@ -215,11 +241,11 @@ let
         if t = "number" then type number
         else if t = "date" then type date
         else if t = "logical" then type logical
-        else type text,     // text, datetext, numtext
+        else type any,      // text, datetext, numtext: native value per cell (sheet load, 2026-09-28)
 
     Normalised = Table.TransformColumns(PinChecked, List.Transform(MapRows, each {[TargetColumn], Converter(_), MType([Type])})),
 
-    // --- declare the types (the Data Model takes these, not `any`) ---
+    // --- declare the types (real types where the map says so; `any` for the mixed columns) ---
     // Values are already converted above, so the culture only makes the step culture-free
     // on paper (the workbook runs fr-CA).
     // Buffered once. The guards below read it, and so does the load. The Data Model load may
