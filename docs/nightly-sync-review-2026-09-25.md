@@ -186,6 +186,37 @@ mirror showed 0 changes around 01:00 on 09-25: nothing ran.
 
 So **v003 is pasted unchanged.**
 
+## 6e. First dry run, 2026-09-27 ~22:50 (v005 live, DeleteEnabled=false)
+
+`C7_Summary`: B touched 0 · C candidates **36** (= the mirror's 36 Livraison+Delivered) · confirmed by
+Excel **0** · held back **36** · Excel-done-but-list-disagrees 0 · Excel-done-no-unit-row 3,642 (history).
+
+**The Excel gate stays (user, 09-27): the archive is the only place historical data lives, so a unit
+leaves Order Items only once the archive holds its final state.** The gate is "archived", not "delivered".
+
+**Why 0 passed: the archive is fed by a chain that only moves on refresh.**
+
+```
+Order Items ──(viewer refresh)──► Revue/FRM10-12.xlsx TableOrders ──(Archive active refresh)──► TableArchiveFRM10_12
+             Location Livraison → 'LI'                               TrackRemoteTable: source rows OVERWRITE
+             Delivery Date = Planned Delivery Date                    the archive row; rows that leave the
+             drops units the archive already has at LI + date         viewer are kept forever
+```
+
+- All 36 have a Planned Delivery Date. **18 are ≤ today − 7** (planned 09-03 … 09-18), so they would
+  pass if the archive showed them at `LI`. It does not: in the 09-16 copy they sit at XT/FO/FI/TA…
+  The viewer and/or Archive active have not been refreshed since those units reached Livraison.
+- ⚠️ The archive's `Delivery Date` is the **Planned** Delivery Date (viewer mapping, `frm10-12-order-view-spec.md`
+  row 72), not the day it shipped. So the 7-day grace runs from the plan. A unit planned for 09-03 that
+  ships 09-26 can be deleted the first night after both refreshes. The archive already holds its final
+  row by then, so under "archive is the gate" that is safe, but the grace is not a grace from delivery.
+- ✅ Correction: the archive **does** carry SA twins (67 rows, `21499-1/3 SA` included). The §6b/§6d
+  premise that SA twins are never archived was not true of the 09-16 copy.
+
+**So the Nightly Sync only deletes on nights after someone refreshed the viewer and then Archive
+active.** Making that unattended is the refresh bot already planned (`CUTOVER-RUNBOOK.md` 3.5, roadmap
+"Deferred out of cutover"). It is now a prerequisite for the Nightly Sync doing anything by itself.
+
 ## 7. Tonight's run
 
 v001 was due at 05:00Z (01:00 EDT) on 2026-09-25. A full mirror snapshot was taken at **00:55**
