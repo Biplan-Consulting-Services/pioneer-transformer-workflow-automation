@@ -1,10 +1,14 @@
 {
+  "$schema": "https://power-automate-tools.local/flow-editor.json#",
   "connectionReferences": {
     "shared_sharepointonline": {
       "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
       "source": "Embedded",
       "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-      "tier": "NotSpecified",
+      "displayName": "SharePoint",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4913/sharepointonline/icon.png",
+      "brandColor": "",
+      "tier": "Standard",
       "apiName": "sharepointonline",
       "isProcessSimpleApiReferenceConversionAlreadyDone": false
     },
@@ -12,7 +16,21 @@
       "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
       "source": "Embedded",
       "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
-      "tier": "NotSpecified",
+      "displayName": "Excel Online (Business)",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1826/1.0.1826.4868/excelonlinebusiness/icon.png",
+      "brandColor": "#107C41",
+      "tier": "Standard",
+      "apiName": "excelonlinebusiness",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
+    },
+    "shared_excelonlinebusiness_1": {
+      "connectionName": "shared-excelonlinebu-f1d31972-00c8-47df-b28f-00adba615d27",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+      "displayName": "Excel Online (Business)",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1826/1.0.1826.4868/excelonlinebusiness/icon.png",
+      "brandColor": "#107C41",
+      "tier": "Standard",
       "apiName": "excelonlinebusiness",
       "isProcessSimpleApiReferenceConversionAlreadyDone": false
     }
@@ -21,18 +39,17 @@
     "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
     "contentVersion": "undefined",
     "parameters": {
-      "$authentication": {
-        "defaultValue": {},
-        "type": "SecureObject"
-      },
       "$connections": {
         "defaultValue": {},
         "type": "Object"
+      },
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
       }
     },
     "triggers": {
       "Every_night_at_01_30_Eastern": {
-        "type": "Recurrence",
         "recurrence": {
           "frequency": "Day",
           "interval": 1,
@@ -45,12 +62,19 @@
               30
             ]
           }
-        }
+        },
+        "metadata": {
+          "operationMetadataId": "71add24f-8919-4207-b92d-40d103478b0f"
+        },
+        "type": "Recurrence"
       }
     },
     "actions": {
       "Settings": {
         "runAfter": {},
+        "metadata": {
+          "operationMetadataId": "1e731c69-cd92-40ac-9011-50c18224f718"
+        },
         "type": "Compose",
         "inputs": {
           "DeleteEnabled": false,
@@ -60,29 +84,33 @@
         }
       },
       "B1_Get_stall_candidates": {
+        "runAfter": {
+          "Settings": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "21774ad0-4b3b-4405-b82f-30444680c53b"
+        },
         "type": "OpenApiConnection",
         "inputs": {
+          "host": {
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems",
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+          },
           "parameters": {
             "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
             "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
             "$filter": "ItemStatus eq 'Active' and Planned_x0020_Delivery_x0020_Dat eq null and ManualEstimatedDeliveryDate eq null",
             "$top": 5000
           },
-          "host": {
-            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-            "connectionName": "shared_sharepointonline",
-            "operationId": "GetItems"
-          }
+          "authentication": "@parameters('$authentication')"
         },
         "runtimeConfiguration": {
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
-        "runAfter": {
-          "Settings": [
-            "Succeeded"
-          ]
         }
       },
       "B2_Where_TODAY_is_the_answer": {
@@ -91,6 +119,9 @@
             "Succeeded"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "977983cf-8218-4bba-91c8-a84a0091649c"
+        },
         "type": "Query",
         "inputs": {
           "from": "@outputs('B1_Get_stall_candidates')?['body/value']",
@@ -98,89 +129,104 @@
         }
       },
       "B3_Touch_each_stalled_unit": {
-        "runAfter": {
-          "B2_Where_TODAY_is_the_answer": [
-            "Succeeded"
-          ]
-        },
-        "type": "Foreach",
         "foreach": "@body('B2_Where_TODAY_is_the_answer')",
-        "runtimeConfiguration": {
-          "concurrency": {
-            "repetitions": 10
-          }
-        },
         "actions": {
           "B4_Write_Calc_Refreshed": {
+            "runAfter": {},
+            "metadata": {
+              "operationMetadataId": "1c772f04-a6d8-4ce5-945a-eb4af33d4a3d"
+            },
             "type": "OpenApiConnection",
             "inputs": {
+              "host": {
+                "connectionName": "shared_sharepointonline",
+                "operationId": "PatchItem",
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+              },
               "parameters": {
                 "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
                 "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
                 "id": "@items('B3_Touch_each_stalled_unit')?['ID']",
                 "item/CalcRefreshed": "@formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')"
               },
-              "host": {
-                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                "connectionName": "shared_sharepointonline",
-                "operationId": "PatchItem"
-              }
-            },
-            "runAfter": {}
+              "authentication": "@parameters('$authentication')"
+            }
+          }
+        },
+        "runAfter": {
+          "B2_Where_TODAY_is_the_answer": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "a8341e5d-fe9c-4478-8bbc-07308bd72ee2"
+        },
+        "type": "Foreach",
+        "runtimeConfiguration": {
+          "concurrency": {
+            "repetitions": 10
           }
         }
       },
       "C1_Get_Livraison_candidates": {
-        "type": "OpenApiConnection",
-        "inputs": {
-          "parameters": {
-            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
-            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
-            "$filter": "Location eq 'Livraison' and ItemStatus eq 'Delivered'",
-            "$top": 5000
-          },
-          "host": {
-            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-            "connectionName": "shared_sharepointonline",
-            "operationId": "GetItems"
-          }
-        },
-        "runtimeConfiguration": {
-          "paginationPolicy": {
-            "minimumItemCount": 5000
-          }
-        },
         "runAfter": {
           "B3_Touch_each_stalled_unit": [
             "Succeeded",
             "Failed",
             "Skipped"
           ]
-        }
-      },
-      "C1b_Get_all_units": {
+        },
+        "metadata": {
+          "operationMetadataId": "f2b73b7d-50bb-4dd1-b344-2676c0c38a55"
+        },
         "type": "OpenApiConnection",
         "inputs": {
+          "host": {
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems",
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+          },
           "parameters": {
             "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
             "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+            "$filter": "Location eq 'Livraison' and ItemStatus eq 'Delivered'",
             "$top": 5000
           },
-          "host": {
-            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-            "connectionName": "shared_sharepointonline",
-            "operationId": "GetItems"
-          }
+          "authentication": "@parameters('$authentication')"
         },
         "runtimeConfiguration": {
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
+        }
+      },
+      "C1b_Get_all_units": {
         "runAfter": {
           "C1_Get_Livraison_candidates": [
             "Succeeded"
           ]
+        },
+        "metadata": {
+          "operationMetadataId": "195770b3-f429-4ce6-931f-e30ceacd376c"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "host": {
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems",
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+          },
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+            "$top": 5000
+          },
+          "authentication": "@parameters('$authentication')"
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
         }
       },
       "C1c_All_titles": {
@@ -188,6 +234,9 @@
           "C1b_Get_all_units": [
             "Succeeded"
           ]
+        },
+        "metadata": {
+          "operationMetadataId": "c1d8ae90-8934-4455-bc2b-f15a863f6cc1"
         },
         "type": "Select",
         "inputs": {
@@ -203,10 +252,16 @@
         },
         "metadata": {
           "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR": "/General/FAB/Archive/Archive active.xlsx",
-          "tableId": "{17014A43-5D94-47C6-982F-45D962DA4036}"
+          "tableId": "{17014A43-5D94-47C6-982F-45D962DA4036}",
+          "operationMetadataId": "3e72b89d-ecfe-4f8d-8bb7-bf983f492911"
         },
         "type": "OpenApiConnection",
         "inputs": {
+          "host": {
+            "connectionName": "shared_excelonlinebusiness",
+            "operationId": "GetItems",
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness"
+          },
           "parameters": {
             "source": "groups/089706a6-52fa-4937-a9c7-33bfca5c431d",
             "drive": "b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64",
@@ -214,11 +269,7 @@
             "table": "{17014A43-5D94-47C6-982F-45D962DA4036}",
             "$filter": "Location eq 'LI'"
           },
-          "host": {
-            "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
-            "operationId": "GetItems",
-            "connectionName": "shared_excelonlinebusiness"
-          }
+          "authentication": "@parameters('$authentication')"
         },
         "runtimeConfiguration": {
           "paginationPolicy": {
@@ -232,6 +283,9 @@
             "Succeeded"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "b68a5e4e-c349-4284-9028-a67229dac118"
+        },
         "type": "Query",
         "inputs": {
           "from": "@outputs('C2_Get_Excel_LI_rows')?['body/value']",
@@ -243,6 +297,9 @@
           "C3_Excel_old_enough": [
             "Succeeded"
           ]
+        },
+        "metadata": {
+          "operationMetadataId": "24edc8d3-f5e0-4578-ad96-b5d8f127b709"
         },
         "type": "Select",
         "inputs": {
@@ -256,6 +313,9 @@
             "Succeeded"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "3f4d747d-4ab6-4bb0-ad68-5bba3fa5aeb1"
+        },
         "type": "Query",
         "inputs": {
           "from": "@outputs('C1_Get_Livraison_candidates')?['body/value']",
@@ -267,6 +327,9 @@
           "C4_Confirmed_by_both": [
             "Succeeded"
           ]
+        },
+        "metadata": {
+          "operationMetadataId": "8765fe8e-61e0-457c-ae62-77885a4645a8"
         },
         "type": "Query",
         "inputs": {
@@ -280,6 +343,9 @@
             "Succeeded"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "4c8a43d8-f329-4e95-a555-598ba334d4e2"
+        },
         "type": "Query",
         "inputs": {
           "from": "@outputs('C1b_Get_all_units')?['body/value']",
@@ -292,6 +358,9 @@
             "Succeeded"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "ca81bd86-18c0-47cd-a95c-244ab2fc2960"
+        },
         "type": "Query",
         "inputs": {
           "from": "@body('C3_Excel_old_enough')",
@@ -299,84 +368,106 @@
         }
       },
       "C5_Cap_guard": {
+        "actions": {
+          "C5a_Cap_exceeded_nothing_deleted": {
+            "runAfter": {},
+            "metadata": {
+              "operationMetadataId": "26bf9f6a-7175-4105-ae7e-8e4b9eed4593"
+            },
+            "type": "Compose",
+            "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_both'))), ' candidates > cap ', string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the Excel read and the mirror.')"
+          }
+        },
         "runAfter": {
           "C4d_Excel_done_no_unit_row": [
             "Succeeded"
           ]
         },
-        "type": "If",
-        "expression": {
-          "greater": [
-            "@length(body('C4_Confirmed_by_both'))",
-            "@outputs('Settings')?['Cap']"
-          ]
-        },
-        "actions": {
-          "C5a_Cap_exceeded_nothing_deleted": {
-            "runAfter": {},
-            "type": "Compose",
-            "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_both'))), ' candidates > cap ', string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the Excel read and the mirror.')"
-          }
-        },
         "else": {
           "actions": {
             "C6_For_each_confirmed": {
-              "runAfter": {},
-              "type": "Foreach",
               "foreach": "@body('C4_Confirmed_by_both')",
-              "runtimeConfiguration": {
-                "concurrency": {
-                  "repetitions": 10
-                }
-              },
               "actions": {
                 "C6a_Delete_enabled": {
+                  "actions": {
+                    "C6b_Delete_item": {
+                      "runAfter": {},
+                      "metadata": {
+                        "operationMetadataId": "4b3690bd-41c9-4c04-9500-cb5b29a046a9"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connectionName": "shared_sharepointonline",
+                          "operationId": "DeleteItem",
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                        },
+                        "parameters": {
+                          "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                          "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                          "id": "@items('C6_For_each_confirmed')?['ID']"
+                        },
+                        "authentication": "@parameters('$authentication')"
+                      }
+                    }
+                  },
                   "runAfter": {},
-                  "type": "If",
+                  "else": {
+                    "actions": {
+                      "C6c_Would_delete": {
+                        "runAfter": {},
+                        "metadata": {
+                          "operationMetadataId": "c0bb58d3-9df2-478e-ab27-7f5a805fc6db"
+                        },
+                        "type": "Compose",
+                        "inputs": "@concat('would delete ', items('C6_For_each_confirmed')?['Title'])"
+                      }
+                    }
+                  },
                   "expression": {
                     "equals": [
                       "@outputs('Settings')?['DeleteEnabled']",
                       true
                     ]
                   },
-                  "actions": {
-                    "C6b_Delete_item": {
-                      "type": "OpenApiConnection",
-                      "inputs": {
-                        "parameters": {
-                          "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
-                          "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
-                          "id": "@items('C6_For_each_confirmed')?['ID']"
-                        },
-                        "host": {
-                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-                          "connectionName": "shared_sharepointonline",
-                          "operationId": "DeleteItem"
-                        }
-                      },
-                      "runAfter": {}
-                    }
+                  "metadata": {
+                    "operationMetadataId": "eaf8121f-16a0-4cd5-9f26-205263e0dc1f"
                   },
-                  "else": {
-                    "actions": {
-                      "C6c_Would_delete": {
-                        "runAfter": {},
-                        "type": "Compose",
-                        "inputs": "@concat('would delete ', items('C6_For_each_confirmed')?['Title'])"
-                      }
-                    }
-                  }
+                  "type": "If"
+                }
+              },
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "0d67c213-d7dd-4e6a-a569-b5d93c248d90"
+              },
+              "type": "Foreach",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 10
                 }
               }
             }
           }
-        }
+        },
+        "expression": {
+          "greater": [
+            "@length(body('C4_Confirmed_by_both'))",
+            "@outputs('Settings')?['Cap']"
+          ]
+        },
+        "metadata": {
+          "operationMetadataId": "5634ee56-c061-4dc2-b426-0fcd3898d045"
+        },
+        "type": "If"
       },
       "C7_Summary": {
         "runAfter": {
           "C7c_Disagreeing_units": [
             "Succeeded"
           ]
+        },
+        "metadata": {
+          "operationMetadataId": "9063cf31-8214-4ed6-af5c-5914bd9c05df"
         },
         "type": "Compose",
         "inputs": {
@@ -400,6 +491,9 @@
             "Succeeded"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "a60b4ecb-a3ba-44ba-a2fa-83e049844b9b"
+        },
         "type": "Select",
         "inputs": {
           "from": "@body('C4c_Excel_done_list_disagrees')",
@@ -418,6 +512,9 @@
             "Skipped"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "b633f75b-7c13-4148-b0e6-0989d665fd23"
+        },
         "type": "Select",
         "inputs": {
           "from": "@body('C4_Confirmed_by_both')",
@@ -430,10 +527,40 @@
             "Succeeded"
           ]
         },
+        "metadata": {
+          "operationMetadataId": "a24094be-8bb3-48bd-8cb1-364d7e0d0e76"
+        },
         "type": "Select",
         "inputs": {
           "from": "@body('C4b_Held_back')",
           "select": "@item()?['Title']"
+        }
+      },
+      "List_rows_present_in_a_table": {
+        "runAfter": {
+          "C7_Summary": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR": "/General/FAB/Archive/Archive active.xlsx",
+          "operationMetadataId": "5b4babdb-6c85-48fc-8c9a-547f09eeeada",
+          "tableId": "{17014A43-5D94-47C6-982F-45D962DA4036}"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "host": {
+            "connectionName": "shared_excelonlinebusiness_1",
+            "operationId": "GetItems",
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness"
+          },
+          "parameters": {
+            "source": "sites/ermcopower.sharepoint.com,88b9ed6c-d686-4bbe-b445-4e753ad511f6,7f8472f6-8a89-4591-a116-98a1783e6bcc",
+            "drive": "b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64",
+            "file": "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR",
+            "table": "{17014A43-5D94-47C6-982F-45D962DA4036}"
+          },
+          "authentication": "@parameters('$authentication')"
         }
       }
     }

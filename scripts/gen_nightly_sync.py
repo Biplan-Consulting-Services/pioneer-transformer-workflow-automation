@@ -41,8 +41,18 @@ sys.path.insert(0, HERE)
 import gen_nightly_cleanup as G   # noqa: E402  (stage B + helpers; its main() is not run)
 
 FLOW_DIR = os.path.join(ROOT, "workflow-data", "Order Items - Nightly Sync")
-OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v003.json")
 COLUMNS = os.path.join(ROOT, "sharepoint-lists", "mirror", "live", "Columns.csv")
+
+OUT = os.path.join(ROOT, "workflow-data", "_generated", "Order_Items_Nightly_Sync_v005.json")
+
+# 🔴 This flow lives in a SOLUTION. A solution flow on plain connections blocks the new designer
+# ("Uses a connection instead of a connection reference"), and v001's export carried plain
+# connections, so v003 pasted them straight in (2026-09-27). Every connection must now name its
+# solution connection reference, or the generator aborts. SharePoint's is the one the trigger flow
+# and the four N3 flows use. Excel's must be created in the solution first; pass its logical name:
+#     python scripts/gen_nightly_sync.py --excel-ref new_sharedexcelonlinebusiness_xxxxx
+CONNREF_NAMES = {"shared_sharepointonline": "new_sharedsharepointonline_89e9a",
+                 "shared_excelonlinebusiness": None}
 
 CAP = 50            # N2: at most this many deletions in one night; more = delete nothing, report
 DELETE_ENABLED = False
@@ -251,7 +261,16 @@ def build():
                                  "inputs": {"from": "@body('C4b_Held_back')", "select": "@item()?['Title']"}}
     A["C7_Summary"]["runAfter"] = {"C7c_Disagreeing_units": ["Succeeded"]}
 
-    wrapper = {"connectionReferences": copy.deepcopy(connrefs), "definition": d}
+    refs = {}
+    for key in ("shared_sharepointonline", "shared_excelonlinebusiness"):
+        if key not in (connrefs or {}):
+            fail("v001 has no %s connection to carry over" % key)
+        r = copy.deepcopy(connrefs[key])
+        if not CONNREF_NAMES.get(key):
+            fail("no connection reference name for %s - create it in the solution, then pass --excel-ref" % key)
+        r["connectionReferenceLogicalName"] = CONNREF_NAMES[key]
+        refs[key] = r
+    wrapper = {"connectionReferences": refs, "definition": d}
     checks(wrapper, v1, cols, v1name)
     return wrapper
 
@@ -324,15 +343,22 @@ def checks(w, v1, cols, v1name):
     tr = list(d["triggers"].values())[0]["recurrence"]
     if "startTime" in tr or tr.get("timeZone") != "Eastern Standard Time" or tr["schedule"] != {"hours": ["1"], "minutes": [30]}:
         fail("trigger must be 01:30 Eastern Standard Time with no startTime")
-    # 8. connection references: both present
+    # 8. connection references: both present, EXACTLY these two, and every one a solution reference
     cr = w["connectionReferences"] or {}
-    for need in ("shared_sharepointonline", "shared_excelonlinebusiness"):
-        if need not in cr:
-            fail("connectionReferences lacks %s (v001 %s)" % (need, v1name))
+    if set(cr) != {"shared_sharepointonline", "shared_excelonlinebusiness"}:
+        fail("connectionReferences must be exactly SharePoint + Excel, got %s" % sorted(cr))
+    for k, v in cr.items():
+        if not v.get("connectionReferenceLogicalName"):
+            fail("%s is a PLAIN connection - a solution flow on plain connections blocks the new designer" % k)
+    used_conns = set(re.findall(r'"connectionName": "([^"]+)"', txt))
+    if used_conns - set(cr):
+        fail("actions use connections with no reference: %s" % sorted(used_conns - set(cr)))
     return used
 
 
 def main():
+    if "--excel-ref" in sys.argv:
+        CONNREF_NAMES["shared_excelonlinebusiness"] = sys.argv[sys.argv.index("--excel-ref") + 1]
     w = build()
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as f:

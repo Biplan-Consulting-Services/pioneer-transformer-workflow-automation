@@ -26,6 +26,7 @@ def expect_abort(name, mutate):
     print("  FAIL %-44s -> passed the checks" % name)
 
 
+N.CONNREF_NAMES["shared_excelonlinebusiness"] = N.CONNREF_NAMES["shared_excelonlinebusiness"] or "new_test_excel_ref"
 BASE = N.build()
 V1, _, _ = N.load_v001()
 COLS = N.load_columns()
@@ -60,6 +61,13 @@ expect_abort("typo'd field in B2", lambda d, w: A(d)["B2_Where_TODAY_is_the_answ
 expect_abort("UTC startTime on the trigger", lambda d, w: list(d["triggers"].values())[0]["recurrence"].update(
     startTime="2026-09-15T05:00:00Z"))
 expect_abort("Excel connection reference dropped", lambda d, w: w["connectionReferences"].pop("shared_excelonlinebusiness"))
+# 2026-09-27: v003 shipped plain connections into a solution flow and blocked the new designer.
+expect_abort("SharePoint on a plain connection", lambda d, w: w["connectionReferences"]["shared_sharepointonline"].pop("connectionReferenceLogicalName"))
+expect_abort("Excel on a plain connection", lambda d, w: w["connectionReferences"]["shared_excelonlinebusiness"].pop("connectionReferenceLogicalName"))
+expect_abort("extra plain connection (_1)", lambda d, w: w["connectionReferences"].update(
+    shared_excelonlinebusiness_1={"connectionName": "shared-excelonlinebu-f1d31972", "source": "Embedded"}))
+expect_abort("action on an unreferenced connection", lambda d, w: A(d)["C2_Get_Excel_LI_rows"]["inputs"]["host"].update(
+    connectionName="shared_excelonlinebusiness_1"))
 
 print("\n%s" % ("ALL PASS" if not fails else "%d FAILED: %s" % (len(fails), fails)))
 sys.exit(1 if fails else 0)
