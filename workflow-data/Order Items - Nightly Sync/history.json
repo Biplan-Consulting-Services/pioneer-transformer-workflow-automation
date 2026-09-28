@@ -136,7 +136,7 @@
     {
       "v": 7,
       "captured": "2026-09-28T13:08:28-04:00",
-      "state": "local",
+      "state": "applied",
       "parent": 6,
       "note": "v007: gate on TableArchiveOrderItems (Livraison; archived row Delivered + same Modified; unit untouched GraceDays=7), stage D recycles never-edited empty rows (>24h, cap 10); DeleteEnabled=false",
       "sha256": "8a4534739b33aa3a825b4b32b60a931782e0eb50e8d4fe11b13bf4ab034f4281",
@@ -153,7 +153,7 @@
       "files": {
         "definition": "v007__2026-09-28T13-08__local__v007-gate-on-TableArchiveOrderItems-Livraison-ar.json"
       },
-      "appliedAt": null,
+      "appliedAt": "2026-09-28T13:12:39-04:00",
       "source": "Order_Items_Nightly_Sync_v007.json"
     }
   ],

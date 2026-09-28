@@ -1,22 +1,29 @@
 {
+  "$schema": "https://power-automate-tools.local/flow-editor.json#",
   "connectionReferences": {
     "shared_sharepointonline": {
       "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a",
       "source": "Embedded",
       "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
-      "tier": "NotSpecified",
+      "displayName": "SharePoint",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4913/sharepointonline/icon.png",
+      "brandColor": "",
+      "tier": "Standard",
       "apiName": "sharepointonline",
-      "isProcessSimpleApiReferenceConversionAlreadyDone": false,
-      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a"
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
     },
     "shared_excelonlinebusiness": {
       "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
+      "connectionReferenceLogicalName": "new_sharedexcelonlinebusiness_452b5",
       "source": "Embedded",
       "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
-      "tier": "NotSpecified",
+      "displayName": "Excel Online (Business)",
+      "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1826/1.0.1826.4868/excelonlinebusiness/icon.png",
+      "brandColor": "#107C41",
+      "tier": "Standard",
       "apiName": "excelonlinebusiness",
-      "isProcessSimpleApiReferenceConversionAlreadyDone": false,
-      "connectionReferenceLogicalName": "new_sharedexcelonlinebusiness_452b5"
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false
     }
   },
   "definition": {
@@ -34,7 +41,6 @@
     },
     "triggers": {
       "Every_night_at_01_30_Eastern": {
-        "type": "Recurrence",
         "recurrence": {
           "frequency": "Day",
           "interval": 1,
@@ -47,7 +53,8 @@
               30
             ]
           }
-        }
+        },
+        "type": "Recurrence"
       }
     },
     "actions": {
@@ -63,6 +70,11 @@
         }
       },
       "B1_Get_stall_candidates": {
+        "runAfter": {
+          "Settings": [
+            "Succeeded"
+          ]
+        },
         "type": "OpenApiConnection",
         "inputs": {
           "parameters": {
@@ -81,11 +93,6 @@
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
-        "runAfter": {
-          "Settings": [
-            "Succeeded"
-          ]
         }
       },
       "B2_Where_TODAY_is_the_answer": {
@@ -101,20 +108,10 @@
         }
       },
       "B3_Touch_each_stalled_unit": {
-        "runAfter": {
-          "B2_Where_TODAY_is_the_answer": [
-            "Succeeded"
-          ]
-        },
-        "type": "Foreach",
         "foreach": "@body('B2_Where_TODAY_is_the_answer')",
-        "runtimeConfiguration": {
-          "concurrency": {
-            "repetitions": 10
-          }
-        },
         "actions": {
           "B4_Write_Calc_Refreshed": {
+            "runAfter": {},
             "type": "OpenApiConnection",
             "inputs": {
               "parameters": {
@@ -128,12 +125,29 @@
                 "connectionName": "shared_sharepointonline",
                 "operationId": "PatchItem"
               }
-            },
-            "runAfter": {}
+            }
+          }
+        },
+        "runAfter": {
+          "B2_Where_TODAY_is_the_answer": [
+            "Succeeded"
+          ]
+        },
+        "type": "Foreach",
+        "runtimeConfiguration": {
+          "concurrency": {
+            "repetitions": 10
           }
         }
       },
       "C1_Get_Livraison_candidates": {
+        "runAfter": {
+          "B3_Touch_each_stalled_unit": [
+            "Succeeded",
+            "Failed",
+            "Skipped"
+          ]
+        },
         "type": "OpenApiConnection",
         "inputs": {
           "parameters": {
@@ -152,16 +166,14 @@
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
-        "runAfter": {
-          "B3_Touch_each_stalled_unit": [
-            "Succeeded",
-            "Failed",
-            "Skipped"
-          ]
         }
       },
       "C1b_Get_all_units": {
+        "runAfter": {
+          "C1_Get_Livraison_candidates": [
+            "Succeeded"
+          ]
+        },
         "type": "OpenApiConnection",
         "inputs": {
           "parameters": {
@@ -179,11 +191,6 @@
           "paginationPolicy": {
             "minimumItemCount": 5000
           }
-        },
-        "runAfter": {
-          "C1_Get_Livraison_candidates": [
-            "Succeeded"
-          ]
         }
       },
       "C1c_All_ids": {
@@ -313,18 +320,6 @@
         }
       },
       "C5_Cap_guard": {
-        "runAfter": {
-          "C4d_Archive_done_no_unit_row": [
-            "Succeeded"
-          ]
-        },
-        "type": "If",
-        "expression": {
-          "greater": [
-            "@length(body('C4_Confirmed_by_archive'))",
-            "@outputs('Settings')?['Cap']"
-          ]
-        },
         "actions": {
           "C5a_Cap_exceeded_nothing_deleted": {
             "runAfter": {},
@@ -332,29 +327,20 @@
             "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_archive'))), ' candidates > cap ', string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the archive read and the mirror.')"
           }
         },
+        "runAfter": {
+          "C4d_Archive_done_no_unit_row": [
+            "Succeeded"
+          ]
+        },
         "else": {
           "actions": {
             "C6_For_each_confirmed": {
-              "runAfter": {},
-              "type": "Foreach",
               "foreach": "@body('C4_Confirmed_by_archive')",
-              "runtimeConfiguration": {
-                "concurrency": {
-                  "repetitions": 10
-                }
-              },
               "actions": {
                 "C6a_Delete_enabled": {
-                  "runAfter": {},
-                  "type": "If",
-                  "expression": {
-                    "equals": [
-                      "@outputs('Settings')?['DeleteEnabled']",
-                      true
-                    ]
-                  },
                   "actions": {
                     "C6b_Delete_item": {
+                      "runAfter": {},
                       "type": "OpenApiConnection",
                       "inputs": {
                         "parameters": {
@@ -367,10 +353,10 @@
                           "connectionName": "shared_sharepointonline",
                           "operationId": "DeleteItem"
                         }
-                      },
-                      "runAfter": {}
+                      }
                     }
                   },
+                  "runAfter": {},
                   "else": {
                     "actions": {
                       "C6c_Would_delete": {
@@ -379,12 +365,33 @@
                         "inputs": "@concat('would delete ', items('C6_For_each_confirmed')?['Title'])"
                       }
                     }
-                  }
+                  },
+                  "expression": {
+                    "equals": [
+                      "@outputs('Settings')?['DeleteEnabled']",
+                      true
+                    ]
+                  },
+                  "type": "If"
+                }
+              },
+              "runAfter": {},
+              "type": "Foreach",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 10
                 }
               }
             }
           }
-        }
+        },
+        "expression": {
+          "greater": [
+            "@length(body('C4_Confirmed_by_archive'))",
+            "@outputs('Settings')?['Cap']"
+          ]
+        },
+        "type": "If"
       },
       "D1_Empty_row_candidates": {
         "runAfter": {
@@ -401,18 +408,6 @@
         }
       },
       "D2_Empty_row_cap_guard": {
-        "runAfter": {
-          "D1_Empty_row_candidates": [
-            "Succeeded"
-          ]
-        },
-        "type": "If",
-        "expression": {
-          "greater": [
-            "@length(body('D1_Empty_row_candidates'))",
-            "@outputs('Settings')?['EmptyRowCap']"
-          ]
-        },
         "actions": {
           "D2a_Cap_exceeded_nothing_recycled": {
             "runAfter": {},
@@ -420,29 +415,20 @@
             "inputs": "@concat('EMPTY-ROW CAP EXCEEDED: ', string(length(body('D1_Empty_row_candidates'))), ' rows > cap ', string(outputs('Settings')?['EmptyRowCap']), ' - nothing recycled tonight. Check the mirror.')"
           }
         },
+        "runAfter": {
+          "D1_Empty_row_candidates": [
+            "Succeeded"
+          ]
+        },
         "else": {
           "actions": {
             "D3_For_each_empty_row": {
-              "runAfter": {},
-              "type": "Foreach",
               "foreach": "@body('D1_Empty_row_candidates')",
-              "runtimeConfiguration": {
-                "concurrency": {
-                  "repetitions": 10
-                }
-              },
               "actions": {
                 "D3a_Delete_enabled": {
-                  "runAfter": {},
-                  "type": "If",
-                  "expression": {
-                    "equals": [
-                      "@outputs('Settings')?['DeleteEnabled']",
-                      true
-                    ]
-                  },
                   "actions": {
                     "D3b_Recycle_item": {
+                      "runAfter": {},
                       "type": "OpenApiConnection",
                       "inputs": {
                         "parameters": {
@@ -455,10 +441,10 @@
                           "connectionName": "shared_sharepointonline",
                           "operationId": "DeleteItem"
                         }
-                      },
-                      "runAfter": {}
+                      }
                     }
                   },
+                  "runAfter": {},
                   "else": {
                     "actions": {
                       "D3c_Would_recycle": {
@@ -467,12 +453,33 @@
                         "inputs": "@concat('would recycle ', string(items('D3_For_each_empty_row')?['ID']))"
                       }
                     }
-                  }
+                  },
+                  "expression": {
+                    "equals": [
+                      "@outputs('Settings')?['DeleteEnabled']",
+                      true
+                    ]
+                  },
+                  "type": "If"
+                }
+              },
+              "runAfter": {},
+              "type": "Foreach",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 10
                 }
               }
             }
           }
-        }
+        },
+        "expression": {
+          "greater": [
+            "@length(body('D1_Empty_row_candidates'))",
+            "@outputs('Settings')?['EmptyRowCap']"
+          ]
+        },
+        "type": "If"
       },
       "C7a_Confirmed_titles": {
         "runAfter": {
