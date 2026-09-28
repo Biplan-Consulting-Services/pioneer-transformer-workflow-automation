@@ -132,6 +132,29 @@
       },
       "appliedAt": "2026-09-28T11:51:54-04:00",
       "source": "Order_Items_Nightly_Sync_v006.json"
+    },
+    {
+      "v": 7,
+      "captured": "2026-09-28T13:08:28-04:00",
+      "state": "local",
+      "parent": 6,
+      "note": "v007: gate on TableArchiveOrderItems (Livraison; archived row Delivered + same Modified; unit untouched GraceDays=7), stage D recycles never-edited empty rows (>24h, cap 10); DeleteEnabled=false",
+      "sha256": "8a4534739b33aa3a825b4b32b60a931782e0eb50e8d4fe11b13bf4ab034f4281",
+      "connBinding": {
+        "shared_excelonlinebusiness": "new_sharedexcelonlinebusiness_452b5",
+        "shared_sharepointonline": "new_sharedsharepointonline_89e9a"
+      },
+      "fingerprint": {
+        "toLower": 0,
+        "ecUpper": 0,
+        "actions": 23,
+        "excelFile": null
+      },
+      "files": {
+        "definition": "v007__2026-09-28T13-08__local__v007-gate-on-TableArchiveOrderItems-Livraison-ar.json"
+      },
+      "appliedAt": null,
+      "source": "Order_Items_Nightly_Sync_v007.json"
     }
   ],
   "identity": {

@@ -1,0 +1,567 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "undefined",
+    "parameters": {
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      },
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "Every_night_at_01_30_Eastern": {
+        "type": "Recurrence",
+        "recurrence": {
+          "frequency": "Day",
+          "interval": 1,
+          "timeZone": "Eastern Standard Time",
+          "schedule": {
+            "hours": [
+              "1"
+            ],
+            "minutes": [
+              30
+            ]
+          }
+        }
+      }
+    },
+    "actions": {
+      "Settings": {
+        "runAfter": {},
+        "type": "Compose",
+        "inputs": {
+          "DeleteEnabled": false,
+          "Cap": 50,
+          "GraceDays": 7,
+          "EmptyRowCap": 10,
+          "note": "DeleteEnabled=false is a DRY RUN: C6 composes 'would delete <Title>', D3 'would recycle <Id>'. Flip to true after one night's report has been checked against the mirror."
+        }
+      },
+      "B1_Get_stall_candidates": {
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+            "$filter": "ItemStatus eq 'Active' and Planned_x0020_Delivery_x0020_Dat eq null and ManualEstimatedDeliveryDate eq null",
+            "$top": 5000
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        },
+        "runAfter": {
+          "Settings": [
+            "Succeeded"
+          ]
+        }
+      },
+      "B2_Where_TODAY_is_the_answer": {
+        "runAfter": {
+          "B1_Get_stall_candidates": [
+            "Succeeded"
+          ]
+        },
+        "type": "Query",
+        "inputs": {
+          "from": "@outputs('B1_Get_stall_candidates')?['body/value']",
+          "where": "@if(not(equals(coalesce(item()?['FinishingDate'],''),'')),less(formatDateTime(coalesce(item()?['FinishingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')),if(not(equals(coalesce(item()?['TestingDate'],''),'')),less(formatDateTime(coalesce(item()?['TestingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')),if(not(equals(coalesce(item()?['Planned_x0020_Tanking_x0020_Date'],''),'')),less(formatDateTime(coalesce(item()?['Planned_x0020_Tanking_x0020_Date'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')),and(or(not(equals(coalesce(item()?['CoilingDate'],''),'')),not(equals(coalesce(item()?['StackingDate'],''),'')),not(equals(coalesce(item()?['AssemblyDate'],''),'')),not(equals(coalesce(item()?['DryingDate'],''),''))),not(or(and(not(equals(coalesce(item()?['CoilingDate'],''),'')),not(less(formatDateTime(coalesce(item()?['CoilingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['StackingDate'],''),'')),not(less(formatDateTime(coalesce(item()?['StackingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['AssemblyDate'],''),'')),not(less(formatDateTime(coalesce(item()?['AssemblyDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['DryingDate'],''),'')),not(less(formatDateTime(coalesce(item()?['DryingDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')))),and(not(equals(coalesce(item()?['TankDeliveryDate'],''),'')),not(less(formatDateTime(coalesce(item()?['TankDeliveryDate'],'1900-01-01T00:00:00Z'),'yyyy-MM-dd'), formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd'))))))))))"
+        }
+      },
+      "B3_Touch_each_stalled_unit": {
+        "runAfter": {
+          "B2_Where_TODAY_is_the_answer": [
+            "Succeeded"
+          ]
+        },
+        "type": "Foreach",
+        "foreach": "@body('B2_Where_TODAY_is_the_answer')",
+        "runtimeConfiguration": {
+          "concurrency": {
+            "repetitions": 10
+          }
+        },
+        "actions": {
+          "B4_Write_Calc_Refreshed": {
+            "type": "OpenApiConnection",
+            "inputs": {
+              "parameters": {
+                "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                "id": "@items('B3_Touch_each_stalled_unit')?['ID']",
+                "item/CalcRefreshed": "@formatDateTime(convertFromUtc(utcNow(), 'Eastern Standard Time'), 'yyyy-MM-dd')"
+              },
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "PatchItem"
+              }
+            },
+            "runAfter": {}
+          }
+        }
+      },
+      "C1_Get_Livraison_candidates": {
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+            "$filter": "Location eq 'Livraison' and ItemStatus eq 'Delivered'",
+            "$top": 5000
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        },
+        "runAfter": {
+          "B3_Touch_each_stalled_unit": [
+            "Succeeded",
+            "Failed",
+            "Skipped"
+          ]
+        }
+      },
+      "C1b_Get_all_units": {
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+            "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+            "$top": 5000
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        },
+        "runAfter": {
+          "C1_Get_Livraison_candidates": [
+            "Succeeded"
+          ]
+        }
+      },
+      "C1c_All_ids": {
+        "runAfter": {
+          "C1b_Get_all_units": [
+            "Succeeded"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@outputs('C1b_Get_all_units')?['body/value']",
+          "select": "@string(item()?['ID'])"
+        }
+      },
+      "C2_Get_archive_Livraison_rows": {
+        "runAfter": {
+          "C1c_All_ids": [
+            "Succeeded"
+          ]
+        },
+        "metadata": {
+          "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR": "/General/FAB/Archive/Archive active.xlsx"
+        },
+        "type": "OpenApiConnection",
+        "inputs": {
+          "parameters": {
+            "source": "groups/089706a6-52fa-4937-a9c7-33bfca5c431d",
+            "drive": "b!bO25iIbWvku0RU51OtUR9vZyhH-JipFFoRaYoXg-a8zPqBmaybwgS5qVv6sntK64",
+            "file": "01DI2JQP3TLUWTRLJ275HIC73YMFHMEQZR",
+            "table": "TableArchiveOrderItems",
+            "$filter": "Location eq 'Livraison'"
+          },
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+            "operationId": "GetItems",
+            "connectionName": "shared_excelonlinebusiness"
+          }
+        },
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "C3_Archive_ids": {
+        "runAfter": {
+          "C2_Get_archive_Livraison_rows": [
+            "Succeeded"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@outputs('C2_Get_archive_Livraison_rows')?['body/value']",
+          "select": "@first(split(replace(replace(string(coalesce(item()?['Id'],'')),',',''),' ',''),'.'))"
+        }
+      },
+      "C3b_Archive_status_keys": {
+        "runAfter": {
+          "C3_Archive_ids": [
+            "Succeeded"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@outputs('C2_Get_archive_Livraison_rows')?['body/value']",
+          "select": "@concat(first(split(replace(replace(string(coalesce(item()?['Id'],'')),',',''),' ',''),'.')), '|', string(coalesce(item()?['ItemStatus'],'')))"
+        }
+      },
+      "C3c_Archive_state_keys": {
+        "runAfter": {
+          "C3b_Archive_status_keys": [
+            "Succeeded"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@outputs('C2_Get_archive_Livraison_rows')?['body/value']",
+          "select": "@concat(first(split(replace(replace(string(coalesce(item()?['Id'],'')),',',''),' ',''),'.')), '|', string(coalesce(item()?['ItemStatus'],'')), '|', string(coalesce(item()?['Modified'],'')))"
+        }
+      },
+      "C4_Confirmed_by_archive": {
+        "runAfter": {
+          "C3c_Archive_state_keys": [
+            "Succeeded"
+          ]
+        },
+        "type": "Query",
+        "inputs": {
+          "from": "@outputs('C1_Get_Livraison_candidates')?['body/value']",
+          "where": "@and(contains(body('C3b_Archive_status_keys'), concat(string(item()?['ID']), '|', 'Delivered')), contains(body('C3c_Archive_state_keys'), concat(string(item()?['ID']), '|', 'Delivered', '|', string(item()?['Modified']))), lessOrEquals(ticks(item()?['Modified']), ticks(addDays(utcNow(), mul(-1, outputs('Settings')?['GraceDays'])))))"
+        }
+      },
+      "C4b_Held_back": {
+        "runAfter": {
+          "C4_Confirmed_by_archive": [
+            "Succeeded"
+          ]
+        },
+        "type": "Query",
+        "inputs": {
+          "from": "@outputs('C1_Get_Livraison_candidates')?['body/value']",
+          "where": "@not(and(contains(body('C3b_Archive_status_keys'), concat(string(item()?['ID']), '|', 'Delivered')), contains(body('C3c_Archive_state_keys'), concat(string(item()?['ID']), '|', 'Delivered', '|', string(item()?['Modified']))), lessOrEquals(ticks(item()?['Modified']), ticks(addDays(utcNow(), mul(-1, outputs('Settings')?['GraceDays']))))))"
+        }
+      },
+      "C4c_Archive_done_list_disagrees": {
+        "runAfter": {
+          "C4b_Held_back": [
+            "Succeeded"
+          ]
+        },
+        "type": "Query",
+        "inputs": {
+          "from": "@outputs('C1b_Get_all_units')?['body/value']",
+          "where": "@and(contains(body('C3b_Archive_status_keys'), concat(string(item()?['ID']), '|', 'Delivered')), not(and(equals(item()?['Location']?['Value'], 'Livraison'), equals(item()?['ItemStatus']?['Value'], 'Delivered'))))"
+        }
+      },
+      "C4d_Archive_done_no_unit_row": {
+        "runAfter": {
+          "C4c_Archive_done_list_disagrees": [
+            "Succeeded"
+          ]
+        },
+        "type": "Query",
+        "inputs": {
+          "from": "@outputs('C2_Get_archive_Livraison_rows')?['body/value']",
+          "where": "@and(equals(string(coalesce(item()?['ItemStatus'],'')), 'Delivered'), not(contains(body('C1c_All_ids'), first(split(replace(replace(string(coalesce(item()?['Id'],'')),',',''),' ',''),'.')))))"
+        }
+      },
+      "C5_Cap_guard": {
+        "runAfter": {
+          "C4d_Archive_done_no_unit_row": [
+            "Succeeded"
+          ]
+        },
+        "type": "If",
+        "expression": {
+          "greater": [
+            "@length(body('C4_Confirmed_by_archive'))",
+            "@outputs('Settings')?['Cap']"
+          ]
+        },
+        "actions": {
+          "C5a_Cap_exceeded_nothing_deleted": {
+            "runAfter": {},
+            "type": "Compose",
+            "inputs": "@concat('CAP EXCEEDED: ', string(length(body('C4_Confirmed_by_archive'))), ' candidates > cap ', string(outputs('Settings')?['Cap']), ' - nothing deleted tonight. Check the archive read and the mirror.')"
+          }
+        },
+        "else": {
+          "actions": {
+            "C6_For_each_confirmed": {
+              "runAfter": {},
+              "type": "Foreach",
+              "foreach": "@body('C4_Confirmed_by_archive')",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 10
+                }
+              },
+              "actions": {
+                "C6a_Delete_enabled": {
+                  "runAfter": {},
+                  "type": "If",
+                  "expression": {
+                    "equals": [
+                      "@outputs('Settings')?['DeleteEnabled']",
+                      true
+                    ]
+                  },
+                  "actions": {
+                    "C6b_Delete_item": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                          "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                          "id": "@items('C6_For_each_confirmed')?['ID']"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "connectionName": "shared_sharepointonline",
+                          "operationId": "DeleteItem"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "C6c_Would_delete": {
+                        "runAfter": {},
+                        "type": "Compose",
+                        "inputs": "@concat('would delete ', items('C6_For_each_confirmed')?['Title'])"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "D1_Empty_row_candidates": {
+        "runAfter": {
+          "C5_Cap_guard": [
+            "Succeeded",
+            "Failed",
+            "Skipped"
+          ]
+        },
+        "type": "Query",
+        "inputs": {
+          "from": "@outputs('C1b_Get_all_units')?['body/value']",
+          "where": "@and(empty(string(coalesce(item()?['Title'], ''))), empty(string(coalesce(item()?['OrderNumber']?['Id'], item()?['OrderNumber#Id'], ''))), empty(string(coalesce(item()?['Model']?['Id'], item()?['Model#Id'], ''))), empty(string(coalesce(item()?['Client']?['Id'], item()?['Client#Id'], ''))), empty(string(coalesce(item()?['ModelRevision']?['Id'], item()?['ModelRevision#Id'], ''))), empty(string(coalesce(item()?['Location']?['Value'], ''))), equals(string(item()?['Created']), string(item()?['Modified'])), lessOrEquals(ticks(item()?['Created']), ticks(addHours(utcNow(), -24))))"
+        }
+      },
+      "D2_Empty_row_cap_guard": {
+        "runAfter": {
+          "D1_Empty_row_candidates": [
+            "Succeeded"
+          ]
+        },
+        "type": "If",
+        "expression": {
+          "greater": [
+            "@length(body('D1_Empty_row_candidates'))",
+            "@outputs('Settings')?['EmptyRowCap']"
+          ]
+        },
+        "actions": {
+          "D2a_Cap_exceeded_nothing_recycled": {
+            "runAfter": {},
+            "type": "Compose",
+            "inputs": "@concat('EMPTY-ROW CAP EXCEEDED: ', string(length(body('D1_Empty_row_candidates'))), ' rows > cap ', string(outputs('Settings')?['EmptyRowCap']), ' - nothing recycled tonight. Check the mirror.')"
+          }
+        },
+        "else": {
+          "actions": {
+            "D3_For_each_empty_row": {
+              "runAfter": {},
+              "type": "Foreach",
+              "foreach": "@body('D1_Empty_row_candidates')",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 10
+                }
+              },
+              "actions": {
+                "D3a_Delete_enabled": {
+                  "runAfter": {},
+                  "type": "If",
+                  "expression": {
+                    "equals": [
+                      "@outputs('Settings')?['DeleteEnabled']",
+                      true
+                    ]
+                  },
+                  "actions": {
+                    "D3b_Recycle_item": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://ermcopower.sharepoint.com/sites/PioneerPlanificatio",
+                          "table": "d6468ec5-c7b5-44a3-8ce0-f81f059b671d",
+                          "id": "@items('D3_For_each_empty_row')?['ID']"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "connectionName": "shared_sharepointonline",
+                          "operationId": "DeleteItem"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "D3c_Would_recycle": {
+                        "runAfter": {},
+                        "type": "Compose",
+                        "inputs": "@concat('would recycle ', string(items('D3_For_each_empty_row')?['ID']))"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "C7a_Confirmed_titles": {
+        "runAfter": {
+          "D2_Empty_row_cap_guard": [
+            "Succeeded",
+            "Failed",
+            "Skipped"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@body('C4_Confirmed_by_archive')",
+          "select": "@item()?['Title']"
+        }
+      },
+      "C7b_Held_back_units": {
+        "runAfter": {
+          "C7a_Confirmed_titles": [
+            "Succeeded"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@body('C4b_Held_back')",
+          "select": {
+            "Id": "@item()?['ID']",
+            "Title": "@item()?['Title']",
+            "Modified": "@item()?['Modified']",
+            "reason": "@if(not(contains(body('C3_Archive_ids'), string(item()?['ID']))), 'no archive row at Livraison', if(not(contains(body('C3b_Archive_status_keys'), concat(string(item()?['ID']), '|', 'Delivered'))), 'archive not Delivered', if(not(contains(body('C3c_Archive_state_keys'), concat(string(item()?['ID']), '|', 'Delivered', '|', string(item()?['Modified'])))), 'archive older than the unit (Modified differs)', concat('edited within ', string(outputs('Settings')?['GraceDays']), ' days'))))"
+          }
+        }
+      },
+      "C7c_Disagreeing_units": {
+        "runAfter": {
+          "C7b_Held_back_units": [
+            "Succeeded"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@body('C4c_Archive_done_list_disagrees')",
+          "select": {
+            "Id": "@item()?['ID']",
+            "Title": "@item()?['Title']",
+            "Location": "@item()?['Location']?['Value']",
+            "ItemStatus": "@item()?['ItemStatus']?['Value']"
+          }
+        }
+      },
+      "D4_Empty_row_ids": {
+        "runAfter": {
+          "C7c_Disagreeing_units": [
+            "Succeeded"
+          ]
+        },
+        "type": "Select",
+        "inputs": {
+          "from": "@body('D1_Empty_row_candidates')",
+          "select": "@item()?['ID']"
+        }
+      },
+      "C7_Summary": {
+        "runAfter": {
+          "D4_Empty_row_ids": [
+            "Succeeded"
+          ]
+        },
+        "type": "Compose",
+        "inputs": {
+          "deleteEnabled": "@outputs('Settings')?['DeleteEnabled']",
+          "cap": "@outputs('Settings')?['Cap']",
+          "graceDays": "@outputs('Settings')?['GraceDays']",
+          "emptyRowCap": "@outputs('Settings')?['EmptyRowCap']",
+          "B_touched": "@length(coalesce(body('B2_Where_TODAY_is_the_answer'), json('[]')))",
+          "C_candidates_OrderItems": "@length(outputs('C1_Get_Livraison_candidates')?['body/value'])",
+          "C_confirmed_by_archive": "@length(body('C4_Confirmed_by_archive'))",
+          "C_capExceeded": "@greater(length(body('C4_Confirmed_by_archive')), outputs('Settings')?['Cap'])",
+          "C_deletedOrWouldDelete": "@if(greater(length(body('C4_Confirmed_by_archive')), outputs('Settings')?['Cap']), json('[]'), body('C7a_Confirmed_titles'))",
+          "C_heldBack": "@length(body('C4b_Held_back'))",
+          "C_heldBack_units": "@body('C7b_Held_back_units')",
+          "C_archiveDone_listDisagrees": "@length(body('C4c_Archive_done_list_disagrees'))",
+          "C_archiveDone_listDisagrees_units": "@body('C7c_Disagreeing_units')",
+          "C_archiveDone_noUnitRow_alreadyGone": "@length(body('C4d_Archive_done_no_unit_row'))",
+          "D_emptyRowCandidates": "@length(body('D1_Empty_row_candidates'))",
+          "D_emptyRowIds": "@body('D4_Empty_row_ids')",
+          "D_capExceeded": "@greater(length(body('D1_Empty_row_candidates')), outputs('Settings')?['EmptyRowCap'])",
+          "D_recycledOrWouldRecycle": "@if(greater(length(body('D1_Empty_row_candidates')), outputs('Settings')?['EmptyRowCap']), json('[]'), body('D4_Empty_row_ids'))"
+        }
+      }
+    }
+  },
+  "connectionReferences": {
+    "shared_sharepointonline": {
+      "connectionName": "shared-sharepointonl-98111a58-3176-47a5-919a-054d39a7c684",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "tier": "NotSpecified",
+      "apiName": "sharepointonline",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false,
+      "connectionReferenceLogicalName": "new_sharedsharepointonline_89e9a"
+    },
+    "shared_excelonlinebusiness": {
+      "connectionName": "shared-excelonlinebu-2cd3888f-e062-4556-9eda-e80966dc0ad6",
+      "source": "Embedded",
+      "id": "/providers/Microsoft.PowerApps/apis/shared_excelonlinebusiness",
+      "tier": "NotSpecified",
+      "apiName": "excelonlinebusiness",
+      "isProcessSimpleApiReferenceConversionAlreadyDone": false,
+      "connectionReferenceLogicalName": "new_sharedexcelonlinebusiness_452b5"
+    }
+  }
+}
