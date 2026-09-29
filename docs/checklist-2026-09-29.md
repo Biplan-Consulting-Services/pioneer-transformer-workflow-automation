@@ -15,7 +15,7 @@ Update items there with ArtifactData; never rebuild it.
 ## Live state (confirmed 2026-09-28)
 | thing | version | state |
 |---|---|---|
-| Nightly Sync | v007 | live, hash-confirmed; `DeleteEnabled=false`; gates on `TableArchiveOrderItems`; stage D recycles empty rows |
+| Nightly Sync | v007 | live, hash-confirmed; `DeleteEnabled=true` since 09-29 ~02:45 (was false); gates on `TableArchiveOrderItems`; stage D recycles empty rows |
 | Trigger flow | v009 | live 14:10, hash-confirmed. A move **out** of Livraison sets Delivered back to Active (step status untouched). Livraison still forces Terminé + Delivered. Live-tested on 21777-1/1 in both directions |
 | Archive active | viewer-free | reads SharePoint directly. `TableArchiveFRM10_12` is loaded to the sheet (not the Data Model), 111 cols (93 + 18 BO). Archive BO sheet and query deleted |
 | Trigger flow checks | done | no loop (max 2 flow writes in a row, 236 writes checked), never writes Status Date, model-less units OK, stray connection deleted |
@@ -33,8 +33,12 @@ the per-repo timesheet CSVs. Put it next to the Nightly Sync summary review.
 
 ## Next steps, in order
 1. **Review tonight's `C7_Summary`.** Expect 0 confirmed.
-2. **09-30:** refresh the mirror, then the user refreshes Archive active, then sets `DeleteEnabled=true`
-   (one value in Settings). The first real deletions come 10-02. Watch that run's summary and the recycle bin.
+2. ✅ **Done early, 09-29 ~02:45:** the user refreshed Archive active, set `DeleteEnabled=true` and ran
+   Nightly Sync by hand. Summary: `deleteEnabled:true`, 54 candidates, 0 deleted, all 54 "edited within 7 days".
+   21777-1/1 flipped from "archive older than the unit" to "edited within 7 days", which proves the archive
+   refresh landed. Deletes are now **armed**: the first real deletions come on the 10-02 01:30 run. Watch that
+   run's summary and the recycle bin. (The session-start mirror snapshot had not succeeded before this; see
+   the `Order via SharePointTables` sign-in issue. Get a clean snapshot before 10-02.)
    ⚠️ Nothing refreshes Archive active automatically. v007 only deletes units whose archived row is current,
    so deletes stall (safely) until someone refreshes it.
 3. **Save Conflict retry** on the four N3 sync flows' Update_unit actions. The user deferred it on 09-28. Author it
