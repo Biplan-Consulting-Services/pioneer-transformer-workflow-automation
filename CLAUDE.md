@@ -1,5 +1,16 @@
 # Workflow-Automation — Pioneer Transformer
 
+> 🔑 **How the work is organised (user-approved 2026-09-29, `docs/organisation-plan.md`):**
+> client (Pioneer Transformer) → project (**Workflow Automation**, billed; ≈ Jira project **AFDS** on
+> biplan-consulting.atlassian.net) → **epic** → task (**Punch List item = the master task list**) → work log.
+> Every Punch List item carries `epic`, `sprint` and `jira` fields; new items must get an `epic`. The 12 epic keys:
+> `order-items-sync`, `nightly-sync-archive`, `data-quality`, `mirror-health`, `power-app`, `workbook-phaseout`,
+> `reporting-kpis`, `monday`, `engineering-docs`, `workflow-tasks`, `staff-enablement`, `workspace-tooling`.
+> A build night is a **sprint tag**, not a new board of tasks. Data (workbooks, Power Query, Office Scripts,
+> flows, lists) is organised by type and can serve several epics or projects. Knowledge goes into living pages,
+> not a new dated doc each time. Phases 2–6 (timesheet epics, repo merge, epic READMEs, tools, keep-clean) are
+> planned but not started: follow the plan, and its "nothing is lost" rules, before moving any file.
+
 ## What this is
 A cross-cutting home for Pioneer Transformer's automation/workflow-logistics initiative —
 the parts that span beyond any single workbook (FRM09, FRM10-12): SharePoint list design,

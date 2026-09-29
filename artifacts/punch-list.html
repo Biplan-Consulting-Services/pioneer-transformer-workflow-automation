@@ -95,6 +95,8 @@ h1{font:700 40px/1 var(--display);letter-spacing:.01em;margin:0;text-wrap:balanc
 .p-wait{background:var(--wait-bg);color:var(--wait)}
 .p-done{background:var(--done-bg);color:var(--done)}
 .own{font:500 11.5px/1 var(--sans);color:var(--ink-2);border:1px solid var(--rule);padding:3px 6px;border-radius:3px;white-space:nowrap}
+.epic{font:500 11.5px/1 var(--sans);color:var(--copper);white-space:nowrap}
+.chips button .n{font:500 11px/1 var(--mono);opacity:.7;margin-left:5px}
 .why{font-size:12.5px;color:var(--wait)}
 details{font-size:13px;color:var(--ink-2)}
 details summary{cursor:pointer;color:var(--ink-3);font-size:12.5px;width:max-content}
@@ -140,6 +142,10 @@ details code{font:12px var(--mono);color:var(--ink-3)}
     </div>
     <input id="q" type="search" placeholder="Search items…" autocomplete="off">
   </div>
+  <div class="controls">
+    <label>Epic</label>
+    <div class="chips" id="epicChips"></div>
+  </div>
 
   <main id="list"><p class="notice">Loading the list…</p></main>
   <p class="foot" id="foot"></p>
@@ -152,6 +158,16 @@ details code{font:12px var(--mono);color:var(--ink-3)}
     {k:"claude", label:"Claude",            hint:"a session can do these alone", test:function(o){return o==="claude";}},
     {k:"staff",  label:"Staff questions",   hint:"Angelique, Patrick, Dominic, MEG…", test:function(o){return o.indexOf("staff:")===0;}}
   ];
+  // Epics of the Workflow Automation project (organisation plan 2026-09-29). Items carry `epic`; unknown keys still show.
+  var EPICS = [
+    ["order-items-sync","Order Items & parent sync"], ["nightly-sync-archive","Nightly Sync & archive"],
+    ["data-quality","Data quality"], ["mirror-health","Mirror & health"], ["power-app","Power App"],
+    ["workbook-phaseout","Workbook phase-out"], ["reporting-kpis","Reporting & KPIs"], ["monday","monday.com"],
+    ["engineering-docs","Engineering document control"], ["workflow-tasks","Workflow tasks (Phase 1)"],
+    ["staff-enablement","Staff enablement"], ["workspace-tooling","Workspace & tooling"]
+  ];
+  function epicLabel(k){ var e = EPICS.filter(function(x){return x[0]===k;})[0]; return e ? e[1] : (k || "No epic"); }
+  var epicFilter = null;   // an epic key or null
   var items = {};          // id -> data
   var ownerFilter = null;  // one of OWNERS[k] or null
   var statusFilter = "left";
@@ -203,6 +219,17 @@ details code{font:12px var(--mono);color:var(--ink-3)}
       return '<button type="button" data-o="'+o.k+'" aria-pressed="'+(ownerFilter===o.k)+'"><b class="num">'+mine.length+'</b><span>'+esc(o.label)+' · '+ready+' ready now</span></button>';
     }).join("");
 
+    var keys = EPICS.map(function(e){return e[0];});
+    ids.forEach(function(id){ var k = items[id].epic || ""; if(keys.indexOf(k)<0) keys.push(k); });
+    document.getElementById("epicChips").innerHTML =
+      '<button type="button" data-e="" aria-pressed="'+(epicFilter===null)+'">All</button>' +
+      keys.map(function(k){
+        var n = ids.filter(function(id){return (items[id].epic||"")===k && state(id)!=="done";}).length;
+        var any = ids.some(function(id){return (items[id].epic||"")===k;});
+        if(!any) return "";
+        return '<button type="button" data-e="'+esc(k)+'" aria-pressed="'+(epicFilter===k)+'">'+esc(epicLabel(k))+'<span class="n">'+n+'</span></button>';
+      }).join("");
+
     var groups = {};
     ids.forEach(function(id){
       var it = items[id];
@@ -230,7 +257,8 @@ details code{font:12px var(--mono);color:var(--ink-3)}
     if(statusFilter==="ready" && s!=="open") return false;
     if(statusFilter==="done" && s!=="done") return false;
     if(ownerFilter){ var o = OWNERS.filter(function(x){return x.k===ownerFilter;})[0]; if(!o.test(it.owner)) return false; }
-    if(query){ var hay = (it.title+" "+it.detail+" "+it.owner+" "+it.groupTitle).toLowerCase(); if(hay.indexOf(query)<0) return false; }
+    if(epicFilter!==null && (it.epic||"")!==epicFilter) return false;
+    if(query){ var hay = (it.title+" "+it.detail+" "+it.owner+" "+it.groupTitle+" "+epicLabel(it.epic)+" "+(it.jira||"")+" "+(it.sprint||"")).toLowerCase(); if(hay.indexOf(query)<0) return false; }
     return true;
   }
 
@@ -244,7 +272,10 @@ details code{font:12px var(--mono);color:var(--ink-3)}
     return '<div class="item is-'+s+'">'
       + '<button type="button" class="box" data-toggle="'+esc(id)+'" aria-pressed="'+(s==="done")+'" aria-label="Mark '+esc(it.title)+(s==="done"?" not done":" done")+'"'+(canWrite?"":" disabled")+'>'+CHECK+'</button>'
       + '<div class="main"><div class="t">'+esc(it.title)+'</div>'
-      + '<div class="meta">'+pill+'<span class="own">'+esc(ownerLabel(it.owner))+'</span>'+hold+'</div>'
+      + '<div class="meta">'+pill+'<span class="own">'+esc(ownerLabel(it.owner))+'</span>'
+      + (epicFilter===null && it.epic ? '<span class="epic">'+esc(epicLabel(it.epic))+'</span>' : '')
+      + (it.jira ? '<span class="own">'+esc(it.jira)+'</span>' : '') + (it.sprint ? '<span class="own">sprint '+esc(it.sprint)+'</span>' : '')
+      + hold+'</div>'
       + (why.length ? '<div class="why">Waiting on: '+esc(why.join(" · "))+'</div>' : "")
       + (it.detail ? '<details><summary>Details</summary><p>'+esc(it.detail)+'</p>'+(it.source?'<code>'+esc(it.source)+'</code>':"")+'</details>' : "")
       + '</div><div class="size" title="size: S small, M medium, L large">'+esc(it.size||"")+'</div></div>';
@@ -265,8 +296,9 @@ details code{font:12px var(--mono);color:var(--ink-3)}
   }
 
   document.addEventListener("click", function(e){
-    var t = e.target.closest("[data-toggle],[data-hold],[data-o],[data-s]");
+    var t = e.target.closest("[data-toggle],[data-hold],[data-o],[data-s],[data-e]");
     if(!t) return;
+    if(t.dataset.e!==undefined){ epicFilter = (t.dataset.e==="" || epicFilter===t.dataset.e) ? null : t.dataset.e; render(); return; }
     if(t.dataset.toggle){ var id=t.dataset.toggle; write(id, items[id].status==="done" ? "todo" : "done"); }
     else if(t.dataset.hold){ write(t.dataset.hold, t.dataset.v); }
     else if(t.dataset.o){ ownerFilter = ownerFilter===t.dataset.o ? null : t.dataset.o; render(); }
@@ -289,7 +321,7 @@ details code{font:12px var(--mono);color:var(--ink-3)}
       snap.docs.forEach(function(doc){ if(doc.exists) next[doc.id] = doc.data(); });
       items = next;
       var latest = Object.keys(items).map(function(k){return items[k].updatedAt||"";}).sort().pop();
-      document.getElementById("foot").textContent = Object.keys(items).length ? "Last change " + (latest||"").replace("T"," ") + ". Source: docs/checklist-2026-09-25.md, roadmap, handover and build-night board, de-duplicated 2026-09-27." : "";
+      document.getElementById("foot").textContent = Object.keys(items).length ? "Last change " + (latest||"").replace("T"," ") + ". Tasks of the Workflow Automation project, tagged by epic (organisation plan, 2026-09-29). First seeded 2026-09-27 from the checklist, roadmap, handover and build-night board." : "";
       if(!Object.keys(items).length){ fail("The list is empty. Ask Claude to seed it."); return; }
       render();
     }, function(){ fail("The list stopped updating. Reload the page to reconnect."); });

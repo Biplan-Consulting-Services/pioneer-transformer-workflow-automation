@@ -96,7 +96,10 @@ de-duplicated inventory of the 09-25 checklist, roadmap, handover and build-nigh
 
 Unlike the two pages above, **the items live in the artifact's `db`** (collection `items`, one document per
 item: `title, detail, owner, size, status todo|waiting|done, group, groupTitle, groupOrder, order, blockers[]
-(item ids), waitingOn, source, updatedAt, updatedBy`), not in the HTML. So:
+(item ids), waitingOn, source, updatedAt, updatedBy`, plus since 2026-09-29 **`epic`** (one of the 12 keys in
+`docs/organisation-plan.md`), **`sprint`** (a build-night / week tag, e.g. `2026-10-02`, may be empty) and **`jira`**
+(an AFDS ticket, e.g. `AFDS-183`, may be empty)), not in the HTML. Version 2 of the page (2026-09-29) adds an
+Epic filter row and shows the epic, jira and sprint on each item. So:
 
 - **Mark progress with `ArtifactData`** (`update` on `items/<id>` with `status`), never by republishing. The
   user ticks the same documents from the page; both show up live.

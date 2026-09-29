@@ -1,5 +1,10 @@
 # Workspace cleanup and FRM10-12 / FRM09 merge: plan
 
+> ⚠️ **SUPERSEDED 2026-09-29 by [`organisation-plan.md`](organisation-plan.md).** The user's answers changed the
+> goal from tidying files to organising the work (client → project → epic → task, data by type). This file is kept
+> as a record: its measured inventory (section 2) and the merge mechanics (sections 5 and 7) are still referenced
+> from the new plan. Do not work from its section 4 (target structure) or section 8 (questions, now answered).
+
 **Status:** PLAN ONLY, for review. Nothing has been moved, renamed, committed or configured.
 Written 2026-09-29 for Punch List item `ws-cleanup-plan` (user 2026-09-28, extended 2026-09-29).
 Every number below was measured on 2026-09-29 between 12:00 and 13:00, while a second session was
