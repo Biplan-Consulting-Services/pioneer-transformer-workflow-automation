@@ -1,0 +1,70 @@
+# Project Context: Duke Energy RFP – Pioneer On-Time Delivery (OTD)
+
+## Business Request
+
+Duke Energy has requested Pioneer Transformers' On-Time Delivery (OTD) performance metrics for the 2024-2026 period as part of an active RFP process. The sales team needs a PowerPoint-ready slide summarizing OTD performance over that timeframe. 【1-61da04】
+
+## Stakeholders
+
+- Michael Jackson – Director, Sales USA & Canada, Pioneer Transformers
+- Lyn Wexler – Director of Sales Enablement, ERMCO
+- Pierre Lamarre – General Manager, Pioneer Transformers
+- Zubair Ayub
+- Susel Lopez
+- Dominic Laguë
+- Soleil Anker-Baril (data analyst / report developer responsible for producing the OTD metrics and slide)
+
+【1-61da04】
+
+## Background
+
+On September 24, 2026, Lyn Wexler requested Pioneer Transformers' On-Time Delivery rate for the previous three years in support of a Duke Energy RFP response. Michael Jackson subsequently requested that the information be provided as a PowerPoint slide. 【1-61da04】
+
+Pierre Lamarre asked whether Michael Jackson had access to the Power BI report used for OTD reporting. Soleil confirmed that Michael should have complete access to the report and requested that any access issues be reported. 【1-61da04】
+
+## Data Availability Challenges
+
+The current delivery-tracking system does not contain complete historical delivery data back to 2024.
+
+To reconstruct the required history:
+
+1. Historical Jobscope data was obtained from Jose.
+2. The data must be reviewed, extracted, and validated.
+3. OTD metrics must be calculated using the validated data.
+4. A graph and PowerPoint slide must be produced covering 2024-2026.
+
+【1-61da04】
+
+## Current Status (as of Sept. 28, 2026)
+
+Michael Jackson followed up requesting a status update on the Pioneer OTD slide for 2024-2026.
+
+Lyn Wexler requested a delivery timeline for the RFP response.
+
+Soleil responded that:
+- Work on the historical OTD analysis would continue for the remainder of the afternoon.
+- The completed slide would be delivered first thing the following morning.
+
+Michael acknowledged the update and replied, "Thanks Soleil." 【1-61da04】
+
+## Expected Deliverable
+
+A PowerPoint-ready slide containing:
+
+- Pioneer Transformers On-Time Delivery performance
+- Coverage period: 2024-2026
+- Trend visualization (graph/chart)
+- Metrics suitable for inclusion in a Duke Energy RFP response
+- Data validated using historical Jobscope records where system records are incomplete
+
+【1-61da04】
+
+## Suggested AI Task
+
+Using available delivery history and Jobscope records:
+
+1. Determine the OTD calculation methodology.
+2. Clean and validate historical shipment data.
+3. Calculate OTD performance for 2024, 2025, and 2026.
+4. Generate executive-level charts suitable for customer-facing RFP material.
+5. Produce concise presentation commentary highlighting performance trends and key metrics.
