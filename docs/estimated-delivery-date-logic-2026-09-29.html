@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Calcul de l'Estimated Delivery Date</title>
+</head>
+<body style="font-family: Segoe UI, Calibri, Arial, sans-serif; font-size: 14px; color: #262626; margin: 24px;">
+<!-- Sélectionner du titre jusqu'aux notes, copier, puis coller dans Teams. Les styles sont en ligne pour survivre au collage.
+     Les noms de colonnes et d'étapes sont ceux de SharePoint, tels quels. -->
+
+<p style="font-size: 16px; font-weight: bold; margin: 0 0 4px 0;">Order Items : comment l'Estimated Delivery Date est calculée</p>
+<p style="margin: 0 0 10px 0;">On lit le tableau de haut en bas : c'est la <b>première ligne qui s'applique</b> qui donne la date. Les suivantes sont ignorées.</p>
+
+<table style="border-collapse: collapse; font-size: 13px;">
+  <thead>
+    <tr>
+      <th style="background: #D11F35; color: #ffffff; padding: 6px 10px; border: 1px solid #b51a2d; text-align: left;">Priorité</th>
+      <th style="background: #D11F35; color: #ffffff; padding: 6px 10px; border: 1px solid #b51a2d; text-align: left;">S'applique quand…</th>
+      <th style="background: #D11F35; color: #ffffff; padding: 6px 10px; border: 1px solid #b51a2d; text-align: left;">Colonne dans FRM10-12</th>
+      <th style="background: #D11F35; color: #ffffff; padding: 6px 10px; border: 1px solid #b51a2d; text-align: left;">Date estimée =</th>
+      <th style="background: #D11F35; color: #ffffff; padding: 6px 10px; border: 1px solid #b51a2d; text-align: left;">Back order<br>(+30 jours)</th>
+      <th style="background: #D11F35; color: #ffffff; padding: 6px 10px; border: 1px solid #b51a2d; text-align: left;">Si la date de départ<br>est déjà passée</th>
+      <th style="background: #D11F35; color: #ffffff; padding: 6px 10px; border: 1px solid #b51a2d; text-align: left;">Unités actives<br>concernées</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">1</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;"><b>Planned Delivery Date</b> est remplie (la date de livraison entrée par Caroline)</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Delivery Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Planned Delivery Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">non</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">aucun ajustement</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">20</td>
+    </tr>
+    <tr style="background: #f7f7f7;">
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">2</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;"><b>Manual Estimated Delivery Date</b> est remplie</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Manual Estimated Delivery Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Manual Estimated Delivery Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">non</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">aucun ajustement</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">495</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">3</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;"><b>Finishing End Date</b> est remplie</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Finishing Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Finishing End Date <b>+ 7 jours</b></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">oui</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">On calcule à partir de la journée courante</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">0</td>
+    </tr>
+    <tr style="background: #f7f7f7;">
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">4</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;"><b>Testing End Date</b> est remplie</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Testing Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Testing End Date <b>+ 10 jours</b></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">oui</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">On calcule à partir de la journée courante</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">0</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">5</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;"><b>Planned Tanking Date</b> est remplie<br><span style="color: #6b6b6b;">(date prévue, puis date réelle une fois l'encuvage fait)</span></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Tanking Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Planned Tanking Date <b>+ 14 jours</b></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">oui</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">On calcule à partir de la journée courante</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">550</td>
+    </tr>
+    <tr style="background: #f7f7f7;">
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">6</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Au moins une de ces dates est remplie : <b>Coiling End Date, Stacking End Date, Assembly End Date, Drying End Date</b></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Coiling Date, Stacking Date, Assembly Date, Drying Date<br>+ Tank Delivery Date</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">La date la plus récente parmi ces 4 dates <b>et</b> la Tank Delivery Date, <b>+ 21 jours</b><br><span style="color: #6b6b6b;">(la Tank Delivery Date est prise en compte seulement si au moins une des 4 étapes de production a été accomplie)</span></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">oui</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">On calcule à partir de la journée courante</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">0</td>
+    </tr>
+    <tr>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">7</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Rien de ce qui précède, mais <b>Order - Order Date</b> est remplie</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Order Date<br>+ délai du client (table ClientLeadTimes; 52 semaines par défaut dans Excel)</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Order - Order Date <b>+ 90 jours + Client - Lead Time (weeks)</b> (26 semaines si vide)</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">non</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">la date peut tomber dans le passé</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">9</td>
+    </tr>
+    <tr style="background: #f7f7f7;">
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; font-weight: bold;">8</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">Aucune de ces colonnes n'est remplie</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">—</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;">vide</td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;"></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9;"></td>
+      <td style="padding: 6px 10px; border: 1px solid #d9d9d9; text-align: right;">0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="margin: 10px 0 2px 0;"><b>Back order :</b> si la colonne <b>BO</b> de l'unité (BO aussi dans FRM10-12) indique « BO », on ajoute 30 jours (colonne Bo Penalty). Si elle est vide ou à « OK », on n'ajoute rien.</p>
+<p style="margin: 2px 0;"><b>Si la date de départ est déjà passée :</b> aux lignes 3 à 6, on compte à partir d'aujourd'hui plutôt qu'à partir d'une date passée. Par exemple, si la Finishing End Date remonte à 3 semaines, la date estimée sera aujourd'hui + 7 jours, et elle avancera d'une journée chaque jour tant que la Planned Delivery Date reste vide.</p>
+<p style="margin: 2px 0;"><b>Unités actives concernées :</b> nombre d'unités actives (sur 1 074) dont la date vient de cette ligne, selon les données SharePoint du 29 septembre 2026 à 12 h 14 (après le ménage des dates de ce matin).</p>
+
+</body>
+</html>

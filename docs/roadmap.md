@@ -33,7 +33,7 @@ first, then follow the links into whichever workstream you're picking up.
 > - **"Presentation and hard cutover at 09:00 on 2026-09-01"** — the presentation happened; the
 >   **hard cutover did not.** Staff are still filling in FRM10-12.
 > - **"stage stamping out of the trigger flow"** — the trigger flow is currently **`Off`**, with
->   instances from 2026-09-02 still in flight.
+>   instances from 2026-09-02 still in flight. *(Since changed: it is ON from 2026-09-24, v009 from 09-28.)*
 >
 > What *did* land: the 7 new columns exist and are partly populated (`Planned Tanking Date` 913,
 > `Planned Delivery Date` 335); the fan-out **is** live on the sales app's Save and is creating
@@ -83,7 +83,7 @@ estimated ~927/333; measured 2026-09-04 it is 975/400.
 | 2 | **71 workbook rows with no `Order Items` row** | 🔵 A | **re-diffed 2026-09-05** | 65 are the new orders `22143`–`22155`. The run creates them. Only **6** are real, and they are named in `transfer-flow-forensics-2026-09-04.md` §10 |
 | 3 | **Map A5's remaining 5 columns** — all still 0-populated | 🔵 A | 2 of 7 | Designer |
 | 4 | **A4 — fold TextField sync into the transfer flow** | 🔵 A | not started | Designer |
-| 5 | **Re-enable the trigger flow** (after backfill) | 🔵 A | off since Sep 1 | Items 3/4 first |
+| 5 | ~~**Re-enable the trigger flow** (after backfill)~~ | 🔵 A | ✅ **ON since 2026-09-24**; v009 live 09-28 | Enabled by the user the night of 09-24 (v008); v009 (Livraison move-out → Active) hash-confirmed 09-28 14:10 |
 | 6 | ~~**`Location` empty on 841 of 1,016 active units**~~ **NOT A DEFECT** | 🔵 A | **closed 2026-09-05** | It is blank at source too — 863 of 1,019 — and blank on **exactly** the units that have not started production. Nothing to backfill. See `infrastructure-overview.md` |
 | 7 | **B2-verify** — Production Floor + Planning vs real data | 🟢 B | never done | No longer blocked by item 6. *(An earlier note here claiming the floor view over-reports was wrong — only the 36 units at `Livraison` are delivered, and those are already `Delivered`. Ordinary verification.)* |
 | 8 | **A7 reconciliation pass** — **104** orphan rows, not 71 | 🔵 A | **re-measured 2026-09-05** | 36 correctly `Delivered`; 57 `Active` whose delivery values are **fabricated**, not evidence of shipping (see item 1); **11** genuinely unexplained, 8 of them a single order. §10, §11 |
@@ -843,6 +843,10 @@ Each of these was consciously cut from the overnight window, not overlooked. Ful
   Cosmetic, but it makes column-count audits confusing.
 
 ## 🔴 FIRST daylight job — the trigger flow fails on the model-less units, and is OFF because of it
+
+> ✅ **Resolved (updated 2026-09-29):** the flow is **ON** since the user enabled it on the night of 09-24
+> and runs **v009** (hash-confirmed 09-28 14:10). The model-less, loop and Status Date checks passed on 09-28
+> (Punch List `tf-modelless-test`, `tf-loop-test`, `tf-statusdate-test`). What follows is the record.
 
 Found 2026-09-11 07:1x, minutes after enabling it. **The flow is currently disabled.**
 

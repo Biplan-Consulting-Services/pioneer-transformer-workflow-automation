@@ -1,0 +1,550 @@
+{
+ "yearly": [
+  {
+   "period": 2024,
+   "units": 1212,
+   "on_time": 766,
+   "otd": 0.6320132013201321,
+   "otd_strict": 0.5750825082508251,
+   "late": 446,
+   "median_days_late": 77,
+   "orders": 403,
+   "orders_all_on_time": 0.533498759305211,
+   "clients": 38
+  },
+  {
+   "period": 2025,
+   "units": 1244,
+   "on_time": 1079,
+   "otd": 0.867363344051447,
+   "otd_strict": 0.8456591639871383,
+   "late": 165,
+   "median_days_late": 35,
+   "orders": 342,
+   "orders_all_on_time": 0.7426900584795322,
+   "clients": 22
+  },
+  {
+   "period": 2026,
+   "units": 890,
+   "on_time": 799,
+   "otd": 0.8977528089887641,
+   "otd_strict": 0.8685393258426967,
+   "late": 91,
+   "median_days_late": 30,
+   "orders": 238,
+   "orders_all_on_time": 0.7563025210084033,
+   "clients": 20
+  }
+ ],
+ "quarterly": [
+  {
+   "period": "2024-Q1",
+   "units": 330,
+   "on_time": 185,
+   "otd": 0.5606060606060606,
+   "otd_strict": 0.5,
+   "late": 145,
+   "median_days_late": 56
+  },
+  {
+   "period": "2024-Q2",
+   "units": 330,
+   "on_time": 195,
+   "otd": 0.5909090909090909,
+   "otd_strict": 0.509090909090909,
+   "late": 135,
+   "median_days_late": 80
+  },
+  {
+   "period": "2024-Q3",
+   "units": 251,
+   "on_time": 190,
+   "otd": 0.7569721115537849,
+   "otd_strict": 0.6972111553784861,
+   "late": 61,
+   "median_days_late": 119
+  },
+  {
+   "period": "2024-Q4",
+   "units": 301,
+   "on_time": 196,
+   "otd": 0.6511627906976745,
+   "otd_strict": 0.627906976744186,
+   "late": 105,
+   "median_days_late": 84
+  },
+  {
+   "period": "2025-Q1",
+   "units": 289,
+   "on_time": 187,
+   "otd": 0.6470588235294118,
+   "otd_strict": 0.6193771626297578,
+   "late": 102,
+   "median_days_late": 35
+  },
+  {
+   "period": "2025-Q2",
+   "units": 361,
+   "on_time": 342,
+   "otd": 0.9473684210526315,
+   "otd_strict": 0.9113573407202216,
+   "late": 19,
+   "median_days_late": 38
+  },
+  {
+   "period": "2025-Q3",
+   "units": 275,
+   "on_time": 264,
+   "otd": 0.96,
+   "otd_strict": 0.9490909090909091,
+   "late": 11,
+   "median_days_late": 42
+  },
+  {
+   "period": "2025-Q4",
+   "units": 319,
+   "on_time": 286,
+   "otd": 0.896551724137931,
+   "otd_strict": 0.8871473354231975,
+   "late": 33,
+   "median_days_late": 48
+  },
+  {
+   "period": "2026-Q1",
+   "units": 334,
+   "on_time": 285,
+   "otd": 0.8532934131736527,
+   "otd_strict": 0.8023952095808383,
+   "late": 49,
+   "median_days_late": 29
+  },
+  {
+   "period": "2026-Q2",
+   "units": 277,
+   "on_time": 246,
+   "otd": 0.8880866425992779,
+   "otd_strict": 0.8736462093862816,
+   "late": 31,
+   "median_days_late": 47
+  },
+  {
+   "period": "2026-Q3",
+   "units": 279,
+   "on_time": 268,
+   "otd": 0.9605734767025089,
+   "otd_strict": 0.942652329749104,
+   "late": 11,
+   "median_days_late": 62
+  }
+ ],
+ "monthly": [
+  {
+   "period": "2024-01",
+   "units": 87,
+   "on_time": 31,
+   "otd": 0.3563218390804598,
+   "otd_strict": 0.3448275862068966,
+   "late": 56,
+   "median_days_late": 77
+  },
+  {
+   "period": "2024-02",
+   "units": 114,
+   "on_time": 77,
+   "otd": 0.6754385964912281,
+   "otd_strict": 0.5964912280701754,
+   "late": 37,
+   "median_days_late": 37
+  },
+  {
+   "period": "2024-03",
+   "units": 129,
+   "on_time": 77,
+   "otd": 0.5968992248062015,
+   "otd_strict": 0.5193798449612403,
+   "late": 52,
+   "median_days_late": 44
+  },
+  {
+   "period": "2024-04",
+   "units": 110,
+   "on_time": 70,
+   "otd": 0.6363636363636364,
+   "otd_strict": 0.5454545454545454,
+   "late": 40,
+   "median_days_late": 70
+  },
+  {
+   "period": "2024-05",
+   "units": 124,
+   "on_time": 60,
+   "otd": 0.4838709677419355,
+   "otd_strict": 0.46774193548387094,
+   "late": 64,
+   "median_days_late": 92
+  },
+  {
+   "period": "2024-06",
+   "units": 96,
+   "on_time": 65,
+   "otd": 0.6770833333333334,
+   "otd_strict": 0.5208333333333334,
+   "late": 31,
+   "median_days_late": 82
+  },
+  {
+   "period": "2024-07",
+   "units": 78,
+   "on_time": 62,
+   "otd": 0.7948717948717948,
+   "otd_strict": 0.7051282051282052,
+   "late": 16,
+   "median_days_late": 100
+  },
+  {
+   "period": "2024-08",
+   "units": 86,
+   "on_time": 66,
+   "otd": 0.7674418604651163,
+   "otd_strict": 0.6976744186046512,
+   "late": 20,
+   "median_days_late": 122
+  },
+  {
+   "period": "2024-09",
+   "units": 87,
+   "on_time": 62,
+   "otd": 0.7126436781609196,
+   "otd_strict": 0.6896551724137931,
+   "late": 25,
+   "median_days_late": 127
+  },
+  {
+   "period": "2024-10",
+   "units": 123,
+   "on_time": 87,
+   "otd": 0.7073170731707317,
+   "otd_strict": 0.6666666666666666,
+   "late": 36,
+   "median_days_late": 70
+  },
+  {
+   "period": "2024-11",
+   "units": 99,
+   "on_time": 51,
+   "otd": 0.5151515151515151,
+   "otd_strict": 0.5050505050505051,
+   "late": 48,
+   "median_days_late": 85
+  },
+  {
+   "period": "2024-12",
+   "units": 79,
+   "on_time": 58,
+   "otd": 0.7341772151898734,
+   "otd_strict": 0.7215189873417721,
+   "late": 21,
+   "median_days_late": 86
+  },
+  {
+   "period": "2025-01",
+   "units": 76,
+   "on_time": 32,
+   "otd": 0.42105263157894735,
+   "otd_strict": 0.42105263157894735,
+   "late": 44,
+   "median_days_late": 43
+  },
+  {
+   "period": "2025-02",
+   "units": 106,
+   "on_time": 78,
+   "otd": 0.7358490566037735,
+   "otd_strict": 0.6981132075471698,
+   "late": 28,
+   "median_days_late": 25
+  },
+  {
+   "period": "2025-03",
+   "units": 107,
+   "on_time": 77,
+   "otd": 0.719626168224299,
+   "otd_strict": 0.6822429906542056,
+   "late": 30,
+   "median_days_late": 26
+  },
+  {
+   "period": "2025-04",
+   "units": 122,
+   "on_time": 109,
+   "otd": 0.8934426229508197,
+   "otd_strict": 0.8278688524590164,
+   "late": 13,
+   "median_days_late": 24
+  },
+  {
+   "period": "2025-05",
+   "units": 124,
+   "on_time": 118,
+   "otd": 0.9516129032258065,
+   "otd_strict": 0.9112903225806451,
+   "late": 6,
+   "median_days_late": 64
+  },
+  {
+   "period": "2025-06",
+   "units": 115,
+   "on_time": 115,
+   "otd": 1.0,
+   "otd_strict": 1.0,
+   "late": 0,
+   "median_days_late": 0
+  },
+  {
+   "period": "2025-07",
+   "units": 61,
+   "on_time": 60,
+   "otd": 0.9836065573770492,
+   "otd_strict": 0.9836065573770492,
+   "late": 1,
+   "median_days_late": 77
+  },
+  {
+   "period": "2025-08",
+   "units": 92,
+   "on_time": 89,
+   "otd": 0.967391304347826,
+   "otd_strict": 0.967391304347826,
+   "late": 3,
+   "median_days_late": 140
+  },
+  {
+   "period": "2025-09",
+   "units": 122,
+   "on_time": 115,
+   "otd": 0.9426229508196722,
+   "otd_strict": 0.9180327868852459,
+   "late": 7,
+   "median_days_late": 29
+  },
+  {
+   "period": "2025-10",
+   "units": 113,
+   "on_time": 107,
+   "otd": 0.9469026548672567,
+   "otd_strict": 0.9469026548672567,
+   "late": 6,
+   "median_days_late": 60
+  },
+  {
+   "period": "2025-11",
+   "units": 111,
+   "on_time": 97,
+   "otd": 0.8738738738738738,
+   "otd_strict": 0.8738738738738738,
+   "late": 14,
+   "median_days_late": 58
+  },
+  {
+   "period": "2025-12",
+   "units": 95,
+   "on_time": 82,
+   "otd": 0.8631578947368421,
+   "otd_strict": 0.8315789473684211,
+   "late": 13,
+   "median_days_late": 18
+  },
+  {
+   "period": "2026-01",
+   "units": 98,
+   "on_time": 82,
+   "otd": 0.8367346938775511,
+   "otd_strict": 0.8163265306122449,
+   "late": 16,
+   "median_days_late": 26
+  },
+  {
+   "period": "2026-02",
+   "units": 124,
+   "on_time": 103,
+   "otd": 0.8306451612903226,
+   "otd_strict": 0.7903225806451613,
+   "late": 21,
+   "median_days_late": 39
+  },
+  {
+   "period": "2026-03",
+   "units": 112,
+   "on_time": 100,
+   "otd": 0.8928571428571429,
+   "otd_strict": 0.8035714285714286,
+   "late": 12,
+   "median_days_late": 30
+  },
+  {
+   "period": "2026-04",
+   "units": 86,
+   "on_time": 76,
+   "otd": 0.8837209302325582,
+   "otd_strict": 0.8837209302325582,
+   "late": 10,
+   "median_days_late": 28
+  },
+  {
+   "period": "2026-05",
+   "units": 94,
+   "on_time": 86,
+   "otd": 0.9148936170212766,
+   "otd_strict": 0.9148936170212766,
+   "late": 8,
+   "median_days_late": 62
+  },
+  {
+   "period": "2026-06",
+   "units": 97,
+   "on_time": 84,
+   "otd": 0.865979381443299,
+   "otd_strict": 0.8247422680412371,
+   "late": 13,
+   "median_days_late": 47
+  },
+  {
+   "period": "2026-07",
+   "units": 127,
+   "on_time": 124,
+   "otd": 0.9763779527559056,
+   "otd_strict": 0.968503937007874,
+   "late": 3,
+   "median_days_late": 18
+  },
+  {
+   "period": "2026-08",
+   "units": 96,
+   "on_time": 90,
+   "otd": 0.9375,
+   "otd_strict": 0.90625,
+   "late": 6,
+   "median_days_late": 151
+  },
+  {
+   "period": "2026-09",
+   "units": 56,
+   "on_time": 54,
+   "otd": 0.9642857142857143,
+   "otd_strict": 0.9464285714285714,
+   "late": 2,
+   "median_days_late": 170
+  }
+ ],
+ "sens": [
+  {
+   "year": 2024,
+   "method": "Chosen method",
+   "units": 1212,
+   "otd": 0.6320132013201321
+  },
+  {
+   "year": 2024,
+   "method": "Promised = Jobscope DATE PROMISED (job level)",
+   "units": 1189,
+   "otd": 0.6450798990748529
+  },
+  {
+   "year": 2024,
+   "method": "No grace period (strict)",
+   "units": 1212,
+   "otd": 0.5750825082508251
+  },
+  {
+   "year": 2024,
+   "method": "Order level (all units of the order on time)",
+   "units": 403,
+   "otd": 0.533498759305211
+  },
+  {
+   "year": 2025,
+   "method": "Chosen method",
+   "units": 1244,
+   "otd": 0.867363344051447
+  },
+  {
+   "year": 2025,
+   "method": "Promised = Jobscope DATE PROMISED (job level)",
+   "units": 1236,
+   "otd": 0.7912621359223301
+  },
+  {
+   "year": 2025,
+   "method": "No grace period (strict)",
+   "units": 1244,
+   "otd": 0.8456591639871383
+  },
+  {
+   "year": 2025,
+   "method": "Order level (all units of the order on time)",
+   "units": 342,
+   "otd": 0.7426900584795322
+  },
+  {
+   "year": 2026,
+   "method": "Chosen method",
+   "units": 890,
+   "otd": 0.8977528089887641
+  },
+  {
+   "year": 2026,
+   "method": "Promised = Jobscope DATE PROMISED (job level)",
+   "units": 886,
+   "otd": 0.8510158013544018
+  },
+  {
+   "year": 2026,
+   "method": "No grace period (strict)",
+   "units": 890,
+   "otd": 0.8685393258426967
+  },
+  {
+   "year": 2026,
+   "method": "Order level (all units of the order on time)",
+   "units": 238,
+   "otd": 0.7563025210084033
+  },
+  {
+   "year": 2026,
+   "method": "Delivery = archive Delivery Date (archive only)",
+   "units": 883,
+   "otd": 0.8980747451868629
+  }
+ ],
+ "recon": {
+  "same date": 803,
+  "within 3 days": 55,
+  "not in archive": 7,
+  "differs > 3 days": 22,
+  "archive only - cancelled (AN)": 14,
+  "archive only - not delivered yet (planned date)": 126,
+  "archive only - delivered (LI)": 9
+ },
+ "excl": {
+  "sub-assembly (SA)": 71,
+  "other non-unit order (E/P/W/R)": 61,
+  "duplicate unit row": 38,
+  "service line (OS-)": 347,
+  "repair (WRG)": 52,
+  "blank": 1,
+  "2026 Jobscope unit with no promised date": 6,
+  "2026 archive date not a confirmed delivery (not LI, or after 2026-09-25)": 140
+ },
+ "js_end": "2026-09-25",
+ "grace": 8,
+ "promised_sources": {
+  "archive IPD": 3331,
+  "Jobscope promised (fallback)": 15
+ },
+ "delivery_sources": {
+  "archive": 2456,
+  "Jobscope shipment": 881,
+  "archive (not in Jobscope)": 9
+ }
+}

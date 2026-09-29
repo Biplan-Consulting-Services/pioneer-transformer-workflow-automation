@@ -35,6 +35,20 @@ import mirror_lib as M  # noqa: E402
 
 BULK = 25
 ERASE_RED = 5
+# Every automated write (flows, console scripts, the trigger flow) lands under the flows' connection owner:
+# 2,288 of 4,786 journal changes in 2026-09. Staff edit under their own accounts. A bulk change made only by
+# staff is a normal working morning (28 Location moves crossed BULK), so it reports amber; one that
+# involves this account stays red. The journal's editor is the ROW's last editor, not the field's, so a flow
+# write after a staff edit counts as automation: the split errs toward red.
+AUTOMATION_EDITORS = {"soleil.anker@ermco-eci.com"}
+
+
+def editors_of(evs):
+    return collections.Counter((e.get("editor") or "?").lower() for e in evs)
+
+
+def editors_text(eds):
+    return ", ".join("%s (%d)" % (ed.split("@")[0], n) for ed, n in eds.most_common(4))
 
 
 def load_acks():
@@ -230,6 +244,70 @@ def state_checks(snap, prev_as_of, known):
     return out
 
 
+def allowed_choices(cat):
+    """(list, csv column) -> set of allowed values, for every single-choice column in the catalog."""
+    out = {}
+    for r in cat.rows:
+        if r.get("type") == "choice" and (r.get("choices") or "").strip():
+            col = (r.get("csvColumn") or r["internalName"]).strip()
+            out[(r["list"], col)] = {c.strip() for c in r["choices"].split(" | ")}
+    return out
+
+
+def choice_values(raw):
+    """A choice cell's values. Multi-choice columns (Model Revisions' Description) come back as a JSON
+    list, '["NETWORK"]', and '[]' means empty; the catalog types them 'choice' all the same."""
+    v = M.norm(raw).strip()
+    if v.startswith("["):
+        try:
+            return [str(x).strip() for x in json.loads(v) if str(x).strip()]
+        except ValueError:
+            pass
+    return [v] if v else []
+
+
+def choice_stamp_checks(snap):
+    """Design Layer C1 (h-more-checks), state on the snapshot:
+      invalid choice  a value outside the column's choices ('a plain key into a Choice column', 09-11) -> amber;
+                      evaluate() makes it red when this batch wrote it.
+      stamp drift     StepStatusStamped / LocationStamped != StepStatus / Location (x24). With the trigger
+                      flow ON each edit re-levels them within a minute or two, so a few rows can be a flow
+                      still catching up -> amber. A unit at Livraison that is not Terminé + Delivered is
+                      the CompletOrder rule not applied -> amber, named separately."""
+    cat = M.Catalog(snap)
+    out = []
+    for (lst, col), allowed in sorted(allowed_choices(cat).items()):
+        if not snap.has(lst):
+            continue
+        bad = collections.Counter()
+        for row in snap.table(lst):
+            for v in choice_values(row.get(col)):
+                if v not in allowed:
+                    bad[v] += 1
+        if bad:
+            out.append({"check": "invalid choice", "level": "amber", "list": lst, "field": col, "rows": sum(bad.values()),
+                        "detail": "%d %s rows hold values outside %s's choices: %s" % (
+                            sum(bad.values()), lst, col, "; ".join("%r (%d)" % kv for kv in bad.most_common(6)))})
+    if snap.has("Order Items"):
+        units = snap.table("Order Items")
+        if units and "StepStatusStamped" in units[0] and "LocationStamped" in units[0]:
+            for real, stamp in (("StepStatus", "StepStatusStamped"), ("Location", "LocationStamped")):
+                d = [u for u in units if M.norm(u.get(real)).strip() != M.norm(u.get(stamp)).strip()]
+                if d:
+                    out.append({"check": "stamp drift", "level": "amber", "list": "Order Items", "field": stamp, "rows": len(d),
+                                "detail": "%d units' %s differs from %s (the trigger flow re-levels it on the next edit): %s" % (
+                                    len(d), stamp, real, "; ".join("%s %r vs %r" % (u.get("Title"), M.norm(u.get(real)),
+                                                                                   M.norm(u.get(stamp))) for u in d[:6]))})
+            lv = [u for u in units if M.norm(u.get("Location")) == "Livraison" and M.norm(u.get("ItemStatus")) != "Cancelled"
+                  and (M.norm(u.get("StepStatus")) != "Terminé" or M.norm(u.get("ItemStatus")) != "Delivered")]
+            if lv:
+                out.append({"check": "stamp drift", "level": "amber", "list": "Order Items", "field": "ItemStatus", "rows": len(lv),
+                            "detail": "%d units at Livraison are not Terminé + Delivered (CompletOrder rule not applied yet): %s" % (
+                                len(lv), ", ".join("%s (%s/%s)" % (u.get("Title"), M.norm(u.get("StepStatus")), M.norm(u.get("ItemStatus")))
+                                                   for u in lv[:8]))})
+    return out
+
+
 def evaluate(events, snap, acknowledged=None, prev_as_of=None, known=None, state=True):
     acks = acknowledged if acknowledged is not None else load_acks()
     cat = M.Catalog(snap)
@@ -276,8 +354,12 @@ def evaluate(events, snap, acknowledged=None, prev_as_of=None, known=None, state
             add("bulk change", "expected", "%d rows - probable fan-out of %s %s via %s"
                 % (len(evs), s["list"], ids, s["flow"]), lst, field, len(evs))
         else:
-            add("bulk change", "red", "%d rows changed %s in one batch (threshold %d); e.g. ids %s"
-                % (len(evs), field, BULK, ", ".join(str(e["id"]) for e in evs[:8])), lst, field, len(evs))
+            eds = editors_of(evs)
+            staff_only = all(ed != "?" and ed not in AUTOMATION_EDITORS for ed in eds)
+            add("bulk change", "amber" if staff_only else "red",
+                "%d rows changed %s in one batch (threshold %d)%s by %s; e.g. ids %s"
+                % (len(evs), field, BULK, " - staff edit" if staff_only else "", editors_text(eds),
+                   ", ".join(str(e["id"]) for e in evs[:8])), lst, field, len(evs))
 
     # ---- value erased
     er = collections.defaultdict(list)
@@ -286,8 +368,20 @@ def evaluate(events, snap, acknowledged=None, prev_as_of=None, known=None, state
             er[(e["list"], e["field"])].append(e)
     for (lst, field), evs in sorted(er.items()):
         lvl = "red" if len(evs) >= ERASE_RED else "amber"
-        add("value erased", lvl, "%d rows lost their %s, e.g. %s" % (len(evs), field,
+        add("value erased", lvl, "%d rows lost their %s (by %s), e.g. %s" % (len(evs), field, editors_text(editors_of(evs)),
             "; ".join("%s %r" % (e["id"], e["old"][:30]) for e in evs[:5])), lst, field, len(evs))
+
+    # ---- invalid choice written THIS batch (the state check below reports what is already there, amber)
+    allowed = allowed_choices(cat)
+    inv = collections.defaultdict(list)
+    for e in real:
+        ok = allowed.get((e["list"], e["field"]))
+        if ok is not None and any(v not in ok for v in choice_values(e.get("new"))):
+            inv[(e["list"], e["field"])].append(e)
+    for (lst, field), evs in sorted(inv.items()):
+        add("invalid choice", "red", "%d rows were given a value outside %s's choices this batch (by %s): %s"
+            % (len(evs), field, editors_text(editors_of(evs)), "; ".join("%s %r" % (e["id"], e["new"][:30]) for e in evs[:5])),
+            lst, field, len(evs))
 
     # ---- deleted / schema / Index
     dl = [e for e in events if e["kind"] == "deleted"]
@@ -326,6 +420,7 @@ def evaluate(events, snap, acknowledged=None, prev_as_of=None, known=None, state
                     % (len(bad), r["list"], idcol, tgt, ", ".join("%s->%s" % b for b in bad[:8])), r["list"], idcol, len(bad))
     if state:
         out.extend(state_checks(snap, prev_as_of, known if known is not None else load_known()))
+        out.extend(choice_stamp_checks(snap))
     return out
 
 

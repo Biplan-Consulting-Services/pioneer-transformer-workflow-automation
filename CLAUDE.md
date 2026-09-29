@@ -394,6 +394,34 @@ Discovered 2026-09-14 while designing the engineering document control
     finer vocabulary in a new column, never by widening `Location`.
 
 ## Working notes
+- 🔑 **The four delivery dates** (user, 2026-09-29, from a meeting that morning; SharePoint may not reflect it yet):
+
+  | Meaning | Column today |
+  |---|---|
+  | **Initial Promised Date**: the original promise to the customer, the OTD target | `Order.Initial Promised Date` → `Order Items.OrdInitialPromisedDate` |
+  | **Delivery Date**: the truck delivery date, maintained by **Caroline** (planning) | `Order Items` **"Planned Delivery Date"** (`Planned_x0020_Delivery_x0020_Dat`). "Planned" is a naming error from the build; it is *not* a plan |
+  | **Estimated Delivery Date**: the calculated forecast | `Order Items.EstimatedDeliveryDate` (calculated: Planned → Manual → stage-based) |
+  | **Manual Estimated Delivery Date**: an override for exceptions to the calculation | `Order Items.ManualEstimatedDeliveryDate` |
+
+  **How planning uses them, agreed 2026-09-29** (email from planning after the meeting; cleanup done by
+  Angelique ~11:45, acknowledged in mirror health):
+  - **Delivery Date** ("Planned Delivery Date") is filled **only when the shipment is certain**, i.e. Caroline
+    has scheduled it. Otherwise it stays empty. (12:14 mirror: 20 active units, all 09-29 to 10-05.)
+  - **Manual Estimated Delivery Date** is the exception channel, read together with the comments. Caroline
+    looks at: the promised date + the manual date + comments.
+  - Orders promised in **2028–2030** have no manual date (removed at the meeting's request).
+  - **Georgia Power** units due Jan 2027 that should ship in Q4 (awaiting the client's reply): manual date set
+    to December per Pascal, comments kept, no Delivery Date. ⚠️ 12:14 mirror: 25 of 35 are December, 5 October,
+    5 November; the user was told, not yet confirmed whether those 10 are deliberate.
+  Same pattern for tanking: `Order Items` "Planned Tanking Date" (`Planned_x0020_Tanking_x0020_Date`) comes from
+  FRM10-12's **Tanking Date** and is **both**: the planned date, overwritten with the actual date once tanking is
+  done (user, 09-29). `Tanking End Date` (`TankingDate`) is the separate, mostly empty stage column.
+  FRM10-12 → SharePoint names (transfer flow v011): Delivery Date → Planned Delivery Date, Tanking Date → Planned
+  Tanking Date, `<Stage> Date` → `<Stage> End Date`. Formula breakdown for discussion:
+  `docs/estimated-delivery-date-logic-2026-09-29.html` (French, for Teams).
+  `Delivery End Date` (`DeliveryDate`) is the Delivery *production-stage* end, empty everywhere, and is not the
+  delivery date. A display rename will not change the internal name. OTD = Delivery Date vs Initial Promised Date
+  (+8-day grace, `Location = LI`); see `Requests/Duke OTD/README.md`. Cleanup item: Punch List `fix-actual-delivery-date`.
 - 🔴 **Snapshot the SharePoint mirror at the start of every session, and immediately before any change
   to a list** (a script write, a column change, a flow paste that writes):
   `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Refresh-SharePointMirror.ps1` (~25 s; Windows PowerShell 5.1, `pwsh` is not

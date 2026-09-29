@@ -71,7 +71,8 @@ for r in arc:
             continue
     arc_u[key] = r
 
-# archive Client is unreliable (most 2025 units read KORTICK); take the customer from Jobscope
+# archive Client reads KORTICK on most 2025 units (possibly a supplier/contact, not the end customer);
+# take the customer from Jobscope
 cust_job = {r["Shop Number"]: r["CustName"] for r in jobs if r["Shop Number"]}
 prom_job = {r["Shop Number"]: d(r["DATE PROMISED"]) for r in jobs if r["Shop Number"] and d(r["DATE PROMISED"])}
 
@@ -167,6 +168,7 @@ def summarize(rows, keyf):
 
 yearly = summarize(units, lambda u: u["year"])
 quarterly = summarize(units, lambda u: u["quarter"])
+monthly = summarize(units, lambda u: u["delivered"].strftime("%Y-%m"))
 orders_y = collections.defaultdict(lambda: collections.defaultdict(list))
 for u in units:
     orders_y[u["year"]][u["job"]].append(u["on_time"])
@@ -248,6 +250,7 @@ pct = "0.0%"
 sheet("Yearly", yearly, ["period", "units", "on_time", "late", "otd", "otd_strict", "median_days_late", "orders", "orders_all_on_time", "clients"],
       {"otd": pct, "otd_strict": pct, "orders_all_on_time": pct})
 sheet("Quarterly", quarterly, ["period", "units", "on_time", "late", "otd", "otd_strict", "median_days_late"], {"otd": pct, "otd_strict": pct})
+sheet("Monthly", monthly, ["period", "units", "on_time", "late", "otd", "otd_strict", "median_days_late"], {"otd": pct, "otd_strict": pct})
 sheet("Sensitivity", sens, ["year", "method", "units", "otd"], {"otd": pct})
 sheet("Units", units, ["unit", "job", "client", "archive_client", "year", "quarter", "delivered", "delivery_source", "promised", "promised_source",
                        "days_vs_promise", "on_time", "on_time_strict", "archive_delivery", "archive_location", "jobscope_ship", "jobscope_promised"],
@@ -262,7 +265,7 @@ for line in (__doc__.strip().splitlines() + ["", f"Archive copy: {ARCHIVE.name}"
 ws.column_dimensions["A"].width = 120
 wb.save(OUT / "Pioneer OTD 2024-2026 - backup data.xlsx")
 
-json.dump(dict(yearly=yearly, quarterly=quarterly, sens=sens, recon=dict(recon_sum), excl=dict(excl),
+json.dump(dict(yearly=yearly, quarterly=quarterly, monthly=monthly, sens=sens, recon=dict(recon_sum), excl=dict(excl),
                js_end=str(JS_END), grace=GRACE,
                promised_sources=collections.Counter(u["promised_source"] for u in units),
                delivery_sources=collections.Counter(u["delivery_source"] for u in units)),

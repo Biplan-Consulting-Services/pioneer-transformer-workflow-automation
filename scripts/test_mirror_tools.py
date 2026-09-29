@@ -107,6 +107,13 @@ def main():
             check(any(r["check"] == "rows deleted" for r in reds), "health: deletion is red")
             check(any(r["check"] == "schema change" for r in reds), "health: schema change is red")
             check(not any(r["check"] == "bulk change" for r in reds), "health: 2 changes is not a bulk change")
+            # h-more-checks: the planted Location is not one of Location's choices, and it now disagrees with its stamp
+            check(any(r["check"] == "invalid choice" and r["field"] == "Location" and "PLANTED-LOCATION" in r["detail"] for r in reds),
+                  "health: a value written outside the choices this batch is red")
+            check(any(r["check"] == "stamp drift" and r["field"] == "LocationStamped" and r["level"] == "amber" for r in rep),
+                  "health: Location vs LocationStamped mismatch is amber stamp drift")
+            check(H.choice_values('["NETWORK", "SUBWAY"]') == ["NETWORK", "SUBWAY"] and H.choice_values("[]") == []
+                  and H.choice_values("Livraison") == ["Livraison"], "multi-choice JSON cells are read value by value")
 
             # fan-out classifier (D5): the busiest Model Revision, its Cable -> every unit's RevCable
             import collections as C
@@ -133,6 +140,16 @@ def main():
                 else:
                     check(len(bulk) == 1 and bulk[0]["level"] == "red",
                           "no parent change -> the same bulk stays RED (got %s)" % [b["level"] for b in bulk])
+                    # h-bulk-alert: who made the bulk decides red vs amber
+                    auto = next(iter(H.AUTOMATION_EDITORS))
+                    for eds, want in ((["staff.a@x", "staff.b@x"], "amber"), (["staff.a@x", auto], "red"), ([auto], "red")):
+                        ev5 = copy.deepcopy(ev3)
+                        rc = [e for e in ev5 if e.get("field") == "RevCable"]
+                        for i, e in enumerate(rc):
+                            e["editor"] = eds[i % len(eds)]
+                        got = [r["level"] for r in H.evaluate(ev5, M.Snapshot(c), acknowledged=[], state=False)
+                               if r["check"] == "bulk change" and r["field"] == "RevCable"]
+                        check(got == [want], "bulk by %s -> %s (got %s)" % ("+".join(e.split("@")[0] for e in eds), want, got))
         except ImportError:
             print("  (mirror_health not built yet)")
         try:

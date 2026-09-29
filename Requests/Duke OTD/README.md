@@ -4,11 +4,14 @@ Built overnight 2026-09-29 for the request in `../Project Context - Duke Energy 
 
 | File | What it is |
 |---|---|
-| `Pioneer OTD 2024-2026.pptx` | The slide (one slide, native editable chart, speaker notes carry the extra figures) |
-| `Pioneer OTD 2024-2026 - preview.png` | Render of the slide |
-| `Pioneer OTD 2024-2026 - backup data.xlsx` | Method, Yearly, Quarterly, Sensitivity, every counted unit, 2026 reconciliation, exclusions |
+| `Pioneer OTD 2024-2026 - quarterly v2.pptx` (+ `preview.png`) | The slide, quarterly chart. ERMCO dashboard look: red header/footer, logo, white cards with red title strips. Native editable chart; speaker notes carry the extra figures |
+| `Pioneer OTD 2024-2026 - monthly v2.pptx` (+ `preview.png`) | Same slide with a monthly chart (33 months), highlights in a 2 × 2 grid |
+| `Email draft - OTD slides.md` | Draft email presenting both slides to Michael / Lyn |
+| `ERMCO-Pioneer-Transformers.png` | Logo used on the slides (added by the user) |
+| `Archive/` | v1 slides (blue design, 03:17 and 09:14), superseded by v2 |
+| `Pioneer OTD 2024-2026 - backup data.xlsx` | Method, Yearly, Quarterly, Monthly, Sensitivity, every counted unit, 2026 reconciliation, exclusions |
 
-Rebuild: `python scripts/duke_otd/build_otd.py` then `node scripts/duke_otd/build_slide.js "<out.pptx>"`
+Rebuild: `python scripts/duke_otd/build_otd.py` then `node scripts/duke_otd/build_slide.js "<out.pptx>" [monthly]`
 (needs `pptxgenjs` on the node path; `build_slide.js` reads the `otd.json` the Python step writes next to itself).
 
 ## The numbers
@@ -55,14 +58,23 @@ Rebuild: `python scripts/duke_otd/build_otd.py` then `node scripts/duke_otd/buil
 
 ## Data problems found (not fixed; nothing was changed in SharePoint or the workbooks)
 
-- 🔴 **Archive `Client` is wrong for most 2025 units.** 1,001 of 1,244 units read `KORTICK`, but Jobscope shows them
-  as Hydro-Québec (497), Georgia Power (85), Toronto Hydro (68), Austin Energy, Xcel, Enmax and others. 2026 has the same
-  problem on a smaller scale. The dates on those rows do check out against Jobscope. The backup workbook uses
-  Jobscope's customer name and keeps the archive's in `archive_client`.
-- 🔴 **Since the 09-11 cutover, the archive's `Delivery Date` holds the *planned* date for units not yet shipped.**
+- **Archive `Client` differs from Jobscope's customer on most 2025 units.** 1,001 of 1,244 units read `KORTICK`,
+  but Jobscope bills them to Hydro-Québec (497), Georgia Power (85), Toronto Hydro (68), Austin Energy, Xcel, Enmax
+  and others. 2026 shows the same pattern on a smaller scale. User, 09-29: Kortick may be a supplier or a contact for some
+  sub-companies, so the archive may be recording the intermediary rather than the end customer. Not an error for this work
+  either way: the slide does not break down by client, and the dates on those rows check out against Jobscope. The
+  backup workbook uses Jobscope's customer name and keeps the archive's in `archive_client`.
+- ✅ **Corrected 09-29 (user):** the column called "Planned Delivery Date" in Order Items *is* the Delivery Date,
+  the truck delivery date Caroline maintains. "Planned" is a naming error. So the archive date after the cutover
+  is the right date, and this was never a missing actual date. What remains is a few units where Caroline's date and
+  Jobscope's ship date differ (Punch List `fix-actual-delivery-date`). Original note, kept for the record:
+- **Since the 09-11 cutover, the archive's `Delivery Date` holds the *planned* date for units not yet shipped.**
   126 units have a 2026 date with Location XT/BO/TA/FI/…, several of them dated 2026-09-28 while still at XT.
-  `Order Items.DeliveryDate` (actual) is empty on all 54 `Delivered` units. Anything computing OTD from the
-  archive after the cutover (Power BI?) will count planned dates as deliveries.
+  `Order Items.DeliveryDate` (actual) is empty on all 54 `Delivered` units.
+  ✅ **Power BI is safe from the big version of this** (user, 09-29): it only counts units that are `LI` *and*
+  have a planned delivery date, so an unshipped unit is never counted. Residual: on LI units the date is still the
+  planned one. In Sep 2026, 6 LI units differ from Jobscope's ship date, 3 of them by more than 3 days (21792-3/4:
+  shipped 09-03, archive 09-24). This is small, and it only grows if planned dates aren't corrected when a unit ships.
 - 14 cancelled (AN) units carry a 2026 delivery date. They are excluded here.
 - 2023 in the archive has no Initial Promised Date on 276 of 278 deliveries, so it can't be used for OTD.
 - 38 duplicate unit keys in `TableArchiveFRM10_12`. The delivered row was kept.
