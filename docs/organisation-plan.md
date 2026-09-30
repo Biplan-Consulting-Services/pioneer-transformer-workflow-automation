@@ -1,5 +1,8 @@
 > **Living document.** The organisation plan for Pioneer Transformer, approved by the user 2026-09-29.
-> Status: phase 1 (model + Punch List epics) done 2026-09-29; phases 2-6 not started. Update this file in place,
+> Status (2026-09-29 evening): phase 1 (model + Punch List epics) done; phase 2 (timesheet epics, local Shift
+> Console, Jira push workflow) done; phase 3 (repo merge) built and verified in staging, swap in progress. Decided
+> the same evening: workbook registry + `wb` tool, Power Query `_shared/` + `pq` tool, and the **work system**
+> (task files in the repo replace the Punch List as master; see "Work system"). Update this file in place,
 > never create a dated copy. It supersedes `workspace-cleanup-plan-2026-09-29.md` (kept as a record for its merge mechanics).
 
 # Pioneer Transformer: reorganise the work around client → project → epic → task
@@ -33,13 +36,14 @@ The research this session (3 read-only agents) measured the current state:
 Client      Pioneer Transformer                    (billing client, unchanged)
 Project     Workflow Automation  ~ Jira AFDS       (billing project: one timesheet CSV)
 Epic        10 areas (below, adjustable later)     (one living page each)
-Task        Punch List item  (MASTER)              (epic + sprint fields; optional `jira` = AFDS-###)
-Sprint      a build night / a week's objective     (a tag on tasks, not a document)
-Work log    timesheet row, tagged with the epic    (Shift Console; pushed to Jira as worklogs)
+Task        PT-### task file in the repo (MASTER)   (epic, status, sprint, owner, jira = AFDS-###)  [was: Punch List item]
+Sprint      S-<date> build night / S-<yyyy>-W<nn> week (a tag on tasks + a generated report, not a board)
+Work log    timesheet row, tagged with epic (+ task) (Shift Console; pushed to Jira as worklogs)
 ```
 
-**Jira relationship (decided): the Punch List is the master and Jira mirrors it.**
-- A Punch List item may carry its AFDS ticket number.
+**Jira relationship (decided): the task files are the master and Jira mirrors them** (2026-09-29 evening: task files
+replace the Punch List as master, see "Work system").
+- A task may carry its AFDS ticket number; a timesheet row carrying a task ID then finds its Jira ticket through it.
 - Timesheet hours are pushed to Jira as worklogs through a generalised `Add-JiraWorklogs.ps1`. It stops being a
   one-off with hard-coded entries and reads the timesheet CSV plus the item → ticket map, with a dry run and the
   existing 40 h/week check.
@@ -68,8 +72,24 @@ while tagging because items fitted none of the original 10: *Workflow tasks (Pha
 
 ## Repo and folder shape
 
-- **One repo at `Clients/Pioneer Transformer/`.** Workflow-Automation, FRM10-12 and FRM09 are merged, and their
-  history is kept with `git filter-repo`. The mechanics are already worked out in sections 5 and 7 of the first plan.
+- **One repo at `Clients/Pioneer Transformer/`.** Workflow-Automation, FRM10-12 and FRM09 are merged with their
+  full history (`_reorg/reorg.py`: each repo's history rewritten under a prefix with `git filter-branch`, then a plain
+  merge and one `git mv` commit, so `git log --follow` reaches the first commits). Runbook: `_reorg/SWAP.md`.
+- **Corrected 2026-09-29 (user):** the FRM10-12 repo's `viewer/` **is** the live FRM10-12 (deployed 09-11 at
+  `Revue/FRM10-12.xlsx`; staff just call it FRM10-12). The repo's top-level `workbook/`, `power-query/`, `scripts/` are
+  the old hand-maintained FRM10-12, frozen since the cutover. In the new layout the live set is plain "FRM10-12" and
+  the word "viewer" disappears; the old set is "FRM10-12 pre-cutover".
+- **Workbooks (decided 2026-09-29):** `workbooks/registry.csv` (one row per workbook: name, status live/pre-cutover/
+  retired, SharePoint location + `Index` title, who reads it, queries folder, epics) + one folder per workbook
+  (`workbooks/<Name>/<Name>.xlsx` working copy + `snapshots/`) + `tools/wb.py` (`wb snapshot|latest|list`), which
+  replaces `stamp_exports.py`, `tidy_snapshots.py` and every filename glob in the scripts.
+- **Power Query (decided 2026-09-29, level A):** `power-query/_shared/` holds the one copy of every query used by
+  more than one workbook (ColumnMap, ValueConversions, FlattenSharePointLookupLists, ImportFromIndex, the date fix);
+  `power-query/<Workbook>/` holds only that workbook's own queries plus the list of shared ones it uses. One `pq` tool
+  (`export`, `diff` = drift between a file and the repo, `build`, `push` into a working copy / paste sheet) replaces
+  `Export-PowerQuery`, both `Sync-PowerQuery`, `Stage-PowerQuery`, the copy checker and `pq_graph`. Later, not soon:
+  update ColumnMap automatically when the mirror's columns change. Level B (a Power BI dataflow as the one cleaned
+  data source) is a separate spike, only after licensing and Excel-consumption checks.
 - **Two halves, revised after the user's feedback (2026-09-29):**
   - **Data is organised by the *type* of artifact, at the client level, shared.** A workbook, a flow or an Office
     Script belongs to no single project or epic: it can serve several.
@@ -132,12 +152,34 @@ Clients/Pioneer Transformer/                  one repo
 6. **Rollback:** each phase is a single commit on a branch, and the old `.git` folders are kept until the new
    structure has run for a week.
 
-## Build nights → sprints
+## Work system: tasks, sprints, reports (decided 2026-09-29 evening, replaces "Build nights → sprints")
 
-A build night becomes a **sprint tag** on Punch List items (e.g. `2026-09-24`), plus a single `sprints/<date>.md` log
-for the live event log and track ownership. The task table and KEY FACTS stop being duplicated: the tasks are the
-tagged items, and the facts go to the epic READMEs when the sprint closes. The manual repo copy disappears, because
-the client folder is now inside the repo.
+**The problem.** One task's state was written in up to six places (Punch List, `roadmap.md`, the dated checklist, the
+build-night board, `session-tracks.json`, `STATUS.md`); each night or day copied it into a new document, the copies
+drifted, and references were prose. **The fix is not to sync documents but to stop copying state:** one store, and
+everything else either points into it by ID or is generated from it.
+
+1. **One store, in the repo.** `projects/workflow-automation/tasks/PT-###.md`, one file per task, front matter
+   `id, title, epic, status, sprint, owner, jira, blocked-by` + notes, links, what "done" means. Beside it an
+   append-only `journal/<yyyy-mm>.jsonl` (`ts, session, task, text`) that parallel sessions only ever add lines to.
+2. **Naming protocol.** Tasks `PT-###` (sequential per project; the epic is a field, so moving a task between epics
+   breaks nothing). Sprints `S-2026-09-24` (build night) / `S-2026-W40` (week). Decisions `D-###`, anchored in each
+   epic's `decisions.md`. Any doc just writes the ID; a hook flags unknown IDs and done tasks still in an open sprint.
+3. **Views, not documents.** A local page like the Shift Console (`index.html` + hook-built `data.js`, refreshed every
+   minute), possibly the same shell with a Tasks tab: **Board** (epic × status), **Sprint** (tonight's tasks, who
+   holds which, the live journal), **Next** (replaces the dated checklist: CLAUDE.md says "start from Next").
+4. **Reports are generated and archived.** Closing a sprint writes `sprints/S-<id>.md` (planned tasks, final status,
+   journal entries): frozen, never hand-edited, the build-night progress archive. Facts learned go into the epic's
+   README/`decisions.md` by ID, not into the report. The old hand-written boards stay in `sprints/` as history.
+5. **A small CLI for sessions:** `work start PT-112 --session <name>`, `work log PT-112 "…"`, `work done PT-112`,
+   `work report S-…`, `work next`. Hooks rebuild the page's data.
+6. **Billing link:** a timesheet row can carry `PT-###`; the task carries `jira`, so the Jira push finds its ticket
+   through the task (this removes the manual `jira/ticket-map.csv` / `overrides.csv` step for new rows).
+
+**Master: repo files (user, 2026-09-29).** Git history of every status change, checkable references, works offline,
+kept current by hooks. The Punch List's 109 items are migrated once to `PT-` files; the Punch List is then retired
+or kept as a read-only published copy for the phone. Status changes go through Claude or an editor (the local page
+cannot write files).
 
 ## Scripts
 
@@ -239,7 +281,13 @@ Only `x27_restore.js` is reusable. On the Python side, the flow-authoring helper
    - Link rewrites.
    - No other session running, and Excel/PowerPoint closed.
    - Then write the `ASSET.md` files and generate `CATALOG.md`.
-4. **Epic READMEs:** consolidate the existing docs into the 10 living pages and move the rest to `records/` or `archive/`.
+   - **Revised 2026-09-29 evening, in this order:** (a) the swap, with the corrected FRM10-12, the workbook registry +
+     `wb`, and the `power-query/_shared/` layout; (b) the `pq` tool; (c) the work system (task files, journal,
+     viewer, CLI, Punch List migration). After (c), no more hand-written build-night boards or dated checklists.
+   - Duplicates rule, refined with the user: **one clean copy of each thing in the tree.** A copy that differs only
+     because it's older (a hand copy of a build-night board, a superseded query export) is not kept as a second
+     file; it stays retrievable in the merged git history, and the after-check confirms it is there.
+4. **Epic READMEs:** consolidate the existing docs into the 12 living pages and move the rest to `records/` or `archive/`.
 5. **Tools:** extract `tools/sp` from the x## scripts and add a quick-fix template.
 6. **Keep-clean:** the session-start hygiene hook, the supersede helper, the CLAUDE.md "where things go" rules.
 
